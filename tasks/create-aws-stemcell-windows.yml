@@ -1,0 +1,24 @@
+---
+platform: linux
+
+image: docker:///bosh/init
+
+inputs:
+  - name: windows-ami
+  - name: bosh-agent-zip
+  - name: bosh-agent-deps-zip
+  - name: version
+  - name: bosh-agent
+
+outputs:
+  - name: bosh-aws-stemcell
+
+run:
+  path: bosh-agent/ci/tasks/create-aws-stemcell-windows.rb
+
+params:
+  OUTPUT_DIR: replace-me
+  AWS_ACCESS_KEY: replace-me
+  AWS_SECRET_KEY: replace-me
+  VPC_ID: replace-me
+  SUBNET_ID: replace-me
