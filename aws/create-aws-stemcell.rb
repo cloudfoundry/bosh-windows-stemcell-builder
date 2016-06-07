@@ -121,7 +121,7 @@ Dir.chdir(File.dirname(__FILE__)) do
   ami_id = run_packer(packer_bin)
 
   Dir.mktmpdir do |dir|
-    stemcell_dir = "aws-windows-stemcell/templates/stemcell"
+    stemcell_dir = "aws/templates/stemcell"
 
     MFTemplate.new("#{stemcell_dir}/stemcell.MF.erb", VERSION, ami_id).save(dir)
     ApplySpecTemplate.new("#{stemcell_dir}/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
