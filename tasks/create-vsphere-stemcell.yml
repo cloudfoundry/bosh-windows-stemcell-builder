@@ -15,7 +15,7 @@ outputs:
   - name: bosh-vsphere-stemcell
 
 run:
-  path: stemcell-builder/scripts/create-vsphere-stemcell-windows.sh
+  path: stemcell-builder/scripts/create-vsphere-stemcell.sh
 
 params:
   VCENTER_HOST: replace-me
