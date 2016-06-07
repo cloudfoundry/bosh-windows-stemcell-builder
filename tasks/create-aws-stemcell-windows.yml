@@ -9,12 +9,13 @@ inputs:
   - name: bosh-agent-deps-zip
   - name: version
   - name: bosh-agent
+  - name: stemcell-builder
 
 outputs:
   - name: bosh-aws-stemcell
 
 run:
-  path: bosh-agent/ci/tasks/create-aws-stemcell-windows.rb
+  path: stemcell-builder/tasks/create-aws-stemcell-windows.rb
 
 params:
   OUTPUT_DIR: replace-me

@@ -1,0 +1,39 @@
+{
+  "variables": {
+    "aws_access_key": null,
+    "aws_secret_key": null,
+    "deps_url": null,
+    "agent_url": null,
+    "base_ami_id": null,
+    "vpc_id": null,
+    "subnet_id": null,
+    "ami_name": null
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "us-east-1",
+    "source_ami": "{{user `base_ami_id`}}",
+    "instance_type": "m3.xlarge",
+    "ami_name": "{{user `ami_name`}}",
+    "vpc_id": "{{user `vpc_id`}}",
+    "subnet_id": "{{user `subnet_id`}}",
+    "associate_public_ip_address": true,
+    "communicator": "winrm",
+    "winrm_username": "Administrator",
+    "user_data_file": "aws-windows-stemcell/templates/provisioning/setup_winrm.txt",
+    "ami_groups": "all"
+  }],
+
+  "provisioners": [
+      {
+          "type": "powershell",
+          "scripts": ["aws-windows-stemcell/templates/provisioning/setup_agent.ps1", "aws-windows-stemcell/templates/aws/ec2-set-password.ps1"],
+          "environment_vars": [
+            "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",
+            "AGENT_ZIP_URL={{user `agent_url`}}"
+          ]
+      }
+  ]
+}

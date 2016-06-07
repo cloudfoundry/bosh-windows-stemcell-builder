@@ -7,16 +7,15 @@ inputs:
   - name: bosh-vsphere-stemcell-version
   - name: bosh-agent-zip
   - name: bosh-agent-deps-zip
-  - name: bosh-agent
-    path: gopath/src/github.com/cloudfoundry/bosh-agent
   - name: ovftool-linux
+  - name: stemcell-builder
 
 outputs:
   - name: vagrant_home
   - name: bosh-vsphere-stemcell
 
 run:
-  path: gopath/src/github.com/cloudfoundry/bosh-agent/ci/tasks/create-vsphere-stemcell-windows.sh
+  path: stemcell-builder/scripts/create-vsphere-stemcell-windows.sh
 
 params:
   VCENTER_HOST: replace-me

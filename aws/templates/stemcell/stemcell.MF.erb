@@ -1,0 +1,19 @@
+---
+name: bosh-aws-xen-hvm-windows-stemcell-go_agent
+version: '<%= @version %>'
+sha1: ba07a5f8277b3f9e6b8f250aeea4ebad4244b273
+operating_system: windows2012R2
+cloud_properties:
+  name: bosh-aws-xen-hvm-windows-stemcell-go_agent
+  version: '<%= @version %>'
+  infrastructure: aws
+  hypervisor: xen
+  disk: 3072
+  disk_format: raw
+  container_format: bare
+  os_type: linux
+  os_distro: ubuntu
+  architecture: x86_64
+  root_device_name: /dev/sda1
+  ami:
+    us-east-1: <%= @ami_id %>
