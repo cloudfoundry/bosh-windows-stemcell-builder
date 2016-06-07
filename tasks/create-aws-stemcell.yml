@@ -15,7 +15,7 @@ outputs:
   - name: bosh-aws-stemcell
 
 run:
-  path: stemcell-builder/scripts/create-aws-stemcell.rb
+  path: stemcell-builder/aws/create-aws-stemcell.rb
 
 params:
   OUTPUT_DIR: replace-me

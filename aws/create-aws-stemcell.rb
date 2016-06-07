@@ -66,7 +66,7 @@ def parse_ami_id(line)
 end
 
 def run_packer(packer_path)
-  config_path = "aws-windows-stemcell/packer.json"
+  config_path = "packer.json"
   command = %{
     #{packer_path} build \
     -machine-readable \
