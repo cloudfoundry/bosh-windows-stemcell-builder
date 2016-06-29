@@ -66,7 +66,7 @@ def parse_ami_id(line)
 end
 
 def run_packer(packer_path)
-  config_path = "packer.json"
+  config_path = "packer-aws.json"
   command = %{
     #{packer_path} build \
     -machine-readable \

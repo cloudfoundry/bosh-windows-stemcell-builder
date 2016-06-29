@@ -1,0 +1,17 @@
+name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+version: '<%= @version %>'
+bosh_protocol: 1
+sha1: '<%= @sha1 %>'
+operating_system: windows
+cloud_properties:
+  name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+  version: '<%= @version %>'
+  infrastructure: vsphere
+  hypervisor: esxi
+  disk: 3072
+  disk_format: ovf
+  container_format: bare
+  os_type: linux
+  os_distro: ubuntu
+  architecture: x86_64
+  root_device_name: /dev/sda1

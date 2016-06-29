@@ -1,6 +1,12 @@
-mkdir "C:\bosh"
-mkdir "C:\var\vcap\bosh\bin"
-mkdir "C:\var\vcap\bosh\log"
+if(!(Test-Path -Path "C:\bosh" )){
+    mkdir "C:\bosh"
+}
+if(!(Test-Path -Path "C:\var\vcap\bosh\bin" )){
+    mkdir "C:\var\vcap\bosh\bin"
+}
+if(!(Test-Path -Path "C:\var\vcap\bosh\log" )){
+    mkdir "C:\var\vcap\bosh\log"
+}
 
 # Add utilities to current path.
 $env:PATH="${env:PATH};C:\var\vcap\bosh\bin"
@@ -29,29 +35,5 @@ $AddedFolder='C:\bosh'
 $NewPath=$OldPath+';'+$AddedFolder
 Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
 
-New-Item -ItemType file -path "C:\bosh\agent.json" -Value @"
-{
-  "Platform": {
-    "Linux": {
-      "DevicePathResolutionType": "virtio"
-    }
-  },
-  "Infrastructure": {
-    "Settings": {
-      "Sources": [
-        {
-          "Type": "HTTP",
-          "URI": "http://169.254.169.254",
-          "UserDataPath": "/latest/user-data/",
-          "InstanceIDPath": "/latest/meta-data/instance-id/",
-          "SSHKeysPath": "/latest/meta-data/public-keys/0/openssh-key/"
-        }
-      ],
-      "UseRegistry": true
-    }
-  }
-}
-"@
-
-# BOSH Agent Service Wrapper
+Move-Item "C:\bosh\job-service-wrapper.exe" "C:\var\vcap\bosh\bin\job-service-wrapper.exe" -Force
 C:\bosh\service_wrapper.exe install

@@ -1,0 +1,104 @@
+{
+    "variables": {
+    "iso_url": null,
+    "iso_checksum_type": null,
+    "iso_checksum": null,
+    "deps_url": null,
+    "agent_url": null,
+
+    "memsize": "2048",
+    "numvcpus": "2",
+
+    "remote_host": null,
+    "remote_port": "22",
+    "remote_datastore": null,
+    "remote_cache_datastore": null,
+    "remote_cache_directory": null,
+
+    "remote_username": null,
+    "remote_password": null
+  },
+  "builders": [
+    {
+      "type": "vmware-iso",
+
+      "iso_url": "{{user `iso_url`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "headless": false,
+      "boot_wait": "2m",
+
+      "communicator": "winrm",
+      "winrm_username": "Administrator",
+      "winrm_password": "vagrant",
+      "winrm_timeout": "6h",
+      "winrm_insecure": true,
+
+      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      // "shutdown_command": "C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:C:/Windows/Panther/Unattend/unattend.xml /quiet /shutdown",
+      "guest_os_type": "windows8srv-64",
+      "tools_upload_flavor": "windows",
+      "disk_size": 40000,
+      "vnc_port_min": 5900,
+      "vnc_port_max": 5980,
+      "floppy_files": [
+        "templates/vsphere/answer_files/2012_r2/Autounattend.xml",
+        "templates/vsphere/scripts/microsoft-updates.bat",
+        "templates/vsphere/scripts/win-updates.ps1"
+      ],
+
+      "vmx_data": {
+        "memsize": "{{user `memsize`}}",
+        "numvcpus": "{{user `numvcpus`}}",
+
+        "scsi0.virtualDev": "lsisas1068",
+        "ethernet0.present": "TRUE",
+        "ethernet0.startConnected": "TRUE",
+        "ethernet0.virtualDev": "e1000",
+        "ethernet0.networkName": "VM Network",
+        "ethernet0.addressType": "generated",
+        "ethernet0.generatedAddressOffset": "0",
+        "ethernet0.wakeOnPcktRcv": "FALSE"
+      },
+
+      "remote_type": "esx5",
+      "remote_host": "{{user `remote_host`}}",
+      "remote_port": "{{user `remote_port`}}",
+      "remote_datastore": "{{user `remote_datastore`}}",
+      "remote_cache_datastore": "{{user `remote_cache_datastore`}}",
+      "remote_cache_directory": "{{user `remote_cache_directory`}}",
+
+      "remote_username": "{{user `remote_username`}}",
+      "remote_password": "{{user `remote_password`}}",
+
+      "output_directory": "output-vmware-iso",
+      "format": "ova"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "windows-restart",
+      "restart_timeout": "1h"
+    },
+    {
+      "type": "windows-shell",
+      "scripts": [
+        "templates/vsphere/scripts/compile-dotnet-assemblies.bat",
+        "templates/vsphere/scripts/vm-guest-tools.bat",
+        "templates/vsphere/scripts/enable-rdp.bat",
+        "templates/vsphere/scripts/disable-auto-logon.bat"
+      ]
+    },
+    {
+      "type": "powershell",
+      "scripts": [
+        "templates/provisioning/setup_agent.ps1",
+        "templates/provisioning/agent_config_vsphere.ps1"
+      ],
+      "environment_vars": [
+        "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",
+        "AGENT_ZIP_URL={{user `agent_url`}}"
+      ]
+    }
+  ]
+}

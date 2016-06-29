@@ -29,7 +29,11 @@
   "provisioners": [
       {
           "type": "powershell",
-          "scripts": ["templates/provisioning/setup_agent.ps1", "templates/aws/ec2-set-password.ps1"],
+          "scripts": [
+            "templates/provisioning/setup_agent.ps1",
+            "templates/provisioning/agent_config_aws.ps1",
+            "templates/aws/ec2-set-password.ps1"
+          ],
           "environment_vars": [
             "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",
             "AGENT_ZIP_URL={{user `agent_url`}}"

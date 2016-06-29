@@ -1,0 +1,33 @@
+---
+platform: linux
+
+image: docker:///pivotalgreenhouse/packer-base
+
+inputs:
+  - name: version
+  - name: bosh-agent-version
+  - name: bosh-agent-zip
+  - name: bosh-agent-deps-zip
+  - name: ovftool-linux
+  - name: stemcell-builder
+
+outputs:
+  - name: bosh-vsphere-stemcell
+
+run:
+  path: stemcell-builder/aws/create-vsphere-stemcell.rb
+
+params:
+  OUTPUT_DIR: replace-me
+  ISO_URL: replace-me
+  ISO_CHECKSUM_TYPE: replace-me
+  ISO_CHECKSUM: replace-me
+  MEMSIZE: replace-me
+  NUMVCPUS: replace-me
+  REMOTE_HOST: replace-me
+  REMOTE_PORT: replace-me
+  REMOTE_DATASTORE: replace-me
+  REMOTE_CACHE_DATASTORE: replace-me
+  REMOTE_CACHE_DIRECTORY: replace-me
+  REMOTE_USERNAME: replace-me
+  REMOTE_PASSWORD: replace-me
