@@ -2,6 +2,12 @@ mkdir "C:\bosh"
 mkdir "C:\var\vcap\bosh\bin"
 mkdir "C:\var\vcap\bosh\log"
 
+# Add utilities to current path.
+$env:PATH="${env:PATH};C:\var\vcap\bosh\bin"
+
+# Add utilities to system path (does not apply to current shell).
+Setx $env:PATH "${env:PATH};C:\var\vcap\bosh\bin" /m
+
 Add-Type -AssemblyName System.IO.Compression.FileSystem
   function Unzip
   {
@@ -13,7 +19,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
   }
 
 Invoke-WebRequest "${ENV:AGENT_DEPS_ZIP_URL}" -Verbose -OutFile "C:\bosh\agent_deps.zip"
-Unzip "C:\bosh\agent_deps.zip" "C:\bosh\"
+Unzip "C:\bosh\agent_deps.zip" "C:\var\vcap\bosh\bin\"
 
 Invoke-WebRequest "${ENV:AGENT_ZIP_URL}" -Verbose -OutFile "C:\bosh\agent.zip"
 Unzip "C:\bosh\agent.zip" "C:\bosh\"
@@ -47,5 +53,5 @@ New-Item -ItemType file -path "C:\bosh\agent.json" -Value @"
 }
 "@
 
-Move-Item "C:\bosh\job-service-wrapper.exe" "C:\var\vcap\bosh\bin\job-service-wrapper.exe" -Force
+# BOSH Agent Service Wrapper
 C:\bosh\service_wrapper.exe install
