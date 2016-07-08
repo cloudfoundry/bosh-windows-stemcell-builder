@@ -35,7 +35,6 @@
       "winrm_insecure": true,
 
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
-      // "shutdown_command": "C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:C:/Windows/Panther/Unattend/unattend.xml /quiet /shutdown",
       "guest_os_type": "windows8srv-64",
       "tools_upload_flavor": "windows",
       "disk_size": 40000,
@@ -44,7 +43,8 @@
       "floppy_files": [
         "templates/vsphere/answer_files/2012_r2/Autounattend.xml",
         "templates/vsphere/scripts/microsoft-updates.bat",
-        "templates/vsphere/scripts/win-updates.ps1"
+        "templates/vsphere/scripts/updates.ps1",
+        "templates/vsphere/scripts/initial-setup.ps1"
       ],
 
       "vmx_data": {
