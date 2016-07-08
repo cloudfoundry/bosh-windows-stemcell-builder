@@ -28,6 +28,7 @@ REMOTE_CACHE_DATASTORE = ENV.fetch('REMOTE_CACHE_DATASTORE')
 REMOTE_CACHE_DIRECTORY = ENV.fetch('REMOTE_CACHE_DIRECTORY')
 REMOTE_USERNAME = ENV.fetch('REMOTE_USERNAME')
 REMOTE_PASSWORD = ENV.fetch('REMOTE_PASSWORD')
+ADMINISTRATOR_PASSWORD = ENV.fetch('ADMINISTRATOR_PASSWORD')
 IMAGE_PATH = "#{OUTPUT_DIR}/image"
 
 
@@ -59,6 +60,7 @@ def packer_args(command)
     -var "remote_cache_directory=#{REMOTE_CACHE_DIRECTORY}" \
     -var "remote_username=#{REMOTE_USERNAME}" \
     -var "remote_password=#{REMOTE_PASSWORD}" \
+    -var "administrator_password=#{ADMINISTRATOR_PASSWORD}" \
     #{CONFIG_PATH}
   }
   args
@@ -129,7 +131,7 @@ Dir.chdir(File.dirname(__FILE__)) do
 
   gzip_file('packer-vmware-iso/packer-vmware-iso.ova/packer-vmware-iso.ova', "#{IMAGE_PATH}")
 
-  IMAGE_SHA1=`sha1sum #{IMAGE_PATH} | cut -d ' ' -f 1)`
+  IMAGE_SHA1=`sha1sum #{IMAGE_PATH} | cut -d ' ' -f 1`
 
   Dir.mktmpdir do |dir|
     stemcell_dir = "templates/vsphere/stemcell"

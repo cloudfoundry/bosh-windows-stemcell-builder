@@ -16,7 +16,9 @@
     "remote_cache_directory": null,
 
     "remote_username": null,
-    "remote_password": null
+    "remote_password": null,
+
+    "administrator_password": null
   },
   "builders": [
     {
@@ -31,7 +33,7 @@
       "communicator": "winrm",
       "winrm_username": "Administrator",
       "winrm_password": "vagrant",
-      "winrm_timeout": "6h",
+      "winrm_timeout": "12h",
       "winrm_insecure": true,
 
       "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
@@ -93,12 +95,20 @@
       "type": "powershell",
       "scripts": [
         "templates/provisioning/setup_agent.ps1",
-        "templates/provisioning/agent_config_vsphere.ps1"
+        "templates/provisioning/agent_config_vsphere.ps1",
+        "templates/vsphere/scripts/remove-windows-features.ps1",
+        "templates/vsphere/scripts/dis-updates.ps1",
+        "templates/vsphere/scripts/set-admin-password.ps1"
       ],
       "environment_vars": [
         "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",
-        "AGENT_ZIP_URL={{user `agent_url`}}"
+        "AGENT_ZIP_URL={{user `agent_url`}}",
+        "ADMINISTRATOR_PASSWORD={{user `administrator_password`}}"
       ]
+    },
+    {
+      "type": "windows-shell",
+      "script": "templates/vsphere/scripts/compact.bat"
     }
   ]
 }
