@@ -31,3 +31,4 @@ params:
   REMOTE_CACHE_DIRECTORY: replace-me
   REMOTE_USERNAME: replace-me
   REMOTE_PASSWORD: replace-me
+  ADMINISTRATOR_PASSWORD: replace-me
