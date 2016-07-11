@@ -73,6 +73,10 @@ if ($SkipUpdates -ne 0) {
     Check-WindowsUpdates
 }
 
+# Disable Automatic updates
+cmd.exe /c A:\microsoft-updates.bat
+Powershell -File "A:\dis-updates.ps1"
+
 # Set Execution Policy 64 Bit
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force
 LogWrite "Set Execution Policy 64 Bit (Exit Code: ${LASTEXITCODE})"
@@ -126,28 +130,28 @@ cmd.exe /c 'net stop winrm'
 LogWrite "Stop Win RM Service (Exit Code: ${LASTEXITCODE})"
 
 # Show file extensions in Explorer
-# %SystemRoot%\System32\reg.exe ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ /v HideFileExt /t REG_DWORD /d 0 /f
-# LogWrite "Show file extensions in Explorer"
+cmd.exe /c '%SystemRoot%\System32\reg.exe ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ /v HideFileExt /t REG_DWORD /d 0 /f'
+LogWrite "Show file extensions in Explorer"
 
 # Enable QuickEdit mode
-# %SystemRoot%\System32\reg.exe ADD HKCU\Console /v QuickEdit /t REG_DWORD /d 1 /f
-# LogWrite "Enable QuickEdit mode"
+cmd.exe /c '%SystemRoot%\System32\reg.exe ADD HKCU\Console /v QuickEdit /t REG_DWORD /d 1 /f'
+LogWrite "Enable QuickEdit mode"
 
 # Show Run command in Start Menu
-# %SystemRoot%\System32\reg.exe ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ /v Start_ShowRun /t REG_DWORD /d 1 /f
-# LogWrite "Show Run command in Start Menu"
+cmd.exe /c '%SystemRoot%\System32\reg.exe ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ /v Start_ShowRun /t REG_DWORD /d 1 /f'
+LogWrite "Show Run command in Start Menu"
 
 # Show Administrative Tools in Start Menu
-# %SystemRoot%\System32\reg.exe ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ /v StartMenuAdminTools /t REG_DWORD /d 1 /f
-# LogWrite "Show Administrative Tools in Start Menu"
+cmd.exe /c '%SystemRoot%\System32\reg.exe ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\ /v StartMenuAdminTools /t REG_DWORD /d 1 /f'
+LogWrite "Show Administrative Tools in Start Menu"
 
 # Zero Hibernation File
-# %SystemRoot%\System32\reg.exe ADD HKLM\SYSTEM\CurrentControlSet\Control\Power\ /v HibernateFileSizePercent /t REG_DWORD /d 0 /f
-# LogWrite "Zero Hibernation File"
+cmd.exe /c '%SystemRoot%\System32\reg.exe ADD HKLM\SYSTEM\CurrentControlSet\Control\Power\ /v HibernateFileSizePercent /t REG_DWORD /d 0 /f'
+LogWrite "Zero Hibernation File"
 
 # Disable Hibernation Mode
-# %SystemRoot%\System32\reg.exe ADD HKLM\SYSTEM\CurrentControlSet\Control\Power\ /v HibernateEnabled /t REG_DWORD /d 0 /f
-# LogWrite "Disable Hibernation Mode"
+cmd.exe /c '%SystemRoot%\System32\reg.exe ADD HKLM\SYSTEM\CurrentControlSet\Control\Power\ /v HibernateEnabled /t REG_DWORD /d 0 /f'
+LogWrite "Disable Hibernation Mode"
 
 # Disable password expiration for Administrator user
 cmd.exe /c 'wmic useraccount where "name=''Administrator''" set PasswordExpires=FALSE'

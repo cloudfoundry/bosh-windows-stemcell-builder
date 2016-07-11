@@ -36,17 +36,21 @@
       "winrm_timeout": "12h",
       "winrm_insecure": true,
 
-      "shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+      "shutdown_command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File a:\\sysprep.ps1 -NewPassword {{user `administrator_password`}}",
+      "shutdown_timeout": "1h",
+
       "guest_os_type": "windows8srv-64",
       "tools_upload_flavor": "windows",
-      "disk_size": 40000,
+      "disk_size": 20000,
       "vnc_port_min": 5900,
       "vnc_port_max": 5980,
       "floppy_files": [
         "templates/vsphere/answer_files/2012_r2/Autounattend.xml",
         "templates/vsphere/scripts/microsoft-updates.bat",
         "templates/vsphere/scripts/updates.ps1",
-        "templates/vsphere/scripts/initial-setup.ps1"
+        "templates/vsphere/scripts/dis-updates.ps1",
+        "templates/vsphere/scripts/initial-setup.ps1",
+        "templates/vsphere/scripts/sysprep.ps1"
       ],
 
       "vmx_data": {
@@ -88,7 +92,8 @@
         "templates/vsphere/scripts/compile-dotnet-assemblies.bat",
         "templates/vsphere/scripts/vm-guest-tools.bat",
         "templates/vsphere/scripts/enable-rdp.bat",
-        "templates/vsphere/scripts/disable-auto-logon.bat"
+        "templates/vsphere/scripts/disable-auto-logon.bat",
+        "templates/vsphere/scripts/disable-updates.bat"
       ]
     },
     {
@@ -97,13 +102,11 @@
         "templates/provisioning/setup_agent.ps1",
         "templates/provisioning/agent_config_vsphere.ps1",
         "templates/vsphere/scripts/remove-windows-features.ps1",
-        "templates/vsphere/scripts/dis-updates.ps1",
-        "templates/vsphere/scripts/set-admin-password.ps1"
+        "templates/vsphere/scripts/cleanup-temp-directories.ps1"
       ],
       "environment_vars": [
         "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",
-        "AGENT_ZIP_URL={{user `agent_url`}}",
-        "ADMINISTRATOR_PASSWORD={{user `administrator_password`}}"
+        "AGENT_ZIP_URL={{user `agent_url`}}"
       ]
     },
     {
