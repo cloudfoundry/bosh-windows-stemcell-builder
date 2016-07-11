@@ -73,10 +73,6 @@ if ($SkipUpdates -ne 0) {
     Check-WindowsUpdates
 }
 
-# Disable Automatic updates
-cmd.exe /c A:\microsoft-updates.bat
-Powershell -File "A:\dis-updates.ps1"
-
 # Set Execution Policy 64 Bit
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force
 LogWrite "Set Execution Policy 64 Bit (Exit Code: ${LASTEXITCODE})"

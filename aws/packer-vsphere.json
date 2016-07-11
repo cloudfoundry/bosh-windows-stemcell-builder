@@ -48,7 +48,6 @@
         "templates/vsphere/answer_files/2012_r2/Autounattend.xml",
         "templates/vsphere/scripts/microsoft-updates.bat",
         "templates/vsphere/scripts/updates.ps1",
-        "templates/vsphere/scripts/dis-updates.ps1",
         "templates/vsphere/scripts/initial-setup.ps1",
         "templates/vsphere/scripts/sysprep.ps1"
       ],
