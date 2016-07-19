@@ -33,7 +33,7 @@
       "communicator": "winrm",
       "winrm_username": "Administrator",
       "winrm_password": "vagrant",
-      "winrm_timeout": "12h",
+      "winrm_timeout": "72h",
       "winrm_insecure": true,
 
       "shutdown_command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File a:\\sysprep.ps1 -NewPassword {{user `administrator_password`}}",
@@ -41,11 +41,12 @@
 
       "guest_os_type": "windows8srv-64",
       "tools_upload_flavor": "windows",
-      "disk_size": 20000,
+      "disk_size": 40000,
       "vnc_port_min": 5900,
       "vnc_port_max": 5980,
       "floppy_files": [
         "templates/vsphere/answer_files/2012_r2/Autounattend.xml",
+        "templates/vsphere/scripts/compile-dotnet-assemblies.bat",
         "templates/vsphere/scripts/microsoft-updates.bat",
         "templates/vsphere/scripts/updates.ps1",
         "templates/vsphere/scripts/initial-setup.ps1",
