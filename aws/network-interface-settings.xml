@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NetworkInterfaceSettings>
+	<Address>10.85.58.10</Address>
+	<Netmask>255.255.0.0</Netmask>
+	<Gateway>10.85.58.1</Gateway>
+</NetworkInterfaceSettings>

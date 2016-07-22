@@ -3,6 +3,7 @@ param($SkipUpdates=0)
 $Logfile = "C:\Windows\Temp\initial-setup.log"
 $RegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
 $RegistryEntry = "InstallWindowsUpdates"
+$NetworkSettingsPath = "A:\network-interface-settings.xml"
 
 function LogWrite {
    Param ([string]$logstring)
@@ -65,6 +66,18 @@ function Check-WindowsUpdates() {
 
 $script:ScriptName = $MyInvocation.MyCommand.ToString()
 $script:ScriptPath = $MyInvocation.MyCommand.Path
+
+# Check for network settings xml
+if (Test-Path $NetworkSettingsPath) {
+    LogWrite "Found network interface settings file, applying network interface settings..."
+    Powershell -File "A:\setup-network-interface.ps1" -ConfigPath $NetworkSettingsPath
+    if ($LASTEXITCODE -ne 0) {
+        LogWrite "Error: setup-network-interface.ps1 exited with code ${LASTEXITCODE}"
+    }
+    LogWrite "Applied network interface settings."
+} else {
+    LogWrite "Did not find network interface settings file, skipping network setup."
+}
 
 if ($SkipUpdates -ne 0) {
     LogWrite "Skipping updates..."

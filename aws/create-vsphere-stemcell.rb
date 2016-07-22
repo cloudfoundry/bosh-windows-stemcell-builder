@@ -122,6 +122,13 @@ class ApplySpecTemplate < Template
   end
 end
 
+if which ovftool > /dev/null 2>&1 ; then
+ true; # OK
+else
+  echo "cannot find ovftool on the path"
+  exit 1
+fi
+
 FileUtils.mkdir_p(OUTPUT_DIR)
 output_dir = File.absolute_path(OUTPUT_DIR)
 

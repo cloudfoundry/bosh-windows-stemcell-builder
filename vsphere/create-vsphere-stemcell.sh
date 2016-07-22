@@ -41,7 +41,7 @@ bosh_protocol: 1
 sha1: $IMAGE_SHA
 operating_system: windows
 cloud_properties:
-  name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+  name: bosh-vsphere-esxi-windows-2012R2-go_agent
   version: '3181'
   infrastructure: vsphere
   hypervisor: esxi

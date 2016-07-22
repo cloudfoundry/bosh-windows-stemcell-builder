@@ -35,6 +35,7 @@
       "winrm_password": "vagrant",
       "winrm_timeout": "72h",
       "winrm_insecure": true,
+      "winrm_host": "10.85.58.10",
 
       "shutdown_command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File a:\\sysprep.ps1 -NewPassword {{user `administrator_password`}}",
       "shutdown_timeout": "1h",
@@ -47,10 +48,13 @@
       "floppy_files": [
         "templates/vsphere/answer_files/2012_r2/Autounattend.xml",
         "templates/vsphere/scripts/compile-dotnet-assemblies.bat",
+        "templates/vsphere/scripts/setup-network-interface.ps1",
         "templates/vsphere/scripts/microsoft-updates.bat",
         "templates/vsphere/scripts/updates.ps1",
         "templates/vsphere/scripts/initial-setup.ps1",
-        "templates/vsphere/scripts/sysprep.ps1"
+        "templates/vsphere/scripts/sysprep.ps1",
+
+        "network-interface-settings.xml"
       ],
 
       "vmx_data": {
@@ -108,10 +112,6 @@
         "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",
         "AGENT_ZIP_URL={{user `agent_url`}}"
       ]
-    },
-    {
-      "type": "windows-shell",
-      "script": "templates/vsphere/scripts/compact.bat"
     }
   ]
 }
