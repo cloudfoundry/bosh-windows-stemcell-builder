@@ -4,3 +4,4 @@ vmware_stemcell
 vmware_stemcell_no_updates
 image
 tmp/
+mkmf.log
