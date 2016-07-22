@@ -22,7 +22,7 @@
     "associate_public_ip_address": true,
     "communicator": "winrm",
     "winrm_username": "Administrator",
-    "user_data_file": "templates/provisioning/setup_winrm.txt",
+    "user_data_file": "provisioning/setup_winrm.txt",
     "ami_groups": "all"
   }],
 
@@ -30,9 +30,9 @@
       {
           "type": "powershell",
           "scripts": [
-            "templates/provisioning/setup_agent.ps1",
-            "templates/aws/agent_config.ps1",
-            "templates/aws/ec2-set-password.ps1"
+            "provisioning/setup_agent.ps1",
+            "aws/agent_config.ps1",
+            "aws/ec2-set-password.ps1"
           ],
           "environment_vars": [
             "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",

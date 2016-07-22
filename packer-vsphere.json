@@ -46,13 +46,13 @@
       "vnc_port_min": 5900,
       "vnc_port_max": 5980,
       "floppy_files": [
-        "templates/vsphere/answer_files/2012_r2/Autounattend.xml",
-        "templates/vsphere/scripts/compile-dotnet-assemblies.bat",
-        "templates/vsphere/scripts/setup-network-interface.ps1",
-        "templates/vsphere/scripts/microsoft-updates.bat",
-        "templates/vsphere/scripts/updates.ps1",
-        "templates/vsphere/scripts/initial-setup.ps1",
-        "templates/vsphere/scripts/sysprep.ps1",
+        "vsphere/answer_files/2012_r2/Autounattend.xml",
+        "vsphere/scripts/compile-dotnet-assemblies.bat",
+        "vsphere/scripts/setup-network-interface.ps1",
+        "vsphere/scripts/microsoft-updates.bat",
+        "vsphere/scripts/updates.ps1",
+        "vsphere/scripts/initial-setup.ps1",
+        "vsphere/scripts/sysprep.ps1",
 
         "network-interface-settings.xml"
       ],
@@ -93,20 +93,20 @@
     {
       "type": "windows-shell",
       "scripts": [
-        "templates/vsphere/scripts/compile-dotnet-assemblies.bat",
-        "templates/vsphere/scripts/vm-guest-tools.bat",
-        "templates/vsphere/scripts/enable-rdp.bat",
-        "templates/vsphere/scripts/disable-auto-logon.bat",
-        "templates/vsphere/scripts/disable-updates.bat"
+        "vsphere/scripts/compile-dotnet-assemblies.bat",
+        "vsphere/scripts/vm-guest-tools.bat",
+        "vsphere/scripts/enable-rdp.bat",
+        "vsphere/scripts/disable-auto-logon.bat",
+        "vsphere/scripts/disable-updates.bat"
       ]
     },
     {
       "type": "powershell",
       "scripts": [
-        "templates/provisioning/setup_agent.ps1",
-        "templates/vsphere/agent_config.ps1",
-        "templates/vsphere/scripts/remove-windows-features.ps1",
-        "templates/vsphere/scripts/cleanup-temp-directories.ps1"
+        "provisioning/setup_agent.ps1",
+        "vsphere/agent_config.ps1",
+        "vsphere/scripts/remove-windows-features.ps1",
+        "vsphere/scripts/cleanup-temp-directories.ps1"
       ],
       "environment_vars": [
         "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",

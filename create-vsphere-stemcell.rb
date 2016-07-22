@@ -143,7 +143,7 @@ Dir.chdir(File.dirname(__FILE__)) do
   IMAGE_SHA1=`sha1sum #{IMAGE_PATH} | cut -d ' ' -f 1`
 
   Dir.mktmpdir do |dir|
-    stemcell_dir = "templates/vsphere/stemcell"
+    stemcell_dir = "vsphere/stemcell"
 
     MFTemplate.new("#{stemcell_dir}/stemcell.MF.erb", VERSION, IMAGE_SHA1).save(dir)
     ApplySpecTemplate.new("#{stemcell_dir}/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
