@@ -31,7 +31,7 @@
           "type": "powershell",
           "scripts": [
             "templates/provisioning/setup_agent.ps1",
-            "templates/provisioning/agent_config_aws.ps1",
+            "templates/aws/agent_config.ps1",
             "templates/aws/ec2-set-password.ps1"
           ],
           "environment_vars": [
