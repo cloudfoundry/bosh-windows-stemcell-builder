@@ -7,6 +7,7 @@ require 'tmpdir'
 require 'open3'
 require 'securerandom'
 require 'pathname'
+require 'mkmf'
 
 CONFIG_PATH = 'packer-vsphere.json'
 
@@ -122,12 +123,13 @@ class ApplySpecTemplate < Template
   end
 end
 
-if which ovftool > /dev/null 2>&1 ; then
- true; # OK
-else
-  echo "cannot find ovftool on the path"
-  exit 1
-fi
+if find_executable('ovftool') == nil
+  abort("ERROR: cannot find 'ovftool' on the path")
+end
+
+if find_executable('packer') == nil
+  abort("ERROR: cannot find 'packer' on the path")
+end
 
 FileUtils.mkdir_p(OUTPUT_DIR)
 output_dir = File.absolute_path(OUTPUT_DIR)
