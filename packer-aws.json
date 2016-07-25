@@ -30,9 +30,9 @@
       {
           "type": "powershell",
           "scripts": [
-            "provisioning/setup_agent.ps1",
-            "aws/agent_config.ps1",
-            "aws/ec2-set-password.ps1"
+            "scripts/setup_agent.ps1",
+            "aws/scripts/agent_config.ps1",
+            "aws/scripts/ec2-set-password.ps1"
           ],
           "environment_vars": [
             "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",

@@ -103,8 +103,8 @@
     {
       "type": "powershell",
       "scripts": [
-        "provisioning/setup_agent.ps1",
-        "vsphere/agent_config.ps1",
+        "scripts/setup_agent.ps1",
+        "vsphere/scripts/agent_config.ps1",
         "vsphere/scripts/remove-windows-features.ps1",
         "vsphere/scripts/cleanup-temp-directories.ps1"
       ],
