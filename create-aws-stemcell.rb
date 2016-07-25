@@ -125,7 +125,7 @@ Dir.chdir(File.dirname(__FILE__)) do
 
     MFTemplate.new("#{stemcell_dir}/stemcell.MF.erb", VERSION, ami_id).save(dir)
     ApplySpecTemplate.new("#{stemcell_dir}/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
-    FileUtils.cp("#{stemcell_dir}/image", dir)
+    exec_command("touch #{dir}/image")
 
     stemcell_filename = "light-bosh-stemcell-#{VERSION}-aws-xen-hvm-windows2012R2-go_agent.tgz"
 
