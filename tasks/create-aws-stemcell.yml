@@ -1,7 +1,11 @@
 ---
 platform: linux
 
-image: docker:///bosh/init
+image_resource:
+  type: docker-image
+  source:
+    repository: ruby
+    tag: '2.1'
 
 inputs:
   - name: windows-ami
@@ -15,7 +19,7 @@ outputs:
   - name: bosh-aws-stemcell
 
 run:
-  path: stemcell-builder/aws/create-aws-stemcell.rb
+  path: stemcell-builder/create-aws-stemcell.rb
 
 params:
   OUTPUT_DIR: replace-me
