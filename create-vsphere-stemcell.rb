@@ -2,15 +2,16 @@
 
 require 'fileutils'
 require 'zlib'
-require 'erb'
 require 'tmpdir'
 require 'open3'
 require 'securerandom'
 require 'pathname'
 require 'mkmf'
+require_relative './erb_templates/templates.rb'
 
 CONFIG_PATH = 'packer-vsphere.json'
 
+# concourse inputs
 VERSION = File.read("version/number").chomp
 DEPS_URL = File.read("bosh-agent-deps-zip/url").chomp
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
@@ -32,6 +33,10 @@ REMOTE_PASSWORD = ENV.fetch('REMOTE_PASSWORD')
 ADMINISTRATOR_PASSWORD = ENV.fetch('ADMINISTRATOR_PASSWORD')
 IMAGE_PATH = "#{OUTPUT_DIR}/image"
 
+# erb_templates/network-interface-settings.xml
+NETWORK_ADDRESS = ENV.fetch('NETWORK_ADDRESS')
+NETWORK_MASK = ENV.fetch('NETWORK_MASK')
+NETWORK_GATEWAY = ENV.fetch('NETWORK_GATEWAY')
 
 def gzip_file(name, output)
   Zlib::GzipWriter.open(output) do |gz|
@@ -45,7 +50,7 @@ def gzip_file(name, output)
 end
 
 def packer_args(command)
-  args = %{
+  %{
     packer #{command} \
     -var "iso_url=#{ISO_URL}" \
     -var "iso_checksum_type=#{ISO_CHECKSUM_TYPE}" \
@@ -64,7 +69,6 @@ def packer_args(command)
     -var "administrator_password=#{ADMINISTRATOR_PASSWORD}" \
     #{CONFIG_PATH}
   }
-  args
 end
 
 def packer_command(command)
@@ -87,42 +91,6 @@ def exec_command(cmd)
   exit 1 unless $?.success?
 end
 
-class Template
-  include ERB::Util
-
-  def initialize(filename)
-    @filename = filename
-    @template = File.read(filename)
-  end
-
-  def render
-    ERB.new(@template).result(binding)
-  end
-
-  def save(dir)
-    path = File.join(dir, File.basename(@filename, ".erb"))
-    File.open(path, "w+") do |f|
-      puts "#{path}\n#{render}"
-      f.write(render)
-    end
-  end
-end
-
-class MFTemplate < Template
-  def initialize(template, version, sha1)
-    super(template)
-    @version = version
-    @sha1 = sha1
-  end
-end
-
-class ApplySpecTemplate < Template
-  def initialize(template, agent_commit)
-    super(template)
-    @agent_commit = agent_commit
-  end
-end
-
 if find_executable('ovftool') == nil
   abort("ERROR: cannot find 'ovftool' on the path")
 end
@@ -135,6 +103,13 @@ FileUtils.mkdir_p(OUTPUT_DIR)
 output_dir = File.absolute_path(OUTPUT_DIR)
 
 Dir.chdir(File.dirname(__FILE__)) do
+  NetworkInterfaceSettingsTemplate.new(
+    "erb_templates/vsphere/network-interface-settings.xml.erb",
+    NETWORK_ADDRESS,
+    NETWORK_MASK,
+    NETWORK_GATEWAY
+  ).save("./vsphere"))
+
   packer_command('validate')
   packer_command('build')
 
@@ -143,10 +118,8 @@ Dir.chdir(File.dirname(__FILE__)) do
   IMAGE_SHA1=`sha1sum #{IMAGE_PATH} | cut -d ' ' -f 1`
 
   Dir.mktmpdir do |dir|
-    stemcell_dir = "vsphere/stemcell"
-
-    MFTemplate.new("#{stemcell_dir}/stemcell.MF.erb", VERSION, IMAGE_SHA1).save(dir)
-    ApplySpecTemplate.new("#{stemcell_dir}/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
+    MFTemplate.new("erb_templates/vsphere/stemcell.MF.erb", VERSION, IMAGE_SHA1).save(dir)
+    ApplySpecTemplate.new("erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
     FileUtils.cp("#{IMAGE_PATH}", dir)
 
     stemcell_filename = "bosh-stemcell-#{VERSION}-vsphere-esxi-windows2012R2-go_agent.tgz"

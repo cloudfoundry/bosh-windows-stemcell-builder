@@ -54,7 +54,7 @@
         "vsphere/scripts/initial-setup.ps1",
         "vsphere/scripts/sysprep.ps1",
 
-        "network-interface-settings.xml"
+        "vsphere/network-interface-settings.xml"
       ],
 
       "vmx_data": {

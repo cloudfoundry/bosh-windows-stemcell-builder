@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 
-require 'erb'
 require 'tmpdir'
 require 'open3'
 require 'securerandom'
 require 'pathname'
 require 'tmpdir'
 require 'fileutils'
+require_relative './erb_templates/templates.rb'
 
 BASE_AMI_ID = File.read("windows-ami/version").chomp
 VERSION = File.read("version/number").chomp
@@ -21,42 +21,6 @@ AWS_SECRET_KEY = ENV.fetch("AWS_SECRET_KEY")
 VPC_ID = ENV.fetch("VPC_ID")
 SUBNET_ID = ENV.fetch("SUBNET_ID")
 AMI_NAME = "BOSH-" + SecureRandom.uuid
-
-class Template
-  include ERB::Util
-
-  def initialize(filename)
-    @filename = filename
-    @template = File.read(filename)
-  end
-
-  def render
-    ERB.new(@template).result(binding)
-  end
-
-  def save(dir)
-    path = File.join(dir, File.basename(@filename, ".erb"))
-    File.open(path, "w+") do |f|
-      puts "#{path}\n#{render}"
-      f.write(render)
-    end
-  end
-end
-
-class MFTemplate < Template
-  def initialize(template, version, ami_id)
-    super(template)
-    @version = version
-    @ami_id = ami_id
-  end
-end
-
-class ApplySpecTemplate < Template
-  def initialize(template, agent_commit)
-    super(template)
-    @agent_commit = agent_commit
-  end
-end
 
 def parse_ami_id(line)
   unless line.include?("amazon-ebs,artifact,0,id,")
