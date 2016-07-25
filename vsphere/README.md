@@ -41,6 +41,6 @@ Other:
 * Windows Updates: We update our pipeline and run tests before triggering customer pipelines.
 * Disk Size: 40GB is recommended and tested, updates take over 20GB (and will fail).
 
-## Packer 
+## Packer
 
 * `winrm_host` does not currently work on Packer, we have an open [PR](https://github.com/mitchellh/packer/pull/3738) to fix the issue.  Additionally, as of 2016-07-20 the `master` branch of Packer is broken on `ESXi`.  With our changes we were able to successfully build the stemcell using [9c9f8cd](https://github.com/mitchellh/packer/commit/9c9f8cd45160192587a90e95413aaa26fc21b762).
