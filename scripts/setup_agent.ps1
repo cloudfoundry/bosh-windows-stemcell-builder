@@ -31,9 +31,8 @@ Invoke-WebRequest "${ENV:AGENT_ZIP_URL}" -Verbose -OutFile "C:\bosh\agent.zip"
 Unzip "C:\bosh\agent.zip" "C:\bosh\"
 
 $OldPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
-$AddedFolder='C:\bosh'
+$AddedFolder='C:\var\vcap\bosh\bin'
 $NewPath=$OldPath+';'+$AddedFolder
 Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $newPath
 
-Move-Item "C:\bosh\job-service-wrapper.exe" "C:\var\vcap\bosh\bin\job-service-wrapper.exe" -Force
 C:\bosh\service_wrapper.exe install
