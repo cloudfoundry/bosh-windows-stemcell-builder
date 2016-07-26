@@ -85,10 +85,8 @@ Dir.chdir(File.dirname(__FILE__)) do
   ami_id = run_packer(packer_bin)
 
   Dir.mktmpdir do |dir|
-    stemcell_dir = "stemcell"
-
-    MFTemplate.new("#{stemcell_dir}/stemcell.MF.erb", VERSION, ami_id).save(dir)
-    ApplySpecTemplate.new("#{stemcell_dir}/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
+    MFTemplate.new("erb_templates/aws/stemcell.MF.erb", VERSION, ami_id).save(dir)
+    ApplySpecTemplate.new("erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
     exec_command("touch #{dir}/image")
 
     stemcell_filename = "light-bosh-stemcell-#{VERSION}-aws-xen-hvm-windows2012R2-go_agent.tgz"
