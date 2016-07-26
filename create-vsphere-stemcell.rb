@@ -118,7 +118,7 @@ Dir.chdir(File.dirname(__FILE__)) do
   IMAGE_SHA1=`sha1sum #{IMAGE_PATH} | cut -d ' ' -f 1`
 
   Dir.mktmpdir do |dir|
-    MFTemplate.new("erb_templates/vsphere/stemcell.MF.erb", VERSION, IMAGE_SHA1).save(dir)
+    MFTemplate.new("erb_templates/vsphere/stemcell.MF.erb", VERSION, sha1: IMAGE_SHA1).save(dir)
     ApplySpecTemplate.new("erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
     FileUtils.cp("#{IMAGE_PATH}", dir)
 
