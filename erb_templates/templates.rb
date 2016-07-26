@@ -22,7 +22,7 @@ class Template
 end
 
 class MFTemplate < Template
-  def initialize(template, version, sha1:, ami_id:)
+  def initialize(template, version, sha1: "", ami_id: "")
     super(template)
     @version = version
     @sha1 = sha1
