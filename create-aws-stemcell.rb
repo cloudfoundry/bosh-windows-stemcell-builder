@@ -85,7 +85,7 @@ Dir.chdir(File.dirname(__FILE__)) do
   ami_id = run_packer(packer_bin)
 
   Dir.mktmpdir do |dir|
-    MFTemplate.new("erb_templates/aws/stemcell.MF.erb", VERSION, ami_id).save(dir)
+    MFTemplate.new("erb_templates/aws/stemcell.MF.erb", VERSION, ami_id: ami_id).save(dir)
     ApplySpecTemplate.new("erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
     exec_command("touch #{dir}/image")
 
