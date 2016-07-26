@@ -22,7 +22,7 @@
     "associate_public_ip_address": true,
     "communicator": "winrm",
     "winrm_username": "Administrator",
-    "user_data_file": "provisioning/setup_winrm.txt",
+    "user_data_file": "aws/setup_winrm.txt",
     "ami_groups": "all"
   }],
 
