@@ -1,0 +1,5 @@
+---
+name: errand
+description: "This is a simple errand"
+templates:
+  run.ps1: bin/run.ps1

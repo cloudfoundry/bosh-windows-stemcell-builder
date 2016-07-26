@@ -1,0 +1,27 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+    tag: '1.6'
+
+inputs:
+- name: bosh-windows-acceptance-tests
+
+params:
+  BOSH_CA_CERT:
+  BOSH_CLIENT:
+  BOSH_CLIENT_SECRET:
+  BOSH_PASSWORD:
+  BOSH_USER:
+  DIRECTOR_IP:
+  DIRECTOR_UUID:
+  STEMCELL_NAME:
+  STEMCELL_PATH:
+
+run:
+  path: go
+  args: [test]
+  dir: bosh-windows-acceptance-tests
