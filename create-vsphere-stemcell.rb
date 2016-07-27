@@ -15,7 +15,7 @@ CONFIG_PATH = 'packer-vsphere.json'
 VERSION = File.read("version/number").chomp
 DEPS_URL = File.read("bosh-agent-deps-zip/url").chomp
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
-AGENT_COMMIT = File.read("bosh-agent-version/number").chomp
+AGENT_COMMIT = `git --git-dir bosh-agent/.git rev-parse HEAD`.chomp
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 ISO_URL = ENV.fetch('ISO_URL')

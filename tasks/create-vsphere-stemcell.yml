@@ -5,7 +5,7 @@ image: docker:///pivotalgreenhouse/packer-base
 
 inputs:
   - name: version
-  - name: bosh-agent-version
+  - name: bosh-agent
   - name: bosh-agent-zip
   - name: bosh-agent-deps-zip
   - name: ovftool-linux
