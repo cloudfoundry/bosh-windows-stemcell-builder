@@ -1,5 +1,5 @@
 #docker pull pivotalgreenhouse/packer-base
-FROM bosh/init
+FROM ruby:2.1
 
 RUN apt-get update && apt-get -y install zip unzip wget git-core
 # gcc for cgo
