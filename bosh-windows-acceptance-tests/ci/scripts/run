@@ -1,0 +1,13 @@
+#!/bin/bash
+# vim: set ft=sh
+
+set -e -x
+
+export GOPATH="$PWD"
+export PATH="$PATH:$GOPATH/bin"
+
+pushd "$GOPATH/src"
+go get -u -t "github.com/onsi/ginkgo/..."
+go get -u -t "github.com/onsi/gomega/..."
+ginkgo -r -v "github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests"
+popd

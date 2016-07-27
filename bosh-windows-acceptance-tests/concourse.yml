@@ -4,11 +4,12 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: golang
-    tag: '1.6'
+    repository: bosh/compiled-release
 
 inputs:
 - name: bosh-windows-acceptance-tests
+  path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests
+- name: bosh-aws-stemcell
 
 params:
   BOSH_CA_CERT:
@@ -22,6 +23,4 @@ params:
   STEMCELL_PATH:
 
 run:
-  path: go
-  args: [test]
-  dir: bosh-windows-acceptance-tests
+  path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests/ci/scripts/run

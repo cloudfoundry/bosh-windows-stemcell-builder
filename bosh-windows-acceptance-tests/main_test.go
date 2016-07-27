@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,6 +16,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 )
+
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.SetOutput(GinkgoWriter)
+}
 
 var manifestTemplate = `
 ---
@@ -59,53 +65,87 @@ type ManifestProperties struct {
 	JobName        string
 }
 
-func generateManifest() (string, error) {
+func generateManifest() ([]byte, error) {
+	uuid := os.Getenv("DIRECTOR_UUID")
+	if uuid == "" {
+		return nil, fmt.Errorf("invalid director UUID: %q", uuid)
+	}
+	stemcell := os.Getenv("STEMCELL_NAME")
+	if stemcell == "" {
+		return nil, fmt.Errorf("invalid stemcell name: %q", stemcell)
+	}
 	manifestProperties := ManifestProperties{
-		DeploymentName: "foo",
-		DirectorUUID:   os.Getenv("DIRECTOR_UUID"),
+		DeploymentName: fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix()),
+		DirectorUUID:   uuid,
 		ReleaseName:    "errand-release",
-		StemcellName:   os.Getenv("STEMCELL_NAME"),
+		StemcellName:   stemcell,
 		JobName:        "errand",
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	buf := bytes.NewBufferString("")
-	err = templ.Execute(buf, manifestProperties)
-	return buf.String(), err
+	var buf bytes.Buffer
+	err = templ.Execute(&buf, manifestProperties)
+	return buf.Bytes(), err
 }
 
-var certPath string
+type BoshCommand struct {
+	DirectorIP string
+	CertPath   string // Path to CA CERT file, if any
+	Timeout    time.Duration
+}
 
-func runBoshCommand(command string) error {
-	args := strings.Split(command, " ")
-
-	args = append([]string{"-n", "-t", os.Getenv("DIRECTOR_IP")}, args...)
-	if certPath != "" {
-		args = append([]string{"--ca-cert", certPath}, args...)
+func NewBoshCommand(DirectorIP, CertPath string) *BoshCommand {
+	return &BoshCommand{
+		DirectorIP: DirectorIP,
+		CertPath:   CertPath,
+		Timeout:    time.Minute * 15,
 	}
+}
 
-	cmd := exec.Command("bosh", args...)
-	fmt.Fprintf(GinkgoWriter, "RUNNING %q\n", strings.Join(cmd.Args, " "))
+func (c *BoshCommand) args(command string) []string {
+	args := strings.Split(command, " ")
+	args = append([]string{"-n", "-t", c.DirectorIP}, args...)
+	if c.CertPath != "" {
+		args = append([]string{"--ca-cert", c.CertPath}, args...)
+	}
+	return args
+}
+
+func (c *BoshCommand) Run(command string) error {
+	cmd := exec.Command("bosh", c.args(command)...)
+	log.Printf("RUNNING %q\n", strings.Join(cmd.Args, " "))
+
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	if err != nil {
 		return err
 	}
-	session.Wait(15 * time.Minute)
+	session.Wait(c.Timeout)
+
 	exitCode := session.ExitCode()
 	if exitCode != 0 {
-		return fmt.Errorf("Non-zero exit code for cmd %q: %d", strings.Join(cmd.Args, " "), exitCode)
+		var stderr []byte
+		if session.Err != nil {
+			stderr = session.Err.Contents()
+		}
+		return fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\n",
+			strings.Join(cmd.Args, " "), exitCode, stderr)
 	}
 	return nil
 }
 
 var _ = Describe("BOSH Windows", func() {
+	var bosh *BoshCommand
+
 	BeforeEach(func() {
+		var certPath string
+
 		cert := os.Getenv("BOSH_CA_CERT")
 		if cert != "" {
 			certFile, err := ioutil.TempFile("", "")
 			Expect(err).To(BeNil())
+
 			_, err = certFile.Write([]byte(cert))
 			Expect(err).To(BeNil())
 
@@ -113,7 +153,15 @@ var _ = Describe("BOSH Windows", func() {
 			Expect(err).To(BeNil())
 		}
 
-		runBoshCommand("login")
+		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath)
+
+		bosh.Run("login")
+	})
+
+	AfterEach(func() {
+		if bosh.CertPath != "" {
+			os.RemoveAll(bosh.CertPath)
+		}
 	})
 
 	It("can run an errand", func() {
@@ -123,16 +171,17 @@ var _ = Describe("BOSH Windows", func() {
 		manifestFile, err := ioutil.TempFile("", "")
 		Expect(err).To(BeNil())
 
-		_, err = manifestFile.Write([]byte(manifest))
+		_, err = manifestFile.Write(manifest)
 		Expect(err).To(BeNil())
 
 		manifestPath, err := filepath.Abs(manifestFile.Name())
 		Expect(err).To(BeNil())
+		defer os.RemoveAll(manifestPath)
 
-		err = runBoshCommand("create release --name errand-release --force --timestamp-version --dir assets/errand-release")
+		err = bosh.Run("create release --name errand-release --force --timestamp-version --dir assets/errand-release")
 		Expect(err).To(BeNil())
 
-		err = runBoshCommand("upload release --dir assets/errand-release")
+		err = bosh.Run("upload release --dir assets/errand-release")
 		Expect(err).To(BeNil())
 
 		stemcellPath := os.Getenv("STEMCELL_PATH")
@@ -140,12 +189,13 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(BeNil())
 		Expect(matches).To(HaveLen(1))
 
-		err = runBoshCommand(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
-		Expect(err).To(BeNil())
-		err = runBoshCommand(fmt.Sprintf("-d %s deploy", manifestPath))
+		err = bosh.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
 		Expect(err).To(BeNil())
 
-		err = runBoshCommand(fmt.Sprintf("-d %s run errand errand", manifestPath))
+		err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
+		Expect(err).To(BeNil())
+
+		err = bosh.Run(fmt.Sprintf("-d %s run errand errand", manifestPath))
 		Expect(err).To(BeNil())
 	})
 })
