@@ -184,7 +184,11 @@ var _ = Describe("BOSH Windows", func() {
 		err = bosh.Run("upload release --dir assets/errand-release")
 		Expect(err).To(BeNil())
 
-		stemcellPath := os.Getenv("STEMCELL_PATH")
+		stemcellPath := filepath.Join(
+			os.Getenv("GOPATH"),
+			os.Getenv("STEMCELL_PATH"),
+		)
+
 		matches, err := filepath.Glob(stemcellPath)
 		Expect(err).To(BeNil())
 		Expect(matches).To(HaveLen(1))
