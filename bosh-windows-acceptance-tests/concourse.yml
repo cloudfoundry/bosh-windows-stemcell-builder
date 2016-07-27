@@ -9,7 +9,6 @@ image_resource:
 inputs:
 - name: bosh-windows-acceptance-tests
   path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests
-- name: bosh-windows-stemcell
 
 params:
   BOSH_CA_CERT:
