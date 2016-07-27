@@ -31,12 +31,11 @@ REMOTE_CACHE_DIRECTORY = ENV.fetch('REMOTE_CACHE_DIRECTORY')
 REMOTE_USERNAME = ENV.fetch('REMOTE_USERNAME')
 REMOTE_PASSWORD = ENV.fetch('REMOTE_PASSWORD')
 ADMINISTRATOR_PASSWORD = ENV.fetch('ADMINISTRATOR_PASSWORD')
-IMAGE_PATH = "#{OUTPUT_DIR}/image"
 
 # erb_templates/network-interface-settings.xml
-NETWORK_ADDRESS = ENV.fetch('NETWORK_ADDRESS')
-NETWORK_MASK = ENV.fetch('NETWORK_MASK')
-NETWORK_GATEWAY = ENV.fetch('NETWORK_GATEWAY')
+GUEST_NETWORK_ADDRESS = ENV.fetch('GUEST_NETWORK_ADDRESS')
+GUEST_NETWORK_MASK = ENV.fetch('GUEST_NETWORK_MASK')
+GUEST_NETWORK_GATEWAY = ENV.fetch('GUEST_NETWORK_GATEWAY')
 
 def gzip_file(name, output)
   Zlib::GzipWriter.open(output) do |gz|
@@ -67,6 +66,7 @@ def packer_args(command)
     -var "remote_username=#{REMOTE_USERNAME}" \
     -var "remote_password=#{REMOTE_PASSWORD}" \
     -var "administrator_password=#{ADMINISTRATOR_PASSWORD}" \
+    -var "winrm_host=#{GUEST_NETWORK_ADDRESS}" \
     #{CONFIG_PATH}
   }
 end
@@ -91,6 +91,18 @@ def exec_command(cmd)
   exit 1 unless $?.success?
 end
 
+def install_ovftool
+  files = Dir.glob("**/VMware-ovftool-*.bundle")
+  if files == []
+    abort("ERROR: cannot find 'ovftool' bundle")
+  end
+  ovftoolBundle = files[0]
+  File.chmod(0777, ovftoolBundle)
+  exec_command("#{ovftoolBundle} --required --eulas-agreed")
+end
+
+install_ovftool
+
 if find_executable('ovftool') == nil
   abort("ERROR: cannot find 'ovftool' on the path")
 end
@@ -99,23 +111,27 @@ if find_executable('packer') == nil
   abort("ERROR: cannot find 'packer' on the path")
 end
 
+USER_DIR = Dir.pwd
 FileUtils.mkdir_p(OUTPUT_DIR)
 output_dir = File.absolute_path(OUTPUT_DIR)
+
+IMAGE_PATH = "#{output_dir}/image"
 
 Dir.chdir(File.dirname(__FILE__)) do
   NetworkInterfaceSettingsTemplate.new(
     "erb_templates/vsphere/network-interface-settings.xml.erb",
-    NETWORK_ADDRESS,
-    NETWORK_MASK,
-    NETWORK_GATEWAY
-  ).save("./vsphere"))
+    GUEST_NETWORK_ADDRESS,GUEST_NETWORK_MASK,GUEST_NETWORK_GATEWAY).save("./vsphere")
 
   packer_command('validate')
   packer_command('build')
 
-  gzip_file('packer-vmware-iso/packer-vmware-iso.ova/packer-vmware-iso.ova', "#{IMAGE_PATH}")
+  ova_file = Dir.glob(USER_DIR + '/**/packer-vmware-iso.ova' ).select { |fn| File.file?(fn) }
+  if ova_file.length == 0
+    abort("ERROR: unable to find packer-vmware-iso.ova")
+  end
+  gzip_file(ova_file[0], "#{IMAGE_PATH}")
 
-  IMAGE_SHA1=`sha1sum #{IMAGE_PATH} | cut -d ' ' -f 1`
+  IMAGE_SHA1=`sha1sum #{IMAGE_PATH} | cut -d ' ' -f 1 | xargs echo -n`
 
   Dir.mktmpdir do |dir|
     MFTemplate.new("erb_templates/vsphere/stemcell.MF.erb", VERSION, sha1: IMAGE_SHA1).save(dir)

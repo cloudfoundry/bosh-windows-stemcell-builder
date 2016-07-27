@@ -1,35 +1,38 @@
 ---
 platform: linux
 
-image: docker:///bosh/init
+image: docker:///pivotalgreenhouse/packer-base
 
 inputs:
-  - name: bosh-vsphere-stemcell-version
+  - name: version
+  - name: bosh-agent-version
   - name: bosh-agent-zip
   - name: bosh-agent-deps-zip
   - name: ovftool-linux
   - name: stemcell-builder
 
 outputs:
-  - name: vagrant_home
   - name: bosh-vsphere-stemcell
 
 run:
-  path: stemcell-builder/vsphere/create-vsphere-stemcell.sh
+  path: ruby
+  args: [stemcell-builder/create-vsphere-stemcell.rb]
 
 params:
-  VCENTER_HOST: replace-me
-  VCENTER_COMPUTE_RESOURCE: replace-me
-  VCENTER_DATACENTER: replace-me
-  VCENTER_RESOURCE_POOL: replace-me
-  VCENTER_TEMPLATE_NAME: replace-me
-  VCENTER_PASSWORD: replace-me
-  VCENTER_USERNAME: replace-me
-  VCENTER_FINGERPRINT: replace-me
-  VCENTER_VM_BASE_PATH: replace-me
-  VCENTER_VM_NAME: replace-me
-  WINRM_PASSWORD: replace-me
-  WINRM_USERNAME: replace-me
-  VAGRANT_HOME: replace-me
-  VAGRANT_DOTFILE_PATH: replace-me
-  VAGRANT_VAGRANTFILE: replace-me
+  OUTPUT_DIR: replace-me
+  ISO_URL: replace-me
+  ISO_CHECKSUM_TYPE: replace-me
+  ISO_CHECKSUM: replace-me
+  MEMSIZE: replace-me
+  NUMVCPUS: replace-me
+  REMOTE_HOST: replace-me
+  REMOTE_PORT: replace-me
+  REMOTE_DATASTORE: replace-me
+  REMOTE_CACHE_DATASTORE: replace-me
+  REMOTE_CACHE_DIRECTORY: replace-me
+  REMOTE_USERNAME: replace-me
+  REMOTE_PASSWORD: replace-me
+  GUEST_NETWORK_ADDRESS: replace-me
+  GUEST_NETWORK_MASK: replace-me
+  GUEST_NETWORK_GATEWAY: replace-me
+  ADMINISTRATOR_PASSWORD: replace-me

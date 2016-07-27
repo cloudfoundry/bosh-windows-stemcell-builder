@@ -18,7 +18,9 @@
     "remote_username": null,
     "remote_password": null,
 
-    "administrator_password": null
+    "administrator_password": null,
+
+    "winrm_host": null
   },
   "builders": [
     {
@@ -35,7 +37,7 @@
       "winrm_password": "vagrant",
       "winrm_timeout": "72h",
       "winrm_insecure": true,
-      "winrm_host": "10.85.58.10",
+      "winrm_host": "{{user `winrm_host`}}",
 
       "shutdown_command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File a:\\sysprep.ps1 -NewPassword {{user `administrator_password`}}",
       "shutdown_timeout": "1h",
