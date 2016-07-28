@@ -48,15 +48,15 @@
       "vnc_port_min": 5900,
       "vnc_port_max": 5980,
       "floppy_files": [
-        "vsphere/answer_files/2012_r2/Autounattend.xml",
-        "vsphere/scripts/compile-dotnet-assemblies.bat",
-        "vsphere/scripts/setup-network-interface.ps1",
-        "vsphere/scripts/microsoft-updates.bat",
-        "vsphere/scripts/updates.ps1",
-        "vsphere/scripts/initial-setup.ps1",
-        "vsphere/scripts/sysprep.ps1",
+        "answer_files/2012_r2/Autounattend.xml",
+        "scripts/compile-dotnet-assemblies.bat",
+        "scripts/setup-network-interface.ps1",
+        "scripts/microsoft-updates.bat",
+        "scripts/updates.ps1",
+        "scripts/initial-setup.ps1",
+        "scripts/sysprep.ps1",
 
-        "vsphere/network-interface-settings.xml"
+        "network-interface-settings.xml"
       ],
 
       "vmx_data": {
@@ -95,20 +95,20 @@
     {
       "type": "windows-shell",
       "scripts": [
-        "vsphere/scripts/compile-dotnet-assemblies.bat",
-        "vsphere/scripts/vm-guest-tools.bat",
-        "vsphere/scripts/enable-rdp.bat",
-        "vsphere/scripts/disable-auto-logon.bat",
-        "vsphere/scripts/disable-updates.bat"
+        "scripts/compile-dotnet-assemblies.bat",
+        "scripts/vm-guest-tools.bat",
+        "scripts/enable-rdp.bat",
+        "scripts/disable-auto-logon.bat",
+        "scripts/disable-updates.bat"
       ]
     },
     {
       "type": "powershell",
       "scripts": [
-        "scripts/setup_agent.ps1",
-        "vsphere/scripts/agent_config.ps1",
-        "vsphere/scripts/remove-windows-features.ps1",
-        "vsphere/scripts/cleanup-temp-directories.ps1"
+        "../scripts/setup_agent.ps1",
+        "scripts/agent_config.ps1",
+        "scripts/remove-windows-features.ps1",
+        "scripts/cleanup-temp-directories.ps1"
       ],
       "environment_vars": [
         "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",

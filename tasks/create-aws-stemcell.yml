@@ -4,8 +4,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: ruby
-    tag: '2.1'
+    repository: pivotalgreenhouse/packer-base
 
 inputs:
   - name: windows-ami
@@ -19,7 +18,7 @@ outputs:
   - name: bosh-aws-stemcell
 
 run:
-  path: stemcell-builder/create-aws-stemcell.rb
+  path: stemcell-builder/scripts/create-aws-stemcell.rb
 
 params:
   OUTPUT_DIR: replace-me
