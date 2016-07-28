@@ -24,6 +24,8 @@ SUBNET_ID = ENV.fetch("SUBNET_ID")
 AMI_NAME = "BOSH-" + SecureRandom.uuid
 
 def parse_ami_id(line)
+  # The -machine-readable flag must be set for this to work
+  # ex: packer build -machine-readable <args>
   unless line.include?("amazon-ebs,artifact,0,id,")
     return
   end
@@ -34,6 +36,7 @@ def run_packer(config_path)
   Dir.chdir(File.dirname(config_path)) do
     command = %{
       packer build \
+      -machine-readable \
       -var "aws_access_key=#{AWS_ACCESS_KEY}" \
       -var "aws_secret_key=#{AWS_SECRET_KEY}" \
       -var "deps_url=#{DEPS_URL}" \
@@ -49,7 +52,7 @@ def run_packer(config_path)
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
       stdout.each_line do |line|
         puts line
-        if ami_id == nil
+        if ami_id.nil?
           ami_id = parse_ami_id(line)
         end
       end
@@ -69,7 +72,7 @@ def exec_command(cmd)
   exit 1 unless $?.success?
 end
 
-if find_executable('packer') == nil
+if find_executable('packer').nil?
   abort("ERROR: cannot find 'packer' on the path")
 end
 
@@ -78,7 +81,11 @@ output_dir = File.absolute_path(OUTPUT_DIR)
 
 BUILDER_PATH = File.expand_path("../..", __FILE__)
 packer_config = File.join(BUILDER_PATH, "aws","packer.json")
+
 ami_id = run_packer(packer_config)
+if ami_id.nil? || ami_id.empty?
+  abort("ERROR: could not parse AMI ID")
+end
 
 Dir.mktmpdir do |dir|
   MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, ami_id: ami_id).save(dir)
