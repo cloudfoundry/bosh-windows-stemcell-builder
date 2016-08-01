@@ -51,7 +51,7 @@ instance_groups:
   vm_type: xlarge
   vm_extensions: []
   networks:
-  - name: default
+  - name: integration-tests
   jobs:
   - name: {{.JobName}}
     release: {{.ReleaseName}}
@@ -65,7 +65,7 @@ type ManifestProperties struct {
 	JobName        string
 }
 
-func generateManifest() ([]byte, error) {
+func generateManifest(deploymentName string) ([]byte, error) {
 	uuid := os.Getenv("DIRECTOR_UUID")
 	if uuid == "" {
 		return nil, fmt.Errorf("invalid director UUID: %q", uuid)
@@ -75,7 +75,7 @@ func generateManifest() ([]byte, error) {
 		return nil, fmt.Errorf("invalid stemcell name: %q", stemcell)
 	}
 	manifestProperties := ManifestProperties{
-		DeploymentName: fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix()),
+		DeploymentName: deploymentName,
 		DirectorUUID:   uuid,
 		ReleaseName:    "errand-release",
 		StemcellName:   stemcell,
@@ -136,7 +136,10 @@ func (c *BoshCommand) Run(command string) error {
 }
 
 var _ = Describe("BOSH Windows", func() {
-	var bosh *BoshCommand
+	var (
+		bosh           *BoshCommand
+		deploymentName string
+	)
 
 	BeforeEach(func() {
 		var certPath string
@@ -156,16 +159,22 @@ var _ = Describe("BOSH Windows", func() {
 		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath)
 
 		bosh.Run("login")
+		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix())
 	})
 
 	AfterEach(func() {
 		if bosh.CertPath != "" {
 			os.RemoveAll(bosh.CertPath)
 		}
+		bosh.Run(fmt.Sprintf("delete deployment %s --force", deploymentName))
+	})
+
+	AfterSuite(func() {
+		bosh.Run("cleanup")
 	})
 
 	It("can run an errand", func() {
-		manifest, err := generateManifest()
+		manifest, err := generateManifest(deploymentName)
 		Expect(err).To(BeNil())
 
 		manifestFile, err := ioutil.TempFile("", "")
