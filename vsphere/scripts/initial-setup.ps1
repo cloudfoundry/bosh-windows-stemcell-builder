@@ -40,6 +40,7 @@ function Check-WindowsUpdates() {
     Powershell -File "A:\updates.ps1"
     $ExitCode = $LASTEXITCODE
 
+    Start-Sleep -m 300000
     switch ($ExitCode) {
         0 {
             LogWrite "Updates complete"
@@ -83,6 +84,26 @@ if ($SkipUpdates -ne 0) {
     LogWrite "Skipping updates..."
 } else {
     LogWrite "Starting updates..."
+    $modules = "~\Documents\WindowsPowerShell\Modules\PSWindowsUpdate"
+    New-Item -ItemType Directory -Path $modules -Force
+    Copy-Item "A:\Add-WUOfflineSync.ps1" $modules -Force
+    Copy-Item "A:\Add-WUServiceManager.ps1" $modules -Force
+    Copy-Item "A:\Get-WUHistory.ps1" $modules -Force
+    Copy-Item "A:\Get-WUInstall.ps1" $modules -Force
+    Copy-Item "A:\Get-WUInstallerStatus.ps1" $modules -Force
+    Copy-Item "A:\Get-WUList.ps1" $modules -Force
+    Copy-Item "A:\Get-WURebootStatus.ps1" $modules -Force
+    Copy-Item "A:\Get-WUServiceManager.ps1" $modules -Force
+    Copy-Item "A:\Get-WUUninstall.ps1" $modules -Force
+    Copy-Item "A:\Hide-WUUpdate.ps1" $modules -Force
+    Copy-Item "A:\Invoke-WUInstall.ps1" $modules -Force
+    Copy-Item "A:\PSWindowsUpdate.Format.ps1xml" $modules -Force
+    Copy-Item "A:\PSWindowsUpdate.psd1" $modules -Force
+    Copy-Item "A:\PSWindowsUpdate.psm1" $modules -Force
+    Copy-Item "A:\Remove-WUOfflineSync.ps1" $modules -Force
+    Copy-Item "A:\Remove-WUServiceManager.ps1" $modules -Force
+    Copy-Item "A:\Update-WUModule.ps1" $modules -Force
+    Get-ChildItem $modules -Force
     Check-WindowsUpdates
 }
 

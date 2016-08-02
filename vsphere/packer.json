@@ -55,7 +55,7 @@
         "scripts/updates.ps1",
         "scripts/initial-setup.ps1",
         "scripts/sysprep.ps1",
-
+        "scripts/PSWindowsUpdate/*",
         "network-interface-settings.xml"
       ],
 
