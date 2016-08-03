@@ -1,80 +1,231 @@
+param($global:RestartRequired=0,
+        $global:MoreUpdates=0,
+        $global:MaxCycles=5,
+        $MaxUpdatesPerCycle=500)
+
+$Logfile = "C:\Windows\Temp\updates.log"
+
+# Exit codes:
+#  0: Success
+#  1: More updates
+#  2: Exceeded cycle count
+$script:ExitCode = 0
+
 function LogWrite {
    Param ([string]$logstring)
-   $file = "C:\Windows\Temp\updates.log"
    $now = Get-Date -format s
-   Add-Content $file -value "$now $logstring"
+   Add-Content $Logfile -value "$now $logstring"
    Write-Host $logstring
 }
 
-$IgnoredUpdateCategories = "Feature Packs", "Update Rollups", "Silverlight"
+function Check-ContinueRestartOrEnd() {
+    switch ($global:RestartRequired) {
+        0 {
+            LogWrite "No Restart Required"
+            Check-WindowsUpdates
 
-$UpdateCategories = "Security Updates", "Critical Updates", "Windows Server 2012 R2", "Updates"
-
-function Install-Updates() {
-    # Loop until we successful connect to the update server
-    $sleepSeconds = 5
-    $maxAttempts = 10
-    for ($i = 0; $i -le $maxAttempts; $i++) {
-        try {
-            $updateResult = Get-WUInstall -MicrosoftUpdate -AutoReboot -AcceptAll -IgnoreUserInput -Debuger -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories
-            return $updateResult
-        } catch {
-            if ($_ -match "HRESULT: 0x8024402C") {
-                Write-Warning "Error connecting to update service, will retry in ${sleepSeconds} seconds..."
-                Start-Sleep -Seconds $sleepSeconds
+            if (($global:MoreUpdates -eq 1) -and ($script:Cycles -le $global:MaxCycles)) {
+                # Setting to 1 preemptively
+                $script:ExitCode = 1
+                LogWrite "More updates to install"
+                Install-WindowsUpdates
+            } elseif ($script:Cycles -gt $global:MaxCycles) {
+                $script:ExitCode = 2
+                LogWrite "Exceeded Cycle Count - Stopping"
             } else {
-                Throw $_
-                Exit 1
+                $script:ExitCode = 0
+                LogWrite "Done Installing Windows Updates"
+            }
+            break
+        }
+        1 {
+            $script:ExitCode = 1
+            LogWrite "Restart Required - Restarting..."
+            break
+        }
+        default {
+            $script:ExitCode = 0
+            LogWrite "Unsure If A Restart Is Required"
+            break
+        }
+    }
+}
+
+function Install-WindowsUpdates() {
+    $script:Cycles++
+    LogWrite "Evaluating Available Updates with limit of $($MaxUpdatesPerCycle):"
+    $UpdatesToDownload = New-Object -ComObject 'Microsoft.Update.UpdateColl'
+    $script:i = 0;
+    $CurrentUpdates = $SearchResult.Updates
+    while($script:i -lt $CurrentUpdates.Count -and $script:CycleUpdateCount -lt $MaxUpdatesPerCycle) {
+        $Update = $CurrentUpdates.Item($script:i)
+        if (($Update -ne $null) -and (!$Update.IsDownloaded)) {
+            [bool]$addThisUpdate = $false
+            if ($Update.InstallationBehavior.CanRequestUserInput) {
+                LogWrite "> Skipping: $($Update.Title) because it requires user input"
+            } else {
+                if (!($Update.EulaAccepted)) {
+                    LogWrite "> Note: $($Update.Title) has a license agreement that must be accepted. Accepting the license."
+                    $Update.AcceptEula()
+                    [bool]$addThisUpdate = $true
+                    $script:CycleUpdateCount++
+                } else {
+                    [bool]$addThisUpdate = $true
+                    $script:CycleUpdateCount++
+                }
+            }
+
+            if ([bool]$addThisUpdate) {
+                LogWrite "Adding: $($Update.Title)"
+                $UpdatesToDownload.Add($Update) |Out-Null
+            }
+        }
+        $script:i++
+    }
+
+    if ($UpdatesToDownload.Count -eq 0) {
+        LogWrite "No Updates To Download..."
+    } else {
+        LogWrite 'Downloading Updates...'
+        $ok = 0;
+        while (! $ok) {
+            try {
+                $Downloader = $UpdateSession.CreateUpdateDownloader()
+                $Downloader.Updates = $UpdatesToDownload
+                $Downloader.Download()
+                $ok = 1;
+            } catch {
+                LogWrite $_.Exception | Format-List -force
+                LogWrite "Error downloading updates. Retrying in 30s."
+                $script:attempts = $script:attempts + 1
+                Start-Sleep -s 30
             }
         }
     }
-    return $FALSE
-}
 
-function Update-Count() {
-    # Loop until we successful connect to the update server
-    $sleepSeconds = 5
-    $maxAttempts = 10
-    for ($i = 0; $i -le $maxAttempts; $i++) {
-        try {
-            $count = (Get-WUList -MicrosoftUpdate -IgnoreUserInput -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories | measure).Count
-            return $count
-        } catch {
-            if ($_ -match "HRESULT: 0x8024402C") {
-                Write-Warning "Error connecting to update service, will retry in ${sleepSeconds} seconds..."
-                Start-Sleep -Seconds $sleepSeconds
-            } else {
-                Throw $_
-                Exit 1
+    $UpdatesToInstall = New-Object -ComObject 'Microsoft.Update.UpdateColl'
+    [bool]$rebootMayBeRequired = $false
+    LogWrite 'The following updates are downloaded and ready to be installed:'
+    foreach ($Update in $SearchResult.Updates) {
+        if (($Update.IsDownloaded)) {
+            LogWrite "> $($Update.Title)"
+            $UpdatesToInstall.Add($Update) |Out-Null
+
+            if ($Update.InstallationBehavior.RebootBehavior -gt 0){
+                [bool]$rebootMayBeRequired = $true
             }
         }
     }
-    return $FALSE
+
+    if ($UpdatesToInstall.Count -eq 0) {
+        LogWrite 'No updates available to install...'
+        $global:MoreUpdates=0
+        $global:RestartRequired=0
+        break
+    }
+
+    if ($rebootMayBeRequired) {
+        LogWrite 'These updates may require a reboot'
+        $global:RestartRequired=1
+    }
+
+    LogWrite 'Installing updates...'
+
+    $Installer = $script:UpdateSession.CreateUpdateInstaller()
+    $Installer.Updates = $UpdatesToInstall
+    $InstallationResult = $Installer.Install()
+
+    LogWrite "Installation Result: $($InstallationResult.ResultCode)"
+    LogWrite "Reboot Required: $($InstallationResult.RebootRequired)"
+    LogWrite 'Listing of updates installed and individual installation results:'
+    if ($InstallationResult.RebootRequired) {
+        $global:RestartRequired=1
+    } else {
+        $global:RestartRequired=0
+    }
+
+    for($i=0; $i -lt $UpdatesToInstall.Count; $i++) {
+        New-Object -TypeName PSObject -Property @{
+            Title = $UpdatesToInstall.Item($i).Title
+            Result = $InstallationResult.GetUpdateResult($i).ResultCode
+        }
+        LogWrite "Item: " $UpdatesToInstall.Item($i).Title
+        LogWrite "Result: " $InstallationResult.GetUpdateResult($i).ResultCode;
+    }
+
+    Check-ContinueRestartOrEnd
 }
 
- LogWrite "Checking for Windows updates"
- try {
-     Import-Module PSWindowsUpdate
+function Check-WindowsUpdates() {
+    LogWrite "Checking For Windows Updates"
+    $Username = $env:USERDOMAIN + "\" + $env:USERNAME
 
-     # Loop until there are no more updates
-     $sleepSeconds = 5
-     $maxAttempts = 10
-     for ($i = 0; $i -le $maxAttempts; $i++) {
-         LogWrite "Installing updates: $i"
-         Install-Updates
-         LogWrite "Finished updates: $i"
+    New-EventLog -Source $ScriptName -LogName 'Windows Powershell' -ErrorAction SilentlyContinue
 
-         $count = Update-Count
-         if ($count -eq 0) {
-             LogWrite "No more updates to install"
-             Remove-AutoRun
-             return
-         } else {
-             LogWrite "There are $count updates to install, will retry in $sleepSeconds..."
-             Start-Sleep -Seconds $sleepSeconds
-         }
-     }
- } catch {
-     LogWrite $_.Exception | Format-List -Force
-     Exit 1
- }
+    $Message = "Script: " + $ScriptPath + "`nScript User: " + $Username + "`nStarted: " + (Get-Date).toString()
+
+    Write-EventLog -LogName 'Windows Powershell' -Source $ScriptName -EventID "104" -EntryType "Information" -Message $Message
+    LogWrite $Message
+
+    $script:UpdateSearcher = $script:UpdateSession.CreateUpdateSearcher()
+    $script:successful = $FALSE
+    $script:attempts = 0
+    $script:maxAttempts = 12
+    while(-not $script:successful -and $script:attempts -lt $script:maxAttempts) {
+        try {
+            $script:SearchResult = $script:UpdateSearcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
+            $script:successful = $TRUE
+        } catch {
+            LogWrite $_.Exception | Format-List -force
+            LogWrite "Search call to UpdateSearcher was unsuccessful. Retrying in 10s."
+            $script:attempts = $script:attempts + 1
+            Start-Sleep -s 10
+        }
+    }
+
+    if ($SearchResult.Updates.Count -ne 0) {
+        $Message = "There are " + $SearchResult.Updates.Count + " more updates."
+        LogWrite $Message
+        try {
+            for($i=0; $i -lt $script:SearchResult.Updates.Count; $i++) {
+              LogWrite $script:SearchResult.Updates.Item($i).Title
+              LogWrite $script:SearchResult.Updates.Item($i).Description
+              LogWrite $script:SearchResult.Updates.Item($i).RebootRequired
+              LogWrite $script:SearchResult.Updates.Item($i).EulaAccepted
+          }
+            $global:MoreUpdates=1
+        } catch {
+            LogWrite $_.Exception | Format-List -force
+            LogWrite "Showing SearchResult was unsuccessful. Rebooting."
+            $global:RestartRequired=1
+            $global:MoreUpdates=0
+            Check-ContinueRestartOrEnd
+            LogWrite "Error (Check-WindowsUpdates): This should never happen!"
+            $script:ExitCode = 1
+            # Restart-Computer
+        }
+    } else {
+        LogWrite 'There are no applicable updates'
+        $global:RestartRequired=0
+        $global:MoreUpdates=0
+    }
+}
+
+$script:ScriptName = $MyInvocation.MyCommand.ToString()
+$script:ScriptPath = $MyInvocation.MyCommand.Path
+$script:UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
+$script:UpdateSession.ClientApplicationID = 'Packer Windows Update Installer'
+$script:UpdateSearcher = $script:UpdateSession.CreateUpdateSearcher()
+$script:SearchResult = New-Object -ComObject 'Microsoft.Update.UpdateColl'
+$script:Cycles = 0
+$script:CycleUpdateCount = 0
+
+Check-WindowsUpdates
+if ($global:MoreUpdates -eq 1) {
+    Install-WindowsUpdates
+} else {
+    Check-ContinueRestartOrEnd
+}
+
+LogWrite "Exiting with code: ${ExitCode}"
+exit $script:ExitCode
