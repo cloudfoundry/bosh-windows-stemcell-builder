@@ -5,6 +5,7 @@ set -e -x
 
 export GOPATH="$PWD"
 export PATH="$PATH:$GOPATH/bin"
+export UPDATES_LIST=$PWD/updates-list
 
 go get -u -t "github.com/onsi/ginkgo/..."
 go get -u -t "github.com/onsi/gomega/..."

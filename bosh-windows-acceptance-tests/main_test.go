@@ -210,7 +210,7 @@ var _ = Describe("BOSH Windows", func() {
 		err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
 		Expect(err).To(BeNil())
 
-		err = bosh.Run(fmt.Sprintf("-d %s run errand errand --download-logs --logs-dir updates-list", manifestPath))
+		err = bosh.Run(fmt.Sprintf("-d %s run errand errand --download-logs --logs-dir %s", manifestPath, os.Getenv("UPDATES_LIST")))
 		Expect(err).To(BeNil())
 	})
 })
