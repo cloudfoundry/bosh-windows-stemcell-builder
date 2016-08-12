@@ -8,6 +8,9 @@ inputs:
   path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests
 - name: bosh-windows-stemcell
 
+outputs:
+- name: updates-list
+
 params:
   BOSH_CA_CERT:
   BOSH_CLIENT:

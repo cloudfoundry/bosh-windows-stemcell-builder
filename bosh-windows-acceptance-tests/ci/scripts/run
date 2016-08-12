@@ -9,3 +9,9 @@ export PATH="$PATH:$GOPATH/bin"
 go get -u -t "github.com/onsi/ginkgo/..."
 go get -u -t "github.com/onsi/gomega/..."
 ginkgo -r -v "$GOPATH/src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests"
+
+pushd updates-list
+  tempDir=$(mktemp -d)
+  tar -xzf *.tgz -C $tempDir
+  cp $tempDir/errand/*.txt .
+popd
