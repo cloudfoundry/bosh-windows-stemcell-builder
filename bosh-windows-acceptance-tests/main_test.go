@@ -96,11 +96,11 @@ type BoshCommand struct {
 	Timeout    time.Duration
 }
 
-func NewBoshCommand(DirectorIP, CertPath string) *BoshCommand {
+func NewBoshCommand(DirectorIP, CertPath string, duration time.Duration) *BoshCommand {
 	return &BoshCommand{
 		DirectorIP: DirectorIP,
 		CertPath:   CertPath,
-		Timeout:    time.Minute * 15,
+		Timeout:    duration,
 	}
 }
 
@@ -138,6 +138,7 @@ func (c *BoshCommand) Run(command string) error {
 var _ = Describe("BOSH Windows", func() {
 	var (
 		bosh           *BoshCommand
+		bosh_long      *BoshCommand
 		deploymentName string
 	)
 
@@ -156,7 +157,8 @@ var _ = Describe("BOSH Windows", func() {
 			Expect(err).To(BeNil())
 		}
 
-		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath)
+		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, 15*time.Minute)
+		bosh_long = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, 30*time.Minute)
 
 		bosh.Run("login")
 		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix())
@@ -202,7 +204,7 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(BeNil())
 		Expect(matches).To(HaveLen(1))
 
-		err = bosh.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
+		err = bosh_long.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
 		Expect(err).To(BeNil())
 
 		err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
