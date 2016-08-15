@@ -14,5 +14,5 @@ ginkgo -r -v "$GOPATH/src/github.com/cloudfoundry-incubator/bosh-windows-accepta
 pushd updates-list
   tempDir=$(mktemp -d)
   tar -xzf *.tgz -C $tempDir
-  cp $tempDir/errand/*.txt .
+  cp $tempDir/errand/*.csv .
 popd
