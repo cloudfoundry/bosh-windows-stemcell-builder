@@ -13,7 +13,7 @@ require_relative '../erb_templates/templates.rb'
 VERSION = File.read("version/number").chomp
 DEPS_URL = File.read("bosh-agent-deps-zip/url").chomp
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
-AGENT_COMMIT = `git --git-dir bosh-agent/.git rev-parse HEAD`.chomp
+AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 ISO_URL = ENV.fetch('ISO_URL')
