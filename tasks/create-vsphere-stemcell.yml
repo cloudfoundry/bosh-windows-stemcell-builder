@@ -1,7 +1,10 @@
 ---
 platform: linux
 
-image: docker:///pivotalgreenhouse/packer-base
+image_resource:
+  type: docker-image
+  source:
+    repository: pivotalgreenhouse/packer-base
 
 inputs:
   - name: version
