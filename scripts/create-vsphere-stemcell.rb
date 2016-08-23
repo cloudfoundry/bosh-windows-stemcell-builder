@@ -50,7 +50,7 @@ end
 
 def packer_command(command, config_path)
   Dir.chdir(File.dirname(config_path)) do
-    FileUtils.mv(WINDOWS_UPDATE_PATH, "PSWindowsUpdate.zip")
+
     args = %{
       packer #{command} \
       -var "iso_url=#{ISO_URL}" \
@@ -131,6 +131,9 @@ NetworkInterfaceSettingsTemplate.new(
 
 packer_config = File.join(BUILDER_PATH, "vsphere", "packer.json")
 packer_command('validate', packer_config)
+
+FileUtils.mv(WINDOWS_UPDATE_PATH, File.join(File.dirname(packer_config), "PSWindowsUpdate.zip"))
+
 packer_command('build', packer_config)
 
 ova_file = Dir.glob('**/packer-vmware-iso.ova' ).select { |fn| File.file?(fn) }
