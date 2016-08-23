@@ -79,6 +79,9 @@ if (Test-Path $NetworkSettingsPath) {
     LogWrite "Did not find network interface settings file, skipping network setup."
 }
 
+# Install PSWindowsUpdate Module
+Powershell -File "A:\install-ps-windows-update-module.ps1" "A:\PSWindowsUpdate.zip"
+
 if ($SkipUpdates -ne 0) {
     LogWrite "Skipping updates..."
 } else {

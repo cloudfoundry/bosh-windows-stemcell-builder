@@ -56,7 +56,9 @@
         "scripts/initial-setup.ps1",
         "scripts/sysprep.ps1",
 
-        "network-interface-settings.xml"
+        "network-interface-settings.xml",
+        "scripts/install-ps-windows-update-module.ps1",
+        "PSWindowsUpdate.zip"
       ],
 
       "vmx_data": {

@@ -15,6 +15,8 @@ DEPS_URL = File.read("bosh-agent-deps-zip/url").chomp
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
 AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
 
+WINDOWS_UPDATE_PATH = File.absolute_path(Dir.glob('ps-windows-update/*.zip').first)
+
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 ISO_URL = ENV.fetch('ISO_URL')
 ISO_CHECKSUM_TYPE = ENV.fetch('ISO_CHECKSUM_TYPE')
@@ -48,6 +50,7 @@ end
 
 def packer_command(command, config_path)
   Dir.chdir(File.dirname(config_path)) do
+    FileUtils.mv(WINDOWS_UPDATE_PATH, "PSWindowsUpdate.zip")
     args = %{
       packer #{command} \
       -var "iso_url=#{ISO_URL}" \
@@ -68,13 +71,12 @@ def packer_command(command, config_path)
       -var "winrm_host=#{GUEST_NETWORK_ADDRESS}" \
       #{config_path}
     }
-    Open3.popen3(args) do |stdin, stdout, stderr, wait_thr|
-      stdout.each_line do |line|
+    Open3.popen2e(args) do |stdin, stdout_stderr, wait_thr|
+      stdout_stderr.each_line do |line|
         puts line
       end
       exit_status = wait_thr.value
       if exit_status != 0
-        puts stderr.readlines
         puts "packer failed #{exit_status}"
         exit(1)
       end
@@ -107,6 +109,15 @@ if find_executable('packer') == nil
   abort("ERROR: cannot find 'packer' on the path")
 end
 
+# find sha1sum executable name
+SHA1SUM='sha1sum'
+if find_executable(SHA1SUM) == nil
+  SHA1SUM='shasum' # OS X
+  if find_executable(SHA1SUM) == nil
+    abort("ERROR: cannot find 'sha1sum' or 'sha1sum' on the path")
+  end
+end
+
 FileUtils.mkdir_p(OUTPUT_DIR)
 output_dir = File.absolute_path(OUTPUT_DIR)
 
@@ -128,7 +139,7 @@ if ova_file.length == 0
 end
 gzip_file(ova_file[0], "#{IMAGE_PATH}")
 
-IMAGE_SHA1=`sha1sum #{IMAGE_PATH} | cut -d ' ' -f 1 | xargs echo -n`
+IMAGE_SHA1=`#{SHA1SUM} #{IMAGE_PATH} | cut -d ' ' -f 1 | xargs echo -n`
 
 Dir.mktmpdir do |dir|
   MFTemplate.new("#{BUILDER_PATH}/erb_templates/vsphere/stemcell.MF.erb", VERSION, sha1: IMAGE_SHA1).save(dir)

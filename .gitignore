@@ -6,3 +6,4 @@ image
 tmp/
 mkmf.log
 vsphere/network-interface-settings.xml
+scripts/win_iso

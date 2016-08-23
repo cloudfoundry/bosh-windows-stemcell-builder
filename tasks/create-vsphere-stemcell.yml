@@ -13,6 +13,7 @@ inputs:
   - name: bosh-agent-deps-zip
   - name: ovftool-linux
   - name: stemcell-builder
+  - name: ps-windows-update
 
 outputs:
   - name: bosh-windows-stemcell
