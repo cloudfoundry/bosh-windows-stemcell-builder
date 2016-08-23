@@ -165,10 +165,10 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	AfterEach(func() {
+		bosh.Run(fmt.Sprintf("delete deployment %s --force", deploymentName))
 		if bosh.CertPath != "" {
 			os.RemoveAll(bosh.CertPath)
 		}
-		bosh.Run(fmt.Sprintf("delete deployment %s --force", deploymentName))
 	})
 
 	AfterSuite(func() {
