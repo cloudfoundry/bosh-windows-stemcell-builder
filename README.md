@@ -1,13 +1,13 @@
 # BOSH Windows Stemcell Builder [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
 
 ----
-This repo contains a set of scripts for automating the process of building BOSH Windows Stemcells. A [Concourse](http://concourse.ci/) [pipeline](https://github.com/cloudfoundry-incubator/greenhouse-ci/blob/master/bosh-windows-stemcells.yml) for the supported platforms (aws, vsphere) can be viewed at https://main.bosh-ci.cf-app.com/pipelines/windows-stemcells.
+This repo contains a set of scripts for automating the process of building BOSH Windows Stemcells. A [Concourse](http://concourse.ci/) [pipeline](https://github.com/cloudfoundry-incubator/greenhouse-ci/blob/master/bosh-windows-stemcells.yml) for the supported platforms (AWS, vSphere) can be viewed at [here](https://main.bosh-ci.cf-app.com/pipelines/windows-stemcells).
 
 ### Dependencies
 
 * [ovftool](https://www.vmware.com/support/developer/ovf/)
 * [Windows Update PowerShell Module](https://gallery.technet.microsoft.com/scriptcenter/2d191bcd-3308-4edd-9de2-88dff796b0bc)
-* [Packer](https://github.com/mitchellh/packer/tree/0691ee1c5f2574b134697afc9c5397e1d154195e)
+* [Packer](https://github.com/mitchellh/packer/tree/0691ee1c5f2574b134697afc9c5397e1d154195e) (must be built from source at [this SHA](https://github.com/mitchellh/packer/tree/0691ee1c5f2574b134697afc9c5397e1d154195e))
 
 ### ESXi Configuration
 
@@ -22,7 +22,7 @@ The below binaries are downloaded as part of the provisioning process.
 
 ### Notes
 
-If the build fails, manual deletion of the 'packer-vmware-iso' VM and 'packer-vmware-iso' datastore directory may be required.
+If the build fails, manual deletion of the `packer-vmware-iso` VM and `packer-vmware-iso` datastore directory may be required.
 
 Known working version of Concourse is [v1.6.0](http://concourse.ci/downloads.html#v160).
 
