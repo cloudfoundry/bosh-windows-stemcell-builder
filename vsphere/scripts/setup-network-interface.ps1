@@ -17,9 +17,22 @@ function ValidateNode {
     }
 }
 
+function IgnoreNetworkSettings {
+    $content = Get-Content -Path "$ConfigPath"
+    if ($content -Contains "IGNORE") {
+        return $TRUE
+    }
+    return $FALSE
+}
+
 LogWrite "Preparing to setup network interfaces"
 
 try {
+    if (IgnoreNetworkSettings) {
+        LogWrite "Ignoring network settings, $ConfigPath contains: 'IGNORE'"
+        Exit 0
+    }
+
     $doc = [xml][IO.File]::ReadAllText($ConfigPath)
 
     $Address = $doc.NetworkInterfaceSettings.Address

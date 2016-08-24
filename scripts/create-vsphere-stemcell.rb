@@ -37,6 +37,27 @@ GUEST_NETWORK_ADDRESS = ENV.fetch('GUEST_NETWORK_ADDRESS')
 GUEST_NETWORK_MASK = ENV.fetch('GUEST_NETWORK_MASK')
 GUEST_NETWORK_GATEWAY = ENV.fetch('GUEST_NETWORK_GATEWAY')
 
+def create_network_interface_settings(builder_path, address, mask, gateway)
+  templatePath = "#{builder_path}/erb_templates/vsphere/network-interface-settings.xml.erb"
+  settingsPath = "#{builder_path}/vsphere"
+
+  # Manual network configuration (all specified)
+  if (!address.nil? && !address.empty?) && (!mask.nil? && !mask.empty?) &&
+     (!gateway.nil? && !gateway.empty?)
+    NetworkInterfaceSettingsTemplate.new(templatePath, address, mask, gateway).save(settingsPath)
+
+  # Ignore network settings (all nil)
+  elsif (address.nil? || address.empty?) && (mask.nil? || mask.empty?) &&
+        (gateway.nil? || gateway.empty?)
+    File.write("#{settingsPath}/network-interface-settings.xml", 'IGNORE')
+
+  # Error
+  else
+    abort("ERROR: invalid GUEST_NETWORK settings, all settings must be either " \
+          "be specified or 'nil'.")
+  end
+end
+
 def gzip_file(name, output)
   Zlib::GzipWriter.open(output) do |gz|
    File.open(name) do |fp|
@@ -125,9 +146,7 @@ IMAGE_PATH = "#{output_dir}/image"
 
 BUILDER_PATH=File.expand_path("../..", __FILE__)
 
-NetworkInterfaceSettingsTemplate.new(
-  "#{BUILDER_PATH}/erb_templates/vsphere/network-interface-settings.xml.erb",
-  GUEST_NETWORK_ADDRESS,GUEST_NETWORK_MASK,GUEST_NETWORK_GATEWAY).save("#{BUILDER_PATH}/vsphere")
+create_network_interface_settings(BUILDER_PATH, GUEST_NETWORK_ADDRESS, GUEST_NETWORK_MASK, GUEST_NETWORK_GATEWAY)
 
 packer_config = File.join(BUILDER_PATH, "vsphere", "packer.json")
 packer_command('validate', packer_config)
