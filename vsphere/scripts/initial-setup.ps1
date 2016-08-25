@@ -94,7 +94,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force
 LogWrite "Set Execution Policy 64 Bit (Exit Code: ${LASTEXITCODE})"
 
 # Set Execution Policy 32 Bit
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force
+C:\Windows\SysWOW64\cmd.exe /c powershell -Command "Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force"
 LogWrite "Set Execution Policy 32 Bit (Exit Code: ${LASTEXITCODE})"
 
 # winrm quickconfig -q
@@ -176,4 +176,3 @@ LogWrite "Win RM Autostart (Exit Code: ${LASTEXITCODE})"
 # Start Win RM Service
 cmd.exe /c 'net start winrm'
 LogWrite "Start Win RM Service (Exit Code: ${LASTEXITCODE})"
-
