@@ -52,29 +52,28 @@ function Update-Count() {
     return $FALSE
 }
 
- LogWrite "Checking for Windows updates"
- try {
-     Import-Module PSWindowsUpdate
+LogWrite "Checking for Windows updates"
+try {
+    Import-Module PSWindowsUpdate
 
-     # Loop until there are no more updates
-     $sleepSeconds = 5
-     $maxAttempts = 10
-     for ($i = 0; $i -le $maxAttempts; $i++) {
-         LogWrite "Installing updates: $i"
-         Install-Updates
-         LogWrite "Finished updates: $i"
+    # Loop until there are no more updates
+    $sleepSeconds = 5
+    $maxAttempts = 10
+    for ($i = 0; $i -le $maxAttempts; $i++) {
+        LogWrite "Installing updates attempt #$i"
+        Install-Updates
+        LogWrite "Finished updates attempt #$i"
 
-         $count = Update-Count
-         if ($count -eq 0) {
-             LogWrite "No more updates to install"
-             Remove-AutoRun
-             return
-         } else {
-             LogWrite "There are $count updates to install, will retry in $sleepSeconds..."
-             Start-Sleep -Seconds $sleepSeconds
-         }
-     }
- } catch {
-     LogWrite $_.Exception | Format-List -Force
-     Exit 1
- }
+        $count = Update-Count
+        if ($count -eq 0) {
+            LogWrite "No more updates to install"
+            Exit 0
+        } else {
+            LogWrite "There are $count updates to install, will retry in $sleepSeconds..."
+            Start-Sleep -Seconds $sleepSeconds
+        }
+    }
+} catch {
+    LogWrite $_.Exception | Format-List -Force
+    Exit 1
+}

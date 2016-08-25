@@ -26,7 +26,7 @@ function Check-WindowsUpdates() {
     $prop = (Get-ItemProperty $RegistryKey).$RegistryEntry
     if (-not $prop) {
         LogWrite "Restart Registry Entry Does Not Exist - Creating It"
-        Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File $($script:ScriptPath)"
+        Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File $($script:ScriptPath) -SkipUpdates $SkipUpdates"
     } else {
         LogWrite "Restart Registry Entry Exists Already"
     }
