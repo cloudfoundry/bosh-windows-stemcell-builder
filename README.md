@@ -11,7 +11,7 @@ This repo contains a set of scripts for automating the process of building BOSH 
 
 ### ESXi Configuration
 
-Refer to the [README](vsphere/README.MD).
+Refer to the [README](./vsphere/README.md).
 
 ### Remotely fetched resources
 
