@@ -1,7 +1,6 @@
 # BOSH Windows Stemcell Builder [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
 
-----
-This repo contains a set of scripts for automating the process of building BOSH Windows Stemcells. A [Concourse](http://concourse.ci/) [pipeline](https://github.com/cloudfoundry-incubator/greenhouse-ci/blob/master/bosh-windows-stemcells.yml) for the supported platforms (AWS, vSphere) can be viewed [here](https://main.bosh-ci.cf-app.com/pipelines/windows-stemcells).
+This repo contains a set of scripts for automating the process of building BOSH Windows Stemcells. A [Concourse](http://concourse.ci/) [pipeline](https://github.com/cloudfoundry-incubator/greenhouse-ci/blob/master/bosh-windows-stemcells.yml) for the supported platforms (AWS, vSphere) can be found [here](https://main.bosh-ci.cf-app.com/pipelines/windows-stemcells).
 
 ### Dependencies
 
@@ -13,14 +12,14 @@ This repo contains a set of scripts for automating the process of building BOSH 
 
 Refer to the [README](./vsphere/README.md).
 
-### Remotely fetched resources
+#### Remotely fetched resources
 
 The below binaries are downloaded as part of the provisioning process.
 
 * [7-Zip](http://www.7-zip.org/a/7z920-x64.msi)
 * [VMware Tools](http://softwareupdate.vmware.com/cds/vmw-desktop/ws/12.1.1/3770994/windows/packages/tools-windows.tar)
 
-### Notes
+#### Notes
 
 If the build fails, manual deletion of the `packer-vmware-iso` VM and `packer-vmware-iso` datastore directory may be required.
 
