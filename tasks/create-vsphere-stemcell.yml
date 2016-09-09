@@ -14,6 +14,7 @@ inputs:
   - name: ovftool-linux
   - name: stemcell-builder
   - name: ps-windows-update
+  - name: base-iso
 
 outputs:
   - name: bosh-windows-stemcell
@@ -23,7 +24,6 @@ run:
 
 params:
   OUTPUT_DIR: replace-me
-  ISO_URL: replace-me
   ISO_CHECKSUM_TYPE: replace-me
   ISO_CHECKSUM: replace-me
   MEMSIZE: replace-me

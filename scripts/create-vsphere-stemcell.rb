@@ -16,9 +16,9 @@ AGENT_URL = File.read("bosh-agent-zip/url").chomp
 AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
 
 WINDOWS_UPDATE_PATH = File.absolute_path(Dir.glob('ps-windows-update/*.zip').first)
+ISO_URL = File.absolute_path(Dir.glob('base-iso/*.iso').first)
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
-ISO_URL = ENV.fetch('ISO_URL')
 ISO_CHECKSUM_TYPE = ENV.fetch('ISO_CHECKSUM_TYPE')
 ISO_CHECKSUM = ENV.fetch('ISO_CHECKSUM')
 MEMSIZE = ENV.fetch('MEMSIZE')
