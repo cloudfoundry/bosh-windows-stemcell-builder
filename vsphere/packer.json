@@ -98,7 +98,7 @@
       "type": "file",
       "source": "ultradefrag.zip",
       "destination": "C:\\ultradefrag.zip"
-    }
+    },
     {
       "type": "windows-shell",
       "scripts": [
