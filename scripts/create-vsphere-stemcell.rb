@@ -17,8 +17,7 @@ AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
 
 WINDOWS_UPDATE_PATH = File.absolute_path(Dir.glob('ps-windows-update/*.zip').first)
 ISO_URL = File.absolute_path(Dir.glob('base-iso/*.iso').first)
-
-ULTRADEFRAG_PATH = File.absolute_path('ultradefrag-zip/ultradefrag-portable-7.0.1.bin.amd64.zip')
+ULTRADEFRAG_PATH = File.absolute_path(Dir.glob('ultradefrag-zip/*.zip').first)
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 ISO_CHECKSUM_TYPE = ENV.fetch('ISO_CHECKSUM_TYPE')
@@ -151,11 +150,11 @@ BUILDER_PATH=File.expand_path("../..", __FILE__)
 create_network_interface_settings(BUILDER_PATH, GUEST_NETWORK_ADDRESS, GUEST_NETWORK_MASK, GUEST_NETWORK_GATEWAY)
 
 packer_config = File.join(BUILDER_PATH, "vsphere", "packer.json")
-packer_command('validate', packer_config)
 
 FileUtils.mv(WINDOWS_UPDATE_PATH, File.join(File.dirname(packer_config), "PSWindowsUpdate.zip"))
 FileUtils.mv(ULTRADEFRAG_PATH, File.join(File.dirname(packer_config), "ultradefrag.zip"))
 
+packer_command('validate', packer_config)
 packer_command('build', packer_config)
 
 ova_file = Dir.glob('**/packer-vmware-iso.ova' ).select { |fn| File.file?(fn) }
