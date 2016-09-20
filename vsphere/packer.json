@@ -58,8 +58,7 @@
 
         "network-interface-settings.xml",
         "scripts/install-ps-windows-update-module.ps1",
-        "PSWindowsUpdate.zip",
-        "ultradefrag.zip"
+        "PSWindowsUpdate.zip"
       ],
 
       "vmx_data": {
@@ -95,6 +94,11 @@
       "type": "windows-restart",
       "restart_timeout": "1h"
     },
+    {
+      "type": "file",
+      "source": "ultradefrag.zip",
+      "destination": "C:\\ultradefrag.zip"
+    }
     {
       "type": "windows-shell",
       "scripts": [
