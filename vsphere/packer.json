@@ -58,8 +58,7 @@
 
         "network-interface-settings.xml",
         "scripts/install-ps-windows-update-module.ps1",
-        "PSWindowsUpdate.zip",
-        "ultradefrag.zip"
+        "PSWindowsUpdate.zip"
       ],
 
       "vmx_data": {
@@ -110,8 +109,7 @@
         "../scripts/setup_agent.ps1",
         "scripts/agent_config.ps1",
         "scripts/remove-windows-features.ps1",
-        "scripts/cleanup-temp-directories.ps1",
-        "scripts/compact.ps1"
+        "scripts/cleanup-temp-directories.ps1"
       ],
       "environment_vars": [
         "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",
