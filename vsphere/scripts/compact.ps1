@@ -7,15 +7,7 @@ try {
         [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath)
     }
 
-    $UltradefragZip = "C:\ultradefrag.zip"
-    $UltradefragBinary = "ultradefrag-portable-7.0.1.amd64\udefrag.exe"
-
-    if (-Not (Test-Path $UltradefragZip)) {
-        Write-Error "compact: missing dependency: ${UltradefragZip}"
-        Exit 1
-    }
-
-    Unzip $UltradefragZip "C:\Windows\Temp\"
+    Unzip "A:\ultradefrag.zip" "C:\Windows\Temp\"
 
     if (-Not (Test-Path "C:\Windows\Temp\ultradefrag-portable-7.0.1.amd64\udefrag.exe")) {
         Write-Error "compact: missing ultradefrag"
