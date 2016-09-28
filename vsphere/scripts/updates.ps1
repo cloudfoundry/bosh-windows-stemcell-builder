@@ -6,9 +6,10 @@ function LogWrite {
    Write-Host $logstring
 }
 
-$IgnoredUpdateCategories = "Feature Packs", "Update Rollups", "Silverlight"
+$IgnoredUpdateCategories =  "Silverlight"
 
-$UpdateCategories = "Security Updates", "Critical Updates", "Windows Server 2012 R2", "Updates"
+#Categories are chosen from: https://support.microsoft.com/en-us/kb/824684
+$UpdateCategories = "Security Updates", "Critical Updates", "Windows Server 2012 R2", "Updates", "Feature Packs", "Update Rollups"
 
 function Install-Updates() {
     # Loop until we successful connect to the update server
