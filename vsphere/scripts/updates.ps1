@@ -8,7 +8,7 @@ function LogWrite {
 
 $IgnoredUpdateCategories = "Feature Packs", "Update Rollups", "Silverlight"
 
-$UpdateCategories = "Security Updates", "Critical Updates", "Windows Server 2012 R2", "Updates", "Service Packs"
+$UpdateCategories = "Security Updates", "Critical Updates", "Windows Server 2012 R2", "Updates"
 
 function Install-Updates() {
     # Loop until we successful connect to the update server
@@ -16,7 +16,7 @@ function Install-Updates() {
     $maxAttempts = 10
     for ($i = 0; $i -le $maxAttempts; $i++) {
         try {
-            $updateResult = Get-WUInstall -WindowsUpdate -AutoReboot -AcceptAll -IgnoreUserInput -Debuger -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories
+            $updateResult = Get-WUInstall -MicrosoftUpdate -AutoReboot -AcceptAll -IgnoreUserInput -Debuger -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories
             return $updateResult
         } catch {
             if ($_ -match "HRESULT: 0x8024402C") {
@@ -37,7 +37,7 @@ function Update-Count() {
     $maxAttempts = 10
     for ($i = 0; $i -le $maxAttempts; $i++) {
         try {
-            $count = (Get-WUList -WindowsUpdate -IgnoreUserInput -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories | measure).Count
+            $count = (Get-WUList -MicrosoftUpdate -IgnoreUserInput -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories | measure).Count
             return $count
         } catch {
             if ($_ -match "HRESULT: 0x8024402C") {
