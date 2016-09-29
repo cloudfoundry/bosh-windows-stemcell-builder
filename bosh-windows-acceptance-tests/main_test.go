@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -176,24 +178,32 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("can run an errand", func() {
-		manifest, err := generateManifest(deploymentName)
+		pwd, err := os.Getwd()
 		Expect(err).To(BeNil())
+		Expect(os.Chdir(filepath.Join(pwd, "assets", "errand-release"))).To(Succeed()) // push
+		defer os.Chdir(pwd)                                                            // pop
+
+		manifest, err := generateManifest(deploymentName)
+		Expect(err).To(Succeed())
 
 		manifestFile, err := ioutil.TempFile("", "")
-		Expect(err).To(BeNil())
+		Expect(err).To(Succeed())
 
 		_, err = manifestFile.Write(manifest)
-		Expect(err).To(BeNil())
+		Expect(err).To(Succeed())
 
 		manifestPath, err := filepath.Abs(manifestFile.Name())
-		Expect(err).To(BeNil())
+		Expect(err).To(Succeed())
 		defer os.RemoveAll(manifestPath)
 
-		err = bosh.Run("create release --name errand-release --force --timestamp-version --dir assets/errand-release")
-		Expect(err).To(BeNil())
+		goZipPath, err := DownloadGo()
+		Expect(err).To(Succeed())
 
-		err = bosh.Run("upload release --dir assets/errand-release")
-		Expect(err).To(BeNil())
+		Expect(bosh.Run("add blob " + goZipPath + " golang-windows")).To(Succeed())
+
+		Expect(bosh.Run("create release --name errand-release --force --timestamp-version")).To(Succeed())
+
+		Expect(bosh.Run("upload release")).To(Succeed())
 
 		stemcellPath := filepath.Join(
 			os.Getenv("GOPATH"),
@@ -201,16 +211,43 @@ var _ = Describe("BOSH Windows", func() {
 		)
 
 		matches, err := filepath.Glob(stemcellPath)
-		Expect(err).To(BeNil())
+		Expect(err).To(Succeed())
 		Expect(matches).To(HaveLen(1))
 
 		err = bosh_long.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
-		Expect(err).To(BeNil())
+		Expect(err).To(Succeed())
 
 		err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
-		Expect(err).To(BeNil())
+		Expect(err).To(Succeed())
 
 		err = bosh.Run(fmt.Sprintf("-d %s run errand errand --download-logs --logs-dir %s", manifestPath, os.Getenv("UPDATES_LIST")))
-		Expect(err).To(BeNil())
+		Expect(err).To(Succeed())
 	})
 })
+
+func DownloadGo() (string, error) {
+	const GoZipFile = "go1.7.1.windows-amd64.zip"
+	const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
+	dirname, err := ioutil.TempDir("", "")
+	if err != nil {
+		return "", err
+	}
+
+	path := filepath.Join(dirname, GoZipFile)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	res, err := http.Get(GolangURL)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	if _, err := io.Copy(f, res.Body); err != nil {
+		return "", err
+	}
+
+	return path, nil
+}
