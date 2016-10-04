@@ -95,6 +95,11 @@
       "restart_timeout": "1h"
     },
     {
+      "type": "file",
+      "source": "ultradefrag.zip",
+      "destination": "C:\\ultradefrag.zip"
+    },
+    {
       "type": "windows-shell",
       "scripts": [
         "scripts/compile-dotnet-assemblies.bat",
@@ -109,7 +114,8 @@
         "../scripts/setup_agent.ps1",
         "scripts/agent_config.ps1",
         "scripts/remove-windows-features.ps1",
-        "scripts/cleanup-temp-directories.ps1"
+        "scripts/cleanup-temp-directories.ps1",
+        "scripts/compact.ps1"
       ],
       "environment_vars": [
         "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",
