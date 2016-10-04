@@ -15,7 +15,6 @@ inputs:
   - name: stemcell-builder
   - name: ps-windows-update
   - name: base-iso
-  - name: ultradefrag-zip
 
 outputs:
   - name: bosh-windows-stemcell
