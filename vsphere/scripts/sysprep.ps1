@@ -1,6 +1,6 @@
 param($NewPassword=$env:ADMINISTRATOR_PASSWORD)
 
-$DisableUpdateScripte= @"
+$DisableUpdateScript= @"
 net stop wuauserv
 
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" /v AUOptions /t REG_DWORD /d 1 /f
@@ -8,7 +8,7 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpd
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" /v IncludeRecommendedUpdates /t REG_DWORD /d 0 /f
 "@
 
-Echo $DisableUpdateScripte >> "C:\disable-updates.bat"
+Out-File -FilePath C:/disable-updates.bat -InputObject $DisableUpdateScript -Encoding utf8
 
 $PostUnattend = @"
 <?xml version="1.0" encoding="utf-8"?>
@@ -27,7 +27,7 @@ $PostUnattend = @"
                 <RunSynchronousCommand wcm:action="add">
                     <Description>Disable Windows Updates</Description>
                     <Order>1</Order>
-                    <Path>C:\Windows\System32\cmd.exe C:\disable-updates.bat</Path>
+                    <Path>C:\Windows\System32\cmd.exe /C C:\disable-updates.bat</Path>
                     <WillReboot>Never</WillReboot>
                 </RunSynchronousCommand>
             </RunSynchronous>
@@ -59,6 +59,13 @@ $PostUnattend = @"
             <UserLocale>en-US</UserLocale>
         </component>
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <FirstLogonCommands>
+                <SynchronousCommand wcm:action="add">
+                    <CommandLine>C:\Windows\System32\cmd.exe /c C:\disable-updates.bat</CommandLine>
+                    <Order>1</Order>
+                    <Description>Disable Windows Updates</Description>
+                </SynchronousCommand>
+            </FirstLogonCommands>
             <OOBE>
                 <HideEULAPage>true</HideEULAPage>
                 <ProtectYourPC>1</ProtectYourPC>
