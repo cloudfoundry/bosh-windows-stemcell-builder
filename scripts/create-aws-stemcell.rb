@@ -9,7 +9,6 @@ require 'fileutils'
 require 'mkmf'
 require_relative '../erb_templates/templates.rb'
 
-BASE_AMI_ID = File.read("windows-ami/version").chomp
 VERSION = File.read("version/number").chomp
 DEPS_URL = File.read("bosh-agent-deps-zip/url").chomp
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
@@ -19,17 +18,24 @@ AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 AWS_ACCESS_KEY = ENV.fetch("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = ENV.fetch("AWS_SECRET_KEY")
-VPC_ID = ENV.fetch("VPC_ID")
-SUBNET_ID = ENV.fetch("SUBNET_ID")
 AMI_NAME = "BOSH-" + SecureRandom.uuid
 
-def parse_ami_id(line)
+VPC_ID_US_EAST_1 = ENV.fetch("VPC_ID_US_EAST_1")
+SUBNET_ID_US_EAST_1 = ENV.fetch("SUBNET_ID_US_EAST_1")
+BASE_AMI_ID_US_EAST_1 = File.read("windows-ami-us-east-1/version").chomp
+VPC_ID_US_WEST_2 = ENV.fetch("VPC_ID_US_WEST_2")
+SUBNET_ID_US_WEST_2 = ENV.fetch("SUBNET_ID_US_WEST_2")
+BASE_AMI_ID_US_WEST_2 = File.read("windows-ami-us-west-2/version").chomp
+
+def parse_ami(line)
   # The -machine-readable flag must be set for this to work
   # ex: packer build -machine-readable <args>
-  unless line.include?("amazon-ebs,artifact,0,id,")
+  unless line.include?(",artifact,0,id,")
     return
   end
-  return line.split(",").last.split(":").last
+
+  region_id = line.split(",").last.split(":")
+  return {:region=> region_id[0].chomp, :ami_id=> region_id[1].chomp}
 end
 
 def run_packer(config_path)
@@ -41,19 +47,25 @@ def run_packer(config_path)
       -var "aws_secret_key=#{AWS_SECRET_KEY}" \
       -var "deps_url=#{DEPS_URL}" \
       -var "agent_url=#{AGENT_URL}" \
-      -var "base_ami_id=#{BASE_AMI_ID}" \
-      -var "vpc_id=#{VPC_ID}" \
-      -var "subnet_id=#{SUBNET_ID}" \
       -var "ami_name=#{AMI_NAME}" \
+      \
+      -var "base_ami_id_us_east_1=#{BASE_AMI_ID_US_EAST_1}" \
+      -var "vpc_id_us_east_1=#{VPC_ID_US_EAST_1}" \
+      -var "subnet_id_us_east_1=#{SUBNET_ID_US_EAST_1}" \
+      \
+      -var "base_ami_id_us_west_2=#{BASE_AMI_ID_US_WEST_2}" \
+      -var "vpc_id_us_west_2=#{VPC_ID_US_WEST_2}" \
+      -var "subnet_id_us_west_2=#{SUBNET_ID_US_WEST_2}" \
       #{config_path}
     }
 
-    ami_id = nil
+    amis = []
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
       stdout.each_line do |line|
         puts line
-        if ami_id.nil?
-          ami_id = parse_ami_id(line)
+        ami = parse_ami(line)
+        if !ami.nil?
+          amis.push(ami)
         end
       end
       exit_status = wait_thr.value
@@ -63,7 +75,7 @@ def run_packer(config_path)
         exit(1)
       end
     end
-    ami_id
+    amis
   end
 end
 
@@ -82,13 +94,13 @@ output_dir = File.absolute_path(OUTPUT_DIR)
 BUILDER_PATH = File.expand_path("../..", __FILE__)
 packer_config = File.join(BUILDER_PATH, "aws","packer.json")
 
-ami_id = run_packer(packer_config)
-if ami_id.nil? || ami_id.empty?
-  abort("ERROR: could not parse AMI ID")
+amis = run_packer(packer_config)
+if amis.nil? || amis.empty?
+  abort("ERROR: could not parse AMI IDs")
 end
 
 Dir.mktmpdir do |dir|
-  MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, ami_id: ami_id).save(dir)
+  MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, amis: amis).save(dir)
   ApplySpecTemplate.new("#{BUILDER_PATH}/erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
   exec_command("touch #{dir}/image")
 

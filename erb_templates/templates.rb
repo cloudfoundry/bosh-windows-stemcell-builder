@@ -22,11 +22,11 @@ class Template
 end
 
 class MFTemplate < Template
-  def initialize(template, version, sha1: "", ami_id: "")
+  def initialize(template, version, sha1: "", amis: [])
     super(template)
     @version = version
     @sha1 = sha1
-    @ami_id = ami_id
+    @amis = amis
   end
 end
 

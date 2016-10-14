@@ -5,5 +5,5 @@ sha1: ba07a5f8277b3f9e6b8f250aeea4ebad4244b273
 operating_system: windows2012R2
 cloud_properties:
   infrastructure: aws
-  ami:
-    us-east-1: <%= @ami_id %>
+    ami:<% @amis.each do |i| %>
+      <%= i[:region] %>: <%= i[:ami_id] %><% end %>
