@@ -1,0 +1,10 @@
+---
+name: compile-golang
+
+description: "This is a simple errand that compiles golang"
+
+templates:
+  run.ps1: bin/run.ps1
+
+packages:
+- golang-windows

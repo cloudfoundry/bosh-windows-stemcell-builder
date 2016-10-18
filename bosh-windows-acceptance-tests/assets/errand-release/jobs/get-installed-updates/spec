@@ -1,0 +1,9 @@
+---
+name: get-installed-updates
+
+description: "This is a simple errand that logs installed Windows updates"
+
+templates:
+  run.ps1: bin/run.ps1
+
+packages: []

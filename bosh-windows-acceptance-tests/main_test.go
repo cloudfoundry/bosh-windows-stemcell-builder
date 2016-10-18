@@ -45,7 +45,7 @@ update:
   max_in_flight: 2
 
 instance_groups:
-- name: errand
+- name: compile-golang
   instances: 1
   stemcell: default
   lifecycle: errand
@@ -55,7 +55,31 @@ instance_groups:
   networks:
   - name: integration-tests
   jobs:
-  - name: {{.JobName}}
+  - name: compile-golang
+    release: {{.ReleaseName}}
+- name: get-installed-updates
+  instances: 1
+  stemcell: default
+  lifecycle: errand
+  azs: [default]
+  vm_type: xlarge
+  vm_extensions: []
+  networks:
+  - name: integration-tests
+  jobs:
+  - name: get-installed-updates
+    release: {{.ReleaseName}}
+- name: verify-autoupdates
+  instances: 1
+  stemcell: default
+  lifecycle: errand
+  azs: [default]
+  vm_type: xlarge
+  vm_extensions: []
+  networks:
+  - name: integration-tests
+  jobs:
+  - name: verify-autoupdates
     release: {{.ReleaseName}}
 `
 
@@ -64,7 +88,6 @@ type ManifestProperties struct {
 	DirectorUUID   string
 	ReleaseName    string
 	StemcellName   string
-	JobName        string
 }
 
 func generateManifest(deploymentName string) ([]byte, error) {
@@ -81,7 +104,6 @@ func generateManifest(deploymentName string) ([]byte, error) {
 		DirectorUUID:   uuid,
 		ReleaseName:    "errand-release",
 		StemcellName:   stemcell,
-		JobName:        "errand",
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
 	if err != nil {
@@ -137,95 +159,7 @@ func (c *BoshCommand) Run(command string) error {
 	return nil
 }
 
-var _ = Describe("BOSH Windows", func() {
-	var (
-		bosh           *BoshCommand
-		bosh_long      *BoshCommand
-		deploymentName string
-	)
-
-	BeforeEach(func() {
-		var certPath string
-
-		cert := os.Getenv("BOSH_CA_CERT")
-		if cert != "" {
-			certFile, err := ioutil.TempFile("", "")
-			Expect(err).To(BeNil())
-
-			_, err = certFile.Write([]byte(cert))
-			Expect(err).To(BeNil())
-
-			certPath, err = filepath.Abs(certFile.Name())
-			Expect(err).To(BeNil())
-		}
-
-		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, 15*time.Minute)
-		bosh_long = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, 30*time.Minute)
-
-		bosh.Run("login")
-		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix())
-	})
-
-	AfterEach(func() {
-		bosh.Run(fmt.Sprintf("delete deployment %s --force", deploymentName))
-		if bosh.CertPath != "" {
-			os.RemoveAll(bosh.CertPath)
-		}
-	})
-
-	AfterSuite(func() {
-		bosh.Run("cleanup")
-	})
-
-	It("can run an errand", func() {
-		pwd, err := os.Getwd()
-		Expect(err).To(BeNil())
-		Expect(os.Chdir(filepath.Join(pwd, "assets", "errand-release"))).To(Succeed()) // push
-		defer os.Chdir(pwd)                                                            // pop
-
-		manifest, err := generateManifest(deploymentName)
-		Expect(err).To(Succeed())
-
-		manifestFile, err := ioutil.TempFile("", "")
-		Expect(err).To(Succeed())
-
-		_, err = manifestFile.Write(manifest)
-		Expect(err).To(Succeed())
-
-		manifestPath, err := filepath.Abs(manifestFile.Name())
-		Expect(err).To(Succeed())
-		defer os.RemoveAll(manifestPath)
-
-		goZipPath, err := DownloadGo()
-		Expect(err).To(Succeed())
-
-		Expect(bosh.Run("add blob " + goZipPath + " golang-windows")).To(Succeed())
-
-		Expect(bosh.Run("create release --name errand-release --force --timestamp-version")).To(Succeed())
-
-		Expect(bosh.Run("upload release")).To(Succeed())
-
-		stemcellPath := filepath.Join(
-			os.Getenv("GOPATH"),
-			os.Getenv("STEMCELL_PATH"),
-		)
-
-		matches, err := filepath.Glob(stemcellPath)
-		Expect(err).To(Succeed())
-		Expect(matches).To(HaveLen(1))
-
-		err = bosh_long.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
-		Expect(err).To(Succeed())
-
-		err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
-		Expect(err).To(Succeed())
-
-		err = bosh.Run(fmt.Sprintf("-d %s run errand errand --download-logs --logs-dir %s", manifestPath, os.Getenv("UPDATES_LIST")))
-		Expect(err).To(Succeed())
-	})
-})
-
-func DownloadGo() (string, error) {
+func downloadGo() (string, error) {
 	const GoZipFile = "go1.7.1.windows-amd64.zip"
 	const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
 	dirname, err := ioutil.TempDir("", "")
@@ -251,3 +185,105 @@ func DownloadGo() (string, error) {
 
 	return path, nil
 }
+
+var _ = Describe("BOSH Windows", func() {
+	var (
+		bosh           *BoshCommand
+		bosh_long      *BoshCommand
+		deploymentName string
+		manifestPath   string
+	)
+
+	BeforeSuite(func() {
+		var certPath string
+
+		cert := os.Getenv("BOSH_CA_CERT")
+		if cert != "" {
+			certFile, err := ioutil.TempFile("", "")
+			Expect(err).To(BeNil())
+
+			_, err = certFile.Write([]byte(cert))
+			Expect(err).To(BeNil())
+
+			certPath, err = filepath.Abs(certFile.Name())
+			Expect(err).To(BeNil())
+		}
+
+		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, 15*time.Minute)
+		bosh_long = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, 30*time.Minute)
+
+		bosh.Run("login")
+		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix())
+
+		pwd, err := os.Getwd()
+		Expect(err).To(BeNil())
+		Expect(os.Chdir(filepath.Join(pwd, "assets", "errand-release"))).To(Succeed()) // push
+		defer os.Chdir(pwd)                                                            // pop
+
+		manifest, err := generateManifest(deploymentName)
+		Expect(err).To(Succeed())
+
+		manifestFile, err := ioutil.TempFile("", "")
+		Expect(err).To(Succeed())
+
+		_, err = manifestFile.Write(manifest)
+		Expect(err).To(Succeed())
+
+		manifestPath, err = filepath.Abs(manifestFile.Name())
+		Expect(err).To(Succeed())
+
+		goZipPath, err := downloadGo()
+		Expect(err).To(Succeed())
+
+		Expect(bosh.Run("add blob " + goZipPath + " golang-windows")).To(Succeed())
+
+		Expect(bosh.Run("create release --name errand-release --force --timestamp-version")).To(Succeed())
+
+		Expect(bosh.Run("upload release")).To(Succeed())
+
+		err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
+		Expect(err).To(Succeed())
+
+		stemcellPath := filepath.Join(
+			os.Getenv("GOPATH"),
+			os.Getenv("STEMCELL_PATH"),
+		)
+
+		matches, err := filepath.Glob(stemcellPath)
+		Expect(err).To(Succeed())
+		Expect(matches).To(HaveLen(1))
+
+		err = bosh_long.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
+		Expect(err).To(Succeed())
+	})
+
+	AfterSuite(func() {
+		bosh.Run(fmt.Sprintf("delete deployment %s --force", deploymentName))
+
+		if bosh.CertPath != "" {
+			os.RemoveAll(bosh.CertPath)
+		}
+
+		if manifestPath != "" {
+			os.RemoveAll(manifestPath)
+		}
+
+		bosh.Run("cleanup --all")
+	})
+
+	It("can compile a package", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run errand compile-golang", manifestPath))
+		Expect(err).To(Succeed())
+	})
+
+	It("has Auto Update turned off", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run errand verify-autoupdates", manifestPath))
+		Expect(err).To(Succeed())
+	})
+
+	It("can retrieve a list of installed updates", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run errand get-installed-updates --download-logs --logs-dir %s", manifestPath, os.Getenv("UPDATES_LIST")))
+		Expect(err).To(Succeed())
+	})
+
+})
