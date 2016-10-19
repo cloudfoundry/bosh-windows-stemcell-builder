@@ -40,8 +40,21 @@ end
 class NetworkInterfaceSettingsTemplate < Template
   def initialize(template, address,network,gateway)
     super(template)
-    @address= address
-    @netmask= network
-    @gateway= gateway
+    @address = address
+    @netmask = network
+    @gateway = gateway
+  end
+end
+
+class AWSPackerJsonTemplate < Template
+  def initialize(template, regions, aws_access_key, aws_secret_key,
+                 ami_name, deps_url, agent_url)
+    super(template)
+    @regions = regions
+    @aws_access_key = aws_access_key
+    @aws_secret_key = aws_secret_key
+    @ami_name = ami_name
+    @deps_url = deps_url
+    @agent_url = agent_url
   end
 end

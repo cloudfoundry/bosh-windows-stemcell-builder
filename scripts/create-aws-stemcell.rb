@@ -7,25 +7,19 @@ require 'pathname'
 require 'tmpdir'
 require 'fileutils'
 require 'mkmf'
+require 'json'
 require_relative '../erb_templates/templates.rb'
 
 VERSION = File.read("version/number").chomp
 DEPS_URL = File.read("bosh-agent-deps-zip/url").chomp
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
-
 AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
+STEMCELL_REGIONS = JSON.parse(File.read("stemcell-regions/regions.json").chomp)
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 AWS_ACCESS_KEY = ENV.fetch("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = ENV.fetch("AWS_SECRET_KEY")
 AMI_NAME = "BOSH-" + SecureRandom.uuid
-
-VPC_ID_US_EAST_1 = ENV.fetch("VPC_ID_US_EAST_1")
-SUBNET_ID_US_EAST_1 = ENV.fetch("SUBNET_ID_US_EAST_1")
-BASE_AMI_ID_US_EAST_1 = File.read("windows-ami-us-east-1/version").chomp
-VPC_ID_US_WEST_2 = ENV.fetch("VPC_ID_US_WEST_2")
-SUBNET_ID_US_WEST_2 = ENV.fetch("SUBNET_ID_US_WEST_2")
-BASE_AMI_ID_US_WEST_2 = File.read("windows-ami-us-west-2/version").chomp
 
 def parse_ami(line)
   # The -machine-readable flag must be set for this to work
@@ -43,19 +37,6 @@ def run_packer(config_path)
     command = %{
       packer build \
       -machine-readable \
-      -var "aws_access_key=#{AWS_ACCESS_KEY}" \
-      -var "aws_secret_key=#{AWS_SECRET_KEY}" \
-      -var "deps_url=#{DEPS_URL}" \
-      -var "agent_url=#{AGENT_URL}" \
-      -var "ami_name=#{AMI_NAME}" \
-      \
-      -var "base_ami_id_us_east_1=#{BASE_AMI_ID_US_EAST_1}" \
-      -var "vpc_id_us_east_1=#{VPC_ID_US_EAST_1}" \
-      -var "subnet_id_us_east_1=#{SUBNET_ID_US_EAST_1}" \
-      \
-      -var "base_ami_id_us_west_2=#{BASE_AMI_ID_US_WEST_2}" \
-      -var "vpc_id_us_west_2=#{VPC_ID_US_WEST_2}" \
-      -var "subnet_id_us_west_2=#{SUBNET_ID_US_WEST_2}" \
       #{config_path}
     }
 
@@ -92,9 +73,14 @@ FileUtils.mkdir_p(OUTPUT_DIR)
 output_dir = File.absolute_path(OUTPUT_DIR)
 
 BUILDER_PATH = File.expand_path("../..", __FILE__)
-packer_config = File.join(BUILDER_PATH, "aws","packer.json")
+aws_config = File.join(BUILDER_PATH, "aws")
 
-amis = run_packer(packer_config)
+AWSPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/aws/packer.json.erb",
+                          STEMCELL_REGIONS, AWS_ACCESS_KEY, AWS_SECRET_KEY,
+                          AMI_NAME, DEPS_URL, AGENT_URL).save(aws_config)
+
+amis = run_packer(File.join(aws_config, "packer.json"))
+
 if amis.nil? || amis.empty?
   abort("ERROR: could not parse AMI IDs")
 end
