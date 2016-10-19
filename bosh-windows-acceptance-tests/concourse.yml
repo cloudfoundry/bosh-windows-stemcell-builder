@@ -2,7 +2,7 @@
 platform: linux
 image_resource: {type: docker-image, source: {repository: bosh/compiled-release } }
 inputs:
-- name: bosh-windows-acceptance-tests
+- name: bwats
   path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests
 - name: bosh-windows-stemcell
 
