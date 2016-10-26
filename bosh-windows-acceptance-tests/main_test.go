@@ -16,6 +16,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 )
 
@@ -23,6 +24,9 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.SetOutput(GinkgoWriter)
 }
+
+const BOSH_TIMEOUT = 15 * time.Minute
+const BOSH_LONG_TIMEOUT = 30 * time.Minute
 
 var manifestTemplate = `
 ---
@@ -45,17 +49,17 @@ update:
   max_in_flight: 2
 
 instance_groups:
-- name: compile-golang
+- name: simple-job
   instances: 1
   stemcell: default
-  lifecycle: errand
+  lifecycle: service
   azs: [default]
   vm_type: xlarge
   vm_extensions: []
   networks:
   - name: integration-tests
   jobs:
-  - name: compile-golang
+  - name: simple-job
     release: {{.ReleaseName}}
 - name: get-installed-updates
   instances: 1
@@ -102,7 +106,7 @@ func generateManifest(deploymentName string) ([]byte, error) {
 	manifestProperties := ManifestProperties{
 		DeploymentName: deploymentName,
 		DirectorUUID:   uuid,
-		ReleaseName:    "errand-release",
+		ReleaseName:    "bwats-release",
 		StemcellName:   stemcell,
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
@@ -209,16 +213,16 @@ var _ = Describe("BOSH Windows", func() {
 			Expect(err).To(BeNil())
 		}
 
-		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, 15*time.Minute)
-		bosh_long = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, 30*time.Minute)
+		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, BOSH_TIMEOUT)
+		bosh_long = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, BOSH_LONG_TIMEOUT)
 
 		bosh.Run("login")
 		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix())
 
 		pwd, err := os.Getwd()
 		Expect(err).To(BeNil())
-		Expect(os.Chdir(filepath.Join(pwd, "assets", "errand-release"))).To(Succeed()) // push
-		defer os.Chdir(pwd)                                                            // pop
+		Expect(os.Chdir(filepath.Join(pwd, "assets", "bwats-release"))).To(Succeed()) // push
+		defer os.Chdir(pwd)                                                           // pop
 
 		manifest, err := generateManifest(deploymentName)
 		Expect(err).To(Succeed())
@@ -237,12 +241,9 @@ var _ = Describe("BOSH Windows", func() {
 
 		Expect(bosh.Run("add blob " + goZipPath + " golang-windows")).To(Succeed())
 
-		Expect(bosh.Run("create release --name errand-release --force --timestamp-version")).To(Succeed())
+		Expect(bosh.Run("create release --name bwats-release --force --timestamp-version")).To(Succeed())
 
 		Expect(bosh.Run("upload release")).To(Succeed())
-
-		err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
-		Expect(err).To(Succeed())
 
 		stemcellPath := filepath.Join(
 			os.Getenv("GOPATH"),
@@ -254,6 +255,9 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(matches).To(HaveLen(1))
 
 		err = bosh_long.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
+		Expect(err).To(Succeed())
+
+		err = bosh_long.Run(fmt.Sprintf("-d %s deploy", manifestPath))
 		Expect(err).To(Succeed())
 	})
 
@@ -271,9 +275,25 @@ var _ = Describe("BOSH Windows", func() {
 		bosh.Run("cleanup --all")
 	})
 
-	It("can compile a package", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run errand compile-golang", manifestPath))
-		Expect(err).To(Succeed())
+	It("can run a job that relies on a package", func() {
+		Eventually(func() *gbytes.Buffer {
+			tempDir, err := ioutil.TempDir("", "")
+			Expect(err).To(Succeed())
+			defer os.RemoveAll(tempDir)
+
+			err = bosh.Run(fmt.Sprintf("-d %s logs simple-job 0 --dir %s", manifestPath, tempDir))
+			Expect(err).To(Succeed())
+
+			matches, err := filepath.Glob(filepath.Join(tempDir, "simple-job.0.*.tgz"))
+			Expect(err).To(Succeed())
+			Expect(matches).To(HaveLen(1))
+
+			cmd := exec.Command("tar", "xf", matches[0], "./simple-job/simple-job/job-service-wrapper.out.log", "-O")
+			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+			Expect(err).To(Succeed())
+
+			return session.Wait().Out
+		}).Should(gbytes.Say("60 seconds passed"))
 	})
 
 	It("has Auto Update turned off", func() {
