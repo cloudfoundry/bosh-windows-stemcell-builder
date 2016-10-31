@@ -25,8 +25,7 @@ func init() {
 	log.SetOutput(GinkgoWriter)
 }
 
-const BOSH_TIMEOUT = 15 * time.Minute
-const BOSH_LONG_TIMEOUT = 30 * time.Minute
+const BOSH_TIMEOUT = 45 * time.Minute
 
 var manifestTemplate = `
 ---
@@ -193,7 +192,6 @@ func downloadGo() (string, error) {
 var _ = Describe("BOSH Windows", func() {
 	var (
 		bosh           *BoshCommand
-		bosh_long      *BoshCommand
 		deploymentName string
 		manifestPath   string
 	)
@@ -214,7 +212,6 @@ var _ = Describe("BOSH Windows", func() {
 		}
 
 		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, BOSH_TIMEOUT)
-		bosh_long = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, BOSH_LONG_TIMEOUT)
 
 		bosh.Run("login")
 		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix())
@@ -254,10 +251,10 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(Succeed())
 		Expect(matches).To(HaveLen(1))
 
-		err = bosh_long.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
+		err = bosh.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
 		Expect(err).To(Succeed())
 
-		err = bosh_long.Run(fmt.Sprintf("-d %s deploy", manifestPath))
+		err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
 		Expect(err).To(Succeed())
 	})
 
