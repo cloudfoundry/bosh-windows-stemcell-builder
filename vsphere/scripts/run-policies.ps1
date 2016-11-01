@@ -16,13 +16,13 @@ try {
     rm $zipfile
   }
 
-  Invoke-WebRequest "https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip" -OutFile "C:\bosh\lgpov2.zip"
-  if (-Not (Test-Path "C:\bosh\lgpov2.zip")) {
+  Invoke-WebRequest "https://msdnshared.blob.core.windows.net/media/TNBlogsFS/prod.evol.blogs.technet.com/telligent.evolution.components.attachments/01/4062/00/00/03/65/94/11/LGPO.zip" -OutFile "C:\bosh\lgpo.zip"
+  if (-Not (Test-Path "C:\bosh\lgpo.zip")) {
     Write-Error "ERROR: could not download LGPO"
     Exit 1
   }
 
-  Unzip "C:\bosh\lgpov2.zip" "C:\var\vcap\bosh\bin\"
+  Unzip "C:\bosh\lgpo.zip" "C:\var\vcap\bosh\bin\"
   if (-Not (Test-Path "C:\var\vcap\bosh\bin\LGPO.exe")) {
     Write-Error "ERROR: could not extract LGPO"
     Exit 1
