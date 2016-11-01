@@ -35,6 +35,10 @@ try {
   }
 
   C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
+  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
+  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
+  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
+  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Error: LGPO exited with code ${LASTEXITCODE}"
     Exit $LASTEXITCODE
