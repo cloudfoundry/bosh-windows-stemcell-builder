@@ -8,8 +8,6 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
       rm $zipfile
   }
 
-Push-Location $env:TEMP
-Invoke-WebRequest "https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip" -OutFile "lgpov2.zip"
-Unzip "lgpov2.zip" "${env:TEMP}"
-.\LGPO.exe /g A:\policy-baselines
-Pop-Location
+Invoke-WebRequest "https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip" -OutFile "C:\bosh\lgpov2.zip"
+Unzip "C:\bosh\lgpov2.zip" "C:\var\vcap\bosh\bin\"
+C:\var\vcap\bosh\bin\LGPO.exe /g A:\policy-baselines
