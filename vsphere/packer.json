@@ -57,7 +57,7 @@
         "scripts/sysprep.ps1",
 
         "scripts/add-vcap-group.ps1",
-        "group-policies/*",
+        "policy-baseline.zip",
         "scripts/run-policies.ps1",
 
         "network-interface-settings.xml",

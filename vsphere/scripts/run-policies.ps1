@@ -28,7 +28,13 @@ try {
     Exit 1
   }
 
-  C:\var\vcap\bosh\bin\LGPO.exe /g A:\policy-baseline
+  Unzip "A:\policy-baseline.zip" "C:\bosh\"
+  if (-Not (Test-Path "C:\bosh\policy-baseline")) {
+    Write-Error "ERROR: could not extract policy-baseline"
+    Exit 1
+  }
+
+  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Error: LGPO exited with code ${LASTEXITCODE}"
     Exit $LASTEXITCODE
