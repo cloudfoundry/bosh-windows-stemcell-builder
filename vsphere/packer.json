@@ -56,10 +56,6 @@
         "scripts/initial-setup.ps1",
         "scripts/sysprep.ps1",
 
-        "scripts/add-vcap-group.ps1",
-        "policy-baseline.zip",
-        "scripts/run-policies.ps1",
-
         "network-interface-settings.xml",
         "scripts/install-ps-windows-update-module.ps1",
         "PSWindowsUpdate.zip"
@@ -115,8 +111,6 @@
     {
       "type": "powershell",
       "scripts": [
-        "scripts/add-vcap-group.ps1",
-        "scripts/run-policies.ps1",
         "../scripts/setup_agent.ps1",
         "scripts/agent_config.ps1",
         "scripts/remove-windows-features.ps1",

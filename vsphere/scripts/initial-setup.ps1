@@ -1,8 +1,5 @@
 param($SkipUpdates=0)
 
-## Turn off Updates TEMP
-$SkipUpdates=1
-
 $Logfile = "C:\Windows\Temp\initial-setup.log"
 $RegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
 $RegistryEntry = "InstallWindowsUpdates"
