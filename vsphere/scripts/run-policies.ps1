@@ -34,15 +34,14 @@ try {
     Exit 1
   }
 
-  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
-  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
-  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
-  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
-  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v
+  C:\var\vcap\bosh\bin\LGPO.exe /g C:\bosh\policy-baseline /v 2>&1 > C:\var\vcap\bosh\LGPO.log
   if ($LASTEXITCODE -ne 0) {
+    Write-Host $(Get-Content C:\var\vcap\bosh\LGPO.log)
     Write-Error "Error: LGPO exited with code ${LASTEXITCODE}"
     Exit $LASTEXITCODE
   }
+  Write-Host $(Get-Content C:\var\vcap\bosh\LGPO.log)
+
 } catch {
   Write-Error $_.Exception.Message
   Exit 1
