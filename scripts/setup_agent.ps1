@@ -29,6 +29,7 @@ Unzip "C:\bosh\agent_deps.zip" "C:\var\vcap\bosh\bin\"
 
 Invoke-WebRequest "${ENV:AGENT_ZIP_URL}" -Verbose -OutFile "C:\bosh\agent.zip"
 Unzip "C:\bosh\agent.zip" "C:\bosh\"
+Move-Item "C:\bosh\pipe.exe" "C:\var\vcap\bosh\bin\pipe.exe"
 
 $OldPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
 $AddedFolder='C:\var\vcap\bosh\bin'
