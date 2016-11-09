@@ -290,7 +290,7 @@ var _ = Describe("BOSH Windows", func() {
 			Expect(err).To(Succeed())
 
 			return session.Wait().Out
-		}).Should(gbytes.Say("60 seconds passed"))
+		}, time.Second * 60).Should(gbytes.Say("60 seconds passed"))
 	})
 
 	It("has Auto Update turned off", func() {
