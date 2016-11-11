@@ -1,51 +1,25 @@
-$Error.Clear()
-
-Configuration WindowsFeatures {
-  Node "localhost" {
-
-    WindowsFeature IISWebServer {
-      Ensure = "Present"
-        Name = "Web-Webserver"
-    }
-    WindowsFeature WebSockets {
-      Ensure = "Present"
-        Name = "Web-WebSockets"
-    }
-    WindowsFeature WebServerSupport {
-      Ensure = "Present"
-        Name = "AS-Web-Support"
-    }
-    WindowsFeature DotNet {
-      Ensure = "Present"
-        Name = "AS-NET-Framework"
-    }
-    WindowsFeature HostableWebCore {
-      Ensure = "Present"
-        Name = "Web-WHC"
-    }
-
-    WindowsFeature ASPClassic {
-      Ensure = "Present"
-      Name = "Web-ASP"
+Function WindowsFeatureInstall([string]$feature)
+{
+  Write-Host "Installing $feature"
+  If (!(Get-WindowsFeature $feature).Installed) {
+    Install-WindowsFeature $feature
+    If (!(Get-WindowsFeature $feature).Installed) {
+      Write-Error "Failed to install $feature"
+      Exit 1
     }
   }
 }
-
-if($PSVersionTable.PSVersion.Major -lt 4) {
-  $shell = New-Object -ComObject Wscript.Shell
-  $shell.Popup("You must be running Powershell version 4 or greater", 5, "Invalid Powershell version", 0x30)
-  echo "You must be running Powershell version 4 or greater"
-  exit(-1)
+try {
+  WindowsFeatureInstall("Web-Webserver")
+  WindowsFeatureInstall("Web-WebSockets")
+  WindowsFeatureInstall("AS-Web-Support")
+  WindowsFeatureInstall("AS-NET-Framework")
+  WindowsFeatureInstall("Web-WHC")
+  WindowsFeatureInstall("Web-ASP")
+} catch {
+  Write-Error "Exception (add-windows-features): add-windows-features.ps1"
+  Write-Error $_.Exception.Message
+  Exit 1
 }
 
-Install-WindowsFeature DSC-Service
-WindowsFeatures
-Start-DscConfiguration -Wait -Path .\WindowsFeatures -Force -Verbose
-
-if ($Error) {
-    Write-Host "Error summary:"
-    foreach($ErrorMessage in $Error)
-    {
-      Write-Host $ErrorMessage
-    }
-}
+Exit 0
