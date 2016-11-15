@@ -5,6 +5,7 @@ description: "This is a simple job that relies on a package"
 
 templates:
   run.ps1: bin/run.ps1
+  pre-start.ps1: bin/pre-start.ps1
 
 packages:
 - golang-windows

@@ -189,15 +189,35 @@ func downloadGo() (string, error) {
 	return path, nil
 }
 
+func downloadLogs(jobName string, index int) *gbytes.Buffer {
+	tempDir, err := ioutil.TempDir("", "")
+	Expect(err).To(Succeed())
+	defer os.RemoveAll(tempDir)
+
+	err = bosh.Run(fmt.Sprintf("-d %s logs %s %d --dir %s", manifestPath, jobName, index, tempDir))
+	Expect(err).To(Succeed())
+
+	matches, err := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("%s.%d.*.tgz", jobName, index)))
+	Expect(err).To(Succeed())
+	Expect(matches).To(HaveLen(1))
+
+	cmd := exec.Command("tar", "xf", matches[0], "-O", fmt.Sprintf("./%s/%s/job-service-wrapper.out.log", jobName, jobName))
+	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+	Expect(err).To(Succeed())
+
+	return session.Wait().Out
+}
+
+var (
+	bosh           *BoshCommand
+	deploymentName string
+	manifestPath   string
+	boshCertPath   string
+)
+
 var _ = Describe("BOSH Windows", func() {
-	var (
-		bosh           *BoshCommand
-		deploymentName string
-		manifestPath   string
-	)
 
 	BeforeSuite(func() {
-		var certPath string
 
 		cert := os.Getenv("BOSH_CA_CERT")
 		if cert != "" {
@@ -207,11 +227,11 @@ var _ = Describe("BOSH Windows", func() {
 			_, err = certFile.Write([]byte(cert))
 			Expect(err).To(BeNil())
 
-			certPath, err = filepath.Abs(certFile.Name())
+			boshCertPath, err = filepath.Abs(certFile.Name())
 			Expect(err).To(BeNil())
 		}
 
-		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), certPath, BOSH_TIMEOUT)
+		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), boshCertPath, BOSH_TIMEOUT)
 
 		bosh.Run("login")
 		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix())
@@ -273,24 +293,39 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("can run a job that relies on a package", func() {
-		Eventually(func() *gbytes.Buffer {
-			tempDir, err := ioutil.TempDir("", "")
-			Expect(err).To(Succeed())
-			defer os.RemoveAll(tempDir)
+		Eventually(downloadLogs("simple-job", 0),
+			time.Second*60).Should(gbytes.Say("60 seconds passed"))
+	})
 
-			err = bosh.Run(fmt.Sprintf("-d %s logs simple-job 0 --dir %s", manifestPath, tempDir))
+	It("successfully runs redeploy in a tight loop", func() {
+		const redeployRetries = 20
+
+		pwd, err := os.Getwd()
+		Expect(err).To(BeNil())
+		Expect(os.Chdir(filepath.Join(pwd, "assets", "bwats-release"))).To(Succeed()) // push
+		defer os.Chdir(pwd)                                                           // pop
+
+		pwd, err = os.Getwd()
+		Expect(err).To(BeNil())
+		f, err := os.OpenFile(filepath.Join(pwd, "jobs", "simple-job", "templates", "pre-start.ps1"),
+			os.O_APPEND|os.O_WRONLY, 0600)
+		Expect(err).To(BeNil())
+		defer f.Close()
+
+		for i := 0; i < redeployRetries; i++ {
+			_, err = f.WriteString(fmt.Sprintf("Write-Host \"Redeploy attempt #%d\"", i))
 			Expect(err).To(Succeed())
 
-			matches, err := filepath.Glob(filepath.Join(tempDir, "simple-job.0.*.tgz"))
-			Expect(err).To(Succeed())
-			Expect(matches).To(HaveLen(1))
+			Expect(bosh.Run("create release --name bwats-release --force --timestamp-version")).To(Succeed())
 
-			cmd := exec.Command("tar", "xf", matches[0], "./simple-job/simple-job/job-service-wrapper.out.log", "-O")
-			session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-			Expect(err).To(Succeed())
+			Expect(bosh.Run("upload release")).To(Succeed())
 
-			return session.Wait().Out
-		}, time.Second * 60).Should(gbytes.Say("60 seconds passed"))
+			err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
+			if err != nil {
+				downloadLogs("simple-job", 0)
+				Fail(err.Error())
+			}
+		}
 	})
 
 	It("has Auto Update turned off", func() {
