@@ -13,8 +13,6 @@ Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
 Write-Host "Defragging..."
 Optimize-Volume -DriveLetter C
 
-
-
 Write-Host "Recreate Pagefile after sysprep"
 $System = GWMI Win32_ComputerSystem -EnableAllPrivileges
 $System.AutomaticManagedPagefile = $true
