@@ -1,4 +1,3 @@
-
 # Removes unused Windows features.
 
 Write-Host "Removing unused Windows features..."
