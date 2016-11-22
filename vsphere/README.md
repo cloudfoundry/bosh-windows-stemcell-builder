@@ -11,10 +11,6 @@
   4. In the Firewall section, select the "Edit..." link to display the Firewall properties
   5. In the dialog box, scroll to and select GDB Server, then click OK.
 
-#### Packer
-
-* `winrm_host` does not work on the latest version of Packer, [v0.10.1](https://github.com/mitchellh/packer/releases/tag/v0.10.1), and is required if DHCP is not enabled on the ESXi's 'VM Network'.  A fix was accepted, but [Packer](https://github.com/mitchellh/packer/tree/0691ee1c5f2574b134697afc9c5397e1d154195e) will need to be built from source at [this SHA](https://github.com/mitchellh/packer/tree/0691ee1c5f2574b134697afc9c5397e1d154195e)).
-
 #### Notes
 
 If the build fails, manual deletion of the `packer-vmware-iso` VM and `packer-vmware-iso` datastore directory may be required.
