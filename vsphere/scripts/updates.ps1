@@ -8,11 +8,11 @@ function LogWrite {
 
 $IgnoredUpdateCategories =  "Silverlight"
 
-#Categories are chosen from: https://support.microsoft.com/en-us/kb/824684
+# Categories are chosen from: https://support.microsoft.com/en-us/kb/824684
 $UpdateCategories = "Security Updates", "Critical Updates", "Windows Server 2012 R2", "Updates", "Feature Packs", "Update Rollups"
 
 function Install-Updates() {
-    # Loop until we successful connect to the update server
+    # Loop until we successfully connect to the update server
     $sleepSeconds = 5
     $maxAttempts = 10
     for ($i = 0; $i -le $maxAttempts; $i++) {
@@ -33,7 +33,7 @@ function Install-Updates() {
 }
 
 function Update-Count() {
-    # Loop until we successful connect to the update server
+    # Loop until we successfully connect to the update server
     $sleepSeconds = 5
     $maxAttempts = 10
     for ($i = 0; $i -le $maxAttempts; $i++) {

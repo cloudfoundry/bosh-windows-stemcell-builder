@@ -55,11 +55,7 @@
         "scripts/updates.ps1",
         "scripts/initial-setup.ps1",
         "scripts/sysprep.ps1",
-
-        "scripts/add-vcap-group.ps1",
         "policy-baseline.zip",
-        "scripts/run-policies.ps1",
-
         "network-interface-settings.xml",
         "scripts/install-ps-windows-update-module.ps1",
         "PSWindowsUpdate.zip"
