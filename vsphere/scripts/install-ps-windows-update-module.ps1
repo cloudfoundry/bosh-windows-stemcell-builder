@@ -1,9 +1,10 @@
 # Install the PSWindowsUpdate PowerShell module.
 
+param([string]$script:ZipFile)
+
 $ErrorActionPreference = "Stop";
 trap { $host.SetShouldExit(1) }
 
-param([string]$script:ZipFile)
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 function Unzip
