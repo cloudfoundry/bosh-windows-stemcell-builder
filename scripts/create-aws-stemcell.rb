@@ -87,7 +87,7 @@ if amis.nil? || amis.empty?
 end
 
 Dir.mktmpdir do |dir|
-  MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, amis: amis, OS_VERSION).save(dir)
+  MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, amis: amis, os_version: OS_VERSION).save(dir)
   ApplySpecTemplate.new("#{BUILDER_PATH}/erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
   exec_command("touch #{dir}/image")
 
