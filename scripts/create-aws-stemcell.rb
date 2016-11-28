@@ -19,6 +19,7 @@ STEMCELL_REGIONS = JSON.parse(File.read("stemcell-regions/regions.json").chomp)
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 AWS_ACCESS_KEY = ENV.fetch("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = ENV.fetch("AWS_SECRET_KEY")
+OS_VERSION= ENV.fetch("OS_VERSION")
 AMI_NAME = "BOSH-" + SecureRandom.uuid
 
 def parse_ami(line)
@@ -86,7 +87,7 @@ if amis.nil? || amis.empty?
 end
 
 Dir.mktmpdir do |dir|
-  MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, amis: amis).save(dir)
+  MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, amis: amis, OS_VERSION).save(dir)
   ApplySpecTemplate.new("#{BUILDER_PATH}/erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
   exec_command("touch #{dir}/image")
 

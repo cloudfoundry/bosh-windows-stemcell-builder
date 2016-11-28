@@ -22,6 +22,7 @@ run:
 
 params:
   OUTPUT_DIR: replace-me
+  OS_VERSION: replace-me
   AWS_ACCESS_KEY: replace-me
   AWS_SECRET_KEY: replace-me
   VPC_ID_US_EAST_1: replace-me
