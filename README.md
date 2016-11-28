@@ -7,7 +7,7 @@ This repo contains a set of scripts for automating the process of building BOSH 
 * [ovftool](https://www.vmware.com/support/developer/ovf/)
 * [Windows ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2012-r2)
 * [Windows Update PowerShell Module](https://gallery.technet.microsoft.com/scriptcenter/2d191bcd-3308-4edd-9de2-88dff796b0bc)
-* [Packer](https://www.packer.io) version [v0.10.2](https://releases.hashicorp.com/packer/0.10.2/)
+* [Packer](https://www.packer.io) version [v0.12.0](https://releases.hashicorp.com/packer/0.12.0/)
 
 ### ESXi Configuration
 
