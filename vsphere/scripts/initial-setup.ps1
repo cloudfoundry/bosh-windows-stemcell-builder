@@ -37,6 +37,11 @@ function Check-WindowsUpdates() {
     # Required for updates.ps1
     cmd.exe /c A:\microsoft-updates.bat
 
+    Get-ChildItem "C:\Windows" -Filter *.log | ForEach-Object {
+      Start-Process powershell -ArgumentList ('Get-Content',$_.FullName,'-Wait') -NoNewWindow -PassThru
+      LogWrite "Tailing logs for $_.FullName"
+   }
+
     Powershell -File "A:\updates.ps1"
     $ExitCode = $LASTEXITCODE
 
@@ -176,3 +181,7 @@ LogWrite "Win RM Autostart (Exit Code: ${LASTEXITCODE})"
 # Start Win RM Service
 cmd.exe /c 'net start winrm'
 LogWrite "Start Win RM Service (Exit Code: ${LASTEXITCODE})"
+
+# Allow Inbound and Outbound
+set-netfirewallprofile -all -DefaultInboundAction Allow -DefaultOutboundAction Allow
+LogWrite "Open firewall for inbound and outbound (Exit Code: ${LASTEXITCODE})"
