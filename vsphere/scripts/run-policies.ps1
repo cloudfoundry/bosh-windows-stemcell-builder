@@ -37,6 +37,6 @@ if (-Not (Test-Path "$DEST\policy-baseline")) {
   Write-Error "ERROR: could not extract policy-baseline"
 }
 
-echo "$BIN\LGPO.exe /g $DEST\policy-baseline /v 2>&1 > $DEST\LGPO.log" > "$BIN\apply-policies.bat"
+echo "$BIN\LGPO.exe /g $DEST\policy-baseline /v 2>&1 > $DEST\LGPO.log" | Out-File -Encoding ASCII "$BIN\apply-policies.bat"
 
 Exit 0

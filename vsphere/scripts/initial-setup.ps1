@@ -37,11 +37,6 @@ function Check-WindowsUpdates() {
     # Required for updates.ps1
     cmd.exe /c A:\microsoft-updates.bat
 
-    Get-ChildItem "C:\Windows" -Filter *.log | ForEach-Object {
-      Start-Process powershell -ArgumentList ('Get-Content',$_.FullName,'-Wait') -NoNewWindow -PassThru
-      LogWrite "Tailing logs for $_.FullName"
-   }
-
     Powershell -File "A:\updates.ps1"
     $ExitCode = $LASTEXITCODE
 
