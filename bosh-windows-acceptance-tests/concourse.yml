@@ -10,15 +10,14 @@ outputs:
 - name: updates-list
 
 params:
-  BOSH_CA_CERT:
-  BOSH_CLIENT:
-  BOSH_CLIENT_SECRET:
-  BOSH_PASSWORD:
-  BOSH_USER:
-  DIRECTOR_IP:
-  DIRECTOR_UUID:
-  STEMCELL_NAME:
-  STEMCELL_PATH:
+  BOSH_CA_CERT: replace-me
+  BOSH_CLIENT: replace-me
+  BOSH_CLIENT_SECRET: replace-me
+  DIRECTOR_IP: replace-me
+  DIRECTOR_UUID: replace-me
+  STEMCELL_NAME: replace-me
+  STEMCELL_PATH: replace-me
+  AZ: z1
 
 run:
   path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests/ci/scripts/run

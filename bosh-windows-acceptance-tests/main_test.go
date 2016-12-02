@@ -54,7 +54,7 @@ instance_groups:
   instances: 1
   stemcell: windows
   lifecycle: service
-  azs: [z1]
+  azs: [{{.AZ}}]
   vm_type: default
   vm_extensions: []
   networks:
@@ -66,7 +66,7 @@ instance_groups:
   instances: 1
   stemcell: windows
   lifecycle: errand
-  azs: [z1]
+  azs: [{{.AZ}}]
   vm_type: default
   vm_extensions: []
   networks:
@@ -78,7 +78,7 @@ instance_groups:
   instances: 1
   stemcell: windows
   lifecycle: errand
-  azs: [z1]
+  azs: [{{.AZ}}]
   vm_type: default
   vm_extensions: []
   networks:
@@ -93,6 +93,7 @@ type ManifestProperties struct {
 	DirectorUUID   string
 	ReleaseName    string
 	StemcellName   string
+	AZ             string
 }
 
 func generateManifest(deploymentName string) ([]byte, error) {
@@ -104,11 +105,17 @@ func generateManifest(deploymentName string) ([]byte, error) {
 	if stemcell == "" {
 		return nil, fmt.Errorf("invalid stemcell name: %q", stemcell)
 	}
+	az := os.Getenv("AZ")
+	if az == "" {
+		return nil, fmt.Errorf("invalid AZ: %q", stemcell)
+	}
+
 	manifestProperties := ManifestProperties{
 		DeploymentName: deploymentName,
 		DirectorUUID:   uuid,
 		ReleaseName:    "bwats-release",
 		StemcellName:   stemcell,
+		AZ:             az,
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
 	if err != nil {
