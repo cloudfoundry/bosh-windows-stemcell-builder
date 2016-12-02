@@ -26,6 +26,8 @@ func init() {
 }
 
 const BOSH_TIMEOUT = 45 * time.Minute
+const GoZipFile = "go1.7.1.windows-amd64.zip"
+const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
 
 var manifestTemplate = `
 ---
@@ -37,7 +39,7 @@ releases:
   version: latest
 
 stemcells:
-- alias: default
+- alias: windows
   name: {{.StemcellName}}
   version: latest
 
@@ -50,37 +52,37 @@ update:
 instance_groups:
 - name: simple-job
   instances: 1
-  stemcell: default
+  stemcell: windows
   lifecycle: service
-  azs: [default]
-  vm_type: xlarge
+  azs: [z1]
+  vm_type: default
   vm_extensions: []
   networks:
-  - name: integration-tests
+  - name: default
   jobs:
   - name: simple-job
     release: {{.ReleaseName}}
 - name: get-installed-updates
   instances: 1
-  stemcell: default
+  stemcell: windows
   lifecycle: errand
-  azs: [default]
-  vm_type: xlarge
+  azs: [z1]
+  vm_type: default
   vm_extensions: []
   networks:
-  - name: integration-tests
+  - name: default
   jobs:
   - name: get-installed-updates
     release: {{.ReleaseName}}
 - name: verify-autoupdates
   instances: 1
-  stemcell: default
+  stemcell: windows
   lifecycle: errand
-  azs: [default]
-  vm_type: xlarge
+  azs: [z1]
+  vm_type: default
   vm_extensions: []
   networks:
-  - name: integration-tests
+  - name: default
   jobs:
   - name: verify-autoupdates
     release: {{.ReleaseName}}
@@ -133,7 +135,7 @@ func NewBoshCommand(DirectorIP, CertPath string, duration time.Duration) *BoshCo
 
 func (c *BoshCommand) args(command string) []string {
 	args := strings.Split(command, " ")
-	args = append([]string{"-n", "-t", c.DirectorIP}, args...)
+	args = append([]string{"-n", "-e", c.DirectorIP}, args...)
 	if c.CertPath != "" {
 		args = append([]string{"--ca-cert", c.CertPath}, args...)
 	}
@@ -163,8 +165,6 @@ func (c *BoshCommand) Run(command string) error {
 }
 
 func downloadGo() (string, error) {
-	const GoZipFile = "go1.7.1.windows-amd64.zip"
-	const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
 	dirname, err := ioutil.TempDir("", "")
 	if err != nil {
 		return "", err
@@ -194,10 +194,10 @@ func downloadLogs(jobName string, index int) *gbytes.Buffer {
 	Expect(err).To(Succeed())
 	defer os.RemoveAll(tempDir)
 
-	err = bosh.Run(fmt.Sprintf("-d %s logs %s %d --dir %s", manifestPath, jobName, index, tempDir))
+	err = bosh.Run(fmt.Sprintf("-d %s logs %s/%d --dir %s", deploymentName, jobName, index, tempDir))
 	Expect(err).To(Succeed())
 
-	matches, err := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("%s.%d.*.tgz", jobName, index)))
+	matches, err := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("%s.%s.%d-*.tgz", deploymentName, jobName, index)))
 	Expect(err).To(Succeed())
 	Expect(matches).To(HaveLen(1))
 
@@ -256,11 +256,11 @@ var _ = Describe("BOSH Windows", func() {
 		goZipPath, err := downloadGo()
 		Expect(err).To(Succeed())
 
-		Expect(bosh.Run("add blob " + goZipPath + " golang-windows")).To(Succeed())
+		Expect(bosh.Run("add-blob " + goZipPath + " golang-windows/" + GoZipFile)).To(Succeed())
 
-		Expect(bosh.Run("create release --name bwats-release --force --timestamp-version")).To(Succeed())
+		Expect(bosh.Run("create-release --force --timestamp-version")).To(Succeed())
 
-		Expect(bosh.Run("upload release")).To(Succeed())
+		Expect(bosh.Run("upload-release")).To(Succeed())
 
 		stemcellPath := filepath.Join(
 			os.Getenv("GOPATH"),
@@ -271,25 +271,23 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(Succeed())
 		Expect(matches).To(HaveLen(1))
 
-		err = bosh.Run(fmt.Sprintf("upload stemcell %s --skip-if-exists", matches[0]))
+		err = bosh.Run(fmt.Sprintf("upload-stemcell %s", matches[0]))
 		Expect(err).To(Succeed())
 
-		err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
+		err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentName, manifestPath))
 		Expect(err).To(Succeed())
 	})
 
 	AfterSuite(func() {
-		bosh.Run(fmt.Sprintf("delete deployment %s --force", deploymentName))
+		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
 
+		bosh.Run("clean-up --all")
 		if bosh.CertPath != "" {
 			os.RemoveAll(bosh.CertPath)
 		}
-
 		if manifestPath != "" {
 			os.RemoveAll(manifestPath)
 		}
-
-		bosh.Run("cleanup --all")
 	})
 
 	It("can run a job that relies on a package", func() {
@@ -316,11 +314,11 @@ var _ = Describe("BOSH Windows", func() {
 			_, err = f.WriteString(fmt.Sprintf("Write-Host \"Redeploy attempt #%d\"", i))
 			Expect(err).To(Succeed())
 
-			Expect(bosh.Run("create release --name bwats-release --force --timestamp-version")).To(Succeed())
+			Expect(bosh.Run("create-release --force --timestamp-version")).To(Succeed())
 
-			Expect(bosh.Run("upload release")).To(Succeed())
+			Expect(bosh.Run("upload-release")).To(Succeed())
 
-			err = bosh.Run(fmt.Sprintf("-d %s deploy", manifestPath))
+			err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentName, manifestPath))
 			if err != nil {
 				downloadLogs("simple-job", 0)
 				Fail(err.Error())
@@ -329,12 +327,12 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("has Auto Update turned off", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run errand verify-autoupdates", manifestPath))
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand verify-autoupdates", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
 	It("can retrieve a list of installed updates", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run errand get-installed-updates --download-logs --logs-dir %s", manifestPath, os.Getenv("UPDATES_LIST")))
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs --logs-dir %s get-installed-updates", deploymentName, os.Getenv("UPDATES_LIST")))
 		Expect(err).To(Succeed())
 	})
 
