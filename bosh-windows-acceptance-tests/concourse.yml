@@ -10,13 +10,13 @@ outputs:
 - name: updates-list
 
 params:
-  BOSH_CA_CERT: replace-me
-  BOSH_CLIENT: replace-me
-  BOSH_CLIENT_SECRET: replace-me
-  DIRECTOR_IP: replace-me
-  DIRECTOR_UUID: replace-me
-  STEMCELL_NAME: replace-me
-  STEMCELL_PATH: replace-me
+  BOSH_CA_CERT:
+  BOSH_CLIENT:
+  BOSH_CLIENT_SECRET:
+  DIRECTOR_IP:
+  DIRECTOR_UUID:
+  STEMCELL_NAME:
+  STEMCELL_PATH:
   AZ: z1
 
 run:
