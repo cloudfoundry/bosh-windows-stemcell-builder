@@ -16,6 +16,7 @@ inputs:
 
 outputs:
   - name: bosh-windows-stemcell
+  - name: amis
 
 run:
   path: stemcell-builder/scripts/create-aws-stemcell.rb

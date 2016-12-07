@@ -86,6 +86,8 @@ if amis.nil? || amis.empty?
   abort("ERROR: could not parse AMI IDs")
 end
 
+File.write(File.join("amis","amis.json"),amis.to_json)
+
 Dir.mktmpdir do |dir|
   MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, amis: amis, os_version: OS_VERSION).save(dir)
   ApplySpecTemplate.new("#{BUILDER_PATH}/erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
