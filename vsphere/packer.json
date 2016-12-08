@@ -3,7 +3,6 @@
     "iso_url": null,
     "iso_checksum_type": null,
     "iso_checksum": null,
-    "deps_url": null,
     "agent_url": null,
 
     "memsize": "2048",
@@ -121,7 +120,6 @@
         "scripts/compact.ps1"
       ],
       "environment_vars": [
-        "AGENT_DEPS_ZIP_URL={{user `deps_url`}}",
         "AGENT_ZIP_URL={{user `agent_url`}}"
       ]
     }

@@ -49,13 +49,12 @@ end
 
 class AWSPackerJsonTemplate < Template
   def initialize(template, regions, aws_access_key, aws_secret_key,
-                 ami_name, agent_url, security_group_id)
+                 ami_name, agent_url)
     super(template)
     @regions = regions
     @aws_access_key = aws_access_key
     @aws_secret_key = aws_secret_key
     @ami_name = ami_name
     @agent_url = agent_url
-    @security_group_id = security_group_id
   end
 end
