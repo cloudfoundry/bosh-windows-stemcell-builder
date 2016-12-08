@@ -11,7 +11,7 @@ require 'json'
 require_relative '../erb_templates/templates.rb'
 
 VERSION = File.read("version/number").chomp
-DEPS_URL = File.read("bosh-agent-deps-zip/url").chomp
+BOSH_AGENT_DEPS_PATH = "bosh-agent-deps-zip/agent-dependencies.zip"
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
 AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
 STEMCELL_REGIONS = JSON.parse(File.read("stemcell-regions/regions.json").chomp)

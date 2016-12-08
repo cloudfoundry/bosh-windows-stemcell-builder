@@ -24,6 +24,11 @@
 
   "provisioners": [
       {
+        "type": "file",
+        "source": "agent-dependencies.zip",
+        "destination": "C:\\bosh\\agent_deps.zip"
+      },
+      {
           "type": "powershell",
           "scripts": [
             "../scripts/add-windows-features.ps1",
@@ -33,7 +38,6 @@
             "scripts/ec2-set-password.ps1"
           ],
           "environment_vars": [
-            "AGENT_DEPS_ZIP_URL=<%= @deps_url %>",
             "AGENT_ZIP_URL=<%= @agent_url %>"
           ]
       }

@@ -25,7 +25,6 @@ New-Item -Path "C:\bosh" -ItemType "directory" -Force
 New-Item -Path "C:\var\vcap\bosh\bin" -ItemType "directory" -Force
 New-Item -Path "C:\var\vcap\bosh\log" -ItemType "directory" -Force
 
-Invoke-WebRequest "${ENV:AGENT_DEPS_ZIP_URL}" -Verbose -OutFile "C:\bosh\agent_deps.zip"
 Unzip "C:\bosh\agent_deps.zip" "C:\var\vcap\bosh\bin\"
 Invoke-WebRequest "${ENV:AGENT_ZIP_URL}" -Verbose -OutFile "C:\bosh\agent.zip"
 Unzip "C:\bosh\agent.zip" "C:\bosh\"

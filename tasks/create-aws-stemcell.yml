@@ -20,13 +20,3 @@ outputs:
 
 run:
   path: stemcell-builder/scripts/create-aws-stemcell.rb
-
-params:
-  OUTPUT_DIR: replace-me
-  OS_VERSION: replace-me
-  AWS_ACCESS_KEY: replace-me
-  AWS_SECRET_KEY: replace-me
-  VPC_ID_US_EAST_1: replace-me
-  SUBNET_ID_US_EAST_1: replace-me
-  VPC_ID_US_WEST_2: replace-me
-  SUBNET_ID_US_WEST_2: replace-me
