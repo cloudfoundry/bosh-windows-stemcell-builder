@@ -16,6 +16,7 @@
       "communicator": "winrm",
       "winrm_username": "Administrator",
       "user_data_file": "setup_winrm.txt",
+      "security_group_id": "<%= @security_group_id %>",
       "ami_groups": "all"
     }<%= ',' if i < (@regions.size - 1) %>
   <% end %>
