@@ -8,7 +8,7 @@ export UPDATES_LIST=$PWD/updates-list
 
 go get -u -t "github.com/onsi/ginkgo/..."
 go get -u -t "github.com/onsi/gomega/..."
-ginkgo -r -v "$GOPATH/src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests"
+ginkgo -r -v "$GOPATH/src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests" -p
 
 pushd updates-list
   tempDir=$(mktemp -d)
