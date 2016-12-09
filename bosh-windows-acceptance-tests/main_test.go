@@ -279,9 +279,9 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(matches).To(HaveLen(1))
 
 		err = bosh.Run(fmt.Sprintf("upload-stemcell %s", matches[0]))
-		if (err != ){
+		if err != nil {
 			//AWS takes a while to distribute the AMI across accounts
-			time.Sleep(2* time.Minute)
+			time.Sleep(2 * time.Minute)
 		}
 		Expect(err).To(Succeed())
 
