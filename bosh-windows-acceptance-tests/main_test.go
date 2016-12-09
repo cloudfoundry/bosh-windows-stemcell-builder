@@ -86,6 +86,19 @@ instance_groups:
   jobs:
   - name: verify-autoupdates
     release: {{.ReleaseName}}
+- name: agent-deps
+  instances: 1
+  stemcell: windows
+  lifecycle: errand
+  azs: [{{.AZ}}]
+  vm_type: {{.VmType}}
+  vm_extensions: []
+  networks:
+  - name: {{.Network}}
+  jobs:
+  jobs:
+  - name: agent-deps
+    release: {{.ReleaseName}}
 `
 
 type ManifestProperties struct {
@@ -351,6 +364,11 @@ var _ = Describe("BOSH Windows", func() {
 
 	It("has Auto Update turned off", func() {
 		err := bosh.Run(fmt.Sprintf("-d %s run-errand verify-autoupdates", deploymentName))
+		Expect(err).To(Succeed())
+	})
+
+	It("has necessary bosh-agent dependencies", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand agent-deps", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
