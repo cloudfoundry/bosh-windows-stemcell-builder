@@ -95,6 +95,11 @@
     },
     {
       "type": "file",
+      "source": "agent-dependencies.zip",
+      "destination": "C:\\bosh\\agent_deps.zip"
+    },
+    {
+      "type": "file",
       "source": "ultradefrag.zip",
       "destination": "C:\\ultradefrag.zip"
     },
