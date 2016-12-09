@@ -1,0 +1,25 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: pivotalgreenhouse/packer-base
+
+inputs:
+  - name: bosh-agent-sha
+  - name: bosh-agent-zip
+  - name: bosh-agent-deps-zip
+  - name: version
+  - name: stemcell-builder
+
+outputs:
+  - name: bosh-windows-stemcell
+
+run:
+  path: stemcell-builder/scripts/create-gcp-stemcell.rb
+
+params:
+  OUTPUT_DIR: replace-me
+  OS_VERSION: replace-me
+  ACCOUNT_JSON: replace-me

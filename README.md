@@ -29,3 +29,7 @@ Known working version of Concourse is [v1.6.0](http://concourse.ci/downloads.htm
 ### Licenses
 
 Portions of the provisioning scripts were adapted from the [packer-windows](https://github.com/joefitzgerald/packer-windows) project. A copy of the packer-windows license is located [here](vsphere/scripts/LICENSE).
+
+### GCP
+
+Currently uses a hand built image as a base. GCP does not currently have a way to turn on winrm, thus we need to do this manually for our base image.

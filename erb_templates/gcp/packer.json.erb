@@ -1,0 +1,40 @@
+{
+  "builders": [
+    {
+      "type": "googlecompute",
+      "account_file": "<%= @account_json_file %>",
+      "project_id": "<%= @project_id %>",
+      "tags": ["winrm"],
+      "source_image": "windows-2012-r2-winrm",<%# windows-server-2012-r2-dc-v20161115 %>
+      "image_family": "windows-2012-r2",
+      "zone": "us-east1-c",
+      "disk_size": 50,
+      "image_name":  "packer-{{timestamp}}",
+      "machine_type": "n1-standard-4",
+      "omit_external_ip": false,
+      "communicator": "winrm",
+      "winrm_username": "winrmuser",
+      "winrm_use_ssl": false
+    }
+  ],
+
+  "provisioners": [
+      {
+        "type": "file",
+        "source": "agent-dependencies.zip",
+        "destination": "C:\\bosh\\agent_deps.zip"
+      },
+      {
+          "type": "powershell",
+          "scripts": [
+            "../scripts/add-windows-features.ps1",
+            "../scripts/setup_agent.ps1",
+            "scripts/agent_config.ps1",
+            "../scripts/cleanup-windows-features.ps1"
+          ],
+          "environment_vars": [
+            "AGENT_ZIP_URL=<%= @agent_url %>"
+          ]
+      }
+  ]
+}
