@@ -55,10 +55,10 @@ instance_groups:
   stemcell: windows
   lifecycle: service
   azs: [{{.AZ}}]
-  vm_type: default
+  vm_type: {{.VmType}}
   vm_extensions: []
   networks:
-  - name: default
+  - name: {{.Network}}
   jobs:
   - name: simple-job
     release: {{.ReleaseName}}
@@ -67,10 +67,10 @@ instance_groups:
   stemcell: windows
   lifecycle: errand
   azs: [{{.AZ}}]
-  vm_type: default
+  vm_type: {{.VmType}}
   vm_extensions: []
   networks:
-  - name: default
+  - name: {{.Network}}
   jobs:
   - name: get-installed-updates
     release: {{.ReleaseName}}
@@ -79,10 +79,10 @@ instance_groups:
   stemcell: windows
   lifecycle: errand
   azs: [{{.AZ}}]
-  vm_type: default
+  vm_type: {{.VmType}}
   vm_extensions: []
   networks:
-  - name: default
+  - name: {{.Network}}
   jobs:
   - name: verify-autoupdates
     release: {{.ReleaseName}}
@@ -94,6 +94,8 @@ type ManifestProperties struct {
 	ReleaseName    string
 	StemcellName   string
 	AZ             string
+	VmType         string
+	Network        string
 }
 
 func generateManifest(deploymentName string) ([]byte, error) {
@@ -107,7 +109,15 @@ func generateManifest(deploymentName string) ([]byte, error) {
 	}
 	az := os.Getenv("AZ")
 	if az == "" {
-		return nil, fmt.Errorf("invalid AZ: %q", stemcell)
+		return nil, fmt.Errorf("invalid AZ: %q", az)
+	}
+	vmType := os.Getenv("VM_TYPE")
+	if vmType == "" {
+		return nil, fmt.Errorf("invalid VM_TYPE: %q", vmType)
+	}
+	network := os.Getenv("NETWORK")
+	if network == "" {
+		return nil, fmt.Errorf("invalid NETWORK: %q", network)
 	}
 
 	manifestProperties := ManifestProperties{
@@ -116,6 +126,8 @@ func generateManifest(deploymentName string) ([]byte, error) {
 		ReleaseName:    "bwats-release",
 		StemcellName:   stemcell,
 		AZ:             az,
+		VmType:         vmType,
+		Network:        network,
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
 	if err != nil {

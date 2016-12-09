@@ -18,6 +18,9 @@ params:
   STEMCELL_NAME:
   STEMCELL_PATH:
   AZ: z1
+  VM_TYPE: default
+  NETWORK: default
+
 
 run:
   path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests/ci/scripts/run
