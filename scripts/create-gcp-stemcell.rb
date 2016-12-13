@@ -13,7 +13,8 @@ require 'tempfile'
 require_relative '../erb_templates/templates.rb'
 
 VERSION = File.read("version/number").chomp
-BOSH_AGENT_DEPS_PATH = "bosh-agent-deps-zip/agent-dependencies.zip"
+ROOT_DIR = File.expand_path(File.join(File.dirname(File.expand_path(__FILE__)), '..', '..'))
+BOSH_AGENT_DEPS_PATH = File.join(ROOT_DIR, "bosh-agent-deps-zip", "agent-dependencies.zip")
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
 AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
 
