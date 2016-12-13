@@ -66,10 +66,8 @@ account_json = Tempfile.new(['account','.json']).tap(&:close).path
 File.write(account_json, ACCOUNT_JSON)
 gcp_config = File.join(BUILDER_PATH, "gcp")
 
-FileUtils.mv(BOSH_AGENT_DEPS_PATH, File.join(gcp_config, "agent-dependencies.zip"))
-
 GCPPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/gcp/packer.json.erb",
-                          account_json, PROJECT_ID, AGENT_URL).save(gcp_config)
+                          account_json, PROJECT_ID, AGENT_URL, BOSH_AGENT_DEPS_PATH).save(gcp_config)
 
 image_name = run_packer(File.join(gcp_config, "packer.json"))
 if image_name.nil? || image_name.empty?
