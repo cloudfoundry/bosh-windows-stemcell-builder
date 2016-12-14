@@ -122,6 +122,7 @@
         "scripts/agent_config.ps1",
         "../scripts/cleanup-windows-features.ps1",
         "scripts/cleanup-temp-directories.ps1",
+        "../scripts/disable-winrm.ps1",
         "scripts/compact.ps1"
       ],
       "environment_vars": [
