@@ -28,6 +28,7 @@ def run_packer(config_path)
     command = %{
       packer build \
       -machine-readable \
+      -debug \
       #{config_path}
     }
 
