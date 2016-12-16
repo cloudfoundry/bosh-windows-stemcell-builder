@@ -15,6 +15,22 @@ function Unzip
     Remove-Item -Path $zipfile -Force
 }
 
+function Set-Restricted-Acl
+{
+    param([string]$path)
+
+    $acl = Get-Acl $path
+    $acl.Access | %{$acl.RemoveAccessRuleAll($_)}
+    Set-Acl $path $acl
+
+    Get-ChildItem $path -recurse -Force | % {
+        $acl = Get-Acl $_.FullName;
+        $acl.Access | %{$acl.RemoveAccessRuleAll($_)}
+        Set-Acl $_.FullName $acl
+    }
+}
+
+
 # Add utilities to current path.
 $env:PATH="${env:PATH};C:\var\vcap\bosh\bin"
 
@@ -22,8 +38,11 @@ $env:PATH="${env:PATH};C:\var\vcap\bosh\bin"
 Setx $env:PATH "${env:PATH};C:\var\vcap\bosh\bin" /m
 
 New-Item -Path "C:\bosh" -ItemType "directory" -Force
+Set-Restricted-Acl "C:\bosh"
+
 New-Item -Path "C:\var\vcap\bosh\bin" -ItemType "directory" -Force
 New-Item -Path "C:\var\vcap\bosh\log" -ItemType "directory" -Force
+Set-Restricted-Acl "C:\var\vcap"
 
 Unzip "C:\bosh\agent_deps.zip" "C:\var\vcap\bosh\bin\"
 Invoke-WebRequest "${ENV:AGENT_ZIP_URL}" -Verbose -OutFile "C:\bosh\agent.zip"
