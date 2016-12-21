@@ -1,14 +1,6 @@
-# Disable winrm
-Get-Service WinRM | Stop-Service -PassThru | Set-Service -StartupType Disabled
-Set-Service -name WinRM -StartupType Disabled
+$ErrorActionPreference = "Stop";
+trap { $host.SetShouldExit(1) }
 
-get-wmiobject win32_service | where Name -eq WinRM
+Get-Service WinRM  | Set-Service -StartupType Disabled
 
-winrm set winrm/config/service '@{AllowUnencrypted="false"}'
-winrm set winrm/config/service/auth '@{Basic="false"}'
-
-netsh advfirewall firewall set rule name="WinRM 5985" new enable=no
-netsh advfirewall firewall set rule name="WinRM 5986" new enable=no
-
-net stop winrm
-sc config winrm start=disabled
+Exit 0
