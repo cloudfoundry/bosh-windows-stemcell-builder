@@ -15,21 +15,19 @@ function Unzip
     Remove-Item -Path $zipfile -Force
 }
 
-function Set-Restricted-Acl
-{
-    param([string]$path)
+function setup-acl {
 
-    $acl = Get-Acl $path
-    $acl.Access | %{$acl.RemoveAccessRuleAll($_)}
-    Set-Acl $path $acl
+    param([string]$folder)
 
-    Get-ChildItem $path -recurse -Force | % {
-        $acl = Get-Acl $_.FullName;
-        $acl.Access | %{$acl.RemoveAccessRuleAll($_)}
-        Set-Acl $_.FullName $acl
+    cacls.exe $folder /T /E /R "BUILTIN\Users"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Setting ACL for $folder exited with $LASTEXITCODE"
+    }
+    cacls.exe $folder /T /E /G Administrator:F
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Setting ACL for $folder exited with $LASTEXITCODE"
     }
 }
-
 
 # Add utilities to current path.
 $env:PATH="${env:PATH};C:\var\vcap\bosh\bin"
@@ -38,11 +36,13 @@ $env:PATH="${env:PATH};C:\var\vcap\bosh\bin"
 Setx $env:PATH "${env:PATH};C:\var\vcap\bosh\bin" /m
 
 New-Item -Path "C:\bosh" -ItemType "directory" -Force
-Set-Restricted-Acl "C:\bosh"
+# Remove permissions for C:\bosh directories.
+setup-acl "C:\bosh"
 
 New-Item -Path "C:\var\vcap\bosh\bin" -ItemType "directory" -Force
 New-Item -Path "C:\var\vcap\bosh\log" -ItemType "directory" -Force
-Set-Restricted-Acl "C:\var\vcap"
+# Remove permissions for C:\var
+setup-acl "C:\var"
 
 Unzip "C:\bosh\agent_deps.zip" "C:\var\vcap\bosh\bin\"
 Invoke-WebRequest "${ENV:AGENT_ZIP_URL}" -Verbose -OutFile "C:\bosh\agent.zip"
@@ -58,5 +58,9 @@ C:\bosh\service_wrapper.exe install
 if ($LASTEXITCODE -ne 0) {
   Write-Error "Error installing BOSH service wrapper"
 }
+
+
+# Remove permissions for C:\windows\panther directories.
+setup-acl "C:\Windows\Panther"
 
 Exit 0
