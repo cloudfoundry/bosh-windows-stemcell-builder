@@ -86,7 +86,7 @@ instance_groups:
   jobs:
   - name: verify-autoupdates
     release: {{.ReleaseName}}
-- name: agent-deps
+- name: check-system
   instances: 1
   stemcell: windows
   lifecycle: errand
@@ -97,7 +97,7 @@ instance_groups:
   - name: {{.Network}}
   jobs:
   jobs:
-  - name: agent-deps
+  - name: check-system
     release: {{.ReleaseName}}
 `
 
@@ -367,8 +367,8 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(Succeed())
 	})
 
-	It("has necessary bosh-agent dependencies", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand agent-deps", deploymentName))
+	It("checks system dependencies and security", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand check-system", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
