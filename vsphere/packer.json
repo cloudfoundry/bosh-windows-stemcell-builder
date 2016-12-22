@@ -104,11 +104,6 @@
       "destination": "C:\\ultradefrag.zip"
     },
     {
-      "type": "file",
-      "source": "agent.zip",
-      "destination": "C:\\agent.zip"
-    },
-    {
       "type": "windows-shell",
       "scripts": [
         "scripts/compile-dotnet-assemblies.bat",
