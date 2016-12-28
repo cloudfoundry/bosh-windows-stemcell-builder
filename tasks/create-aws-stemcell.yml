@@ -20,3 +20,10 @@ outputs:
 
 run:
   path: stemcell-builder/scripts/create-aws-stemcell.rb
+
+params:
+  OUTPUT_DIR:
+  OS_VERSION: windows2012R2
+  AWS_ACCESS_KEY:
+  AWS_SECRET_KEY:
+

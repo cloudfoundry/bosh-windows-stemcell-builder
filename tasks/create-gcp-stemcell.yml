@@ -20,6 +20,6 @@ run:
   path: stemcell-builder/scripts/create-gcp-stemcell.rb
 
 params:
-  OUTPUT_DIR: replace-me
-  OS_VERSION: replace-me
-  ACCOUNT_JSON: replace-me
+  OUTPUT_DIR:
+  OS_VERSION: windows2012R2
+  ACCOUNT_JSON:
