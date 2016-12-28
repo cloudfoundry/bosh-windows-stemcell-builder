@@ -22,6 +22,7 @@ Get-ChildItem $BOSH_BIN | ForEach-Object {
 
 If ($files.Count -gt 0) {
   Write-Error "Unable to find the following binaries: $($files -join ',')"
+  Exit 1
 }
 
 # Check ACLs
@@ -65,6 +66,13 @@ $errCount += Check-Acls "C:\Windows\Panther"
 if ($errCount -ne 0) {
     Write-Error "FAILED: $errCount"
     Exit 1
+}
+
+# Check WinRM
+If ( (Get-Service WinRM).Status -ne "Stopped") {
+  $msg = "WinRM is not Stopped. It is {0}" -f $(Get-Service WinRM).Status
+  Write-Error $msg
+  Exit 1
 }
 
 Exit 0
