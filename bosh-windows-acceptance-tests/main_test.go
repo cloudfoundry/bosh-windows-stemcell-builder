@@ -190,8 +190,9 @@ func (c *BoshCommand) Run(command string) error {
 		if session.Err != nil {
 			stderr = session.Err.Contents()
 		}
-		return fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\n",
-			strings.Join(cmd.Args, " "), exitCode, stderr)
+		stdout := session.Out.Contents()
+		return fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n",
+			strings.Join(cmd.Args, " "), exitCode, stderr, stdout)
 	}
 	return nil
 }

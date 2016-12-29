@@ -62,7 +62,7 @@ function Check-Acls {
 $errCount = 0
 $errCount += Check-Acls "C:\var"
 $errCount += Check-Acls "C:\bosh"
-$errCount += Check-Acls "C:\Windows\Panther"
+$errCount += Check-Acls "C:\Windows\Panther\Unattend"
 if ($errCount -ne 0) {
     Write-Error "FAILED: $errCount"
     Exit 1
