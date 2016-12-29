@@ -11,7 +11,7 @@ require 'json'
 require_relative '../erb_templates/templates.rb'
 
 VERSION = File.read("version/number").chomp
-DEPS_URL = File.read("bosh-agent-deps-zip/url").chomp
+BOSH_AGENT_DEPS_PATH = "bosh-agent-deps-zip/agent-dependencies.zip"
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
 AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
 STEMCELL_REGIONS = JSON.parse(File.read("stemcell-regions/regions.json").chomp)
@@ -19,6 +19,7 @@ STEMCELL_REGIONS = JSON.parse(File.read("stemcell-regions/regions.json").chomp)
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 AWS_ACCESS_KEY = ENV.fetch("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = ENV.fetch("AWS_SECRET_KEY")
+OS_VERSION= ENV.fetch("OS_VERSION")
 AMI_NAME = "BOSH-" + SecureRandom.uuid
 
 def parse_ami(line)
@@ -75,9 +76,11 @@ output_dir = File.absolute_path(OUTPUT_DIR)
 BUILDER_PATH = File.expand_path("../..", __FILE__)
 aws_config = File.join(BUILDER_PATH, "aws")
 
+FileUtils.mv(BOSH_AGENT_DEPS_PATH, File.join(aws_config, "agent-dependencies.zip"))
+
 AWSPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/aws/packer.json.erb",
                           STEMCELL_REGIONS, AWS_ACCESS_KEY, AWS_SECRET_KEY,
-                          AMI_NAME, DEPS_URL, AGENT_URL).save(aws_config)
+                          AMI_NAME, AGENT_URL).save(aws_config)
 
 amis = run_packer(File.join(aws_config, "packer.json"))
 
@@ -85,8 +88,10 @@ if amis.nil? || amis.empty?
   abort("ERROR: could not parse AMI IDs")
 end
 
+File.write(File.join("amis","amis.json"),amis.to_json)
+
 Dir.mktmpdir do |dir|
-  MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, amis: amis).save(dir)
+  MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, amis: amis, os_version: OS_VERSION).save(dir)
   ApplySpecTemplate.new("#{BUILDER_PATH}/erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
   exec_command("touch #{dir}/image")
 

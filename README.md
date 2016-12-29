@@ -7,7 +7,7 @@ This repo contains a set of scripts for automating the process of building BOSH 
 * [ovftool](https://www.vmware.com/support/developer/ovf/)
 * [Windows ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2012-r2)
 * [Windows Update PowerShell Module](https://gallery.technet.microsoft.com/scriptcenter/2d191bcd-3308-4edd-9de2-88dff796b0bc)
-* [Packer](https://www.packer.io) version [v0.10.2](https://releases.hashicorp.com/packer/0.10.2/)
+* [Packer](https://www.packer.io) version [v0.12.0](https://releases.hashicorp.com/packer/0.12.0/)
 
 ### ESXi Configuration
 
@@ -29,3 +29,7 @@ Known working version of Concourse is [v1.6.0](http://concourse.ci/downloads.htm
 ### Licenses
 
 Portions of the provisioning scripts were adapted from the [packer-windows](https://github.com/joefitzgerald/packer-windows) project. A copy of the packer-windows license is located [here](vsphere/scripts/LICENSE).
+
+### GCP
+
+Currently uses a hand built image as a base. GCP does not currently have a way to turn on winrm, thus we need to do this manually for our base image.

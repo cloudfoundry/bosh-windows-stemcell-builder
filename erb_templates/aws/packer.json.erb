@@ -16,6 +16,7 @@
       "communicator": "winrm",
       "winrm_username": "Administrator",
       "user_data_file": "setup_winrm.txt",
+      "security_group_id": "<%= region["security_group"] %>",
       "ami_groups": "all"
     }<%= ',' if i < (@regions.size - 1) %>
   <% end %>
@@ -23,16 +24,21 @@
 
   "provisioners": [
       {
+        "type": "file",
+        "source": "agent-dependencies.zip",
+        "destination": "C:\\bosh\\agent_deps.zip"
+      },
+      {
           "type": "powershell",
           "scripts": [
             "../scripts/add-windows-features.ps1",
             "../scripts/setup_agent.ps1",
             "scripts/agent_config.ps1",
             "../scripts/cleanup-windows-features.ps1",
-            "scripts/ec2-set-password.ps1"
+            "scripts/ec2-set-password.ps1",
+            "../scripts/disable-winrm.ps1"
           ],
           "environment_vars": [
-            "AGENT_DEPS_ZIP_URL=<%= @deps_url %>",
             "AGENT_ZIP_URL=<%= @agent_url %>"
           ]
       }

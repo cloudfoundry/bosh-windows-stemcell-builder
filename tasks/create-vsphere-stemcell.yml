@@ -36,7 +36,7 @@ params:
   REMOTE_CACHE_DIRECTORY: replace-me
   REMOTE_USERNAME: replace-me
   REMOTE_PASSWORD: replace-me
+  ADMINISTRATOR_PASSWORD: replace-me
   GUEST_NETWORK_ADDRESS: replace-me
   GUEST_NETWORK_MASK: replace-me
   GUEST_NETWORK_GATEWAY: replace-me
-  ADMINISTRATOR_PASSWORD: replace-me

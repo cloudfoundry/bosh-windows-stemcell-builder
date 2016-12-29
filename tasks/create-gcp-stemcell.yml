@@ -7,7 +7,6 @@ image_resource:
     repository: pivotalgreenhouse/packer-base
 
 inputs:
-  - name: stemcell-regions
   - name: bosh-agent-sha
   - name: bosh-agent-zip
   - name: bosh-agent-deps-zip
@@ -16,14 +15,11 @@ inputs:
 
 outputs:
   - name: bosh-windows-stemcell
-  - name: amis
 
 run:
-  path: stemcell-builder/scripts/create-aws-stemcell.rb
+  path: stemcell-builder/scripts/create-gcp-stemcell.rb
 
 params:
   OUTPUT_DIR:
   OS_VERSION: windows2012R2
-  AWS_ACCESS_KEY:
-  AWS_SECRET_KEY:
-
+  ACCOUNT_JSON:

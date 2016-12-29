@@ -11,7 +11,7 @@ require_relative '../erb_templates/templates.rb'
 
 # concourse inputs
 VERSION = File.read("version/number").chomp
-DEPS_URL = File.read("bosh-agent-deps-zip/url").chomp
+BOSH_AGENT_DEPS_PATH = "bosh-agent-deps-zip/agent-dependencies.zip"
 AGENT_URL = File.read("bosh-agent-zip/url").chomp
 AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
 
@@ -78,7 +78,6 @@ def packer_command(command, config_path)
       -var "iso_url=#{ISO_URL}" \
       -var "iso_checksum_type=#{ISO_CHECKSUM_TYPE}" \
       -var "iso_checksum=#{ISO_CHECKSUM}" \
-      -var "deps_url=#{DEPS_URL}" \
       -var "agent_url=#{AGENT_URL}" \
       -var "memsize=#{MEMSIZE}" \
       -var "numvcpus=#{NUMVCPUS}" \
@@ -153,6 +152,7 @@ packer_config = File.join(BUILDER_PATH, "vsphere", "packer.json")
 
 FileUtils.mv(WINDOWS_UPDATE_PATH, File.join(File.dirname(packer_config), "PSWindowsUpdate.zip"))
 FileUtils.mv(ULTRADEFRAG_PATH, File.join(File.dirname(packer_config), "ultradefrag.zip"))
+FileUtils.mv(BOSH_AGENT_DEPS_PATH, File.join(File.dirname(packer_config), "agent-dependencies.zip"))
 
 packer_command('validate', packer_config)
 packer_command('build', packer_config)

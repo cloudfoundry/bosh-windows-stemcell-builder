@@ -176,3 +176,7 @@ LogWrite "Win RM Autostart (Exit Code: ${LASTEXITCODE})"
 # Start Win RM Service
 cmd.exe /c 'net start winrm'
 LogWrite "Start Win RM Service (Exit Code: ${LASTEXITCODE})"
+
+# Allow Inbound and Outbound
+set-netfirewallprofile -all -DefaultInboundAction Allow -DefaultOutboundAction Allow
+LogWrite "Open firewall for inbound and outbound (Exit Code: ${LASTEXITCODE})"

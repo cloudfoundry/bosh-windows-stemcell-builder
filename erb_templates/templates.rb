@@ -22,11 +22,13 @@ class Template
 end
 
 class MFTemplate < Template
-  def initialize(template, version, sha1: "", amis: [])
+  def initialize(template, version, sha1: "", amis: [], image_self_link: "", os_version: "")
     super(template)
     @version = version
     @sha1 = sha1
     @amis = amis
+    @image_self_link = image_self_link
+    @os_version = os_version
   end
 end
 
@@ -48,13 +50,22 @@ end
 
 class AWSPackerJsonTemplate < Template
   def initialize(template, regions, aws_access_key, aws_secret_key,
-                 ami_name, deps_url, agent_url)
+                 ami_name, agent_url)
     super(template)
     @regions = regions
     @aws_access_key = aws_access_key
     @aws_secret_key = aws_secret_key
     @ami_name = ami_name
-    @deps_url = deps_url
     @agent_url = agent_url
+  end
+end
+
+class GCPPackerJsonTemplate < Template
+  def initialize(template, account_json_file, project_id, agent_url, agent_deps_path)
+    super(template)
+    @account_json_file = account_json_file
+    @project_id = project_id
+    @agent_url = agent_url
+    @agent_deps_path = agent_deps_path
   end
 end
