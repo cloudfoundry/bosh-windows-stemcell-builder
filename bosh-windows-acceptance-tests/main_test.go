@@ -368,7 +368,7 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("checks system dependencies and security", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand check-system", deploymentName))
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-system", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
