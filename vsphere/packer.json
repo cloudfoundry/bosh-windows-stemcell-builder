@@ -1,8 +1,6 @@
 {
     "variables": {
-    "iso_url": null,
-    "iso_checksum_type": null,
-    "iso_checksum": null,
+    "source_path": null,
     "deps_url": null,
     "agent_url": null,
 
@@ -24,20 +22,18 @@
   },
   "builders": [
     {
-      "type": "vmware-iso",
+      "type": "vmware-vmx",
 
-      "iso_url": "{{user `iso_url`}}",
-      "iso_checksum_type": "{{user `iso_checksum_type`}}",
-      "iso_checksum": "{{user `iso_checksum`}}",
+      "source_path": "/vmfs/volumes/datastore1/vm-9156e91c-534b-49e5-ad6b-ecee40a9e56d/vm-9156e91c-534b-49e5-ad6b-ecee40a9e56d.vmx",
       "headless": false,
-      "boot_wait": "2m",
+      "boot_wait": "10m",
 
       "communicator": "winrm",
       "winrm_username": "Administrator",
       "winrm_password": "vagrant",
       "winrm_timeout": "72h",
       "winrm_insecure": true,
-      "winrm_host": "{{user `winrm_host`}}",
+      "winrm_host": "10.62.51.123",
 
       "shutdown_command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File a:\\sysprep.ps1 -NewPassword {{user `administrator_password`}}",
       "shutdown_timeout": "1h",
@@ -55,7 +51,7 @@
         "scripts/updates.ps1",
         "scripts/initial-setup.ps1",
         "scripts/sysprep.ps1",
-        "policy-baseline.zip",
+
         "network-interface-settings.xml",
         "scripts/install-ps-windows-update-module.ps1",
         "PSWindowsUpdate.zip"
@@ -112,8 +108,6 @@
       "type": "powershell",
       "scripts": [
         "../scripts/add-windows-features.ps1",
-        "scripts/add-vcap-group.ps1",
-        "scripts/run-policies.ps1",
         "../scripts/setup_agent.ps1",
         "scripts/agent_config.ps1",
         "../scripts/cleanup-windows-features.ps1",
