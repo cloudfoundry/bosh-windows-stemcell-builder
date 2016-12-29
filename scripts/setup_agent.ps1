@@ -27,6 +27,10 @@ function setup-acl {
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Setting ACL for $folder exited with $LASTEXITCODE"
     }
+
+    $acl = Get-ACL -Path $folder
+    $acl.SetAccessRuleProtection($True, $True)
+    Set-Acl -Path $folder -AclObject $acl
 }
 
 # Add utilities to current path.
