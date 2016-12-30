@@ -19,11 +19,4 @@ WindowsFeatureInstall("AS-NET-Framework")
 WindowsFeatureInstall("Web-WHC")
 WindowsFeatureInstall("Web-ASP")
 
-try {
-  Stop-Service W3SVC
-  Set-Service W3SVC -startuptype "manual"
-} catch {
-  Write-Host "Unable to stop W3SVC"
-}
-
 Exit 0
