@@ -66,5 +66,6 @@ if ($LASTEXITCODE -ne 0) {
 
 # Remove permissions for C:\windows\panther directories.
 setup-acl "C:\Windows\Panther"
+setup-acl "C:\Windows\Temp"
 
 Exit 0
