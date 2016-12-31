@@ -14,7 +14,6 @@ Function WindowsFeatureInstall([string]$feature)
 
 WindowsFeatureInstall("Web-Webserver")
 WindowsFeatureInstall("Web-WebSockets")
-WindowsFeatureInstall("AS-Web-Support")
 WindowsFeatureInstall("AS-NET-Framework")
 WindowsFeatureInstall("Web-WHC")
 WindowsFeatureInstall("Web-ASP")
