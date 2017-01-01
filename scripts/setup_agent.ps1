@@ -17,9 +17,13 @@ function Unzip
 
 function setup-acl {
 
-    param([string]$folder)
+    param([string]$folder,[bool]$disableInheritance=$True)
 
     cacls.exe $folder /T /E /R "BUILTIN\Users"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Setting ACL for $folder exited with $LASTEXITCODE"
+    }
+    cacls.exe $folder /T /E /R "BUILTIN\IIS_IUSRS"
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Setting ACL for $folder exited with $LASTEXITCODE"
     }
@@ -28,9 +32,11 @@ function setup-acl {
         Write-Error "Setting ACL for $folder exited with $LASTEXITCODE"
     }
 
-    $acl = Get-ACL -Path $folder
-    $acl.SetAccessRuleProtection($True, $True)
-    Set-Acl -Path $folder -AclObject $acl
+    if ($disableInheritance) {
+      $acl = Get-ACL -Path $folder
+      $acl.SetAccessRuleProtection($True, $True)
+      Set-Acl -Path $folder -AclObject $acl
+    }
 }
 
 # Add utilities to current path.
@@ -65,7 +71,7 @@ if ($LASTEXITCODE -ne 0) {
 
 
 # Remove permissions for C:\windows\panther directories.
-setup-acl "C:\Windows\Panther"
-setup-acl "C:\Windows\Temp"
+setup-acl "C:\Windows\Panther" $false
+setup-acl "C:\Windows\Temp" $false
 
 Exit 0
