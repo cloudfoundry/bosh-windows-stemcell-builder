@@ -23,10 +23,6 @@ function setup-acl {
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Setting ACL for $folder exited with $LASTEXITCODE"
     }
-    cacls.exe $folder /T /E /R "BUILTIN\IIS_IUSRS"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Setting ACL for $folder exited with $LASTEXITCODE"
-    }
     cacls.exe $folder /T /E /G Administrator:F
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Setting ACL for $folder exited with $LASTEXITCODE"
