@@ -7,6 +7,7 @@ require 'open3'
 require 'securerandom'
 require 'pathname'
 require 'mkmf'
+require 'nokogiri'
 require_relative '../erb_templates/templates.rb'
 
 # concourse inputs
@@ -161,6 +162,19 @@ ova_file = Dir.glob('**/packer-vmware-iso.ova' ).select { |fn| File.file?(fn) }
 if ova_file.length == 0
   abort("ERROR: unable to find packer-vmware-iso.ova")
 end
+
+# remove network interface from VM image
+Dir.mktmpdir do |dir|
+  exec_command("tar xf #{ova_file[0]} -C #{dir}")
+  f = Nokogiri::XML(File.open("#{dir}/packer-vmware-iso.ovf"))
+  f.css("VirtualHardwareSection Item").select {|x| x.to_s =~ /Ethernet 1/}.first.remove
+  File.write("#{dir}/packer-vmware-iso.ovf", f.to_s)
+  ova_file_path = File.absolute_path(ova_file[0])
+  Dir.chdir(dir) do
+    exec_command("tar cf #{ova_file_path} *")
+  end
+end
+
 gzip_file(ova_file[0], "#{IMAGE_PATH}")
 
 IMAGE_SHA1=`#{SHA1SUM} #{IMAGE_PATH} | cut -d ' ' -f 1 | xargs echo -n`
