@@ -1,15 +1,19 @@
 ---
 platform: linux
+
 image_resource: {type: docker-image, source: {repository: pivotalgreenhouse/bosh-cli } }
+
 inputs:
 - name: bwats
   path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests
 - name: bosh-windows-stemcell
 
-outputs:
-- name: updates-list
+run:
+  path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests/ci/scripts/run.sh
 
 params:
+  IAAS:
+  ACCOUNT_JSON:
   BOSH_CA_CERT:
   BOSH_CLIENT:
   BOSH_CLIENT_SECRET:
@@ -20,7 +24,3 @@ params:
   AZ: z1
   VM_TYPE: default
   NETWORK: default
-
-
-run:
-  path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests/ci/scripts/run

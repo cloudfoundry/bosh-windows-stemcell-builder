@@ -62,18 +62,6 @@ instance_groups:
   jobs:
   - name: simple-job
     release: {{.ReleaseName}}
-- name: get-installed-updates
-  instances: 1
-  stemcell: windows
-  lifecycle: errand
-  azs: [{{.AZ}}]
-  vm_type: {{.VmType}}
-  vm_extensions: []
-  networks:
-  - name: {{.Network}}
-  jobs:
-  - name: get-installed-updates
-    release: {{.ReleaseName}}
 - name: verify-autoupdates
   instances: 1
   stemcell: windows
@@ -370,11 +358,6 @@ var _ = Describe("BOSH Windows", func() {
 
 	It("checks system dependencies and security", func() {
 		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-system", deploymentName))
-		Expect(err).To(Succeed())
-	})
-
-	It("can retrieve a list of installed updates", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs --logs-dir %s get-installed-updates", deploymentName, os.Getenv("UPDATES_LIST")))
 		Expect(err).To(Succeed())
 	})
 
