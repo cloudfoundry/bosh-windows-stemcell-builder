@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 export GOPATH="$PWD"
 export PATH="$PATH:$GOPATH/bin"
 
@@ -12,3 +10,12 @@ fi
 go get -u -t "github.com/onsi/ginkgo/..."
 go get -u -t "github.com/onsi/gomega/..."
 ginkgo -r -v "$GOPATH/src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests"
+GINKGO_EXIT=$?
+
+# Kill any ssh tunnels left by our IAAS specific setup
+TUNNEL_PID=$(ps -C ssh -o pid=)
+if [ -n "$TUNNEL_PID" ]; then
+	kill -9 $TUNNEL_PID
+fi
+
+exit $GINKGO_EXIT
