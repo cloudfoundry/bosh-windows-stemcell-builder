@@ -68,8 +68,8 @@ account_json = Tempfile.new(['account','.json']).tap(&:close).path
 File.write(account_json, ACCOUNT_JSON)
 gcp_config = File.join(BUILDER_PATH, "gcp")
 
-FileUtils.mv(AGENT_PATH, File.join(aws_config, "agent.zip"))
-FileUtils.mv(AGENT_DEPS_PATH, File.join(aws_config, "agent-dependencies.zip"))
+FileUtils.mv(AGENT_PATH, File.join(gcp_config, "agent.zip"))
+FileUtils.mv(AGENT_DEPS_PATH, File.join(gcp_config, "agent-dependencies.zip"))
 
 GCPPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/gcp/packer.json.erb",
                           account_json, PROJECT_ID).save(gcp_config)
