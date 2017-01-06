@@ -56,8 +56,7 @@ New-Item -Path "C:\var\vcap\bosh\log" -ItemType "directory" -Force
 # Remove permissions for C:\var
 setup-acl "C:\var"
 
-Unzip "C:\bosh\agent_deps.zip" "C:\var\vcap\bosh\bin\"
-Invoke-WebRequest "${ENV:AGENT_ZIP_URL}" -Verbose -OutFile "C:\bosh\agent.zip"
+Unzip "C:\bosh\agent-dependencies.zip" "C:\var\vcap\bosh\bin\"
 Unzip "C:\bosh\agent.zip" "C:\bosh\"
 Move-Item "C:\bosh\pipe.exe" "C:\var\vcap\bosh\bin\pipe.exe"
 

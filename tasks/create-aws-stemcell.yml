@@ -8,9 +8,7 @@ image_resource:
 
 inputs:
   - name: stemcell-regions
-  - name: bosh-agent-sha
-  - name: bosh-agent-zip
-  - name: bosh-agent-deps-zip
+  - name: compiled-agent
   - name: version
   - name: stemcell-builder
 

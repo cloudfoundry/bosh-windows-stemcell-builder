@@ -13,10 +13,10 @@ require 'tempfile'
 require_relative '../erb_templates/templates.rb'
 
 VERSION = File.read("version/number").chomp
-ROOT_DIR = File.expand_path(File.join(File.dirname(File.expand_path(__FILE__)), '..', '..'))
-BOSH_AGENT_DEPS_PATH = File.join(ROOT_DIR, "bosh-agent-deps-zip", "agent-dependencies.zip")
-AGENT_URL = File.read("bosh-agent-zip/url").chomp
-AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
+
+AGENT_PATH = "compiled-agent/agent.zip"
+AGENT_DEPS_PATH = "compiled-agent/agent-dependencies.zip"
+AGENT_COMMIT = File.read("compiled-agent/sha").chomp
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 ACCOUNT_JSON = ENV.fetch('ACCOUNT_JSON')
@@ -68,8 +68,11 @@ account_json = Tempfile.new(['account','.json']).tap(&:close).path
 File.write(account_json, ACCOUNT_JSON)
 gcp_config = File.join(BUILDER_PATH, "gcp")
 
+FileUtils.mv(AGENT_PATH, File.join(aws_config, "agent.zip"))
+FileUtils.mv(AGENT_DEPS_PATH, File.join(aws_config, "agent-dependencies.zip"))
+
 GCPPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/gcp/packer.json.erb",
-                          account_json, PROJECT_ID, AGENT_URL, BOSH_AGENT_DEPS_PATH).save(gcp_config)
+                          account_json, PROJECT_ID).save(gcp_config)
 
 image_name = run_packer(File.join(gcp_config, "packer.json"))
 if image_name.nil? || image_name.empty?

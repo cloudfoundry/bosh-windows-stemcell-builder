@@ -12,9 +12,10 @@ require_relative '../erb_templates/templates.rb'
 
 # concourse inputs
 VERSION = File.read("version/number").chomp
-BOSH_AGENT_DEPS_PATH = "bosh-agent-deps-zip/agent-dependencies.zip"
-AGENT_URL = File.read("bosh-agent-zip/url").chomp
-AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
+
+AGENT_PATH = "compiled-agent/agent.zip"
+AGENT_DEPS_PATH = "compiled-agent/agent-dependencies.zip"
+AGENT_COMMIT = File.read("compiled-agent/sha").chomp
 
 WINDOWS_UPDATE_PATH = File.absolute_path(Dir.glob('ps-windows-update/*.zip').first)
 ISO_URL = File.absolute_path(Dir.glob('base-iso/*.iso').first)
@@ -79,7 +80,6 @@ def packer_command(command, config_path)
       -var "iso_url=#{ISO_URL}" \
       -var "iso_checksum_type=#{ISO_CHECKSUM_TYPE}" \
       -var "iso_checksum=#{ISO_CHECKSUM}" \
-      -var "agent_url=#{AGENT_URL}" \
       -var "memsize=#{MEMSIZE}" \
       -var "numvcpus=#{NUMVCPUS}" \
       -var "remote_host=#{REMOTE_HOST}" \
@@ -153,7 +153,8 @@ packer_config = File.join(BUILDER_PATH, "vsphere", "packer.json")
 
 FileUtils.mv(WINDOWS_UPDATE_PATH, File.join(File.dirname(packer_config), "PSWindowsUpdate.zip"))
 FileUtils.mv(ULTRADEFRAG_PATH, File.join(File.dirname(packer_config), "ultradefrag.zip"))
-FileUtils.mv(BOSH_AGENT_DEPS_PATH, File.join(File.dirname(packer_config), "agent-dependencies.zip"))
+FileUtils.mv(AGENT_PATH, File.join(File.dirname(packer_config), "agent.zip"))
+FileUtils.mv(AGENT_DEPS_PATH, File.join(File.dirname(packer_config), "agent-dependencies.zip"))
 
 packer_command('validate', packer_config)
 packer_command('build', packer_config)

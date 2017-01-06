@@ -8,9 +8,7 @@ image_resource:
 
 inputs:
   - name: version
-  - name: bosh-agent-sha
-  - name: bosh-agent-zip
-  - name: bosh-agent-deps-zip
+  - name: compiled-agent
   - name: ovftool-linux
   - name: stemcell-builder
   - name: ps-windows-update

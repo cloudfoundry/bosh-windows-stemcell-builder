@@ -11,9 +11,11 @@ require 'json'
 require_relative '../erb_templates/templates.rb'
 
 VERSION = File.read("version/number").chomp
-BOSH_AGENT_DEPS_PATH = "bosh-agent-deps-zip/agent-dependencies.zip"
-AGENT_URL = File.read("bosh-agent-zip/url").chomp
-AGENT_COMMIT = File.read("bosh-agent-sha/sha").chomp
+
+AGENT_PATH = "compiled-agent/agent.zip"
+AGENT_DEPS_PATH = "compiled-agent/agent-dependencies.zip"
+AGENT_COMMIT = File.read("compiled-agent/sha").chomp
+
 STEMCELL_REGIONS = JSON.parse(File.read("stemcell-regions/regions.json").chomp)
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
@@ -76,11 +78,12 @@ output_dir = File.absolute_path(OUTPUT_DIR)
 BUILDER_PATH = File.expand_path("../..", __FILE__)
 aws_config = File.join(BUILDER_PATH, "aws")
 
-FileUtils.mv(BOSH_AGENT_DEPS_PATH, File.join(aws_config, "agent-dependencies.zip"))
+FileUtils.mv(AGENT_PATH, File.join(aws_config, "agent.zip"))
+FileUtils.mv(AGENT_DEPS_PATH, File.join(aws_config, "agent-dependencies.zip"))
 
 AWSPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/aws/packer.json.erb",
                           STEMCELL_REGIONS, AWS_ACCESS_KEY, AWS_SECRET_KEY,
-                          AMI_NAME, AGENT_URL).save(aws_config)
+                          AMI_NAME).save(aws_config)
 
 amis = run_packer(File.join(aws_config, "packer.json"))
 

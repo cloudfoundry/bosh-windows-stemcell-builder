@@ -3,7 +3,6 @@
     "iso_url": null,
     "iso_checksum_type": null,
     "iso_checksum": null,
-    "agent_url": null,
 
     "memsize": "2048",
     "numvcpus": "2",
@@ -96,8 +95,13 @@
     },
     {
       "type": "file",
+      "source": "agent.zip",
+      "destination": "C:\\bosh\\agent.zip"
+    },
+    {
+      "type": "file",
       "source": "agent-dependencies.zip",
-      "destination": "C:\\bosh\\agent_deps.zip"
+      "destination": "C:\\bosh\\agent-dependencies.zip"
     },
     {
       "type": "file",
@@ -125,9 +129,6 @@
         "scripts/cleanup-temp-directories.ps1",
         "../scripts/disable-winrm.ps1",
         "scripts/compact.ps1"
-      ],
-      "environment_vars": [
-        "AGENT_ZIP_URL={{user `agent_url`}}"
       ]
     }
   ]

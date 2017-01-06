@@ -50,22 +50,19 @@ end
 
 class AWSPackerJsonTemplate < Template
   def initialize(template, regions, aws_access_key, aws_secret_key,
-                 ami_name, agent_url)
+                 ami_name)
     super(template)
     @regions = regions
     @aws_access_key = aws_access_key
     @aws_secret_key = aws_secret_key
     @ami_name = ami_name
-    @agent_url = agent_url
   end
 end
 
 class GCPPackerJsonTemplate < Template
-  def initialize(template, account_json_file, project_id, agent_url, agent_deps_path)
+  def initialize(template, account_json_file, project_id)
     super(template)
     @account_json_file = account_json_file
     @project_id = project_id
-    @agent_url = agent_url
-    @agent_deps_path = agent_deps_path
   end
 end

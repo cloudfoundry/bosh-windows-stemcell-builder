@@ -31,8 +31,13 @@
       },
       {
         "type": "file",
-        "source": "<%= @agent_deps_path %>",
-        "destination": "C:\\bosh\\agent_deps.zip"
+        "source": "agent.zip",
+        "destination": "C:\\bosh\\agent.zip"
+      },
+      {
+        "type": "file",
+        "source": "agent-dependencies.zip",
+        "destination": "C:\\bosh\\agent-dependencies.zip"
       },
       {
           "type": "powershell",
@@ -43,9 +48,6 @@
             "../scripts/cleanup-windows-features.ps1",
             "../scripts/disable-winrm.ps1",
             "../scripts/set-firewall.ps1"
-          ],
-          "environment_vars": [
-            "AGENT_ZIP_URL=<%= @agent_url %>"
           ]
       }
   ]
