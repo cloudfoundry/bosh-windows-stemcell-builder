@@ -57,7 +57,8 @@
         "policy-baseline.zip",
         "network-interface-settings.xml",
         "scripts/install-ps-windows-update-module.ps1",
-        "PSWindowsUpdate.zip"
+        "PSWindowsUpdate.zip",
+        "scripts/set-firewall.ps1"
       ],
 
       "vmx_data": {
