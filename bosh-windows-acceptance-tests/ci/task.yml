@@ -22,5 +22,5 @@ params:
   STEMCELL_NAME:
   STEMCELL_PATH:
   AZ: z1
-  VM_TYPE: default
+  VM_TYPE: large
   NETWORK: default
