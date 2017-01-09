@@ -75,4 +75,27 @@ If ( (Get-Service WinRM).Status -ne "Stopped") {
   Exit 1
 }
 
+# Check firewall rules
+function get-firewall {
+  param([string] $profile)
+  $firewall = (Get-NetFirewallProfile -Name $profile)
+  $result = "{0},{1},{2}" -f $profile,$firewall.DefaultInboundAction,$firewall.DefaultOutboundAction
+  return $result
+}
+
+function check-firewall {
+  param([string] $profile)
+  $firewall = (get-firewall $profile)
+  Write-Host $firewall
+  if ($firewall -ne "$profile,Block,Allow") {
+    Write-Host $firewall
+    Write-Error "Unable to set $profile Profile"
+    Exit 1
+  }
+}
+
+check-firewall "public"
+check-firewall "private"
+check-firewall "domain"
+
 Exit 0
