@@ -28,4 +28,14 @@ check-firewall "public"
 check-firewall "private"
 check-firewall "domain"
 
+# Permit 3389 for RDP
+$rdp_port="3389"
+
+if (-Not (Get-NetFirewallRule | Where-Object { $_.DisplayName -eq "RdpPort" })) {
+  New-NetFirewallRule -DisplayName "RdpPort" -Action Allow -Direction Inbound -Enabled True -LocalPort $rdp_port -Protocol TCP
+  if (-Not (Get-NetFirewallRule | Where-Object { $_.DisplayName -eq "RdpPort" })) {
+    Write-Error "Unable to add RdpPort firewall rule"
+  }
+}
+
 Exit 0
