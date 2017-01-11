@@ -352,12 +352,12 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("has Auto Update turned off", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand verify-autoupdates", deploymentName))
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand verify-autoupdates --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
 	It("checks system dependencies and security", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-system", deploymentName))
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-system --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
