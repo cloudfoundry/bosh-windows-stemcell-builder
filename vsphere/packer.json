@@ -111,7 +111,6 @@
       "type": "windows-shell",
       "scripts": [
         "scripts/compile-dotnet-assemblies.bat",
-        "scripts/vm-guest-tools.bat",
         "scripts/enable-rdp.bat",
         "scripts/disable-auto-logon.bat"
       ]
@@ -119,6 +118,7 @@
     {
       "type": "powershell",
       "scripts": [
+        "vm-guest-tools.ps1",
         "../scripts/add-windows-features.ps1",
         "scripts/add-vcap-group.ps1",
         "scripts/run-policies.ps1",

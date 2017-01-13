@@ -17,8 +17,7 @@ Refer to the [README](./vsphere/README.md).
 
 The below binaries are downloaded as part of the provisioning process.
 
-* [7-Zip](http://www.7-zip.org/a/7z920-x64.msi)
-* [VMware Tools](http://softwareupdate.vmware.com/cds/vmw-desktop/ws/12.1.1/3770994/windows/packages/tools-windows.tar)
+* [VMware Tools](https://packages.vmware.com/tools/esx/6.0latest/windows/x64/VMware-tools-10.0.9-3917699-x86_64.exe)
 
 #### Notes
 
