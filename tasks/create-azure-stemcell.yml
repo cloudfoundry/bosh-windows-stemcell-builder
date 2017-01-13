@@ -1,0 +1,23 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: pivotalgreenhouse/packer-base
+
+inputs:
+  - name: compiled-agent
+  - name: version
+  - name: stemcell-builder
+
+outputs:
+  - name: bosh-windows-stemcell
+
+run:
+  path: stemcell-builder/scripts/create-azure-stemcell.rb
+
+params:
+  OUTPUT_DIR:
+  OS_VERSION: windows2012R2
+  ACCOUNT_JSON:

@@ -1,0 +1,70 @@
+{
+  "variables": {
+    "client_id": null,
+    "client_secret": null,
+    "tenant_id": null,
+    "subscription_id": null,
+    "object_id": null,
+    "admin_password": null
+  },
+
+  "builders": [
+    {
+      "type": "azure-arm",
+
+      "client_id": "{{ user `client_id`}}",
+      "client_secret": "{{ user `client_secret`}}",
+      "tenant_id": "{{ user `tenant_id`}}",
+      "subscription_id": "{{ user `subscription_id`}}",
+      "object_id": "{{ user `object_id`}}",
+
+      "resource_group_name": "bosh-res-group",
+      "storage_account": "koalastore",
+      "capture_container_name": "packer-test",
+      "capture_name_prefix": "stemcell",
+      "image_publisher": "MicrosoftWindowsServer",
+      "image_offer": "WindowsServer",
+      "image_sku": "2012-R2-Datacenter",
+      "location": "Central US",
+      "vm_size": "Standard_D2",
+      "os_type": "Windows",
+
+      "communicator": "winrm",
+      "winrm_use_ssl": "true",
+      "winrm_insecure": "true",
+      "winrm_timeout": "3m",
+      "winrm_username": "packer"
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "agent.zip",
+      "destination": "C:\\bosh\\agent.zip"
+    },
+    {
+      "type": "file",
+      "source": "agent-dependencies.zip",
+      "destination": "C:\\bosh\\agent-dependencies.zip"
+    },
+    {
+      "type": "powershell",
+      "inline": [
+        "NET USER Administrator {{ user `admin_password` }} /add /y /expires:never",
+        "NET LOCALGROUP Administrators Administrator /add"
+      ]
+    },
+    {
+      "type": "powershell",
+      "scripts": [
+        "../scripts/add-windows-features.ps1",
+        "../scripts/setup_agent.ps1",
+        "scripts/agent_config.ps1",
+        "../scripts/cleanup-windows-features.ps1",
+        "../scripts/disable-winrm.ps1",
+        "../scripts/set-firewall.ps1"
+      ]
+    }
+  ]
+}
