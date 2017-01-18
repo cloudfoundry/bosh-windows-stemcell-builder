@@ -98,4 +98,13 @@ check-firewall "public"
 check-firewall "private"
 check-firewall "domain"
 
+
+# Ensure HWC apps can get started
+Start-Process -FilePath "C:\var\vcap\jobs\check-system\bin\HWCServer.exe" -ArgumentList "9000"
+$status = (Invoke-WebRequest http://localhost:9000).StatusCode
+If ($status -ne 200) {
+  Write-Error "Failed to start HWC app"
+  Exit 1
+}
+
 Exit 0
