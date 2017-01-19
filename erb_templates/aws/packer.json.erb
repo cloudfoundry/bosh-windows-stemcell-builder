@@ -8,7 +8,7 @@
       "secret_key": "<%= @aws_secret_key %>",
       "region": "<%= region["name"] %>",
       "source_ami": "<%= region["base_ami"] %>",
-      "instance_type": "m3.xlarge",
+      "instance_type": "m4.xlarge",
       "ami_name": "<%= @ami_name %>-<%= region["name"] %>",
       "vpc_id": "<%= region["vpc_id"] %>",
       "subnet_id": "<%= region["subnet_id"] %>",
