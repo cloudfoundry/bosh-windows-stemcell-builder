@@ -25,12 +25,12 @@
   "provisioners": [
       {
         "type": "file",
-        "source": "agent.zip",
+        "source": "../../compiled-agent/agent.zip",
         "destination": "C:\\bosh\\agent.zip"
       },
       {
         "type": "file",
-        "source": "agent-dependencies.zip",
+        "source": "../../compiled-agent/agent-dependencies.zip",
         "destination": "C:\\bosh\\agent-dependencies.zip"
       },
       {
@@ -42,7 +42,8 @@
             "../scripts/cleanup-windows-features.ps1",
             "scripts/ec2-set-password.ps1",
             "../scripts/disable-winrm.ps1",
-            "../scripts/set-firewall.ps1"
+            "../scripts/set-firewall.ps1",
+            "../scripts/cleanup-artifacts.ps1"
           ]
       }
   ]

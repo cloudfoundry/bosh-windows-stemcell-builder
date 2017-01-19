@@ -14,8 +14,6 @@ require_relative '../erb_templates/templates.rb'
 
 VERSION = File.read("version/number").chomp
 
-AGENT_PATH = "compiled-agent/agent.zip"
-AGENT_DEPS_PATH = "compiled-agent/agent-dependencies.zip"
 AGENT_COMMIT = File.read("compiled-agent/sha").chomp
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
@@ -67,9 +65,6 @@ BUILDER_PATH = File.expand_path("../..", __FILE__)
 account_json = Tempfile.new(['account','.json']).tap(&:close).path
 File.write(account_json, ACCOUNT_JSON)
 gcp_config = File.join(BUILDER_PATH, "gcp")
-
-FileUtils.mv(AGENT_PATH, File.join(gcp_config, "agent.zip"))
-FileUtils.mv(AGENT_DEPS_PATH, File.join(gcp_config, "agent-dependencies.zip"))
 
 GCPPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/gcp/packer.json.erb",
                           account_json, PROJECT_ID).save(gcp_config)
