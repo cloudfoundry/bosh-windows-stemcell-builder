@@ -56,7 +56,7 @@
         "policy-baseline.zip",
         "network-interface-settings.xml",
         "scripts/install-ps-windows-update-module.ps1",
-        "PSWindowsUpdate.zip"
+        "../../windows-stemcell-dependencies/ps-windowsupdate/PSWindowsUpdate.zip"
       ],
 
       "vmx_data": {
@@ -94,18 +94,28 @@
     },
     {
       "type": "file",
-      "source": "agent.zip",
+      "source": "../../compiled-agent/agent.zip",
       "destination": "C:\\bosh\\agent.zip"
     },
     {
       "type": "file",
-      "source": "agent-dependencies.zip",
+      "source": "../../compiled-agent/agent-dependencies.zip",
       "destination": "C:\\bosh\\agent-dependencies.zip"
     },
     {
       "type": "file",
-      "source": "ultradefrag.zip",
+      "source": "../../windows-stemcell-dependencies/ultradefrag/ultradefrag.zip",
       "destination": "C:\\ultradefrag.zip"
+    },
+    {
+      "type": "file",
+      "source": "../../windows-stemcell-dependencies/lgpo/LGPO.exe",
+      "destination": "C:\\LGPO.exe"
+    },
+    {
+      "type": "file",
+      "source": "../../windows-stemcell-dependencies/VMware-tools/VMware-tools.exe",
+      "destination": "C:\\VMWare-tools.exe"
     },
     {
       "type": "windows-shell",
@@ -125,10 +135,11 @@
         "../scripts/setup_agent.ps1",
         "scripts/agent_config.ps1",
         "../scripts/cleanup-windows-features.ps1",
-        "scripts/cleanup-temp-directories.ps1",
         "../scripts/disable-winrm.ps1",
         "../scripts/set-firewall.ps1",
-        "scripts/compact.ps1"
+        "scripts/cleanup-temp-directories.ps1",
+        "scripts/compact.ps1",
+        "../scripts/cleanup-artifacts.ps1"
       ]
     }
   ]

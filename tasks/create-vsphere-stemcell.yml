@@ -9,11 +9,9 @@ image_resource:
 inputs:
   - name: version
   - name: compiled-agent
-  - name: ovftool-linux
   - name: stemcell-builder
-  - name: ps-windows-update
+  - name: windows-stemcell-dependencies
   - name: base-iso
-  - name: ultradefrag-zip
 
 outputs:
   - name: bosh-windows-stemcell

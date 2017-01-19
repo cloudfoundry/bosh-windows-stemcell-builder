@@ -10,6 +10,7 @@ if(!(Test-Path -Path $BIN )){
   mkdir $BIN
 }
 $env:PATH="${env:PATH};$BIN"
+Move-Item -Path "C:\LGPO.exe" -Destination "$BIN\LGPO.exe"
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 function Unzip
@@ -19,17 +20,6 @@ function Unzip
   [System.IO.Compression.ZipFile]::ExtractToDirectory($zipfile, $outpath)
 
   rm $zipfile
-}
-
-$LGPO_URL = "https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip"
-Invoke-WebRequest $LGPO_URL -OutFile "$DEST\lgpo.zip"
-if (-Not (Test-Path "$DEST\lgpo.zip")) {
-  Write-Error "ERROR: could not download LGPO"
-}
-
-Unzip "$DEST\lgpo.zip" $BIN
-if (-Not (Test-Path "$BIN\LGPO.exe")) {
-  Write-Error "ERROR: could not extract LGPO"
 }
 
 Unzip "A:\policy-baseline.zip" $DEST

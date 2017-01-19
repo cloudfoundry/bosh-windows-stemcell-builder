@@ -17,9 +17,7 @@ AGENT_PATH = "compiled-agent/agent.zip"
 AGENT_DEPS_PATH = "compiled-agent/agent-dependencies.zip"
 AGENT_COMMIT = File.read("compiled-agent/sha").chomp
 
-WINDOWS_UPDATE_PATH = File.absolute_path(Dir.glob('ps-windows-update/*.zip').first)
 ISO_URL = File.absolute_path(Dir.glob('base-iso/*.iso').first)
-ULTRADEFRAG_PATH = File.absolute_path(Dir.glob('ultradefrag-zip/*.zip').first)
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 ISO_CHECKSUM_TYPE = ENV.fetch('ISO_CHECKSUM_TYPE')
@@ -112,11 +110,7 @@ def exec_command(cmd)
 end
 
 def install_ovftool
-  files = Dir.glob("**/VMware-ovftool-*.bundle")
-  if files == []
-    abort("ERROR: cannot find 'ovftool' bundle")
-  end
-  ovftoolBundle = files[0]
+  ovftoolBundle = "windows-stemcell-dependencies/ovftool/VMware-ovftool.bundle"
   File.chmod(0777, ovftoolBundle)
   exec_command("#{ovftoolBundle} --required --eulas-agreed")
 end
@@ -150,11 +144,6 @@ BUILDER_PATH=File.expand_path("../..", __FILE__)
 create_network_interface_settings(BUILDER_PATH, GUEST_NETWORK_ADDRESS, GUEST_NETWORK_MASK, GUEST_NETWORK_GATEWAY)
 
 packer_config = File.join(BUILDER_PATH, "vsphere", "packer.json")
-
-FileUtils.mv(WINDOWS_UPDATE_PATH, File.join(File.dirname(packer_config), "PSWindowsUpdate.zip"))
-FileUtils.mv(ULTRADEFRAG_PATH, File.join(File.dirname(packer_config), "ultradefrag.zip"))
-FileUtils.mv(AGENT_PATH, File.join(File.dirname(packer_config), "agent.zip"))
-FileUtils.mv(AGENT_DEPS_PATH, File.join(File.dirname(packer_config), "agent-dependencies.zip"))
 
 packer_command('validate', packer_config)
 packer_command('build', packer_config)
