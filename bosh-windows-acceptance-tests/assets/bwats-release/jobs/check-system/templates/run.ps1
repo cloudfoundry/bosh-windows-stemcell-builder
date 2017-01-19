@@ -105,6 +105,16 @@ $status = (Invoke-WebRequest -Uri "http://localhost:9000" -UseBasicParsing).Stat
 If ($status -ne 200) {
   Write-Error "Failed to start HWC app"
   Exit 1
+} else {
+  Write-Host "HWC apps can start"
+}
+
+$status = try { Invoke-WebRequest -Uri "http://localhost" -UseBasicParsing } catch {}
+If ($status -ne $nil) {
+  Write-Error "IIS Web Server is not turned off"
+  Exit 1
+} else {
+  Write-Host "IIS Web Server is turned off"
 }
 
 Exit 0
