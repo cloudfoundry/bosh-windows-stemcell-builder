@@ -16,8 +16,8 @@ New-Item -ItemType file -path "C:\bosh\agent.json" -Value @"
         {
           "Type": "File",
           "MetaDataPath": "",
-          "UserDataPath": "/var/lib/waagent/CustomData",
-          "SettingsPath": "/var/lib/waagent/CustomData"
+          "UserDataPath": "C:/AzureData/CustomData.bin",
+          "SettingsPath": "C:/AzureData/CustomData.bin"
         }
       ],
       "UseServerName": true,
