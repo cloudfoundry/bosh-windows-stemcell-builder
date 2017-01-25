@@ -128,7 +128,7 @@
         "scripts/cleanup-temp-directories.ps1",
         "../scripts/disable-winrm.ps1",
         "../scripts/set-firewall.ps1",
-        "scripts/compact.ps1"
+        "../scripts/compact.ps1"
       ]
     }
   ]
