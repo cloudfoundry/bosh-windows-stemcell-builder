@@ -10,6 +10,7 @@ inputs:
   - name: compiled-agent
   - name: version
   - name: stemcell-builder
+  - name: ultradefrag-zip
 
 outputs:
   - name: bosh-windows-stemcell
@@ -18,6 +19,13 @@ run:
   path: stemcell-builder/scripts/create-azure-stemcell.rb
 
 params:
-  OUTPUT_DIR:
-  OS_VERSION: windows2012R2
-  ACCOUNT_JSON:
+  OUTPUT_DIR: 'replace-me'
+  CLIENT_ID: 'replace-me'
+  CLIENT_SECRET: 'replace-me'
+  TENANT_ID: 'replace-me'
+  SUBSCRIPTION_ID: 'replace-me'
+  OBJECT_ID: 'replace-me'
+  ADMIN_PASSWORD: 'replace-me'
+  STORAGE_ACCOUNT: 'replace-me'
+  RESOURCE_GROUP_NAME: 'replace-me'
+  LOCATION: 'replace-me'
