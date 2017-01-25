@@ -104,11 +104,6 @@
     },
     {
       "type": "file",
-      "source": "../../windows-stemcell-dependencies/ultradefrag/ultradefrag.zip",
-      "destination": "C:\\ultradefrag.zip"
-    },
-    {
-      "type": "file",
       "source": "../../windows-stemcell-dependencies/lgpo/LGPO.exe",
       "destination": "C:\\LGPO.exe"
     },

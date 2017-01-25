@@ -16,8 +16,6 @@ AGENT_PATH = "compiled-agent/agent.zip"
 AGENT_DEPS_PATH = "compiled-agent/agent-dependencies.zip"
 AGENT_COMMIT = File.read("compiled-agent/sha").chomp
 
-ULTRADEFRAG_PATH = File.absolute_path(Dir.glob('ultradefrag-zip/*.zip').first)
-
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 CLIENT_ID = ENV.fetch("CLIENT_ID")
 CLIENT_SECRET = ENV.fetch("CLIENT_SECRET")
@@ -112,7 +110,6 @@ azure_config = File.join(BUILDER_PATH, "azure")
 
 FileUtils.mv(AGENT_PATH, File.join(azure_config, "agent.zip"))
 FileUtils.mv(AGENT_DEPS_PATH, File.join(azure_config, "agent-dependencies.zip"))
-FileUtils.mv(ULTRADEFRAG_PATH, File.join(azure_config, "ultradefrag.zip"))
 
 disk_uri = run_packer(File.join(azure_config, "packer.json"))
 exec_command("curl -o '#{output_dir}/root.vhd' '#{disk_uri}'")

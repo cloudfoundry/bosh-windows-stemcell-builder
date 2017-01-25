@@ -52,11 +52,6 @@
       "destination": "C:\\bosh\\agent-dependencies.zip"
     },
     {
-      "type": "file",
-      "source": "ultradefrag.zip",
-      "destination": "C:\\ultradefrag.zip"
-    },
-    {
       "type": "powershell",
       "inline": [
         "NET USER Administrator {{ user `admin_password` }} /add /y /expires:never",

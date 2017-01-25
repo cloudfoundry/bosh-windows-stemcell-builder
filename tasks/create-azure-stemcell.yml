@@ -10,7 +10,6 @@ inputs:
   - name: compiled-agent
   - name: version
   - name: stemcell-builder
-  - name: ultradefrag-zip
 
 outputs:
   - name: bosh-windows-stemcell
