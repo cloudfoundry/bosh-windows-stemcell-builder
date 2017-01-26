@@ -145,10 +145,6 @@ create_network_interface_settings(BUILDER_PATH, GUEST_NETWORK_ADDRESS, GUEST_NET
 
 packer_config = File.join(BUILDER_PATH, "vsphere", "packer.json")
 
-FileUtils.mv(WINDOWS_UPDATE_PATH, File.join(File.dirname(packer_config), "PSWindowsUpdate.zip"))
-FileUtils.mv(AGENT_PATH, File.join(File.dirname(packer_config), "agent.zip"))
-FileUtils.mv(AGENT_DEPS_PATH, File.join(File.dirname(packer_config), "agent-dependencies.zip"))
-
 packer_command('validate', packer_config)
 packer_command('build', packer_config)
 
