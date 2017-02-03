@@ -14,7 +14,7 @@ VERSION = File.read("version/number").chomp
 
 AGENT_COMMIT = File.read("compiled-agent/sha").chomp
 
-STEMCELL_REGIONS = JSON.parse(File.read("stemcell-regions/regions.json").chomp)
+BASE_AMIS = JSON.parse(File.read("base-amis/base-amis-#{VERSION}.json").chomp)
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 AWS_ACCESS_KEY = ENV.fetch("AWS_ACCESS_KEY")
@@ -77,7 +77,7 @@ BUILDER_PATH = File.expand_path("../..", __FILE__)
 aws_config = File.join(BUILDER_PATH, "aws")
 
 AWSPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/aws/packer.json.erb",
-                          STEMCELL_REGIONS, AWS_ACCESS_KEY, AWS_SECRET_KEY,
+                          BASE_AMIS, AWS_ACCESS_KEY, AWS_SECRET_KEY,
                           AMI_NAME).save(aws_config)
 
 amis = run_packer(File.join(aws_config, "packer.json"))
