@@ -14,7 +14,7 @@ VERSION = File.read("version/number").chomp
 
 AGENT_COMMIT = File.read("compiled-agent/sha").chomp
 
-BASE_AMIS = JSON.parse(File.read("base-amis/base-amis-#{VERSION}.json").chomp)
+BASE_AMIS = JSON.parse(File.read(Dir.glob("base-amis/base-amis-*.json")[0]).chomp)
 
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 AWS_ACCESS_KEY = ENV.fetch("AWS_ACCESS_KEY")
