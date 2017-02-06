@@ -32,6 +32,9 @@ REMOTE_CACHE_DIRECTORY = ENV.fetch('REMOTE_CACHE_DIRECTORY')
 REMOTE_USERNAME = ENV.fetch('REMOTE_USERNAME')
 REMOTE_PASSWORD = ENV.fetch('REMOTE_PASSWORD')
 ADMINISTRATOR_PASSWORD = ENV.fetch('ADMINISTRATOR_PASSWORD')
+PRODUCT_KEY = ENV.fetch('PRODUCT_KEY')
+OWNER = ENV.fetch('OWNER')
+ORGANIZATION = ENV.fetch('ORGANIZATION')
 
 # erb_templates/network-interface-settings.xml
 GUEST_NETWORK_ADDRESS = ENV.fetch('GUEST_NETWORK_ADDRESS')
@@ -88,6 +91,9 @@ def packer_command(command, config_path)
       -var "remote_username=#{REMOTE_USERNAME}" \
       -var "remote_password=#{REMOTE_PASSWORD}" \
       -var "administrator_password=#{ADMINISTRATOR_PASSWORD}" \
+      -var "product_key=#{PRODUCT_KEY}" \
+      -var "owner=#{OWNER}" \
+      -var "organization=#{ORGANIZATION}" \
       -var "winrm_host=#{GUEST_NETWORK_ADDRESS}" \
       #{config_path}
     }

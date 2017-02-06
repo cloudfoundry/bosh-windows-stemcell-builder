@@ -1,4 +1,8 @@
-param($NewPassword=$env:ADMINISTRATOR_PASSWORD)
+param(
+    $NewPassword=$env:ADMINISTRATOR_PASSWORD,
+    $ProductKey=$env:PRODUCT_KEY,
+    $Organization=$env:ORGANIZATION,
+    $Owner=$env:OWNER)
 
 $DisableUpdateScript= @"
 net stop wuauserv
@@ -11,6 +15,13 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpd
 
 Out-File -FilePath C:/disable-updates.bat -InputObject $DisableUpdateScript -Encoding utf8
 
+$ProductKeyXML="<RegisteredOwner />"
+if ($ProductKey -ne "") {
+    $ProductKeyXML="<ProductKey>$ProductKey</ProductKey>
+    <RegisteredOrganization>$Organization</RegisteredOrganization>
+    <RegisteredOwner>$Owner</RegisteredOwner>"
+}
+
 $PostUnattend = @"
 <?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
@@ -21,7 +32,7 @@ $PostUnattend = @"
             </OEMInformation>
             <ComputerName>*</ComputerName>
             <TimeZone>UTC</TimeZone>
-            <RegisteredOwner/>
+            $ProductKeyXML
         </component>
         <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
             <RunSynchronous>

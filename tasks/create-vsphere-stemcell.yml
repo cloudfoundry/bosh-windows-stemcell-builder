@@ -33,6 +33,9 @@ params:
   REMOTE_USERNAME: replace-me
   REMOTE_PASSWORD: replace-me
   ADMINISTRATOR_PASSWORD: replace-me
+  PRODUCT_KEY: ""
+  OWNER: ""
+  ORGANIZATION: ""
   GUEST_NETWORK_ADDRESS: replace-me
   GUEST_NETWORK_MASK: replace-me
   GUEST_NETWORK_GATEWAY: replace-me

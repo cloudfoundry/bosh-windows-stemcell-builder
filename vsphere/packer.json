@@ -17,6 +17,9 @@
     "remote_password": null,
 
     "administrator_password": null,
+    "product_key": null,
+    "owner": null,
+    "organization": null,
 
     "winrm_host": null
   },
@@ -37,7 +40,7 @@
       "winrm_insecure": true,
       "winrm_host": "{{user `winrm_host`}}",
 
-      "shutdown_command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File a:\\sysprep.ps1 -NewPassword {{user `administrator_password`}}",
+      "shutdown_command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File a:\\sysprep.ps1 -NewPassword {{user `administrator_password`}} -ProductKey {{user `product_key`}} -Owner {{user `owner`}} -Organization {{user `organization`}}",
       "shutdown_timeout": "1h",
 
       "guest_os_type": "windows8srv-64",
