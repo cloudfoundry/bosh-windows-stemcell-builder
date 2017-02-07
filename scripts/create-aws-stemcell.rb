@@ -95,7 +95,7 @@ Dir.mktmpdir do |dir|
   ApplySpecTemplate.new("#{BUILDER_PATH}/erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
   exec_command("touch #{dir}/image")
 
-  stemcell_filename = "light-bosh-stemcell-#{VERSION}-aws-xen-hvm-windows2012R2-go_agent.tgz"
+  stemcell_filename = "light-bosh-stemcell-#{VERSION}-aws-xen-hvm-#{OS_VERSION}-go_agent.tgz"
 
   exec_command("tar czvf #{File.join(output_dir, stemcell_filename)} -C #{dir} stemcell.MF apply_spec.yml image")
 end
