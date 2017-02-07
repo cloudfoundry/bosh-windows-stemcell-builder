@@ -44,7 +44,7 @@ def run_packer(config_path)
     amis = []
     Open3.popen3(command) do |stdin, stdout, stderr, wait_thr|
       stdout.each_line do |line|
-        if !line.include? "secret_key" && !line.include? "access_key"
+        if !(line.include?("secret_key") || line.include?("access_key"))
           puts line
         end
         ami = parse_ami(line)
