@@ -1,9 +1,10 @@
 require 'tempfile'
 require 'json'
+require 'English'
 
 module Packer
   class Runner
-    class ErrorInvalidConfig < Exception
+    class ErrorInvalidConfig < RuntimeError
     end
 
     def initialize(config)
@@ -19,8 +20,8 @@ module Packer
         args_combined += "#{name} #{value}"
       end
 
-      `packer #{command} #{config_file.path} #{args_combined}`
-      return !$?.exitstatus
+      `packer #{command} #{args_combined} #{config_file.path}`
+      !$CHILD_STATUS.exitstatus
     end
   end
 end
