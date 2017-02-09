@@ -6,20 +6,22 @@ namespace :build do
   end
 
   task :aws do
+    puts 'build:aws'
   end
 
   task :gcp do
+    puts 'build:gcp'
   end
 
   task :vsphere do
+    puts 'build:vsphere'
   end
+
   task :azure do
+    puts 'build:azure'
   end
 
   task :openstack do
+    puts 'build:openstack'
   end
 end
-
-RSpec::Core::RakeTask.new(:spec)
-
-task :default => :spec
