@@ -90,12 +90,12 @@ end
 
 File.write(File.join("amis","amis.json"),amis.to_json)
 
+stemcell_filename = "light-bosh-stemcell-#{VERSION}-aws-xen-hvm-#{OS_VERSION}-go_agent.tgz"
+
 Dir.mktmpdir do |dir|
   MFTemplate.new("#{BUILDER_PATH}/erb_templates/aws/stemcell.MF.erb", VERSION, amis: amis, os_version: OS_VERSION).save(dir)
   ApplySpecTemplate.new("#{BUILDER_PATH}/erb_templates/apply_spec.yml.erb", AGENT_COMMIT).save(dir)
   exec_command("touch #{dir}/image")
-
-  stemcell_filename = "light-bosh-stemcell-#{VERSION}-aws-xen-hvm-#{OS_VERSION}-go_agent.tgz"
 
   exec_command("tar czvf #{File.join(output_dir, stemcell_filename)} -C #{dir} stemcell.MF apply_spec.yml image")
 end
