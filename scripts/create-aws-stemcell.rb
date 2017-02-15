@@ -99,3 +99,6 @@ Dir.mktmpdir do |dir|
 
   exec_command("tar czvf #{File.join(output_dir, stemcell_filename)} -C #{dir} stemcell.MF apply_spec.yml image")
 end
+
+exec_command("sha1sum #{File.join(output_dir, stemcell_filename)} | awk '{print $1}' > sha/#{stemcell_filename}.sha")
+
