@@ -126,7 +126,7 @@
     {
       "type": "powershell",
       "scripts": [
-        "scripts/check-updates.ps1",
+        "../scripts/check-updates.ps1",
         "scripts/vm-guest-tools.ps1",
         "../scripts/add-windows-features.ps1",
         "scripts/add-vcap-group.ps1",
