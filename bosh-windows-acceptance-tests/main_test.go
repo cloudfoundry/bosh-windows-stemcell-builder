@@ -321,7 +321,7 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("successfully runs redeploy in a tight loop", func() {
-		const redeployRetries = 20
+		const redeployRetries = 10
 
 		pwd, err := os.Getwd()
 		Expect(err).To(BeNil())
