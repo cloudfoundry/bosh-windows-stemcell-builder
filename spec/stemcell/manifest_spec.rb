@@ -33,7 +33,7 @@ describe Stemcell::Manifest do
         expect(YAML.load(manifest)).to eq(
           'name' => 'bosh-aws-xen-hvm-windows-stemcell-go_agent',
           'version' => '1.0',
-          'sha1' => 'ba07a5f8277b3f9e6b8f250aeea4ebad4244b273',
+          'sha1' => 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
           'operating_system' => 'windows2012R2',
           'cloud_properties' => {
             'infrastructure' => 'aws',

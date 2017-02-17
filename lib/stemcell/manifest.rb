@@ -22,7 +22,7 @@ module Stemcell
       def initialize(version, os, amis)
         super('bosh-aws-xen-hvm-windows-stemcell-go_agent',
               version,
-              'ba07a5f8277b3f9e6b8f250aeea4ebad4244b273',
+              'da39a3ee5e6b4b0d3255bfef95601890afd80709',
               os)
         cloud_properties = {
           'infrastructure' => 'aws',

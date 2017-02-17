@@ -1,23 +1,6 @@
 require 'packer/config'
 
 describe Packer::Config do
-  describe 'Base' do
-    describe 'dump' do
-      it 'returns a json string combining the builders and provisioners' do
-        config = Packer::Config::Base.new.dump
-        expect(JSON.parse(config)).to eq(
-          'builders' => [],
-          'provisioners' => [
-            Packer::Config::Provisioners::AGENT_ZIP,
-            Packer::Config::Provisioners::AGENT_DEPS_ZIP,
-            Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
-            Packer::Config::Provisioners::COMMON_POWERSHELL
-          ]
-        )
-      end
-    end
-  end
-
   describe 'Aws' do
     describe 'builders' do
       it 'returns the expected builders' do
@@ -33,9 +16,8 @@ describe Packer::Config do
         ]
         builders = Packer::Config::Aws.new('accesskey',
                                            'secretkey',
-                                           'aminame1',
                                            regions).builders
-        expect(builders[0]).to eq(
+        expect(builders[0]).to include(
           'name' => 'amazon-ebs-region1',
           'type' => 'amazon-ebs',
           'access_key' => 'accesskey',
@@ -43,29 +25,34 @@ describe Packer::Config do
           'region' => 'region1',
           'source_ami' => 'baseami1',
           'instance_type' => 'm4.xlarge',
-          'ami_name' => 'aminame1-region1',
           'vpc_id' => 'vpc1',
           'subnet_id' => 'subnet1',
           'associate_public_ip_address' => true,
           'communicator' => 'winrm',
           'winrm_username' => 'Administrator',
-          'user_data_file' => 'setup_winrm.txt',
+          'user_data_file' => 'scripts/aws/setup_winrm.txt',
           'security_group_id' => 'sg1',
           'ami_groups' => 'all'
         )
+        expect(builders[0]['ami_name']).to match(/BOSH-.*-region1/)
       end
     end
 
     describe 'provisioners' do
       it 'returns the expected provisioners' do
-        provisioners = Packer::Config::Aws.new('', '', '', []).provisioners
+        provisioners = Packer::Config::Aws.new('', '', []).provisioners
         expect(provisioners).to eq(
           [
             Packer::Config::Provisioners::AGENT_ZIP,
             Packer::Config::Provisioners::AGENT_DEPS_ZIP,
             Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
             Packer::Config::Provisioners::SET_EC2_PASSWORD,
-            Packer::Config::Provisioners::COMMON_POWERSHELL
+            Packer::Config::Provisioners::SETUP_AGENT,
+            Packer::Config::Provisioners::AWS_AGENT_CONFIG,
+            Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
+            Packer::Config::Provisioners::DISABLE_SERVICES,
+            Packer::Config::Provisioners::SET_FIREWALL,
+            Packer::Config::Provisioners::CLEANUP_ARTIFACTS
           ]
         )
       end
@@ -88,7 +75,6 @@ describe Packer::Config do
         ]
         config = Packer::Config::Aws.new('accesskey',
                                          'secretkey',
-                                         'aminame1',
                                          regions).dump
         puts config
         runner = Packer::Runner.new(config)
@@ -101,38 +87,47 @@ describe Packer::Config do
   describe 'Gcp' do
     describe 'builders' do
       it 'returns the expected builders' do
-        builders = Packer::Config::Gcp.new('accountjson',
-                                           'projectid',
-                                           'imageid').builders
-        expect(builders[0]).to eq(
+        account_json = 'some-account-json'
+        project_id = 'some-project-id'
+        source_image = {'base_image' => 'some-base-image'}.to_json
+        builders = Packer::Config::Gcp.new(account_json, project_id, source_image).builders
+        expect(builders[0]).to include(
           'type' => 'googlecompute',
-          'account_file' => 'accountjson',
-          'project_id' => 'projectid',
+          'account_file' => account_json,
+          'project_id' => project_id,
           'tags' => ['winrm'],
-          'source_image' => 'windows-2012-r2-winrm',
+          'source_image' => 'some-base-image',
           'image_family' => 'windows-2012-r2',
           'zone' => 'us-east1-c',
           'disk_size' => 50,
-          'image_name' =>  'imageid',
           'machine_type' => 'n1-standard-4',
           'omit_external_ip' => false,
           'communicator' => 'winrm',
           'winrm_username' => 'winrmuser',
-          'winrm_use_ssl' => false
+          'winrm_use_ssl' => false,
+          'metadata' => {
+            'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp-setup-winrm.ps1'
+          }
         )
+        expect(builders[0]['image_name']).to match(/packer-\d+/)
       end
     end
 
     describe 'provisioners' do
       it 'returns the expected provisioners' do
-        provisioners = Packer::Config::Gcp.new('', '', '').provisioners
+        provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json).provisioners
         expect(provisioners).to eq(
           [
             Packer::Config::Provisioners::WINRM_CONFIG,
             Packer::Config::Provisioners::AGENT_ZIP,
             Packer::Config::Provisioners::AGENT_DEPS_ZIP,
             Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
-            Packer::Config::Provisioners::COMMON_POWERSHELL
+            Packer::Config::Provisioners::SETUP_AGENT,
+            Packer::Config::Provisioners::GCP_AGENT_CONFIG,
+            Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
+            Packer::Config::Provisioners::DISABLE_SERVICES,
+            Packer::Config::Provisioners::SET_FIREWALL,
+            Packer::Config::Provisioners::CLEANUP_ARTIFACTS
           ]
         )
       end
@@ -206,20 +201,6 @@ describe Packer::Config do
         provisioners = Packer::Config::VSphere.new('', '', '', '', 1, 1).provisioners
         expect(provisioners).to eq(
           [
-            Packer::Config::Provisioners::WINDOWS_RESTART,
-            Packer::Config::Provisioners::AGENT_ZIP,
-            Packer::Config::Provisioners::AGENT_DEPS_ZIP,
-            Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
-            Packer::Config::Provisioners::LGPO_EXE,
-            Packer::Config::Provisioners::VMWARE_TOOLS_EXE,
-            Packer::Config::Provisioners::INSTALL_VMWARE_TOOLS,
-            Packer::Config::Provisioners::ENABLE_RDP,
-            Packer::Config::Provisioners::DISABLE_AUTO_LOGON,
-            Packer::Config::Provisioners::ADD_VCAP_GROUP,
-            Packer::Config::Provisioners::RUN_LGPO,
-            Packer::Config::Provisioners::COMMON_POWERSHELL,
-            Packer::Config::Provisioners::CLEANUP_TEMP_DIRS,
-            Packer::Config::Provisioners::COMPACT_DISK
           ]
         )
       end

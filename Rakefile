@@ -1,10 +1,6 @@
 require 'rspec/core/rake_task'
 
 namespace :build do
-  task :all do
-    puts 'build:all'
-  end
-
   task :aws do
     puts 'build:aws'
   end
