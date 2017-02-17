@@ -23,3 +23,24 @@ RSpec.configure do |config|
 
   Kernel.srand config.seed
 end
+
+def tgz_extract(file_path, out_dir)
+  File.open(file_path, 'rb') do |file|
+    Zlib::GzipReader.wrap(file) do |gz|
+      Gem::Package::TarReader.new(gz) do |tar|
+        tar.each do |entry|
+          next unless entry.file?
+
+          entry_path = File.join(out_dir, entry.full_name)
+          FileUtils.mkdir_p(File.dirname(entry_path))
+
+          File.open(entry_path, 'wb') do |f|
+            f.write(entry.read)
+          end
+
+          File.chmod(entry.header.mode, entry_path)
+        end
+      end
+    end
+  end
+end
