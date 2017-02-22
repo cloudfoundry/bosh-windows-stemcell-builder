@@ -60,9 +60,10 @@ class AWSPackerJsonTemplate < Template
 end
 
 class GCPPackerJsonTemplate < Template
-  def initialize(template, account_json_file, project_id)
+  def initialize(template, account_json_file, project_id, image_name)
     super(template)
     @account_json_file = account_json_file
     @project_id = project_id
+    @image_name = image_name
   end
 end

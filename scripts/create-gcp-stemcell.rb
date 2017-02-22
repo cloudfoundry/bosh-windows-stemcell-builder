@@ -50,8 +50,9 @@ def run_packer(config_path)
 end
 
 def exec_command(cmd)
-  `#{cmd}`
+  output=`#{cmd}`.chomp
   exit 1 unless $?.success?
+  output
 end
 
 if find_executable('packer').nil?
@@ -66,8 +67,9 @@ account_json = Tempfile.new(['account','.json']).tap(&:close).path
 File.write(account_json, ACCOUNT_JSON)
 gcp_config = File.join(BUILDER_PATH, "gcp")
 
+image_name = exec_command('gcloud compute images list --filter="name:windows-server-2012-r2-dc-v*" | tail -1 | cut -d " " -f 1')
 GCPPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/gcp/packer.json.erb",
-                          account_json, PROJECT_ID).save(gcp_config)
+                          account_json, PROJECT_ID, image_name).save(gcp_config)
 
 image_name = run_packer(File.join(gcp_config, "packer.json"))
 if image_name.nil? || image_name.empty?
