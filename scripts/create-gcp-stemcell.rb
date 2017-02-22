@@ -16,6 +16,11 @@ VERSION = File.read("version/number").chomp
 
 AGENT_COMMIT = File.read("compiled-agent/sha").chomp
 
+BASE_IMAGE = JSON.parse(File.read(Dir.glob("base-gcp-image/base-gcp-image-*.json")[0]).chomp)["base_image"]
+if BASE_IMAGE.empty?
+  abort("ERROR: cannot find 'base_image' in GCP image json")
+end
+
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
 ACCOUNT_JSON = ENV.fetch('ACCOUNT_JSON')
 PROJECT_ID = JSON.parse(ACCOUNT_JSON)['project_id']
@@ -67,9 +72,8 @@ account_json = Tempfile.new(['account','.json']).tap(&:close).path
 File.write(account_json, ACCOUNT_JSON)
 gcp_config = File.join(BUILDER_PATH, "gcp")
 
-image_name = exec_command('gcloud compute images list --filter="name:windows-server-2012-r2-dc-v*" | tail -1 | cut -d " " -f 1')
 GCPPackerJsonTemplate.new("#{BUILDER_PATH}/erb_templates/gcp/packer.json.erb",
-                          account_json, PROJECT_ID, image_name).save(gcp_config)
+                          account_json, PROJECT_ID, BASE_IMAGE).save(gcp_config)
 
 image_name = run_packer(File.join(gcp_config, "packer.json"))
 if image_name.nil? || image_name.empty?
