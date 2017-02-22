@@ -159,6 +159,16 @@ if ova_file.length == 0
   abort("ERROR: unable to find packer-vmware-iso.ova")
 end
 
+installed_updates = Dir.glob('**/installed-updates.json' ).select { |fn| File.file?(fn) }
+if installed_updates.length == 0
+  abort("ERROR: unable to find installed-updates.json")
+end
+
+installed_features = Dir.glob('**/installed-features.json' ).select { |fn| File.file?(fn) }
+if installed_features.length == 0
+  abort("ERROR: unable to find installed-features.json")
+end
+
 # remove network interface from VM image
 Dir.mktmpdir do |dir|
   exec_command("tar xf #{ova_file[0]} -C #{dir}")
@@ -182,5 +192,5 @@ Dir.mktmpdir do |dir|
 
   stemcell_filename = "bosh-stemcell-#{VERSION}-vsphere-esxi-windows2012R2-go_agent.tgz"
 
-  exec_command("tar czvf #{File.join(output_dir, stemcell_filename)} -C #{dir} stemcell.MF apply_spec.yml image")
+  exec_command("tar czvf #{File.join(output_dir, stemcell_filename)} -C #{dir} stemcell.MF apply_spec.yml image #{installed_updates[0]} #{installed_features[0]}")
 end
