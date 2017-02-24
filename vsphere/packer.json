@@ -136,23 +136,10 @@
         "../scripts/cleanup-windows-features.ps1",
         "../scripts/disable-services.ps1",
         "../scripts/set-firewall.ps1",
-        "../scripts/get-installed-updates-and-packages.ps1",
         "scripts/cleanup-temp-directories.ps1",
         "../scripts/cleanup-artifacts.ps1",
         "../scripts/compact.ps1"
       ]
-    },
-    {
-      "type": "file",
-      "source": "C:\\bosh\\installed-updates.json",
-      "destination": "./installed-updates.json",
-      "direction": "download"
-    },
-    {
-      "type": "file",
-      "source": "C:\\bosh\\installed-features.json",
-      "destination": "./installed-features.json",
-      "direction": "download"
     }
   ]
 }
