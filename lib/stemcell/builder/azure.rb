@@ -1,3 +1,5 @@
+require 'open-uri'
+
 module Stemcell
   class Builder
     class Azure < Base
@@ -20,7 +22,7 @@ module Stemcell
             disk_uri ||= parse_disk_uri(line)
           end
           download_disk(disk_uri)
-          Packager.package_image(image_path: "#{@output_dir}/root.vhd", archive: true, output_dir: @output_dir)
+          Packager.package_image(image_path: File.join(@output_dir, 'root.vhd'), archive: true, output_dir: @output_dir)
         end
 
         def parse_disk_uri(line)
@@ -33,7 +35,7 @@ module Stemcell
         end
 
         def download_disk(disk_uri)
-          exec_command("curl -s -o '#{@output_dir}/root.vhd' '#{disk_uri}'")
+          Downloader.download(disk_uri, File.join(@output_dir, 'root.vhd'))
         end
     end
   end

@@ -22,12 +22,12 @@ describe Stemcell::Builder do
         manifest_contents = 'manifest_contents'
         apply_spec_contents = 'apply_spec_contents'
         packer_vars = {some_var: 'some-value'}
-        downloaded_image_path = File.join(output_dir, 'root.vhd')
-        File.new(downloaded_image_path, "w+")
+        disk_image_url = 'some-disk-image-url'
+        disk_image_path = File.join(output_dir, 'root.vhd')
         packaged_image_path = File.join(output_dir, 'image')
         File.new(packaged_image_path, 'w+')
         sha = Digest::SHA1.file(packaged_image_path).hexdigest
-        packer_output = "azure-arm,artifact,0\\nOSDiskUriReadOnlySas: file://#{downloaded_image_path}"
+        packer_output = "azure-arm,artifact,0\\nOSDiskUriReadOnlySas: #{disk_image_url}"
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
@@ -38,8 +38,10 @@ describe Stemcell::Builder do
           and_yield(packer_output).and_return(0)
         allow(Packer::Runner).to receive(:new).with(config).and_return(packer_runner)
 
+        allow(Downloader).to receive(:download).with(disk_image_url, disk_image_path)
+
         allow(Stemcell::Packager).to receive(:package_image)
-          .with(image_path: downloaded_image_path, archive: true, output_dir: output_dir)
+          .with(image_path: disk_image_path, archive: true, output_dir: output_dir)
           .and_return(packaged_image_path)
 
         azure_manifest = double(:azure_manifest)
@@ -67,6 +69,7 @@ describe Stemcell::Builder do
           packer_vars: packer_vars
         ).build
         expect(stemcell_path).to eq('path-to-stemcell')
+        expect(Downloader).to have_received(:download).with(disk_image_url, disk_image_path)
       end
     end
   end
