@@ -2,6 +2,8 @@ require 'yaml'
 
 module Stemcell
   module Manifest
+    EMPTY_FILE_SHA = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'.freeze
+
     class Base
       def initialize(name, version, sha, os)
         @contents = {
@@ -20,10 +22,7 @@ module Stemcell
 
     class Aws < Base
       def initialize(version, os, amis)
-        super('bosh-aws-xen-hvm-windows-stemcell-go_agent',
-              version,
-              'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-              os)
+        super('bosh-aws-xen-hvm-windows-stemcell-go_agent', version, EMPTY_FILE_SHA, os)
         cloud_properties = {
           'infrastructure' => 'aws',
           'ami' => {}
@@ -37,10 +36,7 @@ module Stemcell
 
     class Gcp < Base
       def initialize(version, os, image_url)
-        super('bosh-google-kvm-windows2012R2-go_agent',
-              version,
-              'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-              os)
+        super('bosh-google-kvm-windows2012R2-go_agent', version, EMPTY_FILE_SHA, os)
         @contents['cloud_properties'] = {
           'infrastructure' => 'google',
           'image_url' => image_url
@@ -50,8 +46,7 @@ module Stemcell
 
     class VSphere < Base
       def initialize(version, sha, os)
-        super('bosh-vsphere-esxi-windows-2012R2-go_agent',
-              version, sha, os)
+        super('bosh-vsphere-esxi-windows-2012R2-go_agent', version, sha, os)
         @contents['cloud_properties'] = {
           'infrastructure' => 'vsphere',
           'hypervisor' => 'esxi'

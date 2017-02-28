@@ -1,3 +1,5 @@
+EMPTY_FILE_SHA = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
@@ -43,4 +45,17 @@ def tgz_extract(file_path, out_dir)
       end
     end
   end
+end
+
+def read_from_tgz(path, filename)
+  contents = ''
+  tar_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open(path))
+  tar_extract.rewind
+  tar_extract.each do |entry|
+    if entry.full_name.include?(filename)
+      contents = entry.read
+    end
+  end
+  tar_extract.close
+  contents
 end

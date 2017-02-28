@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "1488312240,googlecompute,artifact,0,id,packer-1234"

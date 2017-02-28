@@ -89,14 +89,14 @@ describe Packer::Config do
       it 'returns the expected builders' do
         account_json = 'some-account-json'
         project_id = 'some-project-id'
-        source_image = {'base_image' => 'some-base-image'}.to_json
+        source_image = 'some-base-image'
         builders = Packer::Config::Gcp.new(account_json, project_id, source_image).builders
         expect(builders[0]).to include(
           'type' => 'googlecompute',
           'account_file' => account_json,
           'project_id' => project_id,
           'tags' => ['winrm'],
-          'source_image' => 'some-base-image',
+          'source_image' => source_image,
           'image_family' => 'windows-2012-r2',
           'zone' => 'us-east1-c',
           'disk_size' => 50,

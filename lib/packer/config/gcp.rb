@@ -6,7 +6,7 @@ module Packer
       def initialize(account_json, project_id, source_image)
         @account_json = account_json
         @project_id = project_id
-        @source_image = JSON.parse(source_image)['base_image']
+        @source_image = source_image
       end
 
       def builders

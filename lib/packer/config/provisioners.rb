@@ -10,13 +10,13 @@ module Packer
 
       AGENT_DEPS_ZIP = {
         'type' => 'file',
-        'source' => 'compiled-agent/agent-dependencies.zip',
+        'source' => 'build/compiled-agent/agent-dependencies.zip',
         'destination' => 'C:\\bosh\\agent-dependencies.zip'
       }.freeze
 
       AGENT_ZIP = {
         'type' => 'file',
-        'source' => 'compiled-agent/agent.zip',
+        'source' => 'build/compiled-agent/agent.zip',
         'destination' => 'C:\\bosh\\agent.zip'
       }.freeze
 
@@ -77,7 +77,7 @@ module Packer
 
       LGPO_EXE = {
         'type' => 'file',
-        'source' => '../../windows-stemcell-dependencies/lgpo/LGPO.exe',
+        'source' => 'build/windows-stemcell-dependencies/lgpo/LGPO.exe',
         'destination' => 'C:\\LGPO.exe'
       }.freeze
 
@@ -103,7 +103,7 @@ module Packer
 
       VMWARE_TOOLS_EXE = {
         'type' => 'file',
-        'source' => '../../windows-stemcell-dependencies/VMware-tools/VMware-tools.exe',
+        'source' => 'build/windows-stemcell-dependencies/VMware-tools/VMware-tools.exe',
         'destination' => 'C:\\VMWare-tools.exe'
       }.freeze
 

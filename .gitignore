@@ -34,3 +34,4 @@ compiled-agent
 /vendor/bundle
 /lib/bundler/man/
 
+/build
