@@ -7,10 +7,13 @@ image_resource:
     repository: pivotalgreenhouse/packer-base
 
 inputs:
-  - name: base-amis
-  - name: compiled-agent
-  - name: version
   - name: stemcell-builder
+  - name: base-amis
+    path: stemcell-builder/build/base-amis
+  - name: compiled-agent
+    path: stemcell-builder/build/compiled-agent
+  - name: version
+    path: stemcell-builder/build/version
 
 outputs:
   - name: bosh-windows-stemcell
@@ -18,7 +21,10 @@ outputs:
   - name: sha
 
 run:
-  path: stemcell-builder/scripts/create-aws-stemcell.rb
+  path: /bin/bash
+  args:
+    - '-c'
+    - 'rake aws:build'
 
 params:
   OUTPUT_DIR:

@@ -7,16 +7,22 @@ image_resource:
     repository: pivotalgreenhouse/packer-base
 
 inputs:
-  - name: base-gcp-image
-  - name: compiled-agent
-  - name: version
   - name: stemcell-builder
+  - name: base-gcp-image
+    path: stemcell-builder/build/base-gcp-image
+  - name: compiled-agent
+    path: stemcell-builder/build/compiled-agent
+  - name: version
+    path: stemcell-builder/build/version
 
 outputs:
   - name: bosh-windows-stemcell
 
 run:
-  path: stemcell-builder/scripts/create-gcp-stemcell.rb
+  path: /bin/bash
+  args:
+    - '-c'
+    - 'rake gcp:build'
 
 params:
   OUTPUT_DIR:
