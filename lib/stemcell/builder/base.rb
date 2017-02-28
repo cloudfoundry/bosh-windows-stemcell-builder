@@ -30,8 +30,11 @@ module Stemcell
 
         def run_packer
           packer_artifact = nil
-          Packer::Runner.new(packer_config).run('build', @packer_vars) do |stdout|
+          exit_status = Packer::Runner.new(packer_config).run('build', @packer_vars) do |stdout|
             packer_artifact = parse_packer_output(stdout)
+          end
+          if exit_status != 0
+              raise PackerFailure
           end
           packer_artifact
         end
