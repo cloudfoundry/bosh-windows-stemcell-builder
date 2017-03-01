@@ -112,15 +112,9 @@ module Packer
         'scripts' => ['scripts/vsphere/agent_config.ps1']
       }.freeze
 
-      WINRM_CONFIG = {
+      INCREASE_WINRM_LIMITS = {
         'type' => 'powershell',
-        'inline' => [
-          "winrm set winrm/config/winrs '@{MaxShellsPerUser=\"100\"}'",
-          "winrm set winrm/config/winrs '@{MaxConcurrentUsers=\"30\"}'",
-          "winrm set winrm/config/winrs '@{MaxProcessesPerShell=\"100\"}'",
-          "winrm set winrm/config/winrs '@{MaxMemoryPerShellMB=\"1024\"}'",
-          "winrm set winrm/config/service '@{MaxConcurrentOperationsPerUser=\"5000\"}'"
-        ]
+        'scripts' => ['scripts/increase-winrm-limits.ps1']
       }.freeze
 
       WINDOWS_RESTART = {

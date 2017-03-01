@@ -35,7 +35,7 @@ module Packer
 
       def provisioners
         [
-          Provisioners::WINRM_CONFIG,
+          Provisioners::INCREASE_WINRM_LIMITS,
           Provisioners::AGENT_ZIP,
           Provisioners::AGENT_DEPS_ZIP,
           Provisioners::INSTALL_WINDOWS_FEATURES,
