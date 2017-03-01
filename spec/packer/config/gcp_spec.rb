@@ -1,0 +1,51 @@
+require 'packer/config'
+
+describe Packer::Config::Gcp do
+  describe 'builders' do
+    it 'returns the expected builders' do
+      account_json = 'some-account-json'
+      project_id = 'some-project-id'
+      source_image = 'some-base-image'
+      builders = Packer::Config::Gcp.new(account_json, project_id, source_image).builders
+      expect(builders[0]).to include(
+        'type' => 'googlecompute',
+        'account_file' => account_json,
+        'project_id' => project_id,
+        'tags' => ['winrm'],
+        'source_image' => source_image,
+        'image_family' => 'windows-2012-r2',
+        'zone' => 'us-east1-c',
+        'disk_size' => 50,
+        'machine_type' => 'n1-standard-4',
+        'omit_external_ip' => false,
+        'communicator' => 'winrm',
+        'winrm_username' => 'winrmuser',
+        'winrm_use_ssl' => false,
+        'metadata' => {
+          'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp-setup-winrm.ps1'
+        }
+      )
+      expect(builders[0]['image_name']).to match(/packer-\d+/)
+    end
+  end
+
+  describe 'provisioners' do
+    it 'returns the expected provisioners' do
+      provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json).provisioners
+      expect(provisioners).to eq(
+        [
+          Packer::Config::Provisioners::INCREASE_WINRM_LIMITS,
+          Packer::Config::Provisioners::AGENT_ZIP,
+          Packer::Config::Provisioners::AGENT_DEPS_ZIP,
+          Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
+          Packer::Config::Provisioners::SETUP_AGENT,
+          Packer::Config::Provisioners::GCP_AGENT_CONFIG,
+          Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
+          Packer::Config::Provisioners::DISABLE_SERVICES,
+          Packer::Config::Provisioners::SET_FIREWALL,
+          Packer::Config::Provisioners::CLEANUP_ARTIFACTS
+        ]
+      )
+    end
+  end
+end
