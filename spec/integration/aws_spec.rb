@@ -31,7 +31,7 @@ describe 'Aws' do
       ENV['AWS_SECRET_KEY'] = 'some-aws_secret_key'
       ENV['OS_VERSION'] = os_version
       ENV['OUTPUT_DIR'] = output_dir
-      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'assets', 'aws')}:#{ENV['PATH']}"
+      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'aws')}:#{ENV['PATH']}"
 
       FileUtils.mkdir_p(File.join(@build_dir, 'version'))
       File.write(

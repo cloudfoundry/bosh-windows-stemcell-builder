@@ -30,7 +30,7 @@ describe 'Gcp' do
       ENV['OUTPUT_DIR'] = output_dir
       ENV['ACCOUNT_JSON'] = {'project_id' => 'some-project-id'}.to_json
       ENV['OS_VERSION'] = os_version
-      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'assets', 'gcp')}:#{ENV['PATH']}"
+      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'gcp')}:#{ENV['PATH']}"
 
       FileUtils.mkdir_p(File.join(@build_dir, 'version'))
       File.write(
