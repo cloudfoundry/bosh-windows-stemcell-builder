@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+require 'fileutils'
+
+OUTPUT_DIR = ARGV[1]
+FileUtils.cp(File.join(__dir__, "image"), OUTPUT_DIR)

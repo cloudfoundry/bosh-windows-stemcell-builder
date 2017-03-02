@@ -17,7 +17,14 @@ outputs:
   - name: bosh-windows-stemcell
 
 run:
-  path: stemcell-builder/scripts/create-vsphere-stemcell.rb
+  path: powershell
+  args:
+    - '-c'
+    - |
+    cd stemcell-builder
+    bundle install
+    rake build:vsphere
+
 
 params:
   OUTPUT_DIR: replace-me

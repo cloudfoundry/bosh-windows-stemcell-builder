@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'json'
+
+packer_config = ARGV.last
+content = File.read(packer_config)
+output_directory = JSON.parse(content)['builders'][0]['output_directory']
+FileUtils.mkdir_p(output_directory)
+Dir.chdir(output_directory) do
+  File.write("file.vmx", "banana")
+end

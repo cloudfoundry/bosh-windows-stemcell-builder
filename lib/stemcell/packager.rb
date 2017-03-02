@@ -9,11 +9,11 @@ module Stemcell
     class InvalidOutputDirError < ArgumentError
     end
 
-    def self.package_image(image_path:, archive:, output_dir:)
+    def self.package_image(image_path:, archive:, output_directory:)
       raise InvalidImagePathError unless File.file?(image_path)
-      raise InvalidOutputDirError unless File.directory?(output_dir)
+      raise InvalidOutputDirError unless File.directory?(output_directory)
 
-      packaged_image = File.join(output_dir, 'image')
+      packaged_image = File.join(output_directory, 'image')
       if archive
         tar_gzip_file(image_path, packaged_image)
       else
@@ -22,16 +22,16 @@ module Stemcell
       packaged_image
     end
 
-    def self.package(iaas:, os:, is_light:, version:, image_path:, manifest:, apply_spec:, output_dir:)
+    def self.package(iaas:, os:, is_light:, version:, image_path:, manifest:, apply_spec:, output_directory:)
       raise InvalidImagePathError unless File.file?(image_path) || is_light
-      raise InvalidOutputDirError unless File.directory?(output_dir)
+      raise InvalidOutputDirError unless File.directory?(output_directory)
 
       stemcell_tarball_file = "bosh-stemcell-#{version}-#{iaas}-#{os}-go_agent.tgz"
       if is_light
         stemcell_tarball_file = "light-#{stemcell_tarball_file}"
       end
 
-      File.open(File.join(output_dir, stemcell_tarball_file), 'wb') do |file|
+      File.open(File.join(output_directory, stemcell_tarball_file), 'wb') do |file|
         Zlib::GzipWriter.wrap(file) do |gz|
           Gem::Package::TarWriter.new(gz) do |tar|
             tar.add_file_simple('stemcell.MF', 0o666, manifest.length) do |io|

@@ -22,7 +22,7 @@ module Stemcell
             disk_uri ||= parse_disk_uri(line)
           end
           download_disk(disk_uri)
-          Packager.package_image(image_path: File.join(@output_dir, 'root.vhd'), archive: true, output_dir: @output_dir)
+          Packager.package_image(image_path: File.join(@output_directory, 'root.vhd'), archive: true, output_directory: @output_directory)
         end
 
         def parse_disk_uri(line)
@@ -35,7 +35,7 @@ module Stemcell
         end
 
         def download_disk(disk_uri)
-          Downloader.download(disk_uri, File.join(@output_dir, 'root.vhd'))
+          Downloader.download(disk_uri, File.join(@output_directory, 'root.vhd'))
         end
     end
   end

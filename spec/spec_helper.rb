@@ -59,3 +59,7 @@ def read_from_tgz(path, filename)
   tar_extract.close
   contents
 end
+
+# require stemcell class
+require 'stemcell/packager'
+require 'stemcell/builder'

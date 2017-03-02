@@ -13,8 +13,8 @@ describe Packer::Runner do
       }.to_json
       packer_runner = Packer::Runner.new(config)
       block_evaluated = false
-      exit_status = packer_runner.run('build') do |stdout|
-        stdout.each_line do |line|
+      exit_status = packer_runner.run('build') do |out|
+        out.each_line do |line|
           if line.include?(",ui,say,Build 'file' finished.")
             block_evaluated = true
           end

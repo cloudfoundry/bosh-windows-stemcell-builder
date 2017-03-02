@@ -5,6 +5,14 @@ inputs:
   - name: vmx-version
   - name: stemcell-builder
   - name: windows-stemcell-dependencies
+outputs:
+  - name: bosh-windows-stemcell
+
+run:
+  path: ruby.exe
+  args:
+    - stemcell-builder/scripts/create-vmx-add-updates.rb
+
 params:
   AWS_ACCESS_KEY_ID:
   AWS_SECRET_ACCESS_KEY:
@@ -13,9 +21,6 @@ params:
   ADMINISTRATOR_PASSWORD: replace-me
 
   INPUT_BUCKET: "bosh-windows-stemcell-vmx"
-  VMX_CACHE: "C:\\vmx-data"
+  OUTPUT_BUCKET: "bosh-windows-stemcell-vmx"
+  VMX_CACHE_DIR: "C:\\vmx-data"
 
-run:
-  path: ruby.exe
-  args:
-    - stemcell-builder/scripts/create-vmx-add-updates.rb

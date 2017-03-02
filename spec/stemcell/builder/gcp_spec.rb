@@ -1,11 +1,11 @@
 require 'stemcell/builder'
 
 describe Stemcell::Builder do
-  output_dir = ''
+  output_directory = ''
 
   around(:each) do |example|
     Dir.mktmpdir do |dir|
-      output_dir = dir
+      output_directory = dir
       example.run
     end
   end
@@ -50,12 +50,12 @@ describe Stemcell::Builder do
                                                             image_path: '',
                                                             manifest: manifest_contents,
                                                             apply_spec: apply_spec_contents,
-                                                            output_dir: output_dir
+                                                            output_directory: output_directory
                                                            ).and_return('path-to-stemcell')
 
         stemcell_path = Stemcell::Builder::Gcp.new(
           os: os,
-          output_dir: output_dir,
+          output_directory: output_directory,
           version: version,
           agent_commit: agent_commit,
           packer_vars: packer_vars,
@@ -83,7 +83,7 @@ describe Stemcell::Builder do
           expect {
             stemcell_path = Stemcell::Builder::Gcp.new(
               os: '',
-              output_dir: '',
+              output_directory: '',
               version: '',
               agent_commit: '',
               packer_vars: packer_vars,

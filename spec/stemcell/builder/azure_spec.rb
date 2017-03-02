@@ -1,11 +1,12 @@
 require 'stemcell/builder'
+require 'downloader'
 
 describe Stemcell::Builder do
-  output_dir = ''
+  output_directory = ''
 
   around(:each) do |example|
     Dir.mktmpdir do |dir|
-      output_dir = dir
+      output_directory = dir
       example.run
     end
   end
@@ -23,8 +24,8 @@ describe Stemcell::Builder do
         apply_spec_contents = 'apply_spec_contents'
         packer_vars = {some_var: 'some-value'}
         disk_image_url = 'some-disk-image-url'
-        disk_image_path = File.join(output_dir, 'root.vhd')
-        packaged_image_path = File.join(output_dir, 'image')
+        disk_image_path = File.join(output_directory, 'root.vhd')
+        packaged_image_path = File.join(output_directory, 'image')
         File.new(packaged_image_path, 'w+')
         sha = Digest::SHA1.file(packaged_image_path).hexdigest
         packer_output = "azure-arm,artifact,0\\nOSDiskUriReadOnlySas: #{disk_image_url}"
@@ -41,7 +42,7 @@ describe Stemcell::Builder do
         allow(Downloader).to receive(:download).with(disk_image_url, disk_image_path)
 
         allow(Stemcell::Packager).to receive(:package_image)
-          .with(image_path: disk_image_path, archive: true, output_dir: output_dir)
+          .with(image_path: disk_image_path, archive: true, output_directory: output_directory)
           .and_return(packaged_image_path)
 
         azure_manifest = double(:azure_manifest)
@@ -58,12 +59,12 @@ describe Stemcell::Builder do
                                                             image_path: packaged_image_path,
                                                             manifest: manifest_contents,
                                                             apply_spec: apply_spec_contents,
-                                                            output_dir: output_dir
+                                                            output_directory: output_directory
                                                            ).and_return('path-to-stemcell')
 
         stemcell_path = Stemcell::Builder::Azure.new(
           os: os,
-          output_dir: output_dir,
+          output_directory: output_directory,
           version: version,
           agent_commit: agent_commit,
           packer_vars: packer_vars

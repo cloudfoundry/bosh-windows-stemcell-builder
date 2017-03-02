@@ -3,9 +3,58 @@ require 'securerandom'
 module Packer
   module Config
     class Provisioners
+      CREATE_PROVISION_DIR = {
+        'type' => 'powershell',
+        'inline' => [
+          'if (Test-Path C:\\provision) { Remove-Item -Path C:\\provision -Recurse -Force }',
+          'New-Item -ItemType Directory -Path C:\\provision'
+        ]
+      }.freeze
+
+      VMX_UPDATE_PROVISIONER = {
+        'type' => 'file',
+        'source' => 'scripts/vsphere/update-provisioner.ps1',
+        'destination' => 'C:\\provision\\update-provisioner.ps1'
+      }.freeze
+
+      VMX_AUTORUN_UPDATES = {
+        'type' => 'file',
+        'source' => 'scripts/vsphere/autorun-updates.ps1',
+        'destination' => 'C:\\provision\\autorun-updates.ps1'
+      }.freeze
+
+      VMX_POWERSHELLUTILS = {
+        'type' => 'file',
+        'source' => 'scripts/PowershellUtils.psm1',
+        'destination' => 'C:\\provision\\PowershellUtils.psm1'
+      }.freeze
+
+      VMX_PSWINDOWSUPDATE = {
+        'type' => 'file',
+        'source' => 'build/windows-stemcell-dependencies/ps-windowsupdate/PSWindowsUpdate.zip',
+        'destination' => 'C:\\provision\\PSWindowsUpdate.zip'
+      }.freeze
+
+      VMX_WINDOWS_RESTART = {
+        'type' => 'windows-restart',
+        'restart_command' => "powershell.exe C:\\provision\\autorun-updates.ps1 -AdminPassword ADMIN_PASSWORD",
+        'restart_timeout' => '12h'
+      }
+
+      VMX_READ_UPDATE_LOG = {
+        'type' => 'powershell',
+        'inline' => ['if (Test-Path C:\\update-logs.txt) { Get-Content -Path C:\\update-logs.txt } else { Write-Host "Missing log file" }']
+      }.freeze
+
+      VMX_STEMCELL_SYSPREP = {
+        'type' => 'file',
+        'source' => 'scripts/vsphere/sysprep.ps1',
+        'destination' => 'C:\\sysprep.ps1'
+      }.freeze
+
       ADD_VCAP_GROUP = {
         'type' => 'powershell',
-        'scripts' => ['scripts/add-vcap-group.ps1']
+        'scripts' => ['scripts/vsphere/add-vcap-group.ps1']
       }.freeze
 
       AGENT_DEPS_ZIP = {
@@ -40,6 +89,11 @@ module Packer
         'scripts' => ['scripts/cleanup-windows-features.ps1']
       }.freeze
 
+      RUN_POLICIES = {
+        'type' => 'powershell',
+        'scripts' => ['scripts/vsphere/run-policies.ps1']
+      }.freeze
+
       COMPACT_DISK = {
         'type' => 'powershell',
         'scripts' => ['scripts/compact.ps1']
@@ -47,7 +101,7 @@ module Packer
 
       DISABLE_AUTO_LOGON = {
         'type' => 'windows-shell',
-        'scripts' => ['scripts/disable-auto-logon.bat']
+        'scripts' => ['scripts/vsphere/disable-auto-logon.bat']
       }.freeze
 
       DISABLE_SERVICES = {
@@ -57,7 +111,7 @@ module Packer
 
       ENABLE_RDP = {
         'type' => 'windows-shell',
-        'scripts' => ['scripts/enable-rdp.bat']
+        'scripts' => ['scripts/vsphere/enable-rdp.bat']
       }.freeze
 
       GCP_AGENT_CONFIG = {
@@ -81,9 +135,20 @@ module Packer
         'destination' => 'C:\\LGPO.exe'
       }.freeze
 
+      POLICY_BASELINE_ZIP = {
+        'type' => 'file',
+        'source' => 'build/windows-stemcell-dependencies/policy-baseline/policy-baseline.zip',
+        'destination' => 'C:\\policy-baseline.zip'
+      }.freeze
+
       RUN_LGPO = {
         'type' => 'powershell',
         'scripts' => ['scripts/run-lgpo.ps1']
+      }.freeze
+
+      CHECK_UPDATES = {
+        'type' => 'powershell',
+        'scripts' => ['scripts/check-updates.ps1']
       }.freeze
 
       SET_EC2_PASSWORD = {

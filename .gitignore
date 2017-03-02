@@ -3,7 +3,6 @@ packer_cache
 packer-vmware-iso
 vmware_stemcell
 vmware_stemcell_no_updates
-image
 tmp/
 mkmf.log
 vsphere/network-interface-settings.xml

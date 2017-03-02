@@ -1,11 +1,11 @@
 require 'stemcell/builder'
 
 describe Stemcell::Builder do
-  output_dir = ''
+  output_directory = ''
 
   around(:each) do |example|
     Dir.mktmpdir do |dir|
-      output_dir = dir
+      output_directory = dir
       example.run
     end
   end
@@ -44,12 +44,12 @@ describe Stemcell::Builder do
                                                             image_path: '',
                                                             manifest: 'manifest-contents',
                                                             apply_spec: 'apply-spec-contents',
-                                                            output_dir: output_dir
+                                                            output_directory: output_directory
                                                            ).and_return('path-to-stemcell')
 
         stemcell_path = Stemcell::Builder::Aws.new(
           os: os,
-          output_dir: output_dir,
+          output_directory: output_directory,
           version: version,
           amis: amis,
           aws_access_key: aws_access_key,
@@ -78,7 +78,7 @@ describe Stemcell::Builder do
           expect {
             Stemcell::Builder::Aws.new(
               os: '',
-              output_dir: '',
+              output_directory: '',
               version: '',
               amis: amis,
               aws_access_key: aws_access_key,

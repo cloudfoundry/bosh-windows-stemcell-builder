@@ -21,7 +21,7 @@ namespace :build do
       aws_access_key: ENV.fetch("AWS_ACCESS_KEY"),
       aws_secret_key: ENV.fetch("AWS_SECRET_KEY"),
       os: ENV.fetch("OS_VERSION"),
-      output_dir: ENV.fetch("OUTPUT_DIR"),
+      output_directory: ENV.fetch("OUTPUT_DIR"),
       packer_vars: {},
       version: version
     )
@@ -31,6 +31,7 @@ namespace :build do
     rescue => e
       puts "Failed to build stemcell: #{e.message}"
       puts e.backtrace
+      exit 1
     end
   end
 end

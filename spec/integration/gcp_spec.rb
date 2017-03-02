@@ -22,12 +22,12 @@ describe 'Gcp' do
 
   it 'should build a gcp stemcell' do
     Dir.mktmpdir('gcp-stemcell-test') do |tmpdir|
-      output_dir = File.join(tmpdir, 'gcp')
+      output_directory = File.join(tmpdir, 'gcp')
       os_version = 'some-os-version'
       version = 'some-version'
       agent_commit = 'some-agent-commit'
 
-      ENV['OUTPUT_DIR'] = output_dir
+      ENV['OUTPUT_DIR'] = output_directory
       ENV['ACCOUNT_JSON'] = {'project_id' => 'some-project-id'}.to_json
       ENV['OS_VERSION'] = os_version
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'gcp')}:#{ENV['PATH']}"
@@ -52,7 +52,7 @@ describe 'Gcp' do
 
       Rake::Task['build:gcp'].invoke
 
-      stemcell = File.join(output_dir, "light-bosh-stemcell-#{version}-gcp-#{os_version}-go_agent.tgz")
+      stemcell = File.join(output_directory, "light-bosh-stemcell-#{version}-gcp-#{os_version}-go_agent.tgz")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq(version)

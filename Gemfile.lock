@@ -1,7 +1,19 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    aws-sdk (2.8.0)
+      aws-sdk-resources (= 2.8.0)
+    aws-sdk-core (2.8.0)
+      aws-sigv4 (~> 1.0)
+      jmespath (~> 1.0)
+    aws-sdk-resources (2.8.0)
+      aws-sdk-core (= 2.8.0)
+    aws-sigv4 (1.0.0)
     diff-lcs (1.3)
+    jmespath (1.3.1)
+    mini_portile2 (2.0.0)
+    nokogiri (1.6.7.2)
+      mini_portile2 (~> 2.0.0.rc2)
     rake (12.0.0)
     rspec (3.5.0)
       rspec-core (~> 3.5.0)
@@ -21,8 +33,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  aws-sdk
+  nokogiri
   rake
   rspec
 
 BUNDLED WITH
-   1.14.3
+   1.14.6

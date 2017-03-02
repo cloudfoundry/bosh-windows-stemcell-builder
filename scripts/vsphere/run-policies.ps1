@@ -22,7 +22,7 @@ function Unzip
   rm $zipfile
 }
 
-Unzip "A:\policy-baseline.zip" $DEST
+Unzip "C:\policy-baseline.zip" $DEST
 if (-Not (Test-Path "$DEST\policy-baseline")) {
   Write-Error "ERROR: could not extract policy-baseline"
 }

@@ -1,74 +1,134 @@
 require 'packer/config'
 
-describe Packer::Config::VSphere do
-  describe 'builders' do
-    it 'returns the expected builders' do
-      pending('vSphere builder being transitioned to VMX')
-      fail
+describe Packer::Config do
+  describe 'VSphereAddUpdates' do
+    describe 'builders' do
+      it 'returns the expected builders' do
+        builders = Packer::Config::VSphereAddUpdates.new(
+          output_directory: 'output_directory',
+          num_vcpus: 1,
+          mem_size: 1000,
+          administrator_password: 'password',
+          source_path: 'source_path'
+        ).builders
+        expect(builders[0]).to eq(
+          'type' => 'vmware-vmx',
+          'source_path' => 'source_path',
+          'headless' => false,
+          'boot_wait' => '2m',
+          'communicator' => 'winrm',
+          'winrm_username' => 'Administrator',
+          'winrm_password' => 'password',
+          'winrm_timeout' => '5m',
+          'winrm_insecure' => true,
+          'shutdown_command' => "C:\\Windows\\System32\\shutdown.exe /s",
+          'shutdown_timeout' => '1h',
+          'vmx_data' => {
+            'memsize' => '1000',
+            'numvcpus' => '1'
+          },
+          'output_directory' => 'output_directory'
+        )
+      end
+    end
 
-      builders = Packer::Config::VSphere.new('isourl', 'isochecksum',
-                                             'winrmhost', 'password', 1, 1).builders
-      expect(builders[0]).to eq(
-        'type' => 'vmware-iso',
-        'iso_url' => 'isourl',
-        'iso_checksum_type' => 'md5',
-        'iso_checksum' => 'isochecksum',
-        'headless' => false,
-        'boot_wait' => '2m',
-        'communicator' => 'winrm',
-        'winrm_username' => 'Administrator',
-        'winrm_password' => 'vagrant',
-        'winrm_timeout' => '72h',
-        'winrm_insecure' => true,
-        'winrm_host' => 'winrmhost',
-        'shutdown_command' => 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File a =>\\sysprep.ps1 -NewPassword password',
-        'shutdown_timeout' => '1h',
-        'guest_os_type' => 'windows8srv-64',
-        'tools_upload_flavor' => 'windows',
-        'disk_size' => 40000,
-        'vnc_port_min' => 5900,
-        'vnc_port_max' => 5980,
-        'floppy_files' => [
-          'answer_files/2012_r2/Autounattend.xml',
-          'scripts/compile-dotnet-assemblies.bat',
-          'scripts/setup-network-interface.ps1',
-          'scripts/microsoft-updates.bat',
-          'scripts/updates.ps1',
-          'scripts/initial-setup.ps1',
-          'scripts/sysprep.ps1',
-          'policy-baseline.zip',
-          'network-interface-settings.xml',
-          'scripts/install-ps-windows-update-module.ps1',
-          '../../windows-stemcell-dependencies/ps-windowsupdate/PSWindowsUpdate.zip'
-        ],
-        'vmx_data' => {
-          'memsize' => '1',
-          'numvcpus' => '1',
-          'scsi0.virtualDev' => 'lsisas1068',
-          'ethernet0.present' => 'TRUE',
-          'ethernet0.startConnected' => 'TRUE',
-          'ethernet0.virtualDev' => 'e1000',
-          'ethernet0.networkName' => 'VM Network',
-          'ethernet0.addressType' => 'generated',
-          'ethernet0.generatedAddressOffset' => '0',
-          'ethernet0.wakeOnPcktRcv' => 'FALSE'
-        },
-        'output_directory' => 'output-vmware-iso',
-        'format' => 'vmx'
-      )
+    describe 'provisioners' do
+      it 'returns the expected provisioners' do
+
+        provisioners = Packer::Config::VSphereAddUpdates.new(
+          output_directory: 'output_directory',
+          num_vcpus: 1,
+          mem_size: 1000,
+          administrator_password: 'password',
+          source_path: 'source_path'
+        ).provisioners
+
+        restart_provisioner = Packer::Config::Provisioners::VMX_WINDOWS_RESTART
+        restart_provisioner['restart_command'] = restart_provisioner['restart_command'].sub!('ADMIN_PASSWORD', 'admin_password')
+
+        expect(provisioners).to eq(
+          [
+            Packer::Config::Provisioners::CREATE_PROVISION_DIR,
+            Packer::Config::Provisioners::VMX_UPDATE_PROVISIONER,
+            Packer::Config::Provisioners::VMX_AUTORUN_UPDATES,
+            Packer::Config::Provisioners::VMX_POWERSHELLUTILS,
+            Packer::Config::Provisioners::VMX_PSWINDOWSUPDATE,
+            restart_provisioner, # Required because we need to set the admin password
+            Packer::Config::Provisioners::VMX_READ_UPDATE_LOG
+          ]
+        )
+      end
     end
   end
 
-  describe 'provisioners' do
-    it 'returns the expected provisioners' do
-      pending('vSphere builder being transitioned to VMX')
-      fail
+  describe 'VSphere' do
+    describe 'builders' do
+      it 'returns the expected builders' do
+        builders = Packer::Config::VSphere.new(
+          output_directory: 'output_directory',
+          num_vcpus: 1,
+          mem_size: 1000,
+          product_key: 'key',
+          organization: 'me',
+          owner: 'me',
+          administrator_password: 'password',
+          source_path: 'source_path'
+        ).builders
+        expect(builders[0]).to eq(
+          'type' => 'vmware-vmx',
+          'source_path' => 'source_path',
+          'headless' => false,
+          'boot_wait' => '2m',
+          'shutdown_command' => 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File C:\\sysprep.ps1 -NewPassword password -ProductKey key -Owner me -Organization me',
+          'shutdown_timeout' => '1h',
+          'communicator' => 'winrm',
+          'ssh_username' => 'Administrator',
+          'winrm_username' => 'Administrator',
+          'winrm_password' => 'password',
+          'winrm_timeout' => '8m',
+          'winrm_insecure' => true,
+          'vmx_data' => {
+            'memsize' => '1000',
+            'numvcpus' => '1'
+          },
+          'output_directory' => 'output_directory'
+        )
+      end
+    end
 
-      provisioners = Packer::Config::VSphere.new('', '', '', '', 1, 1).provisioners
-      expect(provisioners).to eq(
-        [
-        ]
-      )
+    describe 'provisioners' do
+      it 'returns the expected provisioners' do
+        provisioners = Packer::Config::VSphere.new(
+          output_directory: 'output_directory',
+          num_vcpus: 1,
+          mem_size: 1000,
+          product_key: 'key',
+          organization: 'me',
+          owner: 'me',
+          administrator_password: 'password',
+          source_path: 'source_path'
+        ).provisioners
+        expect(provisioners).to eq(
+          [
+            Packer::Config::Provisioners::AGENT_ZIP,
+            Packer::Config::Provisioners::AGENT_DEPS_ZIP,
+            Packer::Config::Provisioners::POLICY_BASELINE_ZIP,
+            Packer::Config::Provisioners::LGPO_EXE,
+            Packer::Config::Provisioners::VMX_STEMCELL_SYSPREP,
+            Packer::Config::Provisioners::ENABLE_RDP,
+            Packer::Config::Provisioners::CHECK_UPDATES,
+            Packer::Config::Provisioners::ADD_VCAP_GROUP,
+            Packer::Config::Provisioners::RUN_POLICIES,
+            Packer::Config::Provisioners::SETUP_AGENT,
+            Packer::Config::Provisioners::VSPHERE_AGENT_CONFIG,
+            Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
+            Packer::Config::Provisioners::DISABLE_SERVICES,
+            Packer::Config::Provisioners::SET_FIREWALL,
+            Packer::Config::Provisioners::CLEANUP_TEMP_DIRS,
+            Packer::Config::Provisioners::CLEANUP_ARTIFACTS
+          ]
+        )
+      end
     end
   end
 end
