@@ -5,8 +5,8 @@
 #>
 
 param(
-    [String]$UpdatesPath="installed-updates.json",
-    [String]$FeaturesPath="installed-features.json"
+    [String]$UpdatesPath="C:\\bosh\\installed-updates.json",
+    [String]$FeaturesPath="C:\\bosh\\installed-features.json"
 )
 
 $ErrorActionPreference = "Stop";
