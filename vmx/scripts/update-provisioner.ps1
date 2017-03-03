@@ -1,4 +1,4 @@
-param([String]$AdminPassword="Password123!")
+param([String]$AdminPassword="Password123!", [String]$DebugLog="")
 
 # DO NOT CHECK FOR ERRORS IN THIS FILE!
 
@@ -118,7 +118,8 @@ function Add-AutoRun() {
     $prop = (Get-ItemProperty $RegistryKey).$RegistryEntry
     if (-not $prop) {
         LogWrite $UpdateLog "Restart Registry Entry Does Not Exist - Creating It"
-        Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File $($ScriptPath)"
+        Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File {0} -DebugLog {1} *>> {1}" -f `
+            $ScriptPath, $DebugLog
     } else {
         LogWrite $UpdateLog "Restart Registry Entry Exists Already"
     }

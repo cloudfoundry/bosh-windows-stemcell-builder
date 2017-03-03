@@ -1,4 +1,4 @@
-param([String]$AdminPassword="Password123!")
+param([String]$AdminPassword="Password123!", [String]$DebugLog="")
 
 # UPDATES
 $ScriptDirectory = Split-Path $MyInvocation.MyCommand.Path -Parent
@@ -19,7 +19,9 @@ function Add-AutoRun() {
     REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /d "${AdminPassword}" /f
 
     $prop = (Get-ItemProperty $RegistryKey).$RegistryEntry
-    $value = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File {0}\{1}" -f $ScriptDirectory, $ProvisionScript
+    $value = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File {0}\{1} -DebugLog {2} *>> {2}" -f `
+        $ScriptDirectory, $ProvisionScript, $DebugLog
+
     if ($prop -ne $value) {
         LogWrite $UpdateLog "Creating: restart registry with value ($value)"
         Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value $value

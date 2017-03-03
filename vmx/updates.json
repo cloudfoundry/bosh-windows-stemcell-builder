@@ -1,5 +1,6 @@
 {
   "variables": {
+    "debug_log": "",
     "source_path": null,
     "administrator_password": null,
     "output_directory": null,
@@ -61,12 +62,16 @@
     },
     {
       "type": "windows-restart",
-      "restart_command": "powershell.exe C:\\provision\\autorun-updates.ps1 -AdminPassword {{user `administrator_password`}}",
+      "restart_command": "powershell.exe C:\\provision\\autorun-updates.ps1 -AdminPassword {{user `administrator_password`}} -DebugLog {{user `debug_log`}}",
       "restart_timeout": "12h"
     },
     {
       "type": "powershell",
       "inline": ["if (Test-Path C:\\update-logs.txt) { Get-Content -Path C:\\update-logs.txt } else { Write-Host \"Missing log file\" }"]
+    },
+    {
+      "type": "powershell",
+      "inline": ["$path = {{user `debug_log`}}; if (($path.Length -gt 0) -And (Test-Path $path)) { Get-Content -Path $path } else { Write-Host \"Missing debug log file\" }"]
     }
   ]
 }
