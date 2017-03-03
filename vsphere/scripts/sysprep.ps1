@@ -13,7 +13,7 @@ reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpd
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" /v IncludeRecommendedUpdates /t REG_DWORD /d 0 /f
 "@
 
-Out-File -FilePath C:/disable-updates.bat -InputObject $DisableUpdateScript -Encoding utf8
+Out-File -FilePath "C:/disable-updates.bat" -InputObject $DisableUpdateScript -Encoding utf8
 
 $ProductKeyXML="<RegisteredOwner />"
 if ($ProductKey -ne "") {
@@ -105,10 +105,10 @@ $PostUnattend = @"
 "@
 
 
-$exists = Test-Path C:\Windows\Panther\Unattend
+$exists = Test-Path "C:\Windows\Panther\Unattend"
 if (-Not $exists) {
-    mkdir C:\Windows\Panther\Unattend
+    New-Item -ItemType directory "C:\Windows\Panther\Unattend" -Force
 }
-Out-File -FilePath C:/Windows/Panther/Unattend/unattend.xml -InputObject $PostUnattend -Encoding utf8
+Out-File -FilePath "C:/Windows/Panther/Unattend/unattend.xml" -InputObject $PostUnattend -Encoding utf8
 
-C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:C:/Windows/Panther/Unattend/unattend.xml /quiet /shutdown
+C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown

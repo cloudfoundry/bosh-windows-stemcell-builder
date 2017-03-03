@@ -1,0 +1,27 @@
+---
+platform: windows
+
+inputs:
+  - name: version
+  - name: compiled-agent
+  - name: stemcell-builder
+  - name: windows-stemcell-dependencies
+  - name: vmx-version
+outputs:
+  - name: bosh-windows-stemcell
+
+params:
+  AWS_ACCESS_KEY_ID:
+  AWS_SECRET_ACCESS_KEY:
+  AWS_REGION: us-east-1
+
+  ADMINISTRATOR_PASSWORD: replace-me
+
+  INPUT_BUCKET: "bosh-windows-stemcell-vmx"
+  OUTPUT_BUCKET: "bosh-windows-stemcells-pre-release-candidate"
+  VMX_CACHE: "C:\\vmx-data"
+
+run:
+  path: ruby.exe
+  args:
+  - stemcell-builder/scripts/create-vmx-stemcell.rb

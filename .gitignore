@@ -1,3 +1,4 @@
+# Stemcell Builder
 packer_cache
 packer-vmware-iso
 vmware_stemcell
@@ -7,3 +8,29 @@ tmp/
 mkmf.log
 vsphere/network-interface-settings.xml
 scripts/win_iso
+compiled-agent
+
+# Ruby
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+# Documentation cache and generated files:
+/.yardoc/
+/_yardoc/
+/doc/
+/rdoc/
+
+## Environment normalization:
+/.bundle/
+/vendor/bundle
+/lib/bundler/man/
+

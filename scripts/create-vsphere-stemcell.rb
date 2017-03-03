@@ -17,50 +17,13 @@ AGENT_PATH = "compiled-agent/agent.zip"
 AGENT_DEPS_PATH = "compiled-agent/agent-dependencies.zip"
 AGENT_COMMIT = File.read("compiled-agent/sha").chomp
 
-ISO_URL = File.absolute_path(Dir.glob('base-iso/*.iso').first)
-
 OUTPUT_DIR = ENV.fetch("OUTPUT_DIR")
-ISO_CHECKSUM_TYPE = ENV.fetch('ISO_CHECKSUM_TYPE')
-ISO_CHECKSUM = ENV.fetch('ISO_CHECKSUM')
 MEMSIZE = ENV.fetch('MEMSIZE')
 NUMVCPUS = ENV.fetch('NUMVCPUS')
-REMOTE_HOST = ENV.fetch('REMOTE_HOST')
-REMOTE_PORT = ENV.fetch('REMOTE_PORT')
-REMOTE_DATASTORE = ENV.fetch('REMOTE_DATASTORE')
-REMOTE_CACHE_DATASTORE = ENV.fetch('REMOTE_CACHE_DATASTORE')
-REMOTE_CACHE_DIRECTORY = ENV.fetch('REMOTE_CACHE_DIRECTORY')
-REMOTE_USERNAME = ENV.fetch('REMOTE_USERNAME')
-REMOTE_PASSWORD = ENV.fetch('REMOTE_PASSWORD')
 ADMINISTRATOR_PASSWORD = ENV.fetch('ADMINISTRATOR_PASSWORD')
 PRODUCT_KEY = ENV.fetch('PRODUCT_KEY')
 OWNER = ENV.fetch('OWNER')
 ORGANIZATION = ENV.fetch('ORGANIZATION')
-
-# erb_templates/network-interface-settings.xml
-GUEST_NETWORK_ADDRESS = ENV.fetch('GUEST_NETWORK_ADDRESS')
-GUEST_NETWORK_MASK = ENV.fetch('GUEST_NETWORK_MASK')
-GUEST_NETWORK_GATEWAY = ENV.fetch('GUEST_NETWORK_GATEWAY')
-
-def create_network_interface_settings(builder_path, address, mask, gateway)
-  templatePath = "#{builder_path}/erb_templates/vsphere/network-interface-settings.xml.erb"
-  settingsPath = "#{builder_path}/vsphere"
-
-  # Manual network configuration (all specified)
-  if (!address.nil? && !address.empty?) && (!mask.nil? && !mask.empty?) &&
-     (!gateway.nil? && !gateway.empty?)
-    NetworkInterfaceSettingsTemplate.new(templatePath, address, mask, gateway).save(settingsPath)
-
-  # Ignore network settings (all nil)
-  elsif (address.nil? || address.empty?) && (mask.nil? || mask.empty?) &&
-        (gateway.nil? || gateway.empty?)
-    File.write("#{settingsPath}/network-interface-settings.xml", 'IGNORE')
-
-  # Error
-  else
-    abort("ERROR: invalid GUEST_NETWORK settings, all settings must be either " \
-          "be specified or 'nil'.")
-  end
-end
 
 def gzip_file(name, output)
   Zlib::GzipWriter.open(output) do |gz|
@@ -78,9 +41,6 @@ def packer_command(command, config_path)
 
     args = %{
       packer #{command} \
-      -var "iso_url=#{ISO_URL}" \
-      -var "iso_checksum_type=#{ISO_CHECKSUM_TYPE}" \
-      -var "iso_checksum=#{ISO_CHECKSUM}" \
       -var "memsize=#{MEMSIZE}" \
       -var "numvcpus=#{NUMVCPUS}" \
       -var "remote_host=#{REMOTE_HOST}" \
@@ -97,6 +57,7 @@ def packer_command(command, config_path)
       -var "winrm_host=#{GUEST_NETWORK_ADDRESS}" \
       #{config_path}
     }
+
     Open3.popen2e(args) do |stdin, stdout_stderr, wait_thr|
       stdout_stderr.each_line do |line|
         puts line
@@ -147,8 +108,6 @@ IMAGE_PATH = "#{output_dir}/image"
 
 BUILDER_PATH=File.expand_path("../..", __FILE__)
 
-create_network_interface_settings(BUILDER_PATH, GUEST_NETWORK_ADDRESS, GUEST_NETWORK_MASK, GUEST_NETWORK_GATEWAY)
-
 packer_config = File.join(BUILDER_PATH, "vsphere", "packer.json")
 
 packer_command('validate', packer_config)
@@ -160,16 +119,16 @@ if ova_file.length == 0
 end
 
 # remove network interface from VM image
-Dir.mktmpdir do |dir|
-  exec_command("tar xf #{ova_file[0]} -C #{dir}")
-  f = Nokogiri::XML(File.open("#{dir}/packer-vmware-iso.ovf"))
-  f.css("VirtualHardwareSection Item").select {|x| x.to_s =~ /Ethernet 1/}.first.remove
-  File.write("#{dir}/packer-vmware-iso.ovf", f.to_s)
-  ova_file_path = File.absolute_path(ova_file[0])
-  Dir.chdir(dir) do
-    exec_command("tar cf #{ova_file_path} *")
-  end
-end
+# Dir.mktmpdir do |dir|
+#   exec_command("tar xf #{ova_file[0]} -C #{dir}")
+#   f = Nokogiri::XML(File.open("#{dir}/packer-vmware-iso.ovf"))
+#   f.css("VirtualHardwareSection Item").select {|x| x.to_s =~ /Ethernet 1/}.first.remove
+#   File.write("#{dir}/packer-vmware-iso.ovf", f.to_s)
+#   ova_file_path = File.absolute_path(ova_file[0])
+#   Dir.chdir(dir) do
+#     exec_command("tar cf #{ova_file_path} *")
+#   end
+# end
 
 gzip_file(ova_file[0], "#{IMAGE_PATH}")
 
