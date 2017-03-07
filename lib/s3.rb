@@ -6,6 +6,7 @@ module S3
       Aws.use_bundled_cert!
       credentials =  Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
       @s3 = Aws::S3::Client.new(region: aws_region, credentials: credentials)
+      @s3_resource = Aws::S3::Resource.new(region: aws_region, credentials: credentials)
     end
     def get(bucket,key,file_name)
       puts "Downloading the #{key} from #{bucket} to #{file_name}"
@@ -16,7 +17,7 @@ module S3
     end
     def put(bucket,key,file_name)
       puts "Uploading the #{file_name} to #{bucket}:#{key}"
-      @s3.bucket(bucket).object(key).upload_file(file_name)
+      @s3_resource.bucket(bucket).object(key).upload_file(file_name)
       puts "Finished uploading the #{file_name} to #{bucket}:#{key}"
     end
   end
@@ -53,6 +54,16 @@ module S3
       find_vmx_file(vmx_dir)
     end
 
+    def put(vmx_dir, version)
+      version = version.scan(/(\d+)\./).flatten.first
+      version = (version.to_i + 1).to_s
+      vmx_tarball = File.join(@vmx_cache_dir,"vmx-v#{version}.tgz")
+      Dir.chdir(vmx_dir) do
+        exec_command("tar -czvf #{vmx_tarball} *")
+      end
+      @client.put(@output_bucket, "vmx-v#{version}.tgz", vmx_tarball)
+    end
+
     private
 
     def find_vmx_file(dir)
@@ -68,8 +79,16 @@ module S3
     end
 
     def exec_command(cmd)
-      `#{cmd}`
-      raise "command '#{cmd}' failed" unless $?.success?
+      STDOUT.sync = true
+      Open3.popen2(cmd) do |stdin, out, wait_thr|
+        out.each_line do |line|
+          puts line
+        end
+        exit_status = wait_thr.value
+        if exit_status != 0
+          raise "error running command: #{cmd}"
+        end
+      end
     end
   end
 end

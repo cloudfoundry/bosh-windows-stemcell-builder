@@ -21,6 +21,7 @@ describe Packer::Config do
           'winrm_password' => 'password',
           'winrm_timeout' => '5m',
           'winrm_insecure' => true,
+          'vm_name' => 'packer-vmx',
           'shutdown_command' => "C:\\Windows\\System32\\shutdown.exe /s",
           'shutdown_timeout' => '1h',
           'vmx_data' => {
@@ -44,7 +45,7 @@ describe Packer::Config do
         ).provisioners
 
         restart_provisioner = Packer::Config::Provisioners::VMX_WINDOWS_RESTART
-        restart_provisioner['restart_command'] = restart_provisioner['restart_command'].sub!('ADMIN_PASSWORD', 'admin_password')
+        restart_provisioner['restart_command'] = restart_provisioner['restart_command'].sub!('ADMINISTRATOR_PASSWORD', 'password')
 
         expect(provisioners).to eq(
           [
@@ -87,6 +88,7 @@ describe Packer::Config do
           'winrm_password' => 'password',
           'winrm_timeout' => '8m',
           'winrm_insecure' => true,
+          'vm_name' => 'packer-vmx',
           'vmx_data' => {
             'memsize' => '1000',
             'numvcpus' => '1'

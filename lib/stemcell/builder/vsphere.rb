@@ -18,6 +18,7 @@ module Stemcell
       def initialize(**args)
         args[:agent_commit] = ""
         args[:version] = ""
+        args[:os] = ""
         super(args)
       end
       def build

@@ -47,6 +47,7 @@ describe 'VSphere' do
 
       s3_vmx= double(:s3_vmx)
       allow(s3_vmx).to receive(:fetch).and_return("1234")
+      allow(s3_vmx).to receive(:put)
 
       allow(S3::Vmx).to receive(:new).with(
         aws_access_key_id: 'some-key',
@@ -106,6 +107,7 @@ describe 'VSphere' do
 
       s3_vmx= double(:s3_vmx)
       allow(s3_vmx).to receive(:fetch).and_return("1234")
+      allow(s3_vmx).to receive(:put)
 
       allow(S3::Vmx).to receive(:new).with(
         aws_access_key_id: 'some-key',

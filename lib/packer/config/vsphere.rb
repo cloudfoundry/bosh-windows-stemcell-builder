@@ -27,6 +27,7 @@ module Packer
             'winrm_password' => @administrator_password,
             'winrm_timeout' => '5m',
             'winrm_insecure' => true,
+            'vm_name' =>  'packer-vmx',
             'shutdown_command' => "C:\\Windows\\System32\\shutdown.exe /s",
             'shutdown_timeout' => '1h',
             'vmx_data' => {
@@ -43,8 +44,8 @@ module Packer
         restart_provisioner = Provisioners::VMX_WINDOWS_RESTART.clone
 
         command = restart_provisioner['restart_command']
-        if !command.nil? && !command.index('administrator_password').nil?
-          restart_provisioner['restart_command'] = command.sub('administrator_password', @administrator_password)
+        if !command.nil? && !command.index('ADMINISTRATOR_PASSWORD').nil?
+          restart_provisioner['restart_command'] = command.sub('ADMINISTRATOR_PASSWORD', @administrator_password)
         end
 
         [
@@ -80,6 +81,7 @@ module Packer
           'winrm_password' => @administrator_password,
           'winrm_timeout' => '8m',
           'winrm_insecure' => true,
+          'vm_name' =>  'packer-vmx',
           'vmx_data' => {
             'memsize' => @mem_size.to_s,
             'numvcpus' => @num_vcpus.to_s

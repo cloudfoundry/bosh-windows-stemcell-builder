@@ -42,7 +42,11 @@ module Stemcell
               tar.add_file_simple('image', 0o666, 0)
             else
               tar.add_file_simple('image', 0o666, File.size(image_path)) do |io|
-                File.open(image_path, 'rb') { |f| io.write(f.read) }
+                image = File.open(image_path,'rb')
+                while(cur_line = image.gets)
+                  io.write(cur_line)
+                end
+                image.close
               end
             end
 

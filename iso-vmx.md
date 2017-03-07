@@ -1,0 +1,32 @@
+- Install VMWare workstation (> version 12 Pro)
+- Create a new Virtual Machine 
+  - Custom Advanced
+  - Select Worksation 9.0 Compatibility
+  - Select "I will install opertating system later"
+  - Select the Windows 2012 version
+  - Choose "packer-vmx" for the name
+  - BIOS
+  - Adjust the appropriate Numer of cores and processors
+  - Adjust the appropriate memory
+  - Select the correct Nework Type (NAT)
+  - LSI logic SAS Contoller Type
+  - SCSI Disk Type 
+  - Create a new virtual Disk
+  - Adjust the size (Default 60GB) and Store virtual disk as a single file
+  - Adjust the disk file name (e.g. packer-vmx.vmdk)
+  - Before finishing, select Customize Hardware:
+    - Select New CD/DVD
+    - Select "Use ISO Image file" and browse for the correct ISO
+- Install the new VM (packer-vmx)
+- Follow along the installation process, and add select a password for Administrator user
+- Start the new VM
+- After the VM has started successfully, shut down the VM
+- Select the settings for `packer-vmx`
+- Select New CD/DVD
+- Select "Use Physical drive" and Auto Detect
+- Unselect "Connect at power on"
+- Click Ok
+- Start the new VM
+- Run `scripts/setup-winrm.ps1`
+- Shut down the VM
+- Everything under the base vm folder (packer-vmx.vmx, ....) is now the source for starting the pipeline

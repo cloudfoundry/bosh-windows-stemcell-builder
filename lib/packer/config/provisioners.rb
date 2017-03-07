@@ -37,7 +37,7 @@ module Packer
 
       VMX_WINDOWS_RESTART = {
         'type' => 'windows-restart',
-        'restart_command' => "powershell.exe C:\\provision\\autorun-updates.ps1 -AdminPassword ADMIN_PASSWORD",
+        'restart_command' => "powershell.exe C:\\provision\\autorun-updates.ps1 -AdminPassword ADMINISTRATOR_PASSWORD",
         'restart_timeout' => '12h'
       }
 

@@ -5,7 +5,7 @@
     "tenant_id": null,
     "subscription_id": null,
     "object_id": null,
-    "admin_password": null,
+    "administrator_password": null,
     "resource_group_name": null,
     "storage_account": null,
     "location": null
@@ -54,7 +54,7 @@
     {
       "type": "powershell",
       "inline": [
-        "NET USER Administrator {{ user `admin_password` }} /add /y /expires:never",
+        "NET USER Administrator {{ user `administrator_password` }} /add /y /expires:never",
         "NET LOCALGROUP Administrators Administrator /add"
       ]
     },
