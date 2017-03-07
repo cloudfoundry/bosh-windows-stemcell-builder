@@ -10,7 +10,6 @@ scripts/win_iso
 compiled-agent
 
 # Ruby
-*.gem
 *.rbc
 /.config
 /coverage/
