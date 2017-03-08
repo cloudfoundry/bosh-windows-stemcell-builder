@@ -9,11 +9,9 @@ image_resource:
 inputs:
   - name: stemcell-builder
   - name: base-amis
-    path: stemcell-builder/build/base-amis
   - name: compiled-agent
-    path: stemcell-builder/build/compiled-agent
   - name: version
-    path: stemcell-builder/build/version
+  - name: windows-stemcell-dependencies
 
 outputs:
   - name: bosh-windows-stemcell
@@ -24,11 +22,10 @@ run:
   path: /bin/bash
   args:
     - '-c'
-    - 'rake aws:build'
+    - 'stemcell-builder/scripts/create-aws-stemcell.rb'
 
 params:
   OUTPUT_DIR:
   OS_VERSION: windows2012R2
   AWS_ACCESS_KEY:
   AWS_SECRET_KEY:
-
