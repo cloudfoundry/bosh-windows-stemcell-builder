@@ -9,11 +9,9 @@ image_resource:
 inputs:
   - name: stemcell-builder
   - name: base-gcp-image
-    path: stemcell-builder/build/base-gcp-image
   - name: compiled-agent
-    path: stemcell-builder/build/compiled-agent
   - name: version
-    path: stemcell-builder/build/version
+  - name: windows-stemcell-dependencies
 
 outputs:
   - name: bosh-windows-stemcell
@@ -22,7 +20,7 @@ run:
   path: /bin/bash
   args:
     - '-c'
-    - 'bundle install && rake gcp:build'
+    - 'stemcell-builder/scripts/create-gcp-stemcell.rb'
 
 params:
   OUTPUT_DIR:
