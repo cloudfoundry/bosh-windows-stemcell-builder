@@ -118,6 +118,15 @@ describe 'VSphere' do
         vmx_cache_dir: '/tmp')
         .and_return(s3_vmx)
 
+      s3_client= double(:s3_client)
+      allow(s3_client).to receive(:put)
+
+      allow(S3::Client).to receive(:new).with(
+        aws_access_key_id: 'some-key',
+        aws_secret_access_key: 'secret-key',
+        aws_region: 'some-region'
+      ).and_return(s3_client)
+
       Rake::Task['build:vsphere'].invoke
       stemcell = File.join(@output_directory, "bosh-stemcell-#{version}-vsphere-esxi-#{os_version}-go_agent.tgz")
 

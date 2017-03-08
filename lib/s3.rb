@@ -2,7 +2,7 @@ require 'aws-sdk'
 
 module S3
   class Client
-    def initialize(aws_access_key_id,aws_secret_access_key,aws_region)
+    def initialize(aws_access_key_id:, aws_secret_access_key:, aws_region:)
       Aws.use_bundled_cert!
       credentials =  Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
       @s3 = Aws::S3::Client.new(region: aws_region, credentials: credentials)
@@ -26,7 +26,9 @@ module S3
     def initialize(
       aws_access_key_id:,aws_secret_access_key:,aws_region:,
       input_bucket:, output_bucket:,vmx_cache_dir:)
-      @client = S3::Client.new(aws_access_key_id,aws_secret_access_key,aws_region)
+      @client = S3::Client.new(aws_access_key_id: aws_access_key_id,
+                               aws_secret_access_key: aws_secret_access_key,
+                               aws_region: aws_region)
       @input_bucket = input_bucket
       @output_bucket = output_bucket
       @vmx_cache_dir = vmx_cache_dir
