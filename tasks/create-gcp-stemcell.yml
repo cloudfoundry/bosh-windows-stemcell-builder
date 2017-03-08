@@ -22,7 +22,7 @@ run:
   path: /bin/bash
   args:
     - '-c'
-    - 'rake gcp:build'
+    - 'bundle install && rake gcp:build'
 
 params:
   OUTPUT_DIR:
