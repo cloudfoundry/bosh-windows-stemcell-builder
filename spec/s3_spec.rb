@@ -22,7 +22,7 @@ describe S3 do
       vmx_version = "vmx-v2.tgz"
       allow(s3_client).to receive(:get)
         .with(input_bucket, vmx_version, File.join(vmx_cache_dir, vmx_version)) do
-          tarball_path = File.expand_path('../fixtures/vsphere/image', __FILE__)
+          tarball_path = File.expand_path('../fixtures/vsphere/dummy-vmx-tarball.tgz', __FILE__)
           FileUtils.cp(tarball_path, File.join(vmx_cache_dir, vmx_version))
       end
 

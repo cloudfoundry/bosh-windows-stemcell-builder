@@ -1,6 +1,7 @@
 require 'digest'
 require 'tmpdir'
 require 'zlib'
+require 'nokogiri'
 
 module Stemcell
   class Builder
@@ -90,6 +91,18 @@ module Stemcell
         end
       end
 
+      def removeNIC(ova_file_name)
+        Dir.mktmpdir do |dir|
+          exec_command("tar xf #{ova_file_name} -C #{dir}")
+          f = Nokogiri::XML(File.open(File.join("#{dir}", "image.ovf")))
+          f.css("VirtualHardwareSection Item").select {|x| x.to_s =~ /ethernet/}.first.remove
+          File.write(File.join("#{dir}", "image.ovf"), f.to_s)
+          Dir.chdir(dir) do
+            exec_command("tar cf #{ova_file_name} *")
+          end
+        end
+      end
+
       def create_image(vmx_dir)
         sha1_sum=''
         image_file = File.join(vmx_dir, 'image')
@@ -97,6 +110,7 @@ module Stemcell
           vmx_file = find_vmx_file(vmx_dir)
           ova_file = File.join(tmpdir, 'image.ova')
           exec_command("ovftool #{vmx_file} #{ova_file}")
+          removeNIC(ova_file)
           gzip_file(ova_file, image_file)
           sha1_sum = Digest::SHA1.file(image_file).hexdigest
         end

@@ -136,8 +136,15 @@ describe 'VSphere' do
       expect(stemcell_manifest['operating_system']).to eq(os_version)
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('vsphere')
 
-       apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
-       expect(apply_spec['agent_commit']).to eq(agent_commit)
+      apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
+      expect(apply_spec['agent_commit']).to eq(agent_commit)
+
+      Dir.mktmpdir do |tmpdir|
+        tgz_extract(stemcell, tmpdir)
+        image_filename = File.join(tmpdir, "image")
+        ovf_file_content = read_from_tgz(image_filename, "image.ovf")
+        expect(ovf_file_content).to_not include('ethernet')
+      end
 
       expect(read_from_tgz(stemcell, 'image')).to_not be_nil
     end
