@@ -37,7 +37,7 @@ describe Stemcell::Builder do
         allow(aws_apply).to receive(:dump).and_return('apply-spec-contents')
         allow(Stemcell::Manifest::Aws).to receive(:new).with(version, os, parsed_packer_amis).and_return(aws_manifest)
         allow(Stemcell::ApplySpec).to receive(:new).with(agent_commit).and_return(aws_apply)
-        allow(Stemcell::Packager).to receive(:package).with(iaas: 'aws',
+        allow(Stemcell::Packager).to receive(:package).with(iaas: 'aws-xen-hvm',
                                                             os: os,
                                                             is_light: true,
                                                             version: version,

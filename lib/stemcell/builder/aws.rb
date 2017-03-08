@@ -11,7 +11,10 @@ module Stemcell
       def build
         amis = run_packer
         manifest = Manifest::Aws.new(@version, @os, amis).dump
-        super(iaas: 'aws', is_light: true, image_path: '', manifest: manifest)
+        super(iaas: 'aws-xen-hvm',
+              is_light: true,
+              image_path: '',
+              manifest: manifest)
       end
 
       private

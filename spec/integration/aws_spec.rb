@@ -62,7 +62,7 @@ describe 'Aws' do
 
       Rake::Task['build:aws'].invoke
 
-      stemcell = File.join(output_directory, "light-bosh-stemcell-#{version}-aws-#{os_version}-go_agent.tgz")
+      stemcell = File.join(output_directory, "light-bosh-stemcell-#{version}-aws-xen-hvm-#{os_version}-go_agent.tgz")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq(version)
