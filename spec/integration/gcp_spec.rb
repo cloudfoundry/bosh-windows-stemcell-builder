@@ -51,8 +51,7 @@ describe 'Gcp' do
       )
 
       Rake::Task['build:gcp'].invoke
-
-      stemcell = File.join(output_directory, "light-bosh-stemcell-#{version}-gcp-#{os_version}-go_agent.tgz")
+      stemcell = File.join(output_directory, "light-bosh-stemcell-#{version}-google-kvm-#{os_version}-go_agent.tgz")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq(version)

@@ -43,7 +43,7 @@ describe Stemcell::Builder do
 
         allow(Stemcell::Manifest::Gcp).to receive(:new).with(version, os, image_url).and_return(gcp_manifest)
         allow(Stemcell::ApplySpec).to receive(:new).with(agent_commit).and_return(gcp_apply)
-        allow(Stemcell::Packager).to receive(:package).with(iaas: 'gcp',
+        allow(Stemcell::Packager).to receive(:package).with(iaas: 'google-kvm',
                                                             os: os,
                                                             is_light: true,
                                                             version: version,

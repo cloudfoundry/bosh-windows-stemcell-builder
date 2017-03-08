@@ -11,7 +11,7 @@ module Stemcell
       def build
         image_url = run_packer
         manifest = Manifest::Gcp.new(@version, @os, image_url).dump
-        super(iaas: 'gcp', is_light: true, image_path: '', manifest: manifest)
+        super(iaas: 'google-kvm', is_light: true, image_path: '', manifest: manifest)
       end
 
       private
