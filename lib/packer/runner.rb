@@ -13,9 +13,6 @@ module Packer
     end
 
     def run(command, args={})
-      puts "VVV CONFIG"
-      puts @config
-      puts "^^^ CONFIG"
       config_file = Tempfile.new('')
       config_file.write(@config)
       config_file.close
@@ -25,7 +22,7 @@ module Packer
         args_combined += "-var \"#{name}=#{value}\""
       end
 
-      packer_command = "packer #{command} -on-error abort -machine-readable #{args_combined} #{config_file.path}"
+      packer_command = "packer #{command} -machine-readable #{args_combined} #{config_file.path}"
 
       Open3.popen2e(packer_command) do |stdin, out, wait_thr|
         yield(out) if block_given?

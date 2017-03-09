@@ -22,7 +22,7 @@ describe Packer::Config::Gcp do
         'winrm_username' => 'winrmuser',
         'winrm_use_ssl' => false,
         'metadata' => {
-          'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp-setup-winrm.ps1'
+          'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/setup-winrm.ps1'
         }
       )
       expect(builders[0]['image_name']).to match(/packer-\d+/)
