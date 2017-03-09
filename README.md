@@ -9,10 +9,6 @@ This repo contains a set of scripts for automating the process of building BOSH 
 * [Windows Update PowerShell Module](https://gallery.technet.microsoft.com/scriptcenter/2d191bcd-3308-4edd-9de2-88dff796b0bc)
 * [Packer](https://www.packer.io) version [v0.12.0](https://releases.hashicorp.com/packer/0.12.0/)
 
-### ESXi Configuration
-
-Refer to the [README](./vsphere/README.md).
-
 #### Remotely fetched resources
 
 The below binaries are downloaded as part of the provisioning process.
@@ -25,9 +21,6 @@ If the build fails, manual deletion of the `packer-vmware-iso` VM and `packer-vm
 
 Known working version of Concourse is [v1.6.0](http://concourse.ci/downloads.html#v160).
 
-### Licenses
-
-Portions of the provisioning scripts were adapted from the [packer-windows](https://github.com/joefitzgerald/packer-windows) project. A copy of the packer-windows license is located [here](vsphere/scripts/LICENSE).
 
 ### GCP
 

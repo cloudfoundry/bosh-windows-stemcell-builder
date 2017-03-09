@@ -1,48 +1,33 @@
 ---
-platform: linux
-
-image_resource:
-  type: docker-image
-  source:
-    repository: pivotalgreenhouse/packer-base
+platform: windows
 
 inputs:
   - name: version
+  - name: vmx-version
   - name: compiled-agent
   - name: stemcell-builder
   - name: windows-stemcell-dependencies
-  - name: base-iso
-
 outputs:
   - name: bosh-windows-stemcell
 
 run:
-  path: powershell
+  path: ruby.exe
   args:
-    - '-c'
-    - |
-    cd stemcell-builder
-    bundle install
-    rake build:vsphere
-
+    - stemcell-builder/scripts/create-vsphere-stemcell.rb
 
 params:
-  OUTPUT_DIR: replace-me
-  ISO_CHECKSUM_TYPE: replace-me
-  ISO_CHECKSUM: replace-me
-  MEMSIZE: replace-me
-  NUMVCPUS: replace-me
-  REMOTE_HOST: replace-me
-  REMOTE_PORT: replace-me
-  REMOTE_DATASTORE: replace-me
-  REMOTE_CACHE_DATASTORE: replace-me
-  REMOTE_CACHE_DIRECTORY: replace-me
-  REMOTE_USERNAME: replace-me
-  REMOTE_PASSWORD: replace-me
+  AWS_ACCESS_KEY_ID:
+  AWS_SECRET_ACCESS_KEY:
+  AWS_REGION: us-east-1
+
   ADMINISTRATOR_PASSWORD: replace-me
-  PRODUCT_KEY: ""
-  OWNER: ""
-  ORGANIZATION: ""
-  GUEST_NETWORK_ADDRESS: replace-me
-  GUEST_NETWORK_MASK: replace-me
-  GUEST_NETWORK_GATEWAY: replace-me
+  OS_VERSION: windows2012R2
+
+  INPUT_BUCKET: "bosh-windows-stemcell-vmx"
+  OUTPUT_BUCKET: "bosh-windows-stemcells-pre-release-candidate"
+  VMX_CACHE_DIR: "C:\\vmx-data"
+
+  PRODUCT_KEY:
+  ORGANIZATION:
+  OWNER:
+
