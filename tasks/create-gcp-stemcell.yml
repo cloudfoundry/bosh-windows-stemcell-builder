@@ -11,6 +11,7 @@ inputs:
   - name: base-gcp-image
   - name: compiled-agent
   - name: version
+  - name: windows-stemcell-dependencies
 
 outputs:
   - name: bosh-windows-stemcell
