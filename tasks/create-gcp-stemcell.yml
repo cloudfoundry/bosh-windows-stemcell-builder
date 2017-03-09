@@ -17,12 +17,8 @@ outputs:
   - name: bosh-windows-stemcell
 
 run:
-  path: /bin/bash
-  args:
-    - '-c'
-    - 'stemcell-builder/scripts/create-gcp-stemcell.rb'
+  path: stemcell-builder/scripts/create-gcp-stemcell.rb
 
 params:
-  OUTPUT_DIR:
   OS_VERSION: windows2012R2
   ACCOUNT_JSON:

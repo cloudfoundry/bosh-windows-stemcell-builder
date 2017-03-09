@@ -13,13 +13,14 @@ namespace :build do
       ).chomp
     )["base_image"]
 
-    FileUtils.mkdir_p(ENV.fetch('OUTPUT_DIR'))
+    output_directory = File.absolute_path("bosh-windows-stemcell")
+    FileUtils.mkdir_p(output_directory)
 
     gcp_builder = Stemcell::Builder::Gcp.new(
       account_json: ENV.fetch("ACCOUNT_JSON"),
       agent_commit: agent_commit,
       os: ENV.fetch("OS_VERSION"),
-      output_directory: ENV.fetch("OUTPUT_DIR"),
+      output_directory: output_directory,
       packer_vars: {},
       source_image: base_image,
       version: version

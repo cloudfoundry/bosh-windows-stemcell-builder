@@ -12,12 +12,15 @@ describe 'Gcp' do
   before(:each) do
     @original_env = ENV.to_hash
     @build_dir = File.expand_path('../../../build', __FILE__)
+    @output_directory = 'bosh-windows-stemcell'
     FileUtils.mkdir_p(@build_dir)
+    FileUtils.rm_rf(@output_directory)
   end
 
   after(:each) do
     ENV.replace(@original_env)
     FileUtils.remove_dir(@build_dir)
+    FileUtils.rm_rf(@output_directory)
   end
 
   it 'should build a gcp stemcell' do
@@ -27,7 +30,6 @@ describe 'Gcp' do
       version = 'some-version'
       agent_commit = 'some-agent-commit'
 
-      ENV['OUTPUT_DIR'] = output_directory
       ENV['ACCOUNT_JSON'] = {'project_id' => 'some-project-id'}.to_json
       ENV['OS_VERSION'] = os_version
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'gcp')}:#{ENV['PATH']}"
@@ -51,7 +53,7 @@ describe 'Gcp' do
       )
 
       Rake::Task['build:gcp'].invoke
-      stemcell = File.join(output_directory, "light-bosh-stemcell-#{version}-google-kvm-#{os_version}-go_agent.tgz")
+      stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-google-kvm-#{os_version}-go_agent.tgz")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq(version)

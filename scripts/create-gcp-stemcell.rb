@@ -12,4 +12,5 @@ FileUtils.cp_r("version", File.join("stemcell-builder","build","version"))
 Dir.chdir "stemcell-builder" do
   exec_command("bundle install")
   exec_command("rake build:gcp")
+  exec_command("mv bosh-windows-stemcell/*.tgz ../bosh-windows-stemcell")
 end

@@ -13,7 +13,8 @@ namespace :build do
       ).chomp
     )
 
-    FileUtils.mkdir_p(ENV.fetch('OUTPUT_DIR'))
+    output_directory = File.absolute_path("bosh-windows-stemcell")
+    FileUtils.mkdir_p(output_directory)
 
     aws_builder = Stemcell::Builder::Aws.new(
       agent_commit: agent_commit,
@@ -21,7 +22,7 @@ namespace :build do
       aws_access_key: ENV.fetch("AWS_ACCESS_KEY"),
       aws_secret_key: ENV.fetch("AWS_SECRET_KEY"),
       os: ENV.fetch("OS_VERSION"),
-      output_directory: ENV.fetch("OUTPUT_DIR"),
+      output_directory: output_directory,
       packer_vars: {},
       version: version
     )
