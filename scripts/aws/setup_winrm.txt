@@ -1,6 +1,4 @@
 <powershell>
-Write-Host "Running AWS setup_winrm..."
-
 winrm quickconfig -q
 winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="300"}'
 winrm set winrm/config '@{MaxTimeoutms="1800000"}'
@@ -15,7 +13,4 @@ sc config winrm start=auto
 net start winrm
 
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope LocalMachine
-
-Write-Host "Done running setup_winrm, deleting self..."
-Remove-Item $MyInvocation.MyCommand.Definition
 </powershell>
