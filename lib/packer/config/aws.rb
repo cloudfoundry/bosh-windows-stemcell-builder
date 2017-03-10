@@ -39,10 +39,10 @@ module Packer
           Provisioners::AGENT_ZIP,
           Provisioners::AGENT_DEPS_ZIP,
           Provisioners::INSTALL_WINDOWS_FEATURES,
-          Provisioners::SET_EC2_PASSWORD,
           Provisioners::SETUP_AGENT,
           Provisioners::AWS_AGENT_CONFIG,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
+          Provisioners::SET_EC2_PASSWORD,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,
           Provisioners::CLEANUP_ARTIFACTS

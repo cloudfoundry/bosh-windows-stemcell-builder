@@ -13,6 +13,9 @@ module Packer
     end
 
     def run(command, args={})
+      puts "VVV CONFIG"
+      puts @config
+      puts "^^^ CONFIG"
       config_file = Tempfile.new('')
       config_file.write(@config)
       config_file.close
