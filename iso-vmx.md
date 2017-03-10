@@ -33,4 +33,4 @@
 - Start the new VM
 - Run `scripts/setup-winrm.ps1` (VMware Tools allows you to drag and drop files from the host onto the guest VM)
 - Shut down the VM
-- Everything under the base vm folder (packer-vmx.vmx, ....) is now the source for starting the pipeline
+- Everything under the base vm folder (packer-vmx.vmx, ....) is now the source for starting the pipeline. NOTE: if you are copying the directory into another location, you may have to restart the VM in Workstation, click "I copied this VM" in the popup message, and shutdown the VM once more.
