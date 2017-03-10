@@ -37,13 +37,18 @@ module Packer
 
       VMX_WINDOWS_RESTART = {
         'type' => 'windows-restart',
-        'restart_command' => "powershell.exe C:\\provision\\autorun-updates.ps1 -AdminPassword ADMINISTRATOR_PASSWORD",
+        'restart_command' => "powershell.exe C:\\provision\\autorun-updates.ps1 -AdminPassword ADMINISTRATOR_PASSWORD -DebugLog C:\\debug-log.txt",
         'restart_timeout' => '12h'
       }
 
       VMX_READ_UPDATE_LOG = {
         'type' => 'powershell',
         'inline' => ['if (Test-Path C:\\update-logs.txt) { Get-Content -Path C:\\update-logs.txt } else { Write-Host "Missing log file" }']
+      }.freeze
+
+      VMX_READ_DEBUG_LOG = {
+        'type' => 'powershell',
+        'inline' => ['if (Test-Path C:\\debug-log.txt) { Get-Content -Path C:\\debug-log.txt } else { Write-Host "Missing debug log file" }']
       }.freeze
 
       VMX_STEMCELL_SYSPREP = {
