@@ -2,11 +2,11 @@
 - Create a new Virtual Machine 
   - Custom Advanced
   - Select Worksation 9.0 Compatibility
-  - Select "I will install opertating system later"
+  - Select "I will install operating system later"
   - Select the Windows 2012 version
   - Choose "packer-vmx" for the name
   - BIOS
-  - Adjust the appropriate Numer of cores and processors
+  - Adjust the appropriate Number of cores and processors
   - Adjust the appropriate memory
   - Select the correct Nework Type (NAT)
   - LSI logic SAS Contoller Type
