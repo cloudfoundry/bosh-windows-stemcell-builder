@@ -17,10 +17,11 @@
   - Before finishing, select Customize Hardware:
     - Select New CD/DVD
     - Select "Use ISO Image file" and browse for the correct ISO
-- Install the new VM (packer-vmx)
-- Follow along the installation process, and add select a password for Administrator user
-- Start the new VM
-- After the VM has started successfully, install VMware Tools
+- Power on the new VM (packer-vmx) and install Windows
+  - Select server with GUI
+  - Select custom installation
+  - Follow along the installation process, and add select a password for Administrator user
+- After the VM has started successfully, right-click the machine name in Workstation and Install VMware Tools
 - Shut down the VM
 - Remove the ISO file from the CD/DVD drive
   - Select the settings for `packer-vmx`
@@ -30,6 +31,6 @@
   - Unselect "Connect at power on"
   - Click Ok
 - Start the new VM
-- Run `scripts/setup-winrm.ps1`
+- Run `scripts/setup-winrm.ps1` (VMware Tools allows you to drag and drop files from the host onto the guest VM)
 - Shut down the VM
 - Everything under the base vm folder (packer-vmx.vmx, ....) is now the source for starting the pipeline
