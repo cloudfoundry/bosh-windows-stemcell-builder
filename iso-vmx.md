@@ -20,12 +20,15 @@
 - Install the new VM (packer-vmx)
 - Follow along the installation process, and add select a password for Administrator user
 - Start the new VM
-- After the VM has started successfully, shut down the VM
-- Select the settings for `packer-vmx`
-- Select New CD/DVD
-- Select "Use Physical drive" and Auto Detect
-- Unselect "Connect at power on"
-- Click Ok
+- After the VM has started successfully, install VMware Tools
+- Shut down the VM
+- Remove the ISO file from the CD/DVD drive
+  - Select the settings for `packer-vmx`
+  - CD/DVD Remove
+  - Add CD/DVD Drive
+  - Select "Use Physical drive" and Auto Detect
+  - Unselect "Connect at power on"
+  - Click Ok
 - Start the new VM
 - Run `scripts/setup-winrm.ps1`
 - Shut down the VM
