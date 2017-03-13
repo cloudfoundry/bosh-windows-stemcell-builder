@@ -33,6 +33,7 @@ $IgnoredUpdateCategories =  "Silverlight"
 
 $Script:ExecutedEnableMicrosoftUpdates = $false
 function EnableMicrosoftUpdates {
+    LogWrite $UpdateLog "In EnableMicrosoftUpdates"
     if ($Script:ExecutedEnableMicrosoftUpdates) {
         LogWrite $UpdateLog "EnableMicrosoftUpdates: already ran - skipping"
         return
@@ -54,22 +55,18 @@ function EnableMicrosoftUpdates {
 }
 
 function Install-Updates() {
-    LogWrite "Install updates"
+    LogWrite $UpdateLog "In Install-Updates"
     EnableMicrosoftUpdates
-    LogWrite $UpdateLog "Got here 0"
 
     # Loop until we successfully connect to the update server
     $sleepSeconds = 5
     $maxAttempts = 10
     for ($i = 0; $i -le $maxAttempts; $i++) {
-        LogWrite $UpdateLog "Got here 1"
         try {
-            LogWrite $UpdateLog "Got here 2"
+            LogWrite $UpdateLog "Getting list of updates"
             $updateResult = Get-WUInstall -WindowsUpdate -AutoReboot -AcceptAll -IgnoreUserInput -Debuger -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories
-            LogWrite $UpdateLog "Got here 3"
             return $updateResult
         } catch {
-            LogWrite $UpdateLog "Got here 4"
             if ($_ -match "HRESULT: 0x8024402C") {
                 LogWrite $UpdateLog "Install-Updates: error connecting to update service, will retry in ${sleepSeconds} seconds..."
                 Start-Sleep -Seconds $sleepSeconds
