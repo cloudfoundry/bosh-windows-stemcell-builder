@@ -56,6 +56,10 @@ module Stemcell
           end
         end
       end
+
+      sha = Digest::SHA1.hexdigest(File.read(File.join(output_directory, stemcell_tarball_file)))
+      filename = File.join(output_directory, stemcell_tarball_file + ".sha")
+      File.write(filename, sha)
     end
 
     def self.gzip_file(name, output)

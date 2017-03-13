@@ -60,8 +60,9 @@ describe Stemcell::Packager do
       end
     end
   end
+
   describe 'package' do
-    it 'creates a valid stemcell tarball in the output directory' do
+    it 'creates a valid stemcell tarball and sha in the output directory' do
       expect {
         Stemcell::Packager.package(iaas:  'foo-iaas',
                                    os:  'bar-os',
@@ -74,10 +75,14 @@ describe Stemcell::Packager do
       }.not_to raise_error
 
       output_files = Dir[File.join(@output_directory, '*')]
-      expect(output_files.length).to eq(1)
+      expect(output_files.length).to eq(2)
 
       stemcell_tarball_file = 'bosh-stemcell-9999.99-foo-iaas-bar-os-go_agent.tgz'
       expect(File.basename(output_files[0])).to eq(stemcell_tarball_file)
+
+      stemcell_tarball_sha_file = 'bosh-stemcell-9999.99-foo-iaas-bar-os-go_agent.tgz.sha'
+      expect(File.basename(output_files[1])).to eq(stemcell_tarball_sha_file)
+      expect(File.read(output_files[1])).to eq(Digest::SHA1.hexdigest(File.read(output_files[0])))
 
       expect { tgz_extract(output_files[0], @untar_dir) }.not_to raise_error
 
@@ -105,7 +110,7 @@ describe Stemcell::Packager do
         }.not_to raise_error
 
         output_files = Dir[File.join(@output_directory, '*')]
-        expect(output_files.length).to eq(1)
+        expect(output_files.length).to eq(2)
 
         expect(File.basename(output_files[0])).to start_with('light-')
       end
@@ -123,7 +128,7 @@ describe Stemcell::Packager do
         }.not_to raise_error
 
         output_files = Dir[File.join(@output_directory, '*')]
-        expect(output_files.length).to eq(1)
+        expect(output_files.length).to eq(2)
 
         expect { tgz_extract(output_files[0], @untar_dir) }.not_to raise_error
 
@@ -131,6 +136,24 @@ describe Stemcell::Packager do
         expect(stemcell_files.length).to eq(3)
 
         expect(File.size(File.join(@untar_dir, 'image'))).to eq(0)
+      end
+
+      it 'writes a sha file' do
+        expect {
+          Stemcell::Packager.package(iaas: '',
+                                     os: '',
+                                     is_light: true,
+                                     version: '',
+                                     image_path: 'invalid_path',
+                                     manifest:  'some-manifest',
+                                     apply_spec:  'some-apply-spec',
+                                     output_directory: @output_directory)
+        }.not_to raise_error
+
+        output_files = Dir[File.join(@output_directory, '*')]
+        expect(output_files.length).to eq(2)
+
+        expect(File.read(output_files[1])).to eq(Digest::SHA1.hexdigest(File.read(output_files[0])))
       end
     end
 

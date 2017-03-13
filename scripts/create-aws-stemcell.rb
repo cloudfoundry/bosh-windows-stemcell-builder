@@ -13,4 +13,5 @@ Dir.chdir "stemcell-builder" do
   exec_command("bundle install")
   exec_command("rake build:aws")
   exec_command("mv bosh-windows-stemcell/*.tgz ../bosh-windows-stemcell")
+  exec_command("mv bosh-windows-stemcell/*.sha ../sha")
 end
