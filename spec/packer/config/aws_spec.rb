@@ -45,10 +45,10 @@ describe Packer::Config::Aws do
           Packer::Config::Provisioners::AGENT_ZIP,
           Packer::Config::Provisioners::AGENT_DEPS_ZIP,
           Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
-          Packer::Config::Provisioners::SET_EC2_PASSWORD,
           Packer::Config::Provisioners::SETUP_AGENT,
           Packer::Config::Provisioners::AWS_AGENT_CONFIG,
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
+          Packer::Config::Provisioners::SET_EC2_PASSWORD,
           Packer::Config::Provisioners::DISABLE_SERVICES,
           Packer::Config::Provisioners::SET_FIREWALL,
           Packer::Config::Provisioners::CLEANUP_ARTIFACTS

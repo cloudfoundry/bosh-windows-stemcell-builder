@@ -55,7 +55,8 @@ describe Packer::Config do
             Packer::Config::Provisioners::VMX_POWERSHELLUTILS,
             Packer::Config::Provisioners::VMX_PSWINDOWSUPDATE,
             restart_provisioner, # Required because we need to set the admin password
-            Packer::Config::Provisioners::VMX_READ_UPDATE_LOG
+            Packer::Config::Provisioners::VMX_READ_UPDATE_LOG,
+            Packer::Config::Provisioners::VMX_READ_DEBUG_LOG
           ]
         )
       end
