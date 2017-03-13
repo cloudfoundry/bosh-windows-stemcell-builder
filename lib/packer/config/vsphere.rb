@@ -40,23 +40,14 @@ module Packer
       end
 
       def provisioners
-        # clone because we modify it
-        restart_provisioner = Provisioners::VMX_WINDOWS_RESTART.clone
-
-        command = restart_provisioner['restart_command']
-        if !command.nil? && !command.index('ADMINISTRATOR_PASSWORD').nil?
-          restart_provisioner['restart_command'] = command.sub('ADMINISTRATOR_PASSWORD', @administrator_password)
-        end
-
         [
           Provisioners::CREATE_PROVISION_DIR,
-          Provisioners::VMX_UPDATE_PROVISIONER,
-          Provisioners::VMX_AUTORUN_UPDATES,
-          Provisioners::VMX_POWERSHELLUTILS,
-          Provisioners::VMX_PSWINDOWSUPDATE,
-          restart_provisioner,
-          Provisioners::VMX_READ_UPDATE_LOG,
-          Provisioners::VMX_READ_DEBUG_LOG
+          Provisioners::COPY_BOSH_PSMODULES,
+          Provisioners::INSTALL_BOSH_PSMODULES,
+          Provisioners.register_windowsupdatestask(@administrator_password).freeze,
+          Provisioners::WAIT_WINDOWSUPDATESTASK,
+          Provisioners::UNREGISTER_WINDOWSUPDATESTASK,
+          Provisioners::OUTPUT_LOG
         ]
       end
     end

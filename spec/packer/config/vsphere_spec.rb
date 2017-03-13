@@ -44,19 +44,15 @@ describe Packer::Config do
           source_path: 'source_path'
         ).provisioners
 
-        restart_provisioner = Packer::Config::Provisioners::VMX_WINDOWS_RESTART
-        restart_provisioner['restart_command'] = restart_provisioner['restart_command'].sub!('ADMINISTRATOR_PASSWORD', 'password')
-
         expect(provisioners).to eq(
           [
             Packer::Config::Provisioners::CREATE_PROVISION_DIR,
-            Packer::Config::Provisioners::VMX_UPDATE_PROVISIONER,
-            Packer::Config::Provisioners::VMX_AUTORUN_UPDATES,
-            Packer::Config::Provisioners::VMX_POWERSHELLUTILS,
-            Packer::Config::Provisioners::VMX_PSWINDOWSUPDATE,
-            restart_provisioner, # Required because we need to set the admin password
-            Packer::Config::Provisioners::VMX_READ_UPDATE_LOG,
-            Packer::Config::Provisioners::VMX_READ_DEBUG_LOG
+            Packer::Config::Provisioners::COPY_BOSH_PSMODULES,
+            Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
+            Packer::Config::Provisioners.register_windowsupdatestask('password').freeze,
+            Packer::Config::Provisioners::WAIT_WINDOWSUPDATESTASK,
+            Packer::Config::Provisioners::UNREGISTER_WINDOWSUPDATESTASK,
+            Packer::Config::Provisioners::OUTPUT_LOG
           ]
         )
       end

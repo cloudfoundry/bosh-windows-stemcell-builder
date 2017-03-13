@@ -28,6 +28,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.5.0)
     rspec-support (3.5.0)
+    rubyzip (1.2.1)
 
 PLATFORMS
   ruby
@@ -37,9 +38,7 @@ DEPENDENCIES
   nokogiri
   rake
   rspec
-
-RUBY VERSION
-   ruby 2.3.3p222
+  rubyzip
 
 BUNDLED WITH
    1.14.6
