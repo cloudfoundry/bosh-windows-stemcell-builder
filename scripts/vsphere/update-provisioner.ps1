@@ -65,7 +65,7 @@ function Install-Updates() {
         LogWrite $UpdateLog "Got here 1"
         try {
             LogWrite $UpdateLog "Got here 2"
-            $updateResult = Get-WUInstall -WindowsUpdate -AutoReboot -AcceptAll -IgnoreUserInput -Debuger -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories
+            $updateResult = Get-WUInstall -MicrosoftUpdate -AutoReboot -AcceptAll -IgnoreUserInput -Debuger -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories
             LogWrite $UpdateLog "Got here 3"
             return $updateResult
         } catch {
@@ -94,7 +94,7 @@ function Update-Count() {
     $maxAttempts = 10
     for ($i = 0; $i -le $maxAttempts; $i++) {
         try {
-            $count = (Get-WUList -WindowsUpdate -IgnoreUserInput -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories | measure).Count
+            $count = (Get-WUList -MicrosoftUpdate -IgnoreUserInput -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories | measure).Count
             return $count
         } catch {
             if ($_ -match "HRESULT: 0x8024402C") {
