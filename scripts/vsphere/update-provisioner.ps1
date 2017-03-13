@@ -54,7 +54,6 @@ function EnableMicrosoftUpdates {
 }
 
 function Install-Updates() {
-    EnableMicrosoftUpdates
     LogWrite $UpdateLog "Got here 0"
 
     # Loop until we successfully connect to the update server
