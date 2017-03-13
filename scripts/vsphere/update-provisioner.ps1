@@ -54,6 +54,8 @@ function EnableMicrosoftUpdates {
 }
 
 function Install-Updates() {
+    LogWrite "Install updates"
+    EnableMicrosoftUpdates
     LogWrite $UpdateLog "Got here 0"
 
     # Loop until we successfully connect to the update server
@@ -63,7 +65,7 @@ function Install-Updates() {
         LogWrite $UpdateLog "Got here 1"
         try {
             LogWrite $UpdateLog "Got here 2"
-            $updateResult = Get-WUInstall -MicrosoftUpdate -AutoReboot -AcceptAll -IgnoreUserInput -Debuger -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories
+            $updateResult = Get-WUInstall -WindowsUpdate -AutoReboot -AcceptAll -IgnoreUserInput -Debuger -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories
             LogWrite $UpdateLog "Got here 3"
             return $updateResult
         } catch {
@@ -92,7 +94,7 @@ function Update-Count() {
     $maxAttempts = 10
     for ($i = 0; $i -le $maxAttempts; $i++) {
         try {
-            $count = (Get-WUList -MicrosoftUpdate -IgnoreUserInput -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories | measure).Count
+            $count = (Get-WUList -WindowsUpdate -IgnoreUserInput -Category $UpdateCategories -NotCategory $IgnoredUpdateCategories | measure).Count
             return $count
         } catch {
             if ($_ -match "HRESULT: 0x8024402C") {
@@ -120,10 +122,12 @@ function Add-AutoRun() {
     REG ADD "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /d "${AdminPassword}" /f
 
     $prop = (Get-ItemProperty $RegistryKey).$RegistryEntry
+    LogWrite $UpdateLog "prop: ${prop}"
     if (-not $prop) {
         LogWrite $UpdateLog "Restart Registry Entry Does Not Exist - Creating It"
-        Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File {0} -DebugLog {1} *>> {1}" -f `
+        $value = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -File {0} -DebugLog {1} *>> {1}" -f `
             $ScriptPath, $DebugLog
+        Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value $value
     } else {
         LogWrite $UpdateLog "Restart Registry Entry Exists Already"
     }
