@@ -15,7 +15,7 @@ function Register-WindowsUpdatesTask {
     Register-ScheduledTask -Principal $Prin -Action $action -Trigger $trigger -TaskName "InstallWindowsUpdates" -Description "InstallWindowsUpdates"
 }
 function Unregister-WindowsUpdatesTask {
-		Register-ScheduledTask -TaskName "InstallWindowsUpdates" -Confirm:$false
+		Unregister-ScheduledTask -TaskName "InstallWindowsUpdates" -Confirm:$false
 }
 
 function Wait-WindowsUpdates {
@@ -26,7 +26,7 @@ function Wait-WindowsUpdates {
 }
 
 function Install-WindowsUpdates {
-    Param([Parameter(Mandatory=$true)][string]$AdministratorPassword)
+    Param([string]$AdministratorPassword)
 
     $script:ScriptName = $MyInvocation.MyCommand.ToString()
     $script:ScriptPath = $MyInvocation.MyCommand.Path
@@ -43,7 +43,9 @@ function Install-WindowsUpdates {
     $script:MaxCycles=5
 
     Disable-WinRM
-    Enable-Autologon -AdministratorPassword $AdministratorPassword
+    if ( Test-Autologon -eq $false ) {
+        Enable-Autologon -AdministratorPassword $AdministratorPassword
+    }
     Get-UpdateBatch
     if ($script:MoreUpdates -eq 1) {
         Install-UpdateBatch
