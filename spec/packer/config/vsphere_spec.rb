@@ -47,7 +47,7 @@ describe Packer::Config do
         expect(provisioners).to eq(
           [
             Packer::Config::Provisioners::CREATE_PROVISION_DIR,
-            Packer::Config::Provisioners::COPY_BOSH_PSMODULES,
+            Packer::Config::Provisioners::UPLOAD_BOSH_PSMODULES,
             Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
             Packer::Config::Provisioners.register_windowsupdatestask('password').freeze,
             Packer::Config::Provisioners::WAIT_WINDOWSUPDATESTASK,

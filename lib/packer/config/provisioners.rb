@@ -25,7 +25,7 @@ module Packer
         'restart_timeout' => '12h'
       }.freeze
 
-      COPY_BOSH_PSMODULES = {
+      UPLOAD_BOSH_PSMODULES = {
         'type' => 'file',
         'source' => 'build/bosh-psmodules.zip',
         'destination' => 'C:\\provision\\bosh-psmodules.zip'

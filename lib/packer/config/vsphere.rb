@@ -42,7 +42,7 @@ module Packer
       def provisioners
         [
           Provisioners::CREATE_PROVISION_DIR,
-          Provisioners::COPY_BOSH_PSMODULES,
+          Provisioners::UPLOAD_BOSH_PSMODULES,
           Provisioners::INSTALL_BOSH_PSMODULES,
           Provisioners.register_windowsupdatestask(@administrator_password).freeze,
           Provisioners::WAIT_WINDOWSUPDATESTASK,
