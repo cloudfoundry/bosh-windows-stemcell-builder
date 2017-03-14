@@ -4,12 +4,18 @@ module Packer
   module Config
     class Provisioners
 
-      def self.register_windowsupdatestask(administrator_password)
+      def self.wait_windowsupdatestask(administrator_password)
         return {
-          'type' => 'powershell',
-          'inline' => ["Register-WindowsUpdatesTask -AdministratorPassword #{administrator_password}"]
+          'type' => 'windows-restart',
+          'restart_command' => "powershell.exe -Command Wait-WindowsUpdates -AdministratorPassword #{administrator_password}",
+          'restart_timeout' => '12h'
         }
       end
+
+      REGISTER_WINDOWSUPDATESTASK= {
+        'type' => 'powershell',
+        'inline' => ["Register-WindowsUpdatesTask"]
+      }.freeze
 
       CREATE_PROVISION_DIR = {
         'type' => 'powershell',

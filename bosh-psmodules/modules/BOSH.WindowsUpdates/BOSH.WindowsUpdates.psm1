@@ -6,28 +6,26 @@
 #>
 
 function Register-WindowsUpdatesTask {
-    Param([Parameter(Mandatory=$true)][string]$AdministratorPassword)
-
     $Prin = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
     $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
-    -Argument "-Command `"Install-WindowsUpdates  -AdministratorPassword $AdministratorPassword`" "
-    $trigger =  New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(5) -RepetitionInterval (New-TimeSpan -Hours 1) -RepetitionDuration ([System.TimeSpan]::MaxValue)
+    -Argument "-Command `"Install-WindowsUpdates`" "
+    $trigger =  New-ScheduledTaskTrigger -AtLogon -RandomDelay 00:00:30
     Register-ScheduledTask -Principal $Prin -Action $action -Trigger $trigger -TaskName "InstallWindowsUpdates" -Description "InstallWindowsUpdates"
 }
+
 function Unregister-WindowsUpdatesTask {
 		Unregister-ScheduledTask -TaskName "InstallWindowsUpdates" -Confirm:$false
 }
 
 function Wait-WindowsUpdates {
-    While ((Get-ScheduledTask -TaskName "InstallWindowsUpdates").State -ne "Running"){
-        Start-Sleep 10
-        Write-Log "Waiting for WindowsUpdates Task to start"
-    }
+    Param([string]$AdministratorPassword)
+
+    Disable-WinRM
+    Enable-Autologon -AdministratorPassword $AdministratorPassword
+    shutdown /r /c "packer restart" /t 5
 }
 
 function Install-WindowsUpdates {
-    Param([string]$AdministratorPassword)
-
     $script:ScriptName = $MyInvocation.MyCommand.ToString()
     $script:ScriptPath = $MyInvocation.MyCommand.Path
     $script:UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
@@ -42,10 +40,6 @@ function Install-WindowsUpdates {
     $script:MoreUpdates=0
     $script:MaxCycles=5
 
-    Disable-WinRM
-    if ( Test-Autologon -eq $false ) {
-        Enable-Autologon -AdministratorPassword $AdministratorPassword
-    }
     Get-UpdateBatch
     if ($script:MoreUpdates -eq 1) {
         Install-UpdateBatch

@@ -44,8 +44,8 @@ module Packer
           Provisioners::CREATE_PROVISION_DIR,
           Provisioners::UPLOAD_BOSH_PSMODULES,
           Provisioners::INSTALL_BOSH_PSMODULES,
-          Provisioners.register_windowsupdatestask(@administrator_password).freeze,
-          Provisioners::WAIT_WINDOWSUPDATESTASK,
+          Provisioners::REGISTER_WINDOWSUPDATESTASK,
+          Provisioners.wait_windowsupdatestask(@administrator_password).freeze,
           Provisioners::UNREGISTER_WINDOWSUPDATESTASK,
           Provisioners::OUTPUT_LOG
         ]

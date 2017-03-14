@@ -1,4 +1,5 @@
 EMPTY_FILE_SHA = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+require 'zip'
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
@@ -58,6 +59,17 @@ def read_from_tgz(path, filename)
   end
   tar_extract.close
   contents
+end
+
+def zip_file_list(file_path)
+  file_list = []
+  Zip::File.open(file_path) do |zip_file|
+  # Handle entries one by one
+    zip_file.each do |entry|
+      file_list << entry.name
+    end
+  end
+  file_list
 end
 
 # require stemcell class

@@ -58,9 +58,9 @@ class ZipFileGenerator
 end
 
 def zip_bosh_psmodules(zipfile)
-directoryToZip = File.join(__dir__,"..","bosh-psmodules","modules")
-outputFile = File.join("stemcell-builder","build","bosh-psmodules.zip")
-zf = ZipFileGenerator.new(directoryToZip, zipfile)
-zf.write()
+  directoryToZip = File.join(__dir__,"..","bosh-psmodules","modules")
+  outputFile = File.join("stemcell-builder","build","bosh-psmodules.zip")
+  zf = ZipFileGenerator.new(directoryToZip, zipfile)
+  zf.write()
 end
 

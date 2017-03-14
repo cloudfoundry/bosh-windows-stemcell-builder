@@ -7,12 +7,6 @@
 
 $RegistryKey="HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
-function Test-Autologon {
-    Write-Log "Test Autologon"
-    $value = (Get-ItemProperty -Path $RegistryKey).AutoAdminLogon
-    return ($value -eq 1)
-}
-
 function Enable-Autologon {
     Param ([Parameter(Mandatory=$true)][string]$AdministratorPassword)
 
