@@ -115,7 +115,6 @@ describe Packer::Config do
             Packer::Config::Provisioners::LGPO_EXE,
             Packer::Config::Provisioners::VMX_STEMCELL_SYSPREP,
             Packer::Config::Provisioners::ENABLE_RDP,
-            Packer::Config::Provisioners::CHECK_UPDATES,
             Packer::Config::Provisioners::ADD_VCAP_GROUP,
             Packer::Config::Provisioners::RUN_POLICIES,
             Packer::Config::Provisioners::SETUP_AGENT,

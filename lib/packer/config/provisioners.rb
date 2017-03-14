@@ -146,11 +146,6 @@ module Packer
         'scripts' => ['scripts/run-lgpo.ps1']
       }.freeze
 
-      CHECK_UPDATES = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/check-updates.ps1']
-      }.freeze
-
       SET_EC2_PASSWORD = {
         'type' => 'powershell',
         'scripts' => ['scripts/aws/ec2-set-password.ps1']

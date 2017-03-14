@@ -90,7 +90,6 @@ module Packer
           Provisioners::LGPO_EXE,
           Provisioners::VMX_STEMCELL_SYSPREP,
           Provisioners::ENABLE_RDP,
-          Provisioners::CHECK_UPDATES,
           Provisioners::ADD_VCAP_GROUP,
           Provisioners::RUN_POLICIES,
           Provisioners::SETUP_AGENT,
