@@ -84,5 +84,19 @@ module Stemcell
         end
       end
     end
+
+    def self.removeNIC(ova_file_name)
+      Dir.mktmpdir do |dir|
+        exec_command("tar xf #{ova_file_name} -C #{dir}")
+        ovf_file = File.open(File.join("#{dir}", "image.ovf"))
+        f = Nokogiri::XML(ovf_file)
+        f.css("VirtualHardwareSection Item").select {|x| x.to_s =~ /ethernet/}.first.remove
+        File.write(File.join("#{dir}", "image.ovf"), f.to_s)
+        ovf_file.close
+        Dir.chdir(dir) do
+          exec_command("tar cf #{ova_file_name} *")
+        end
+      end
+    end      
   end
 end
