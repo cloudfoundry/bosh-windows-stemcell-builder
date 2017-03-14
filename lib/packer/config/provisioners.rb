@@ -187,6 +187,11 @@ module Packer
         'scripts' => ['scripts/increase-winrm-limits.ps1']
       }.freeze
 
+      DISABLE_WINRM_STARTUP = {
+        'type' => 'powershell',
+        'inline' => ['Get-Service -Name "WinRM" | Set-Service -StartupType Disabled']
+      }.freeze
+
       WINDOWS_RESTART = {
         'type' => 'windows-restart',
         'restart_timeout' => '1h'

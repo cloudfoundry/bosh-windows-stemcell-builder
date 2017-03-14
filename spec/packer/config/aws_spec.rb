@@ -51,6 +51,7 @@ describe Packer::Config::Aws do
           Packer::Config::Provisioners::SET_EC2_PASSWORD,
           Packer::Config::Provisioners::DISABLE_SERVICES,
           Packer::Config::Provisioners::SET_FIREWALL,
+          Packer::Config::Provisioners::DISABLE_WINRM_STARTUP,
           Packer::Config::Provisioners::CLEANUP_ARTIFACTS
         ]
       )

@@ -45,6 +45,7 @@ module Packer
           Provisioners::SET_EC2_PASSWORD,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,
+          Provisioners::DISABLE_WINRM_STARTUP,
           Provisioners::CLEANUP_ARTIFACTS
         ]
       end
