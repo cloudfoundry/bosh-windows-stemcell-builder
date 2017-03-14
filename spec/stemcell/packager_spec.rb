@@ -17,6 +17,20 @@ describe Stemcell::Packager do
     FileUtils.remove_entry_secure(@untar_dir)
   end
 
+  describe 'find_ovf_file' do
+    it 'returns the filename of the ovf file in directory' do
+      ovf_dir = Dir.mktmpdir
+      ovf_filename = 'image.ovf'
+      ovf_path = File.join(ovf_dir, ovf_filename)
+
+      File.open(ovf_path, 'w') { |f| f.write('image-contents') }
+
+      expect(Stemcell::Packager.find_ovf_file(ovf_dir)).to eq(ovf_path)
+
+      FileUtils.remove_entry_secure(ovf_dir)
+    end
+  end
+
   describe 'package_image' do
     context 'with tar' do
       it 'tars and gzips the image' do

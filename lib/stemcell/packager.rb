@@ -57,7 +57,7 @@ module Stemcell
         end
       end
 
-      sha = Digest::SHA1.hexdigest(File.read(File.join(output_directory, stemcell_tarball_file)))
+      sha = Digest::SHA1.file(File.join(output_directory, stemcell_tarball_file)).hexdigest
       filename = File.join(output_directory, stemcell_tarball_file + ".sha")
       File.write(filename, sha)
     end
@@ -88,15 +88,46 @@ module Stemcell
     def self.removeNIC(ova_file_name)
       Dir.mktmpdir do |dir|
         exec_command("tar xf #{ova_file_name} -C #{dir}")
-        ovf_file = File.open(File.join("#{dir}", "image.ovf"))
+
+        ovf_file = File.open(find_ovf_file(dir))
         f = Nokogiri::XML(ovf_file)
-        f.css("VirtualHardwareSection Item").select {|x| x.to_s =~ /ethernet/}.first.remove
-        File.write(File.join("#{dir}", "image.ovf"), f.to_s)
+        nics = f.css("VirtualHardwareSection Item").select {|x| x.to_s =~ /ethernet/}
+        if nics.first
+          nics.first.remove
+        end
+        File.write(ovf_file, f.to_s)
         ovf_file.close
         Dir.chdir(dir) do
           exec_command("tar cf #{ova_file_name} *")
         end
       end
-    end      
+    end
+
+    def self.find_ovf_file(dir)
+      pattern = File.join(dir, "*.ovf").gsub('\\', '/')
+      files = Dir.glob(pattern)
+      puts "FILES: #{files}"
+      if files.length == 0
+        raise "No ovf files in directory: #{dir}"
+      end
+      if files.length > 1
+        raise "Too many ovf files in directory: #{files}"
+      end
+      return files[0]
+    end
+
+    def self.exec_command(cmd)
+      STDOUT.sync = true
+      Open3.popen2(cmd) do |stdin, out, wait_thr|
+        out.each_line do |line|
+          puts line
+        end
+        exit_status = wait_thr.value
+        if exit_status != 0
+          raise "error running command: #{cmd}"
+        end
+      end
+    end
+
   end
 end
