@@ -84,6 +84,9 @@ module Packer
 
       def provisioners
         [
+          Provisioners::CREATE_PROVISION_DIR,
+          Provisioners::UPLOAD_BOSH_PSMODULES,
+          Provisioners::INSTALL_BOSH_PSMODULES,
           Provisioners::UPLOAD_AGENT,
           Provisioners::POLICY_BASELINE_ZIP,
           Provisioners::LGPO_EXE,

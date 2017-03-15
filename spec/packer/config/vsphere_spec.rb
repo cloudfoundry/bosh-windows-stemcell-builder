@@ -109,6 +109,9 @@ describe Packer::Config do
         ).provisioners
         expect(provisioners).to eq(
           [
+            Packer::Config::Provisioners::CREATE_PROVISION_DIR,
+            Packer::Config::Provisioners::UPLOAD_BOSH_PSMODULES,
+            Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
             Packer::Config::Provisioners::UPLOAD_AGENT,
             Packer::Config::Provisioners::POLICY_BASELINE_ZIP,
             Packer::Config::Provisioners::LGPO_EXE,

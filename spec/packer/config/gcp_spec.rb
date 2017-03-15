@@ -34,6 +34,9 @@ describe Packer::Config::Gcp do
       provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json).provisioners
       expect(provisioners).to eq(
         [
+          Packer::Config::Provisioners::CREATE_PROVISION_DIR,
+          Packer::Config::Provisioners::UPLOAD_BOSH_PSMODULES,
+          Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
           Packer::Config::Provisioners::INCREASE_WINRM_LIMITS,
           Packer::Config::Provisioners::UPLOAD_AGENT,
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
