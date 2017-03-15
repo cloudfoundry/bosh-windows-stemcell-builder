@@ -7,7 +7,7 @@ require_relative '../../zip_file'
 namespace :package do
     task :agent do
         build_dir = File.expand_path('../../../../build', __FILE__)
-        agent_dir = File.join(build_dir,'compiled_agent')
+        agent_dir = File.join(build_dir,'compiled-agent')
         deps_dir = File.join(agent_dir,'deps')
 
         FileUtils.mkdir_p(agent_dir)
@@ -33,6 +33,8 @@ namespace :package do
                 FileUtils.cp(File.join(fixtures, agent_file), File.join(agent_dir, agent_file))
             end
         end
-        ZipFile::Generator.new(agent_dir,File.join(build_dir,"agent.zip")).write()
+        output = File.join(build_dir,"agent.zip")
+        FileUtils.rm_rf(output)
+        ZipFile::Generator.new(agent_dir,output).write()
     end
 end

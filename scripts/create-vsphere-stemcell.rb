@@ -12,5 +12,6 @@ FileUtils.cp_r("vmx-version",File.join("stemcell-builder","build","vmx-version")
 
 Dir.chdir "stemcell-builder" do
   exec_command("bundle install")
+  exec_command("rake package:agent")
   exec_command("rake build:vsphere")
 end

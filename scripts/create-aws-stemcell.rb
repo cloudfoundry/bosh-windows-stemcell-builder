@@ -11,6 +11,7 @@ FileUtils.cp_r("base-amis", File.join("stemcell-builder","build","base-amis"))
 
 Dir.chdir "stemcell-builder" do
   exec_command("bundle install")
+  exec_command("rake package:agent")
   exec_command("rake build:aws")
   exec_command("mv bosh-windows-stemcell/*.tgz ../bosh-windows-stemcell")
   exec_command("mv bosh-windows-stemcell/*.sha ../sha")
