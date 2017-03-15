@@ -10,12 +10,9 @@ FileUtils.cp_r("windows-stemcell-dependencies",File.join("stemcell-builder","bui
 FileUtils.cp_r("version",File.join("stemcell-builder","build","version"))
 FileUtils.cp_r("vmx-version",File.join("stemcell-builder","build","vmx-version"))
 
-directory = File.join(__dir__,"..","bosh-psmodules","modules")
-output = File.join("stemcell-builder","build","bosh-psmodules.zip")
-ZipFile::Generator.new(directory, output).write()
-
 Dir.chdir "stemcell-builder" do
   exec_command("bundle install")
   exec_command("rake package:agent")
+  exec_command("rake package:psmodules")
   exec_command("rake build:vsphere")
 end

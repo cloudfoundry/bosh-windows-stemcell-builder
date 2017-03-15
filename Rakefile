@@ -4,6 +4,7 @@ import 'lib/tasks/build/aws.rake'
 import 'lib/tasks/build/gcp.rake'
 import 'lib/tasks/build/vsphere.rake'
 import 'lib/tasks/package/agent.rake'
+import 'lib/tasks/package/psmodules.rake'
 
 namespace :build do
   desc 'Build AWS Stemcell'
@@ -26,5 +27,9 @@ namespace :package do
   desc 'Package BOSH Agent and dependencies into agent.zip'
   task :agent do
     puts 'package:agent'
+  end
+  desc 'Package BOSH psmodules into bosh-psmodules.zip'
+  task :psmodules do
+    puts 'package:psmodules'
   end
 end
