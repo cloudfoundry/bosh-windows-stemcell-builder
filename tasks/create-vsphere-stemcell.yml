@@ -4,7 +4,6 @@ platform: windows
 inputs:
   - name: version
   - name: vmx-version
-  - name: compiled-agent
   - name: stemcell-builder
   - name: windows-stemcell-dependencies
 outputs:
