@@ -109,16 +109,14 @@ describe Packer::Config do
         ).provisioners
         expect(provisioners).to eq(
           [
-            Packer::Config::Provisioners::AGENT_ZIP,
-            Packer::Config::Provisioners::AGENT_DEPS_ZIP,
+            Packer::Config::Provisioners::UPLOAD_AGENT,
             Packer::Config::Provisioners::POLICY_BASELINE_ZIP,
             Packer::Config::Provisioners::LGPO_EXE,
             Packer::Config::Provisioners::VMX_STEMCELL_SYSPREP,
             Packer::Config::Provisioners::ENABLE_RDP,
             Packer::Config::Provisioners::ADD_VCAP_GROUP,
             Packer::Config::Provisioners::RUN_POLICIES,
-            Packer::Config::Provisioners::SETUP_AGENT,
-            Packer::Config::Provisioners::VSPHERE_AGENT_CONFIG,
+            Packer::Config::Provisioners.install_agent("vsphere"),
             Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
             Packer::Config::Provisioners::DISABLE_SERVICES,
             Packer::Config::Provisioners::SET_FIREWALL,

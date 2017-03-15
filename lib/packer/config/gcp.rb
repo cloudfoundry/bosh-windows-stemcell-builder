@@ -36,11 +36,9 @@ module Packer
       def provisioners
         [
           Provisioners::INCREASE_WINRM_LIMITS,
-          Provisioners::AGENT_ZIP,
-          Provisioners::AGENT_DEPS_ZIP,
+          Provisioners::UPLOAD_AGENT,
           Provisioners::INSTALL_WINDOWS_FEATURES,
-          Provisioners::SETUP_AGENT,
-          Provisioners::GCP_AGENT_CONFIG,
+          Provisioners.install_agent("gcp"),
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,

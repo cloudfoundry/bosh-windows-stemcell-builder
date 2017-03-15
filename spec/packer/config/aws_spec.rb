@@ -42,11 +42,9 @@ describe Packer::Config::Aws do
       provisioners = Packer::Config::Aws.new('', '', []).provisioners
       expect(provisioners).to eq(
         [
-          Packer::Config::Provisioners::AGENT_ZIP,
-          Packer::Config::Provisioners::AGENT_DEPS_ZIP,
+          Packer::Config::Provisioners::UPLOAD_AGENT,
           Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
-          Packer::Config::Provisioners::SETUP_AGENT,
-          Packer::Config::Provisioners::AWS_AGENT_CONFIG,
+          Packer::Config::Provisioners.install_agent("aws"),
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
           Packer::Config::Provisioners::SET_EC2_PASSWORD,
           Packer::Config::Provisioners::DISABLE_SERVICES,

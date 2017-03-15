@@ -6,12 +6,12 @@ require 'tmpdir'
 require 'yaml'
 require 'zlib'
 
-load File.expand_path('../../../lib/tasks/build/vsphere.rake', __FILE__)
+load File.expand_path('../../../../lib/tasks/build/vsphere.rake', __FILE__)
 
 describe 'VSphere' do
   before(:each) do
     @original_env = ENV.to_hash
-    @build_dir = File.expand_path('../../../build', __FILE__)
+    @build_dir = File.expand_path('../../../../build', __FILE__)
     @output_directory = 'bosh-windows-stemcell'
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)

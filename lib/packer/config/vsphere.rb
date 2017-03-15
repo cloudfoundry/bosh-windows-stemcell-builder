@@ -84,16 +84,14 @@ module Packer
 
       def provisioners
         [
-          Provisioners::AGENT_ZIP,
-          Provisioners::AGENT_DEPS_ZIP,
+          Provisioners::UPLOAD_AGENT,
           Provisioners::POLICY_BASELINE_ZIP,
           Provisioners::LGPO_EXE,
           Provisioners::VMX_STEMCELL_SYSPREP,
           Provisioners::ENABLE_RDP,
           Provisioners::ADD_VCAP_GROUP,
           Provisioners::RUN_POLICIES,
-          Provisioners::SETUP_AGENT,
-          Provisioners::VSPHERE_AGENT_CONFIG,
+          Provisioners.install_agent('vsphere').freeze,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,

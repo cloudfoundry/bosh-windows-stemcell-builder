@@ -3,28 +3,28 @@ require_relative 'lib/stemcell/builder'
 import 'lib/tasks/build/aws.rake'
 import 'lib/tasks/build/gcp.rake'
 import 'lib/tasks/build/vsphere.rake'
-import 'lib/tasks/bundle_agent.rake'
+import 'lib/tasks/package/agent.rake'
 
 namespace :build do
-  desc 'Build Azure Stemcell'
-  task :azure do
+  desc 'Build AWS Stemcell'
+  task :aws do
     puts 'build:azure'
   end
 
-  task :openstack do
-    puts 'build:openstack'
-  end
-
+  desc 'Build GCP Stemcell'
   task :gcp do
     puts 'build:gcp'
   end
 
+  desc 'Build VSphere Stemcell'
   task :vsphere do
     puts 'build:vsphere'
   end
 end
 
-desc 'Bundle BOSH Stemcell Agent and dependencies into agent.zip'
-task :bundle_agent do
-  puts 'bundle_agent'
+namespace :package do
+  desc 'Package BOSH Agent and dependencies into agent.zip'
+  task :agent do
+    puts 'package:agent'
+  end
 end

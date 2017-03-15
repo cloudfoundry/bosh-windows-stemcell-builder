@@ -35,11 +35,9 @@ describe Packer::Config::Gcp do
       expect(provisioners).to eq(
         [
           Packer::Config::Provisioners::INCREASE_WINRM_LIMITS,
-          Packer::Config::Provisioners::AGENT_ZIP,
-          Packer::Config::Provisioners::AGENT_DEPS_ZIP,
+          Packer::Config::Provisioners::UPLOAD_AGENT,
           Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
-          Packer::Config::Provisioners::SETUP_AGENT,
-          Packer::Config::Provisioners::GCP_AGENT_CONFIG,
+          Packer::Config::Provisioners.install_agent("gcp"),
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
           Packer::Config::Provisioners::DISABLE_SERVICES,
           Packer::Config::Provisioners::SET_FIREWALL,

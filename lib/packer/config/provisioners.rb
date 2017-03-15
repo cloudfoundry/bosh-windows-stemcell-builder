@@ -12,6 +12,13 @@ module Packer
         }
       end
 
+      def self.install_agent(iaas)
+        return {
+          'type' => 'powershell',
+          'inline' => ["Install-Agent -IaaS #{iaas} -agentZipPath 'C:\\provision\\agent.zip'"]
+        }
+      end
+
       REGISTER_WINDOWSUPDATESTASK= {
         'type' => 'powershell',
         'inline' => ["Register-WindowsUpdatesTask"]
@@ -31,10 +38,21 @@ module Packer
         'restart_timeout' => '12h'
       }.freeze
 
+      UNREGISTER_WINDOWSUPDATESTASK= {
+        'type' => 'powershell',
+        'inline' => ["Unregister-WindowsUpdatesTask"]
+      }.freeze
+
       UPLOAD_BOSH_PSMODULES = {
         'type' => 'file',
         'source' => 'build/bosh-psmodules.zip',
         'destination' => 'C:\\provision\\bosh-psmodules.zip'
+      }.freeze
+
+      UPLOAD_AGENT = {
+        'type' => 'file',
+        'source' => 'build/agent.zip',
+        'destination' => 'C:\\provision\\agent.zip'
       }.freeze
 
       INSTALL_BOSH_PSMODULES = {
@@ -47,11 +65,6 @@ module Packer
         'inline' => ['if (Test-Path C:\\provision\\log.log) { Get-Content -Path C:\\provision\\log.log } else { Write-Host "Missing log file" }']
       }.freeze
 
-      UNREGISTER_WINDOWSUPDATESTASK= {
-        'type' => 'powershell',
-        'inline' => ["Unregister-WindowsUpdatesTask"]
-      }.freeze
-
       VMX_STEMCELL_SYSPREP = {
         'type' => 'file',
         'source' => 'scripts/vsphere/sysprep.ps1',
@@ -61,23 +74,6 @@ module Packer
       ADD_VCAP_GROUP = {
         'type' => 'powershell',
         'scripts' => ['scripts/vsphere/add-vcap-group.ps1']
-      }.freeze
-
-      AGENT_DEPS_ZIP = {
-        'type' => 'file',
-        'source' => 'build/compiled-agent/agent-dependencies.zip',
-        'destination' => 'C:\\bosh\\agent-dependencies.zip'
-      }.freeze
-
-      AGENT_ZIP = {
-        'type' => 'file',
-        'source' => 'build/compiled-agent/agent.zip',
-        'destination' => 'C:\\bosh\\agent.zip'
-      }.freeze
-
-      AWS_AGENT_CONFIG = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/aws/agent_config.ps1']
       }.freeze
 
       CLEANUP_ARTIFACTS = {
@@ -120,11 +116,6 @@ module Packer
         'scripts' => ['scripts/vsphere/enable-rdp.bat']
       }.freeze
 
-      GCP_AGENT_CONFIG = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/gcp/agent_config.ps1']
-      }.freeze
-
       INSTALL_VMWARE_TOOLS = {
         'type' => 'powershell',
         'scripts' => ['scripts/vm-guest-tools.ps1']
@@ -162,20 +153,10 @@ module Packer
         'scripts' => ['scripts/set-firewall.ps1']
       }.freeze
 
-      SETUP_AGENT = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/setup_agent.ps1']
-      }.freeze
-
       VMWARE_TOOLS_EXE = {
         'type' => 'file',
         'source' => 'build/windows-stemcell-dependencies/VMware-tools/VMware-tools.exe',
         'destination' => 'C:\\VMWare-tools.exe'
-      }.freeze
-
-      VSPHERE_AGENT_CONFIG = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/vsphere/agent_config.ps1']
       }.freeze
 
       INCREASE_WINRM_LIMITS = {

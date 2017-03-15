@@ -36,11 +36,9 @@ module Packer
 
       def provisioners
         [
-          Provisioners::AGENT_ZIP,
-          Provisioners::AGENT_DEPS_ZIP,
+          Provisioners::UPLOAD_AGENT,
           Provisioners::INSTALL_WINDOWS_FEATURES,
-          Provisioners::SETUP_AGENT,
-          Provisioners::AWS_AGENT_CONFIG,
+          Provisioners.install_agent("aws").freeze,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners::SET_EC2_PASSWORD,
           Provisioners::DISABLE_SERVICES,

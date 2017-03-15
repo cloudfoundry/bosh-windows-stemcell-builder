@@ -6,21 +6,21 @@ require 'tmpdir'
 require 'yaml'
 require 'zlib'
 
-load File.expand_path('../../../lib/tasks/bundle_agent.rake', __FILE__)
+load File.expand_path('../../../../lib/tasks/package/agent.rake', __FILE__)
 
-describe 'BundleAgent' do
+describe 'Package::Agent' do
   before(:each) do
     @original_env = ENV.to_hash
-    @build_dir = File.expand_path('../../../build', __FILE__)
+    @build_dir = File.expand_path('../../../../build', __FILE__)
     FileUtils.mkdir_p(@build_dir)
   end
 
   after(:each) do
     ENV.replace(@original_env)
-    #FileUtils.rm_rf(@build_dir)
+    FileUtils.rm_rf(@build_dir)
   end
   it 'should bundle bosh agent + deps into zip files' do
-    Rake::Task['bundle_agent'].invoke
+    Rake::Task['package:agent'].invoke
     pattern = File.join(@build_dir, "agent.zip").gsub('\\', '/')
     files = Dir.glob(pattern)
     expect(files.length).to eq(1)
