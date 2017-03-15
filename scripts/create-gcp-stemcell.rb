@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative 'exec-command'
+require_relative '../lib/exec_command'
 require 'fileutils'
 
 FileUtils.mkdir_p(File.join("stemcell-builder","build"))

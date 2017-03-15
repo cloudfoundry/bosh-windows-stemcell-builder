@@ -49,8 +49,8 @@ describe Packer::Config do
             Packer::Config::Provisioners::CREATE_PROVISION_DIR,
             Packer::Config::Provisioners::UPLOAD_BOSH_PSMODULES,
             Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
-            Packer::Config::Provisioners.register_windowsupdatestask('password').freeze,
-            Packer::Config::Provisioners::WAIT_WINDOWSUPDATESTASK,
+            Packer::Config::Provisioners::REGISTER_WINDOWSUPDATESTASK,
+            Packer::Config::Provisioners.wait_windowsupdatestask('password').freeze,
             Packer::Config::Provisioners::UNREGISTER_WINDOWSUPDATESTASK,
             Packer::Config::Provisioners::OUTPUT_LOG
           ]

@@ -12,17 +12,16 @@ describe 'BundleAgent' do
   before(:each) do
     @original_env = ENV.to_hash
     @build_dir = File.expand_path('../../../build', __FILE__)
-    @compiled_agent_dir = File.join(@build_dir, 'compiled-agent')
     FileUtils.mkdir_p(@build_dir)
   end
 
   after(:each) do
     ENV.replace(@original_env)
-    FileUtils.rm_rf(@build_dir)
+    #FileUtils.rm_rf(@build_dir)
   end
   it 'should bundle bosh agent + deps into zip files' do
     Rake::Task['bundle_agent'].invoke
-    pattern = File.join(@compiled_agent_dir, "*.zip").gsub('\\', '/')
+    pattern = File.join(@build_dir, "agent.zip").gsub('\\', '/')
     files = Dir.glob(pattern)
     expect(files.length).to eq(1)
     zip_file = files[0]
