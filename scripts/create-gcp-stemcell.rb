@@ -3,7 +3,6 @@
 require 'fileutils'
 
 require_relative '../lib/exec_command'
-require_relative '../lib/zip_file'
 
 FileUtils.mkdir_p(File.join("stemcell-builder","build"))
 FileUtils.cp_r("windows-stemcell-dependencies", File.join("stemcell-builder","build","windows-stemcell-dependencies"))
