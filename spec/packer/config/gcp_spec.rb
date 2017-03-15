@@ -36,7 +36,7 @@ describe Packer::Config::Gcp do
         [
           Packer::Config::Provisioners::INCREASE_WINRM_LIMITS,
           Packer::Config::Provisioners::UPLOAD_AGENT,
-          Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
+          Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners.install_agent("gcp"),
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
           Packer::Config::Provisioners::DISABLE_SERVICES,

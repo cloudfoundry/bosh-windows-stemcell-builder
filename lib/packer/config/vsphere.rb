@@ -92,6 +92,7 @@ module Packer
           Provisioners::ADD_VCAP_GROUP,
           Provisioners::RUN_POLICIES,
           Provisioners.install_agent('vsphere').freeze,
+          Provisioners::INSTALL_CF_FEATURES,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,

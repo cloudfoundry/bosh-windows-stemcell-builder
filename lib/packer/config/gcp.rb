@@ -37,7 +37,7 @@ module Packer
         [
           Provisioners::INCREASE_WINRM_LIMITS,
           Provisioners::UPLOAD_AGENT,
-          Provisioners::INSTALL_WINDOWS_FEATURES,
+          Provisioners::INSTALL_CF_FEATURES,
           Provisioners.install_agent("gcp"),
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners::DISABLE_SERVICES,

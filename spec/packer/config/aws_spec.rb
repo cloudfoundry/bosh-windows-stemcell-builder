@@ -43,7 +43,7 @@ describe Packer::Config::Aws do
       expect(provisioners).to eq(
         [
           Packer::Config::Provisioners::UPLOAD_AGENT,
-          Packer::Config::Provisioners::INSTALL_WINDOWS_FEATURES,
+          Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners.install_agent("aws"),
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
           Packer::Config::Provisioners::SET_EC2_PASSWORD,

@@ -117,6 +117,7 @@ describe Packer::Config do
             Packer::Config::Provisioners::ADD_VCAP_GROUP,
             Packer::Config::Provisioners::RUN_POLICIES,
             Packer::Config::Provisioners.install_agent("vsphere"),
+            Packer::Config::Provisioners::INSTALL_CF_FEATURES,
             Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
             Packer::Config::Provisioners::DISABLE_SERVICES,
             Packer::Config::Provisioners::SET_FIREWALL,

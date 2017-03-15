@@ -60,6 +60,11 @@ module Packer
         'scripts' => ['scripts/install-bosh-psmodules.ps1']
       }.freeze
 
+      INSTALL_CF_FEATURES = {
+        'type' => 'powershell',
+        'inline' => ['Install-CFFeatures']
+      }.freeze
+
       OUTPUT_LOG= {
         'type' => 'powershell',
         'inline' => ['if (Test-Path C:\\provision\\log.log) { Get-Content -Path C:\\provision\\log.log } else { Write-Host "Missing log file" }']
@@ -121,10 +126,6 @@ module Packer
         'scripts' => ['scripts/vm-guest-tools.ps1']
       }.freeze
 
-      INSTALL_WINDOWS_FEATURES = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/add-windows-features.ps1']
-      }.freeze
 
       LGPO_EXE = {
         'type' => 'file',

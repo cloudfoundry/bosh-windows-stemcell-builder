@@ -37,7 +37,7 @@ module Packer
       def provisioners
         [
           Provisioners::UPLOAD_AGENT,
-          Provisioners::INSTALL_WINDOWS_FEATURES,
+          Provisioners::INSTALL_CF_FEATURES,
           Provisioners.install_agent("aws").freeze,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners::SET_EC2_PASSWORD,
