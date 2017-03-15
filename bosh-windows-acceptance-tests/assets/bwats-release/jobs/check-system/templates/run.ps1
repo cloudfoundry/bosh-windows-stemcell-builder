@@ -117,4 +117,22 @@ If ($status -ne $nil) {
   Write-Host "IIS Web Server is turned off"
 }
 
+# Ensure CF Windows features are installed
+$features = New-Object System.Collections.ArrayList
+[void] $features.AddRange((
+    "Web-Webserver",
+    "Web-WebSockets",
+    "AS-Web-Support",
+    "AS-NET-Framework",
+    "Web-WHC",
+    "Web-ASP"
+))
+foreach ($feature in $features) {
+  If (!(Get-WindowsFeature $feature).Installed) {
+    Write-Error "Failed to find $feature"
+  } else {
+    Write-Host "Found $feature feature"
+  }
+}
+
 Exit 0
