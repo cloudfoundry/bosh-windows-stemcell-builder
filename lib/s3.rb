@@ -1,4 +1,5 @@
 require 'aws-sdk'
+require_relative 'exec_command'
 
 module S3
   class Client
@@ -78,19 +79,6 @@ module S3
         raise "Too many vmx files in directory: #{files}"
       end
       return files[0]
-    end
-
-    def exec_command(cmd)
-      STDOUT.sync = true
-      Open3.popen2(cmd) do |stdin, out, wait_thr|
-        out.each_line do |line|
-          puts line
-        end
-        exit_status = wait_thr.value
-        if exit_status != 0
-          raise "error running command: #{cmd}"
-        end
-      end
     end
   end
 end

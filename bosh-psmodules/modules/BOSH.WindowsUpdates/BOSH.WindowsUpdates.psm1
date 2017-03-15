@@ -20,9 +20,9 @@ function Unregister-WindowsUpdatesTask {
 function Wait-WindowsUpdates {
     Param([string]$AdministratorPassword)
 
-    Disable-WinRM
     Enable-Autologon -AdministratorPassword $AdministratorPassword
     shutdown /r /c "packer restart" /t 5
+    Disable-WinRM
 }
 
 function Install-WindowsUpdates {
