@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export GOPATH="$PWD"
+export GOPATH="$PWD/stemcell-builder"
 export PATH="$PATH:$GOPATH/bin"
 
 if [ -n "$IAAS" ]; then

@@ -4,12 +4,11 @@ platform: linux
 image_resource: {type: docker-image, source: {repository: pivotalgreenhouse/bosh-cli } }
 
 inputs:
-- name: bwats
-  path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests
+- name: stemcell-builder
 - name: bosh-windows-stemcell
 
 run:
-  path: src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests/ci/scripts/run.sh
+  path: stemcell-builder/src/github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests/ci/scripts/run.sh
 
 params:
   IAAS:
