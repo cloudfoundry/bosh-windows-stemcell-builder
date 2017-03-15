@@ -2,6 +2,7 @@ require 'open3'
 
 def exec_command(cmd)
   STDOUT.sync = true
+  puts "Running: #{cmd}"
   Open3.popen2(cmd) do |stdin, out, wait_thr|
     out.each_line do |line|
       puts line
