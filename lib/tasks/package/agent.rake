@@ -5,6 +5,7 @@ require_relative '../../exec_command'
 require_relative '../../zip_file'
 
 namespace :package do
+    desc 'Package BOSH Agent and dependencies into agent.zip'
     task :agent do
         build_dir = File.expand_path('../../../../build', __FILE__)
         agent_dir = File.join(build_dir,'compiled-agent')

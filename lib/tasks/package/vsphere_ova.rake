@@ -4,6 +4,7 @@ require 'json'
 require_relative '../../zip_file'
 
 namespace :package do
+  desc 'Package VSphere OVA files into Stemcells'
   task :vsphere_ova, [:ova_file_name, :output_directory, :version, :agent_commit] do |t, args|
     ova_file_name = args[:ova_file_name]
     output_directory = args[:output_directory]

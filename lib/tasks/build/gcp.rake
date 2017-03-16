@@ -2,6 +2,7 @@ require 'rspec/core/rake_task'
 require 'json'
 
 namespace :build do
+  desc 'Build GCP Stemcell'
   task :gcp do
     build_dir = File.expand_path("../../../../build", __FILE__)
 

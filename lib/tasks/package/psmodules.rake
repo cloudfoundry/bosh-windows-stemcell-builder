@@ -4,6 +4,7 @@ require 'json'
 require_relative '../../zip_file'
 
 namespace :package do
+    desc 'Package BOSH psmodules into bosh-psmodules.zip'
     task :psmodules do
         build_dir = File.expand_path('../../../../build', __FILE__)
         psmodules_dir = File.join(Dir.pwd,'bosh-psmodules','modules')

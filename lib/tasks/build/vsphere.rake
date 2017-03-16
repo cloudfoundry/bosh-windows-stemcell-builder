@@ -3,6 +3,7 @@ require 'json'
 require_relative '../../s3'
 
 namespace :build do
+  desc 'Apply Windows Updates for VMX'
   task :vsphere_add_updates do
     build_dir = File.expand_path("../../../../build", __FILE__)
 
@@ -40,6 +41,8 @@ namespace :build do
       exit 1
     end
   end
+
+  desc 'Build VSphere Stemcell'
   task :vsphere do
     build_dir = File.expand_path("../../../../build", __FILE__)
 

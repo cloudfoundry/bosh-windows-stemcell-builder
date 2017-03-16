@@ -2,6 +2,7 @@ require 'rspec/core/rake_task'
 require 'json'
 
 namespace :build do
+  desc 'Build AWS Stemcell'
   task :aws do
     build_root = File.expand_path("../../../../build", __FILE__)
 
