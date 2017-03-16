@@ -31,7 +31,7 @@ function Copy-Agent {
       [string]$agentZipPath = $(Throw "Provide the path to the BOSH agent zipfile")
     )
 
-    Write-Log "Copy-Agent from ${installDir} to ${agentZipPath}"
+    Write-Log "Copy-Agent InstallDir=${installDir} Zip=${agentZipPath}"
 
     $boshDir = (Join-Path $installDir "bosh")
     New-Item -Path $boshDir -ItemType Directory -Force

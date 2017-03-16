@@ -106,7 +106,6 @@ module Stemcell
     def self.find_ovf_file(dir)
       pattern = File.join(dir, "*.ovf").gsub('\\', '/')
       files = Dir.glob(pattern)
-      puts "FILES: #{files}"
       if files.length == 0
         raise "No ovf files in directory: #{dir}"
       end

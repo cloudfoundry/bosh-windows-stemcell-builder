@@ -125,7 +125,8 @@ describe Packer::Config do
             Packer::Config::Provisioners::DISABLE_SERVICES,
             Packer::Config::Provisioners::SET_FIREWALL,
             Packer::Config::Provisioners::CLEANUP_TEMP_DIRS,
-            Packer::Config::Provisioners::CLEANUP_ARTIFACTS
+            Packer::Config::Provisioners::CLEANUP_ARTIFACTS,
+            Packer::Config::Provisioners::COMPRESS_DISK
           ]
         )
       end

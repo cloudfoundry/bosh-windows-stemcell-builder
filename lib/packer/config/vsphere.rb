@@ -100,7 +100,8 @@ module Packer
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,
           Provisioners::CLEANUP_TEMP_DIRS,
-          Provisioners::CLEANUP_ARTIFACTS
+          Provisioners::CLEANUP_ARTIFACTS,
+          Provisioners::COMPRESS_DISK
         ]
       end
     end

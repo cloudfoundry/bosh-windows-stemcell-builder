@@ -65,6 +65,11 @@ module Packer
         'inline' => ['Install-CFFeatures']
       }.freeze
 
+      COMPRESS_DISK = {
+        'type' => 'powershell',
+        'inline' => ['Compress-Disk']
+      }.freeze
+
       OUTPUT_LOG= {
         'type' => 'powershell',
         'inline' => ['if (Test-Path C:\\provision\\log.log) { Get-Content -Path C:\\provision\\log.log } else { Write-Host "Missing log file" }']

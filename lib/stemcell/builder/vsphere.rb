@@ -70,7 +70,6 @@ module Stemcell
       def find_vmx_file(dir)
         pattern = File.join(dir, "*.vmx").gsub('\\', '/')
         files = Dir.glob(pattern)
-        puts "FILES: #{files}"
         if files.length == 0
           raise "No vmx files in directory: #{dir}"
         end
