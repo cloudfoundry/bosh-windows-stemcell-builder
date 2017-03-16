@@ -32,4 +32,8 @@ namespace :package do
   task :psmodules do
     puts 'package:psmodules'
   end
+  desc 'Package VSphere OVA files into Stemcells'
+  task :vsphere do
+    puts 'package:vsphere_ova'
+  end
 end

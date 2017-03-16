@@ -61,6 +61,16 @@ def read_from_tgz(path, filename)
   contents
 end
 
+def tgz_file_list(path)
+  file_list = []
+  tar_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open(path))
+  tar_extract.rewind
+  tar_extract.each do |entry|
+    file_list << entry.full_name
+  end
+  file_list
+end
+
 def zip_file_list(file_path)
   file_list = []
   Zip::File.open(file_path) do |zip_file|
