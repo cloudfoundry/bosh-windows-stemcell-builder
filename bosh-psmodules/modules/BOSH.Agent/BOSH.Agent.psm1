@@ -206,6 +206,6 @@ function Set-Path {
 
 function Install-AgentService {
     Write-Log "Install-AgentService: Installing BOSH Agent"
-    Start-Process -FilePath "C:\bosh\service_wrapper.exe" -ArgumentList "install"
+    Start-Process -FilePath "C:\bosh\service_wrapper.exe" -ArgumentList "install" -NoNewWindow -Wait
 }
 

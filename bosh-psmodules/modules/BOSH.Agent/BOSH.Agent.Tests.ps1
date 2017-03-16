@@ -193,7 +193,7 @@ Describe "Set-Path" {
 
 Describe "Install-Agent" {
     It "calls service_wrapper.exe" {
-        Mock -Verifiable -ModuleName BOSH.Agent Start-Process {} -ParameterFilter { $FilePath -eq "C:\bosh\service_wrapper.exe" -and $ArgumentList -eq "install" }
+        Mock -Verifiable -ModuleName BOSH.Agent Start-Process {} -ParameterFilter { $FilePath -eq "C:\bosh\service_wrapper.exe" -and $ArgumentList -eq "install" -and $NoNewWindow -and $Wait }
         Install-AgentService
         Assert-VerifiableMocks
     }
