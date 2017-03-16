@@ -102,7 +102,7 @@ Create a new virtual machine (if you are using an existing template, select the 
 
 ## Step 2: Build & Install BOSH PSModules
 
-1. Clone this repo, expand the bosh-agent submodule:
+- Clone this repo, expand the bosh-agent submodule:
 
 **NOTE**: On Windows you MUST clone straight into `C:\\`, or the git clone and submodule update will fail due to file path lengths.
 
@@ -113,24 +113,15 @@ bundle install
 rake package:psmodules
 ```
 
-1. Transfer `build/bosh-psmodules.zip` to your Windows VM.
-1. Unzip the zip file and copy the `BOSH.*` folders to `C:\Program Files\WindowsPowerShell\Modules`
+- Transfer `build/bosh-psmodules.zip` to your Windows VM.
+- Unzip the zip file and copy the `BOSH.*` folders to `C:\Program Files\WindowsPowerShell\Modules`
 
 ## Step 3: Build & Install BOSH Agent
 
-1. Build `agent.zip`
-  ```
-  rake package:agent
-  ```
-
-1. Transfer `build/agent.zip` to your Windows VM.
-
-1. Install the Agent
-  ```
-  Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>
-  ```
-
-1. Power off your VM
+- On your host, run `rake package:agent`
+- Transfer `build/agent.zip` to your Windows VM.
+- On your windows VM, run `Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>`
+- Power off your VM
 
 ## Step 4: Export image to OVA format
 
