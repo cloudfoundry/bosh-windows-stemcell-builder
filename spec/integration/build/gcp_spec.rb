@@ -25,7 +25,6 @@ describe 'Gcp' do
 
   it 'should build a gcp stemcell' do
     Dir.mktmpdir('gcp-stemcell-test') do |tmpdir|
-      output_directory = File.join(tmpdir, 'gcp')
       os_version = 'some-os-version'
       version = 'some-version'
       agent_commit = 'some-agent-commit'

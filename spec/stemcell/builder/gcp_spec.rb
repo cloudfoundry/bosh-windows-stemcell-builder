@@ -81,7 +81,7 @@ describe Stemcell::Builder do
           allow(Packer::Runner).to receive(:new).with('some-packer-config').and_return(packer_runner)
 
           expect {
-            stemcell_path = Stemcell::Builder::Gcp.new(
+            Stemcell::Builder::Gcp.new(
               os: '',
               output_directory: '',
               version: '',
