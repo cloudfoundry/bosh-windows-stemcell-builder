@@ -32,14 +32,8 @@ namespace :build do
       packer_vars: {},
     )
 
-    begin
-      vsphere.build
-      vmx.put(output_directory, vmx_version)
-    rescue => e
-      puts "Failed to build stemcell: #{e.message}"
-      puts e.backtrace
-      exit 1
-    end
+    vsphere.build
+    vmx.put(output_directory, vmx_version)
   end
 
   desc 'Build VSphere Stemcell'
@@ -80,21 +74,15 @@ namespace :build do
       version: version
     )
 
-    begin
-      vsphere.build
-      s3_client = S3::Client.new(
-        aws_access_key_id: ENV.fetch("AWS_ACCESS_KEY_ID"),
-        aws_secret_access_key: ENV.fetch("AWS_SECRET_ACCESS_KEY"),
-        aws_region: ENV.fetch("AWS_REGION"),
-      )
+    vsphere.build
+    s3_client = S3::Client.new(
+      aws_access_key_id: ENV.fetch("AWS_ACCESS_KEY_ID"),
+      aws_secret_access_key: ENV.fetch("AWS_SECRET_ACCESS_KEY"),
+      aws_region: ENV.fetch("AWS_REGION"),
+    )
 
-      pattern = File.join(output_directory, "*.tgz").gsub('\\', '/')
-      stemcell = Dir.glob(pattern)[0]
-      s3_client.put(ENV.fetch("OUTPUT_BUCKET"),File.basename(stemcell),stemcell)
-    rescue => e
-      puts "Failed to build stemcell: #{e.message}"
-      puts e.backtrace
-      exit 1
-    end
+    pattern = File.join(output_directory, "*.tgz").gsub('\\', '/')
+    stemcell = Dir.glob(pattern)[0]
+    s3_client.put(ENV.fetch("OUTPUT_BUCKET"),File.basename(stemcell),stemcell)
   end
 end

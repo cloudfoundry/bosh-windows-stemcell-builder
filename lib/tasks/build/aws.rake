@@ -28,12 +28,6 @@ namespace :build do
       version: version
     )
 
-    begin
-      aws_builder.build
-    rescue => e
-      puts "Failed to build stemcell: #{e.message}"
-      puts e.backtrace
-      exit 1
-    end
+    aws_builder.build
   end
 end

@@ -27,12 +27,6 @@ namespace :build do
       version: version
     )
 
-    begin
-      gcp_builder.build
-    rescue => e
-      puts "Failed to build stemcell: #{e.message}"
-      puts e.backtrace
-      exit 1
-    end
+    gcp_builder.build
   end
 end
