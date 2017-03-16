@@ -284,7 +284,7 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(bosh.Run("upload-release")).To(Succeed())
 
 		stemcellPath := filepath.Join(
-			os.Getenv("GOPATH"),
+			os.Getenv("ROOTPATH"),
 			os.Getenv("STEMCELL_PATH"),
 		)
 
