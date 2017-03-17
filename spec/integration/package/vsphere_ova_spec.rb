@@ -19,7 +19,7 @@ describe 'Package::vsphere_ova' do
         ova_file_name,
         tmpdir,
         version)
-      pattern = File.join(tmpdir, "*.tgz").gsub('\\', '/')
+      pattern = File.join(tmpdir, "bosh-stemcell-#{version}-vsphere-esxi-windows2012R2-go_agent.tgz").gsub('\\', '/')
       files = Dir.glob(pattern)
       expect(files.length).to eq(1)
       tarball = files[0]
