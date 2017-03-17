@@ -4,3 +4,6 @@
 [submodule "src/github.com/cloudfoundry/bosh-agent"]
 	path = src/github.com/cloudfoundry/bosh-agent
 	url = https://github.com/cloudfoundry/bosh-agent
+[submodule "src/github.com/pester/Pester"]
+	path = src/github.com/pester/Pester
+	url = https://github.com/pester/Pester
