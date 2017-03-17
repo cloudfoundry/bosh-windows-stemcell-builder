@@ -13,6 +13,9 @@ namespace :package do
     os = 'windows2012R2'
     iaas = 'vsphere-esxi'
 
+    output_directory = File.absolute_path(output_directory)
+    ova_file_name = File.absolute_path(ova_file_name)
+    FileUtils.mkdir_p(output_directory)
     image_path = File.join(output_directory, 'image')
 
     Stemcell::Packager.removeNIC(ova_file_name)
