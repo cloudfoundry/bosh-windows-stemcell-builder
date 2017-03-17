@@ -9,7 +9,7 @@ namespace :package do
     ova_file_name = args[:ova_file_name]
     output_directory = args[:output_directory]
     version = args[:version]
-    agent_commit = args[:agent_commit]
+    agent_commit = `git --work-tree=src/github.com/cloudfoundry/bosh-agent/ rev-parse HEAD`.strip
     os = 'windows2012R2'
     iaas = 'vsphere-esxi'
 
