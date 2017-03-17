@@ -91,7 +91,7 @@ module Stemcell
 
         ovf_file = File.open(find_ovf_file(dir))
         f = Nokogiri::XML(ovf_file)
-        nics = f.css("VirtualHardwareSection Item").select {|x| x.to_s =~ /ethernet/}
+        nics = f.css("VirtualHardwareSection Item").select { |x| x.to_s =~ /Ethernet/i }
         if nics.first
           nics.first.remove
         end
