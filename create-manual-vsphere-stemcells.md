@@ -11,7 +11,8 @@ to your BOSH director and used with Cloud Foundry.
 
 You will need:
 
-* [ovftool](https://www.vmware.com/support/developer/ovf/) (only required for Workstation and Fusion)
+* [ovftool](https://www.vmware.com/support/developer/ovf/) (only required for Workstation and Fusion). Please make sure `ovftool` command is available from your command line.
+  It is installed by default in `C:\Program Files\VMware\VMware OVF Tool`.
 * [Windows ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2012-r2) (evaluation. you can also use a custom base image)
 * [Golang](https://golang.org/dl/) Latest 1.8.x compiler
 * [Ruby](https://www.ruby-lang.org/en/downloads/) Latest 2.3.x version
@@ -49,14 +50,14 @@ installed.
 - Install VMWare workstation (> version 12 Pro)
 - Create a new Virtual Machine 
   - Custom Advanced
-  - Select Worksation 9.0 Compatibility
+  - Select Worksation 9.x Compatibility
   - Select "I will install operating system later"
   - Select the Windows 2012 version
   - Choose a name
   - BIOS
   - Adjust the appropriate Number of cores and processors
   - Adjust the appropriate memory
-  - Select the correct Nework Type (NAT)
+  - Select the correct Network Type (NAT)
   - LSI logic SAS Contoller Type
   - SCSI Disk Type 
   - Create a new virtual Disk
@@ -77,7 +78,7 @@ installed.
   - Select "Use Physical drive" and Auto Detect
   - Unselect "Connect at power on"
   - Click Ok
-- Start the new VM, install updates as desired
+- Start the new VM
 
 ### For vCenter:
 
@@ -102,13 +103,14 @@ Create a new virtual machine (if you are using an existing template, select the 
 
 ## Step 2: Build & Install BOSH PSModules
 
-- Clone this repo, expand the bosh-agent submodule:
+- Clone this repo on your host (NOT in the VM for your stemcell), and expand the bosh-agent submodule:
 
 **NOTE**: On Windows you MUST clone straight into `C:\\`, or the git clone and submodule update will fail due to file path lengths.
 
 ```
 git clone --recursive https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder
 cd bosh-windows-stemcell-builder
+gem install bundler
 bundle install
 rake package:psmodules
 ```
@@ -120,22 +122,28 @@ rake package:psmodules
 
 - On your host, run `rake package:agent`
 - Transfer `build/agent.zip` to your Windows VM.
-- On your windows VM, run `Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>`
+- On your windows VM, start `powershell` and run `Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>`
+
+## Step 4: Install CloudFoundry Cell requirements
+
+- On your windows VM, start `powershell` and run `Install-CFFeatures`
 - Power off your VM
 
-## Step 4: Export image to OVA format
+## Step 5: Export image to OVA format
 
 If you are using VMware Fusion or Workstation, locate the directory that has your VM's `.vmx` file. This defaults to
 the `Documents\\Virtual Machines\\VM-name\\VM-name.vmx` path in your user's home directory.
 Otherwise simply right click on the VM to find its location.
 
 Convert the vmx file into an OVA archive using `ovftool`:
+
 ```
 ovftool <PATH_TO_VMX_FILE> image.ova
 ```
 
-## Step 5: Convert OVA file to a BOSH Stemcell
+## Step 6: Convert OVA file to a BOSH Stemcell
 
+example:
 ```
-rake package:vsphere_ova[PATH_TO_image.ova,OUTPUT_DIRECTORY,STEMCELL_VERSION,AGENT_COMMIT_SHA]
+rake package:vsphere_ova[./build/image.ova,./build/stemcell,1035.00]
 ```
