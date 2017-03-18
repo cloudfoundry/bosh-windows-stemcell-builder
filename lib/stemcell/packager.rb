@@ -87,7 +87,7 @@ module Stemcell
 
     def self.removeNIC(ova_file_name)
       Dir.mktmpdir do |dir|
-        exec_command("tar --force-local -xf #{ova_file_name} -C #{dir}")
+        exec_command("tar -xf #{ova_file_name} -C #{dir}")
 
         ovf_file = File.open(find_ovf_file(dir))
         f = Nokogiri::XML(ovf_file)
@@ -98,7 +98,7 @@ module Stemcell
         File.write(ovf_file, f.to_s)
         ovf_file.close
         Dir.chdir(dir) do
-          exec_command("tar --force-local -cf #{ova_file_name} *")
+          exec_command("tar -cf #{ova_file_name} *")
         end
       end
     end
