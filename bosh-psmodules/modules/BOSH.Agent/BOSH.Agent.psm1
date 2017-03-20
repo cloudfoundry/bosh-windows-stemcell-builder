@@ -34,26 +34,12 @@ function Copy-Agent {
     Write-Log "Copy-Agent InstallDir=${installDir} Zip=${agentZipPath}"
 
     $boshDir = (Join-Path $installDir "bosh")
-    if (Test-Path $boshDir) {
-        Write-Log "Copy-Agent removing existing BOSH dir: ${boshDir}"
-        Remove-Item -Path $boshDir -Recurse -Force
-    }
     New-Item -Path $boshDir -ItemType Directory -Force
 
-    $varDir = (Join-Path $installDir "var")
-    if (Test-Path $varDir) {
-        Write-Log "Copy-Agent removing existing VAR dir: ${varDir}"
-        Remove-Item -Path $varDir -Recurse -Force
-    }
     $vcapDir = (Join-Path $installDir (Join-Path "var" (Join-Path "vcap" "bosh")))
-    New-Item -Path (Join-Path $vcapDir "log") -ItemType Directory -Force
-
     $depsDir = (Join-Path $vcapDir "bin")
-    if (Test-Path $depsDir) {
-        Write-Log "Copy-Agent removing existing Deps dir: ${depsDir}"
-        Remove-Item -Path $depsDir -Recurse -Force
-    }
     New-Item -Path $depsDir -ItemType Directory -Force
+    New-Item -Path (Join-Path $vcapDir "log") -ItemType Directory -Force
 
     Open-Zip $agentZipPath $boshDir
     Move-Item (Join-Path $boshDir (Join-Path "deps" "*")) $depsDir
