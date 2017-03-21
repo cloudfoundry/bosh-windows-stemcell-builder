@@ -4,9 +4,15 @@
 .Description
     This cmdlet installs BOSH Agent
 #>
-
 $ErrorActionPreference = "Stop";
 trap { $host.SetShouldExit(1) }
+
+# Ensure BOSH.Utils are imported.
+$ModulesDir = (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
+if (-Not ((Get-Module).Name -contains "BOSH.Utils")) {
+    Import-Module "${ModulesDir}\BOSH.Utils\BOSH.Utils.psm1"
+}
+
 function Install-Agent {
     Param(
         [string]$IaaS = $(Throw "Provide the IaaS of your VM"),
