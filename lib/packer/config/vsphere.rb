@@ -10,6 +10,7 @@ module Packer
         @output_directory = output_directory
         @mem_size = mem_size
         @num_vcpus = num_vcpus
+        @timestamp = Time.now.getutc.to_i
       end
     end
 
@@ -32,7 +33,8 @@ module Packer
             'shutdown_timeout' => '1h',
             'vmx_data' => {
               'memsize' => @mem_size.to_s,
-              'numvcpus' => @num_vcpus.to_s
+              'numvcpus' => @num_vcpus.to_s,
+              'displayname' => "packer-vmx-#{@timestamp}"
             },
             'output_directory' => @output_directory
           }
@@ -76,7 +78,8 @@ module Packer
           'vm_name' =>  'packer-vmx',
           'vmx_data' => {
             'memsize' => @mem_size.to_s,
-            'numvcpus' => @num_vcpus.to_s
+            'numvcpus' => @num_vcpus.to_s,
+            'displayname' => "packer-vmx-#{@timestamp}"
           },
           'output_directory' => @output_directory
         ]

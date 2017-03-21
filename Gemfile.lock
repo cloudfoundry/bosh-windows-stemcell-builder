@@ -31,6 +31,7 @@ GEM
       rspec-support (~> 3.5.0)
     rspec-support (3.5.0)
     rubyzip (1.2.1)
+    timecop (0.8.1)
 
 PLATFORMS
   ruby
@@ -42,6 +43,7 @@ DEPENDENCIES
   rake
   rspec
   rubyzip
+  timecop
 
 BUNDLED WITH
    1.14.6

@@ -1,6 +1,15 @@
 require 'packer/config'
+require 'timecop'
 
 describe Packer::Config do
+  before(:each) do
+    Timecop.freeze(Time.now.getutc)
+  end
+
+  after(:each) do
+    Timecop.return
+  end
+
   describe 'VSphereAddUpdates' do
     describe 'builders' do
       it 'returns the expected builders' do
@@ -26,7 +35,8 @@ describe Packer::Config do
           'shutdown_timeout' => '1h',
           'vmx_data' => {
             'memsize' => '1000',
-            'numvcpus' => '1'
+            'numvcpus' => '1',
+            'displayname' => "packer-vmx-#{Time.now.getutc.to_i}"
           },
           'output_directory' => 'output_directory'
         )
@@ -88,7 +98,8 @@ describe Packer::Config do
           'vm_name' => 'packer-vmx',
           'vmx_data' => {
             'memsize' => '1000',
-            'numvcpus' => '1'
+            'numvcpus' => '1',
+            'displayname' => "packer-vmx-#{Time.now.getutc.to_i}"
           },
           'output_directory' => 'output_directory'
         )
