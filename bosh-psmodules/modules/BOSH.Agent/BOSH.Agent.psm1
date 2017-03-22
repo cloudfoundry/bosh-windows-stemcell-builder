@@ -19,7 +19,7 @@ function Install-Agent {
     Protect-Dir -Path "C:\bosh"
     Protect-Dir -Path "C:\var"
     Write-AgentConfig -BoshDir "C:\bosh" -IaaS $IaaS
-    Set-Path
+    Set-Path "C:\var\vcap\bosh\bin"
     Install-AgentService
     Protect-Dir -Path "C:\Windows\Panther" -disableInheritance $False
     Write-Log "Install-Agent: Finished"
@@ -83,7 +83,7 @@ function Protect-Dir {
     }
 
     Write-Log "Protect-Dir: Grant Administrator"
-    cacls.exe $path /T /E /G Administrator:F
+    cacls.exe $path /T /E /P Administrator:F
     if ($LASTEXITCODE -ne 0) {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
@@ -218,8 +218,11 @@ function Write-AgentConfig {
 }
 
 function Set-Path {
-    Write-Log "Set-Path: C:\\var\\vcap\\bosh\\bin to path"
-    Setx PATH "${env:PATH};C:\var\vcap\bosh\bin" /m
+  Param(
+      [string]$Path= $(Throw "Error: Provide a directory to add to the path")
+    )
+    Write-Log "Set-Path: ${Path} to path"
+    Setx PATH "${env:PATH};${Path}" /m
 }
 
 function Install-AgentService {

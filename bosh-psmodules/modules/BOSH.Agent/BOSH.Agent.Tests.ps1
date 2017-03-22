@@ -63,9 +63,9 @@ Describe  "Protect-Dir" {
         $aclDir=(New-TempDir)
         New-Item -Path $aclDir -ItemType Directory -Force
 
-        cacls.exe $aclDir /T /E /G "BUILTIN\Users:F"
+        cacls.exe $aclDir /T /E /P "BUILTIN\Users:F"
         $LASTEXITCODE | Should Be 0
-        cacls.exe $aclDir /T /E /G "BUILTIN\IIS_IUSRS:F"
+        cacls.exe $aclDir /T /E /P "BUILTIN\IIS_IUSRS:F"
         $LASTEXITCODE | Should Be 0
     }
 
@@ -176,18 +176,24 @@ Describe "Write-AgentConfig" {
 Describe "Set-Path" {
     BeforeEach {
 	    $oldPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
+        $tempDir=(New-TempDir)
     }
 
     AfterEach {
         Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $oldPath
+        Remove-Item -Recurse -Force $tempDir
     }
 
-    It "adds bosh to the path" {
+    It "sets the system path" {
+        { Set-Path -Path $tempDir} | Should Not Throw
         $path = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
-        $path | Should Not Match ([regex]::Escape("C:\var\vcap\bosh\bin"))
-        { Set-Path } | Should Not Throw
-        $path = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
-        $path | Should Match ([regex]::Escape("C:\var\vcap\bosh\bin"))
+        $path | Should Match ([regex]::Escape($tempDir))
+    }
+
+    Context "when not provided a path to add" {
+        It "throws" {
+            { Set-Path } | Should Throw "Error: Provide a directory to add to the path"
+        }
     }
 }
 
@@ -219,7 +225,7 @@ Describe "Install-Agent" {
         Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\Windows\Panther" -and $disableInheritance -eq $false }
 
         Mock -Verifiable -ModuleName BOSH.Agent Write-AgentConfig {} -ParameterFilter { $IaaS -eq "aws" -and $BoshDir -eq "C:\bosh" }
-        Mock -Verifiable -ModuleName BOSH.Agent Set-Path {}
+        Mock -Verifiable -ModuleName BOSH.Agent Set-Path -Path "C:\var\vcap\bosh\bin" {}
         Mock -Verifiable -ModuleName BOSH.Agent Install-AgentService {}
         Install-Agent -IaaS aws -agentZipPath "some-agent-zip-path"
         Assert-VerifiableMocks
