@@ -83,7 +83,7 @@ function Protect-Dir {
     }
 
     Write-Log "Protect-Dir: Grant Administrator"
-    cacls.exe $path /T /E /P Administrator:F
+    cacls.exe $path /T /E /P Administrators:F
     if ($LASTEXITCODE -ne 0) {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }

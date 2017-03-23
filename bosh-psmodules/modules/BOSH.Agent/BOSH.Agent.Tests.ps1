@@ -92,7 +92,7 @@ Describe  "Protect-Dir" {
         $acl.Owner | Should Be "BUILTIN\Administrators"
         $acl.Access | where { $_.IdentityReference -eq "BUILTIN\Users" } | Should BeNullOrEmpty
         $acl.Access | where { $_.IdentityReference -eq "BUILTIN\IIS_IUSRS" } | Should BeNullOrEmpty
-        $adminAccess = ($acl.Access | where { $_.IdentityReference -eq "$env:computername\Administrator" })
+        $adminAccess = ($acl.Access | where { $_.IdentityReference -eq "BUILTIN\Administrators" })
         $adminAccess | Should Not BeNullOrEmpty
         $adminAccess.FileSystemRights | Should Be "FullControl"
     }
