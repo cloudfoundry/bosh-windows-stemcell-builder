@@ -141,12 +141,12 @@ function Write-AgentConfig {
       "Sources": [
         {
           "Type": "File",
-          "MetaDataPath": "",
+          "MetaDataPath": "C:/AzureData/CustomData.bin",
           "UserDataPath": "C:/AzureData/CustomData.bin",
           "SettingsPath": "C:/AzureData/CustomData.bin"
         }
       ],
-      "UseServerName": true,
+      "UseServerName": false,
       "UseRegistry": true
     }
   }

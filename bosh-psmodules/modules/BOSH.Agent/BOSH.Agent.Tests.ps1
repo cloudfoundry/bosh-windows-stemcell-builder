@@ -152,6 +152,8 @@ Describe "Write-AgentConfig" {
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
             ($configPath) | Should Contain ([regex]::Escape('"SettingsPath": "C:/AzureData/CustomData.bin"'))
+            ($configPath) | Should Contain ([regex]::Escape('"MetaDataPath": "C:/AzureData/CustomData.bin"'))
+            ($configPath) | Should Contain ([regex]::Escape('"UseServerName": false'))
         }
     }
 
