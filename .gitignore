@@ -9,6 +9,10 @@ vsphere/network-interface-settings.xml
 scripts/win_iso
 compiled-agent
 
+# BWATS
+bin
+pkg
+
 # Ruby
 *.rbc
 /.config

@@ -21,7 +21,34 @@ If the build fails, manual deletion of the `packer-vmware-iso` VM and `packer-vm
 
 Known working version of Concourse is [v1.6.0](http://concourse.ci/downloads.html#v160).
 
-
 ### GCP
 
 Currently uses a hand built image as a base. GCP does not currently have a way to turn on winrm, thus we need to do this manually for our base image.
+
+### Testing with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests)
+
+  ##### Prerequisites:
+    - ruby
+    - golang
+    - a BOSH director to target
+    - a Windows stemcell to test
+
+  Set the following environment variables:
+
+  ##### [bosh-cli](https://github.com/cloudfoundry/bosh-cli) environment variables
+    - BOSH_CLIENT:
+    - BOSH_CLIENT_SECRET:
+    - BOSH_CA_CERT:
+    - DIRECTOR_IP:
+    - DIRECTOR_UUID:
+
+  ##### Stemcell to test
+    - STEMCELL_NAME: Name of the stemcell to use, e.g. bosh-vsphere-esxi-windows-2012R2-go_agent
+    - STEMCELL_PATH: Path to stemcell tarball
+
+  ##### Match with [cloud config](https://bosh.io/docs/cloud-config.html)
+    - AZ:
+    - VM_TYPE:
+    - NETWORK:
+
+  Run the tests: `scripts/run_bwats.rb`
