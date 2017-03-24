@@ -36,14 +36,23 @@ installed.
 1. Choose a Virtual Disk: Create a new virtual disk (default settings are fine)
 1. Finish: Select `Customize Settings` you'll be prompted to save the VM before continuing (any name will do)
   - Other => Compatibility => Select Hardware Compatibility 9
-  - Removable Devices => CD/DVD => 
-    - Select 'Connect CD/DVD Drive'
-    - Select ISO disk image
-    - Advanced Options => Bus type => SCSI (required for HW version 9)
+  - Removable Devices =>
+    - Camera =>
+      - Remove device (incompatible with Hardware Version 9)
+    - CD/DVD =>
+      - Select 'Connect CD/DVD Drive'
+      - Select ISO disk image
+      - Advanced Options => Bus type => SCSI (required for HW version 9)
   - System Settings => Processor & Memory => Increase if desired (the defaults are fine, but a little slow).
 1. Start VM
 1. Install VMware Tools
 1. Restart the VM as required to finish the install
+1. Shutdown the VM
+1. Removable Devices => CD/DVD =>
+  - Select 'Autodetect' (i.e. remove install ISO)
+  - Unselect 'Connect CD/DVD Drive'
+1. Turn on and turn off the VM (required to apply changes to CD/DVD)
+1. Ensure Hardware Compatibility is version 9
 
 ### For VMware Workstation:
 
