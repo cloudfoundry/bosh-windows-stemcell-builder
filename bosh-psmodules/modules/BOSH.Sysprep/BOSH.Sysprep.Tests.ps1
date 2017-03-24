@@ -19,12 +19,6 @@ Describe "Enable-LocalSecurityPolicy" {
         Remove-Item -Recurse -Force $PolicyDestination
     }
 
-    Context "when LgpoExe is not provided" {
-        It "throws" {
-            { Enable-LocalSecurityPolicy } | Should Throw "Provide a path for lgpo.exe"
-        }
-    }
-
     It "places the policy files in the destination and runs lgpo.exe" {
         $lgpoExe = "cmd.exe /c 'echo hello'"
         { Enable-LocalSecurityPolicy -LgpoExe $lgpoExe -PolicyDestination $PolicyDestination } | Should Not Throw

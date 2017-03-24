@@ -6,7 +6,7 @@ This cmdlet enables running sysprep on a BOSH deployed VM
 #>
 function Enable-LocalSecurityPolicy {
     Param (
-      [string]$LgpoExe = $(Throw "Provide a path for lgpo.exe"),
+      [string]$LgpoExe ="C:\windows\lgpo.exe",
       [string]$PolicyDestination = "C:\bosh\lgpo"
     )
 
