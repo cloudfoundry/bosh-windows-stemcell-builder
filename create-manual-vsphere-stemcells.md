@@ -34,7 +34,7 @@ installed.
 1. Select Installation Method: Create a custom virtual machine
 1. Choose Operating System: Microsoft Windows => Windows Server 2012
 1. Choose a Virtual Disk: Create a new virtual disk (default settings are fine)
-1. Finish: Select `Customize Settings` you'll be prompted to save the VM before continuing (any name will do)
+1. Select `Customize Settings` you'll be prompted to save the VM before continuing (any name will do)
   - Other => Compatibility => Select Hardware Compatibility 9
   - Removable Devices =>
     - Camera =>
