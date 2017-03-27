@@ -2,10 +2,10 @@
 
 ## Introduction
 
-In order to create a vSphere stemcell by hand, you must first begin with an ISO or other VM image
-that you can begin with. This document describes using VMware Workstation, VMware Fusion, and
-vCenter to install the BOSH dependencies and then create a `.tgz` file that can be uploaded
-to your BOSH director and used with Cloud Foundry.
+In order to create a vSphere stemcell by hand, you must first begin with an ISO or other VM image.
+This document describes using VMware Workstation, VMware Fusion, and vCenter to install the BOSH
+dependencies and then create a `.tgz` file that can be uploaded to your BOSH director and used
+with Cloud Foundry.
 
 ### Dependencies
 
