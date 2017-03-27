@@ -7,7 +7,7 @@ image_resource:
     repository: pivotalgreenhouse/packer-base
 
 inputs:
-	- name: stemcell-builder
+  - name: stemcell-builder
 
 run:
   path: bash
