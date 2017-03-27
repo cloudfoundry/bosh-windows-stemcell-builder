@@ -34,19 +34,19 @@ installed.
 1. Select Installation Method: Create a custom virtual machine
 1. Choose Operating System: Microsoft Windows => Windows Server 2012
 1. Choose a Virtual Disk: Create a new virtual disk (default settings are fine)
-1. Select `Customize Settings` you'll be prompted to save the VM before continuing (any name will do)
-  - Other => Compatibility => Select Hardware Compatibility 9
+1. Select `Customize Settings`. Save the VM before continuing (any name will do)
+1. A "Settings" window will pop up for your new VM. In the settings window, do the following:
   - Removable Devices =>
     - Camera =>
       - Remove device (incompatible with Hardware Version 9)
     - CD/DVD =>
-      - Select 'Connect CD/DVD Drive'
-      - Select ISO disk image
+      - Check the box 'Connect CD/DVD Drive'
+      - From "This drive is configured to use the following:", select "Choose a disc or disc image" and select your base iso
       - Advanced Options => Bus type => SCSI (required for HW version 9)
+  - Other => Compatibility => Advanced Options: Select "Use Hardware Version" number 9 and click apply
   - System Settings => Processor & Memory => Increase if desired (the defaults are fine, but a little slow).
-1. Start VM
-1. Install VMware Tools
-1. Restart the VM as required to finish the install
+1. Start VM - Go through Windows installation process if you need to with your ISO (recommend select "Windows Server 2012 Standard with a GUI" if going through installation)
+1. Install VMware Tools (in Fusion, you can do this easily from the menu bar with "Virtual Machine" => "Install VMWare Tools", then following install instructions. Restart the VM as required to finish the install.
 1. Shutdown the VM
 1. Removable Devices => CD/DVD =>
   - Select 'Autodetect' (i.e. remove install ISO)
@@ -112,7 +112,7 @@ Create a new virtual machine (if you are using an existing template, select the 
 
 ## Step 2: Build & Install BOSH PSModules
 
-- Clone this repo on your host (NOT in the VM for your stemcell), and expand the bosh-agent submodule:
+- Clone [this repo](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) on your host (NOT in the VM for your stemcell), and expand the bosh-agent submodule:
 
 **NOTE**: On Windows you MUST clone straight into `C:\\`, or the git clone and submodule update will fail due to file path lengths.
 
@@ -124,12 +124,12 @@ bundle install
 rake package:psmodules
 ```
 
-- Transfer `build/bosh-psmodules.zip` to your Windows VM.
+- Transfer `build/bosh-psmodules.zip` to your Windows VM (Note: you can just drag and drop files if you have installed VMware tools in your VM)
 - Unzip the zip file and copy the `BOSH.*` folders to `C:\Program Files\WindowsPowerShell\Modules`
 
 ## Step 3: Build & Install BOSH Agent
 
-- On your host, run `rake package:agent`
+- On your host (NOT in the VM for your stemcell), run `rake package:agent`
 - Transfer `build/agent.zip` to your Windows VM.
 - On your windows VM, start `powershell` and run `Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>`
 
@@ -152,7 +152,11 @@ ovftool <PATH_TO_VMX_FILE> image.ova
 
 ## Step 6: Convert OVA file to a BOSH Stemcell
 
-example:
+The format of the rake task is `rake package:vsphere_ova[<path_to_ova>,<path_to_stemcell_destination_directory>,stemcell_version]`
+
+For example:
 ```
-rake package:vsphere_ova[./build/image.ova,./build/stemcell,1035.00]
+rake package:vsphere_ova[./build/image.ova,./build/stemcell,1035.0.0]
 ```
+
+NOTE: The OVA path or destination path cannot currently have spaces in them (this will be fixed).
