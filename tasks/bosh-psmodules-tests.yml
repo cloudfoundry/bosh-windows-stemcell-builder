@@ -1,0 +1,13 @@
+---
+platform: windows
+
+inputs:
+- name: stemcell-builder
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-File"
+  - stemcell-builder/scripts/bosh-psmodules-tests.ps1
