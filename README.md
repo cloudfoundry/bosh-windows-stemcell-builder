@@ -51,4 +51,4 @@ Currently uses a hand built image as a base. GCP does not currently have a way t
     - VM_TYPE:
     - NETWORK:
 
-  Run the tests: `scripts/run_bwats.rb`
+  Run the tests: `rake test:run_bwats`
