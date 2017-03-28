@@ -138,8 +138,7 @@ rake package:psmodules
 - On your windows VM, start `powershell` and run `Install-CFFeatures`
 - If you would like to enable the recommended local security policy:
     - Download [lgpo.exe](https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip) to the Windows VM you are provisioning
-    - Run the following powershell command `Enable-LocalSecurityPolicy -LgpoExe <PATH-TO-LGPO-EXE> -PolicyDestination "C:\bosh\lgpo"` from within your standard sysprep script in the `specialize` pass
-        - You can see an example of a `specialize` pass in an Unattend file [here](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/blob/master/scripts/vsphere/sysprep.ps1#L28-L62)
+    - Run the following powershell command `Enable-LocalSecurityPolicy -LgpoExe <PATH-TO-LGPO-EXE> -PolicyDestination "C:\bosh\lgpo"`
 - Otherwise, simply power off your VM
 
 ## Step 5: Export image to OVA format
