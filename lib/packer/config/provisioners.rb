@@ -3,7 +3,6 @@ require 'securerandom'
 module Packer
   module Config
     class Provisioners
-
       def self.wait_windowsupdatestask(administrator_password)
         return {
           'type' => 'windows-restart',
@@ -131,7 +130,6 @@ module Packer
         'scripts' => ['scripts/vm-guest-tools.ps1']
       }.freeze
 
-
       LGPO_EXE = {
         'type' => 'file',
         'source' => 'build/windows-stemcell-dependencies/lgpo/LGPO.exe',
@@ -179,6 +177,18 @@ module Packer
         'type' => 'windows-restart',
         'restart_timeout' => '1h'
       }.freeze
+
+      class Azure
+        def self.create_admin(admin_password)
+          return {
+            'type' => 'powershell',
+            'inline' => [
+              "NET USER Administrator #{admin_password} /add /y /expires:never",
+              'NET LOCALGROUP Administrators Administrator /add'
+            ]
+          }
+        end
+      end
     end
   end
 end
