@@ -38,7 +38,7 @@ Currently uses a hand built image as a base. GCP does not currently have a way t
   ##### [bosh-cli](https://github.com/cloudfoundry/bosh-cli) environment variables
     - BOSH_CLIENT:
     - BOSH_CLIENT_SECRET:
-    - BOSH_CA_CERT:
+    - BOSH_CA_CERT: (not a file name, but the actual cert itself)
     - DIRECTOR_IP:
     - DIRECTOR_UUID:
 
