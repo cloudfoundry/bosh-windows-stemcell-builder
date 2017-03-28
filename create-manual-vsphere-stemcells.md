@@ -51,6 +51,7 @@ installed.
 1. Removable Devices => CD/DVD =>
   - Select 'Autodetect' (i.e. remove install ISO)
   - Unselect 'Connect CD/DVD Drive'
+  - Click 'Advanced Options', and switch 'Bus type' to 'IDE'
 1. Turn on and turn off the VM (required to apply changes to CD/DVD)
 1. Ensure Hardware Compatibility is version 9
 
@@ -162,4 +163,4 @@ For example:
 rake package:vsphere_ova[./build/image.ova,./build/stemcell,1035.0.0]
 ```
 
-NOTE: The OVA path or destination path cannot currently have spaces in them (this will be fixed).
+NOTE: The OVA filename and destination path cannot currently have spaces in them (this will be fixed).
