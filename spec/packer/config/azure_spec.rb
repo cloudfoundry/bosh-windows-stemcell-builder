@@ -9,7 +9,11 @@ describe Packer::Config::Azure do
         'some-tenant-id',
         'some-subscription-id',
         'some-object-id',
-        ''
+        'some-resource-group-name',
+        'some-storage-account',
+        'some-location',
+        'some-vm-size',
+        'some-admin-password'
       ).builders
       expect(builders[0]).to eq(
         'type' => 'azure-arm',
@@ -19,15 +23,15 @@ describe Packer::Config::Azure do
         'subscription_id' => 'some-subscription-id',
         'object_id' => 'some-object-id',
 
-        'resource_group_name' => 'koala-res-group',
-        'storage_account' => 'koalapremiumstore',
-        'capture_container_name' => 'packer-test',
-        'capture_name_prefix' => 'stemcell',
+        'resource_group_name' => 'some-resource-group-name',
+        'storage_account' => 'some-storage-account',
+        'capture_container_name' => 'packer-stemcells',
+        'capture_name_prefix' => 'bosh-stemcell',
         'image_publisher' => 'MicrosoftWindowsServer',
         'image_offer' => 'WindowsServer',
         'image_sku' => '2012-R2-Datacenter',
-        'location' => 'East US',
-        'vm_size' => 'Standard_DS3_v2',
+        'location' => 'some-location',
+        'vm_size' => 'some-vm-size',
         'os_type' => 'Windows',
 
         'communicator' => 'winrm',
@@ -47,6 +51,10 @@ describe Packer::Config::Azure do
         'some-tenant-id',
         'some-subscription-id',
         'some-object-id',
+        'some-resource-group-name',
+        'some-storage-account',
+        'some-location',
+        'some-vm-size',
         'some-admin-password'
       ).provisioners
       expect(provisioners).to eq(

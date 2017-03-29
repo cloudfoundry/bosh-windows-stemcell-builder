@@ -3,13 +3,19 @@ require 'securerandom'
 module Packer
   module Config
     class Azure < Base
-      def initialize(client_id, client_secret, tenant_id, subscription_id, object_id, admin_password)
+      def initialize(client_id, client_secret, tenant_id, subscription_id,
+                     object_id, resource_group_name, storage_account, location,
+                     vm_size, admin_password)
         @client_id = client_id
         @client_secret = client_secret
         @tenant_id = tenant_id
         @subscription_id = subscription_id
         @object_id = object_id
         @admin_password = admin_password
+        @resource_group_name = resource_group_name
+        @storage_account = storage_account
+        @location = location
+        @vm_size = vm_size
       end
 
       def builders
@@ -22,15 +28,15 @@ module Packer
             'subscription_id' => @subscription_id,
             'object_id' => @object_id,
 
-            'resource_group_name' => 'koala-res-group',
-            'storage_account' => 'koalapremiumstore',
-            'capture_container_name' => 'packer-test',
-            'capture_name_prefix' => 'stemcell',
+            'resource_group_name' => @resource_group_name,
+            'storage_account' => @storage_account,
+            'capture_container_name' => 'packer-stemcells',
+            'capture_name_prefix' => 'bosh-stemcell',
             'image_publisher' => 'MicrosoftWindowsServer',
             'image_offer' => 'WindowsServer',
             'image_sku' => '2012-R2-Datacenter',
-            'location' => 'East US',
-            'vm_size' => 'Standard_DS3_v2',
+            'location' => @location,
+            'vm_size' => @vm_size,
             'os_type' => 'Windows',
 
             'communicator' => 'winrm',
