@@ -2,6 +2,7 @@ package bosh_windows_acceptance_tests_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -40,7 +41,7 @@ releases:
 
 stemcells:
 - alias: windows
-  name: {{.StemcellName}}
+  os: windows2012R2
   version: latest
 
 update:
@@ -93,42 +94,50 @@ type ManifestProperties struct {
 	DeploymentName string
 	DirectorUUID   string
 	ReleaseName    string
-	StemcellName   string
 	AZ             string
 	VmType         string
 	Network        string
 }
 
-func generateManifest(deploymentName string) ([]byte, error) {
-	uuid := os.Getenv("DIRECTOR_UUID")
-	if uuid == "" {
-		return nil, fmt.Errorf("invalid director UUID: %q", uuid)
-	}
-	stemcell := os.Getenv("STEMCELL_NAME")
-	if stemcell == "" {
-		return nil, fmt.Errorf("invalid stemcell name: %q", stemcell)
-	}
-	az := os.Getenv("AZ")
-	if az == "" {
-		return nil, fmt.Errorf("invalid AZ: %q", az)
-	}
-	vmType := os.Getenv("VM_TYPE")
-	if vmType == "" {
-		return nil, fmt.Errorf("invalid VM_TYPE: %q", vmType)
-	}
-	network := os.Getenv("NETWORK")
-	if network == "" {
-		return nil, fmt.Errorf("invalid NETWORK: %q", network)
-	}
+type Config struct {
+	Bosh struct {
+		CaCert       string `json:"ca_cert"`
+		Client       string `json:"client"`
+		ClientSecret string `json:"client_secret"`
+		Target       string `json:"target"`
+		Uuid         string `json:"uuid"`
+	} `json:"bosh"`
+	Stemcellpath string `json:"stemcell_path"`
+	Az           string `json:"az"`
+	VmType       string `json:"vm_type"`
+	Network      string `json:"network"`
+}
 
+func NewConfig() (*Config, error) {
+	configFilePath := os.Getenv("CONFIG_JSON")
+	if configFilePath == "" {
+		return nil, fmt.Errorf("invalid config file path: %v", configFilePath)
+	}
+	body, err := ioutil.ReadFile(configFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("empty config file path: %v", configFilePath)
+	}
+	var config Config
+	err = json.Unmarshal(body, &config)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse config file: %v", body)
+	}
+	return &config, nil
+}
+
+func (c *Config) generateManifest(deploymentName string) ([]byte, error) {
 	manifestProperties := ManifestProperties{
 		DeploymentName: deploymentName,
-		DirectorUUID:   uuid,
+		DirectorUUID:   c.Bosh.Uuid,
 		ReleaseName:    "bwats-release",
-		StemcellName:   stemcell,
-		AZ:             az,
-		VmType:         vmType,
-		Network:        network,
+		AZ:             c.Az,
+		VmType:         c.VmType,
+		Network:        c.Network,
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
 	if err != nil {
@@ -140,22 +149,26 @@ func generateManifest(deploymentName string) ([]byte, error) {
 }
 
 type BoshCommand struct {
-	DirectorIP string
-	CertPath   string // Path to CA CERT file, if any
-	Timeout    time.Duration
+	DirectorIP   string
+	Client       string
+	ClientSecret string
+	CertPath     string // Path to CA CERT file, if any
+	Timeout      time.Duration
 }
 
-func NewBoshCommand(DirectorIP, CertPath string, duration time.Duration) *BoshCommand {
+func NewBoshCommand(config *Config, CertPath string, duration time.Duration) *BoshCommand {
 	return &BoshCommand{
-		DirectorIP: DirectorIP,
-		CertPath:   CertPath,
-		Timeout:    duration,
+		DirectorIP:   config.Bosh.Target,
+		Client:       config.Bosh.Client,
+		ClientSecret: config.Bosh.ClientSecret,
+		CertPath:     CertPath,
+		Timeout:      duration,
 	}
 }
 
 func (c *BoshCommand) args(command string) []string {
 	args := strings.Split(command, " ")
-	args = append([]string{"-n", "-e", c.DirectorIP}, args...)
+	args = append([]string{"-n", "-e", c.DirectorIP, "--client", c.Client, "--client-secret", c.ClientSecret}, args...)
 	if c.CertPath != "" {
 		args = append([]string{"--ca-cert", c.CertPath}, args...)
 	}
@@ -239,30 +252,32 @@ var (
 var _ = Describe("BOSH Windows", func() {
 
 	BeforeSuite(func() {
+		config, err := NewConfig()
+		Expect(err).To(Succeed())
 
-		cert := os.Getenv("BOSH_CA_CERT")
+		cert := config.Bosh.CaCert
 		if cert != "" {
 			certFile, err := ioutil.TempFile("", "")
-			Expect(err).To(BeNil())
+			Expect(err).To(Succeed())
 
 			_, err = certFile.Write([]byte(cert))
-			Expect(err).To(BeNil())
+			Expect(err).To(Succeed())
 
 			boshCertPath, err = filepath.Abs(certFile.Name())
-			Expect(err).To(BeNil())
+			Expect(err).To(Succeed())
 		}
 
-		bosh = NewBoshCommand(os.Getenv("DIRECTOR_IP"), boshCertPath, BOSH_TIMEOUT)
+		bosh = NewBoshCommand(config, boshCertPath, BOSH_TIMEOUT)
 
 		bosh.Run("login")
 		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix())
 
 		pwd, err := os.Getwd()
-		Expect(err).To(BeNil())
+		Expect(err).To(Succeed())
 		Expect(os.Chdir(filepath.Join(pwd, "assets", "bwats-release"))).To(Succeed()) // push
 		defer os.Chdir(pwd)                                                           // pop
 
-		manifest, err := generateManifest(deploymentName)
+		manifest, err := config.generateManifest(deploymentName)
 		Expect(err).To(Succeed())
 
 		manifestFile, err := ioutil.TempFile("", "")
@@ -283,12 +298,7 @@ var _ = Describe("BOSH Windows", func() {
 
 		Expect(bosh.Run("upload-release")).To(Succeed())
 
-		stemcellPath := filepath.Join(
-			os.Getenv("ROOTPATH"),
-			os.Getenv("STEMCELL_PATH"),
-		)
-
-		matches, err := filepath.Glob(stemcellPath)
+		matches, err := filepath.Glob(config.Stemcellpath)
 		Expect(err).To(Succeed())
 		Expect(matches).To(HaveLen(1))
 
