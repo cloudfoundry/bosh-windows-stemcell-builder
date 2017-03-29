@@ -27,23 +27,16 @@ Currently uses a hand built image as a base. GCP does not currently have a way t
 
 ### Testing with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests)
 
-  ##### Prerequisites:
-    - ruby
-    - golang
-    - a BOSH director to target
-    - a Windows stemcell to test
-
   Set the following environment variables:
 
   ##### [bosh-cli](https://github.com/cloudfoundry/bosh-cli) environment variables
+    - BOSH_TARGET: IP of your BOSH director
     - BOSH_CLIENT:
     - BOSH_CLIENT_SECRET:
     - BOSH_CA_CERT: (not a file name, but the actual cert itself)
-    - DIRECTOR_IP:
-    - DIRECTOR_UUID:
+    - BOSH_UUID:
 
   ##### Stemcell to test
-    - STEMCELL_NAME: Name of the stemcell to use, e.g. bosh-vsphere-esxi-windows-2012R2-go_agent
     - STEMCELL_PATH: Path to stemcell tarball
 
   ##### Match with [cloud config](https://bosh.io/docs/cloud-config.html)
@@ -51,4 +44,11 @@ Currently uses a hand built image as a base. GCP does not currently have a way t
     - VM_TYPE:
     - NETWORK:
 
-  Run the tests: `rake test:run_bwats`
+BWATS will be configured and run automatically if you export
+these environment variables `BOSH_CA_CERT`, `BOSH_CLIENT`, `BOSH_CLIENT_SECRET`, `BOSH_TARGET`,
+`BOSH_UUID`, `STEMCELL_PATH`, `AZ`, `VM_TYPE`, and `NETWORK`, then run:
+
+```
+rake package:bwats
+rake run:bwats["vsphere"]
+```
