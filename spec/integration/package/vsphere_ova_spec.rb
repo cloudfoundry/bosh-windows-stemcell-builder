@@ -5,7 +5,6 @@ require 'rubygems/package'
 require 'tmpdir'
 require 'yaml'
 require 'zlib'
-require 'pry'
 
 load File.expand_path('../../../../lib/tasks/package/vsphere_ova.rake', __FILE__)
 
