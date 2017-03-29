@@ -203,6 +203,12 @@ module Packer
             ]
           }
         end
+
+        SYSPREP_SHUTDOWN = {
+          'type' => 'windows-shell',
+          'inline' => ['C:\\Windows\\System32\\Sysprep\\sysprep.exe /generalize /quiet /oobe /quit']
+        }.freeze
+
       end
     end
   end

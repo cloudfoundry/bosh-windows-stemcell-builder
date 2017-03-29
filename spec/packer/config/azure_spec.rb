@@ -62,7 +62,8 @@ describe Packer::Config::Azure do
             Packer::Config::Provisioners::DISABLE_SERVICES,
             Packer::Config::Provisioners::SET_FIREWALL,
             Packer::Config::Provisioners::DISABLE_WINRM_STARTUP,
-            Packer::Config::Provisioners::CLEANUP_ARTIFACTS
+            Packer::Config::Provisioners::CLEANUP_ARTIFACTS,
+            Packer::Config::Provisioners::Azure::SYSPREP_SHUTDOWN
         ]
       )
     end

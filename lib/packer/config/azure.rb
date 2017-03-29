@@ -55,7 +55,8 @@ module Packer
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,
           Provisioners::DISABLE_WINRM_STARTUP,
-          Provisioners::CLEANUP_ARTIFACTS
+          Provisioners::CLEANUP_ARTIFACTS,
+          Provisioners::Azure::SYSPREP_SHUTDOWN
         ]
       end
     end
