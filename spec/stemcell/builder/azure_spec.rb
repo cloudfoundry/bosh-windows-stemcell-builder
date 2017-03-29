@@ -61,7 +61,7 @@ describe Stemcell::Builder do
                                                             manifest: manifest_contents,
                                                             apply_spec: apply_spec_contents,
                                                             output_directory: output_directory,
-                                                            update_list: File.join(output_directory, 'updates.txt')
+                                                            update_list: nil
                                                            ).and_return('path-to-stemcell')
 
         stemcell_path = Stemcell::Builder::Azure.new(

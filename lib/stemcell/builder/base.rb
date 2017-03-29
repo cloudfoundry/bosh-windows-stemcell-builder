@@ -58,6 +58,14 @@ module Stemcell
           puts line
         end
       end
+
+      def update_list_path
+        if File.exist?(File.join(@output_directory, 'updates.txt'))
+          File.join(@output_directory, 'updates.txt')
+        else
+          puts "'updates.txt' does not exist in #{@output_directory}"
+        end
+      end
     end
   end
 end

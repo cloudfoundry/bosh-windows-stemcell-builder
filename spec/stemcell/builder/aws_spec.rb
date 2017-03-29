@@ -46,7 +46,7 @@ describe Stemcell::Builder do
                                                             manifest: 'manifest-contents',
                                                             apply_spec: 'apply-spec-contents',
                                                             output_directory: output_directory,
-                                                            update_list: File.join(output_directory, 'updates.txt')
+                                                            update_list: nil
                                                            ).and_return('path-to-stemcell')
 
         stemcell_path = Stemcell::Builder::Aws.new(

@@ -21,7 +21,7 @@ module Stemcell
               is_light: false,
               image_path: image_path,
               manifest: manifest,
-              update_list: File.join(@output_directory, 'updates.txt')
+              update_list: update_list_path
              )
       end
 
