@@ -138,6 +138,9 @@ describe 'VSphere' do
     apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
     expect(apply_spec['agent_commit']).to eq(agent_commit)
 
+    updates_list = read_from_tgz(stemcell, 'updates.txt')
+    expect(updates_list).to eq('some-updates')
+
     Dir.mktmpdir do |tmpdir|
       tgz_extract(stemcell, tmpdir)
       image_filename = File.join(tmpdir, "image")

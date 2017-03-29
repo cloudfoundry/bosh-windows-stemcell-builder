@@ -155,7 +155,8 @@ describe Stemcell::Builder do
           image_path: image,
           manifest: manifest_contents,
           apply_spec: apply_spec_contents,
-          output_directory: output_directory
+          output_directory: output_directory,
+          update_list: File.join(output_directory, 'updates.txt')
         ).and_return('path-to-stemcell')
 
         builder = Stemcell::Builder::VSphere.new(

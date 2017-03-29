@@ -15,7 +15,8 @@ describe Packer::Config::Aws do
       ]
       builders = Packer::Config::Aws.new('accesskey',
                                          'secretkey',
-                                         regions).builders
+                                         regions,
+                                         'some-output-directory').builders
       expect(builders[0]).to include(
         'name' => 'amazon-ebs-region1',
         'type' => 'amazon-ebs',
@@ -39,7 +40,7 @@ describe Packer::Config::Aws do
 
   describe 'provisioners' do
     it 'returns the expected provisioners' do
-      provisioners = Packer::Config::Aws.new('', '', []).provisioners
+      provisioners = Packer::Config::Aws.new('', '', [], 'some-output-directory').provisioners
       expect(provisioners).to eq(
         [
           Packer::Config::Provisioners::CREATE_PROVISION_DIR,
@@ -49,12 +50,13 @@ describe Packer::Config::Aws do
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners.install_agent("aws"),
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
+          Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
           Packer::Config::Provisioners::SET_EC2_PASSWORD,
           Packer::Config::Provisioners::DISABLE_SERVICES,
           Packer::Config::Provisioners::SET_FIREWALL,
           Packer::Config::Provisioners::DISABLE_WINRM_STARTUP,
           Packer::Config::Provisioners::CLEANUP_ARTIFACTS
-        ]
+        ].flatten
       )
     end
   end

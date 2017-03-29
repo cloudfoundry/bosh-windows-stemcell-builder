@@ -12,7 +12,7 @@ module Stemcell
         @packer_vars = packer_vars
       end
 
-      def build(iaas:, is_light:, image_path:, manifest:)
+      def build(iaas:, is_light:, image_path:, manifest:, update_list:)
         apply_spec = ApplySpec.new(@agent_commit).dump
         Packager.package(
           iaas: iaas,
@@ -22,7 +22,8 @@ module Stemcell
           image_path: image_path,
           manifest: manifest,
           apply_spec: apply_spec,
-          output_directory: @output_directory
+          output_directory: @output_directory,
+          update_list: update_list
         )
       end
 

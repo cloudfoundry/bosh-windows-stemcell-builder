@@ -1,3 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-echo "1488312240,googlecompute,artifact,0,id,packer-1234"
+require 'fileutils'
+require 'json'
+
+packer_config = ARGV.last
+content = File.read(packer_config)
+update_list_path = JSON.parse(content)['provisioners']
+  .detect{|p| p['type'] == 'file' && p['direction'] == 'download'}['destination']
+FileUtils.mkdir_p(File.dirname(update_list_path))
+File.write(update_list_path, "some-updates")
+
+puts "1488312240,googlecompute,artifact,0,id,packer-1234"

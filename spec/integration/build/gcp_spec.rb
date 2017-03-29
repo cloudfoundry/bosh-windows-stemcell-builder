@@ -61,6 +61,9 @@ describe 'Gcp' do
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('google')
       expect(stemcell_manifest['cloud_properties']['image_url']).to eq('https://www.googleapis.com/compute/v1/projects/some-project-id/global/images/packer-1234')
 
+      update_list = read_from_tgz(stemcell, 'updates.txt')
+      expect(update_list).to eq('some-updates')
+
       apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
       expect(apply_spec['agent_commit']).to eq(agent_commit)
 

@@ -6,7 +6,13 @@ describe Packer::Config::Gcp do
       account_json = 'some-account-json'
       project_id = 'some-project-id'
       source_image = 'some-base-image'
-      builders = Packer::Config::Gcp.new(account_json, project_id, source_image).builders
+      output_dir = 'some-output-directory'
+      builders = Packer::Config::Gcp.new(
+        account_json,
+        project_id,
+        source_image,
+        output_dir
+      ).builders
       expect(builders[0]).to include(
         'type' => 'googlecompute',
         'account_file' => account_json,
@@ -31,7 +37,7 @@ describe Packer::Config::Gcp do
 
   describe 'provisioners' do
     it 'returns the expected provisioners' do
-      provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json).provisioners
+      provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory').provisioners
       expect(provisioners).to eq(
         [
           Packer::Config::Provisioners::INCREASE_WINRM_LIMITS,
@@ -41,11 +47,12 @@ describe Packer::Config::Gcp do
           Packer::Config::Provisioners::UPLOAD_AGENT,
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners.install_agent("gcp"),
+          Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
           Packer::Config::Provisioners::DISABLE_SERVICES,
           Packer::Config::Provisioners::SET_FIREWALL,
           Packer::Config::Provisioners::CLEANUP_ARTIFACTS
-        ]
+        ].flatten
       )
     end
   end

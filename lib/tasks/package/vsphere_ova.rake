@@ -5,10 +5,12 @@ require_relative '../../zip_file'
 
 namespace :package do
   desc 'Package VSphere OVA files into Stemcells'
-  task :vsphere_ova, [:ova_file_name, :output_directory, :version, :agent_commit] do |t, args|
+  task :vsphere_ova, [:ova_file_name, :output_directory, :version, :updates_path] do |t, args|
+    puts 'running task'
     ova_file_name = args[:ova_file_name]
     output_directory = args[:output_directory]
     version = args[:version]
+    updates_path = args[:updates_path]
     agent_commit = `git --work-tree=src/github.com/cloudfoundry/bosh-agent/ rev-parse HEAD`.strip
     os = 'windows2012R2'
     iaas = 'vsphere-esxi'
@@ -33,7 +35,8 @@ namespace :package do
       image_path: image_path,
       manifest: manifest,
       apply_spec: apply_spec,
-      output_directory: output_directory
+      output_directory: output_directory,
+      update_list: updates_path
     )
   end
 end

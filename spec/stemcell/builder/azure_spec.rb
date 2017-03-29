@@ -60,7 +60,8 @@ describe Stemcell::Builder do
                                                             image_path: packaged_image_path,
                                                             manifest: manifest_contents,
                                                             apply_spec: apply_spec_contents,
-                                                            output_directory: output_directory
+                                                            output_directory: output_directory,
+                                                            update_list: File.join(output_directory, 'updates.txt')
                                                            ).and_return('path-to-stemcell')
 
         stemcell_path = Stemcell::Builder::Azure.new(

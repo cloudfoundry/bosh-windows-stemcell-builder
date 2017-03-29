@@ -29,7 +29,8 @@ describe Stemcell::Builder do
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
-        allow(Packer::Config::Gcp).to receive(:new).with(account_json, 'some-project-id', source_image).and_return(packer_config)
+        allow(Packer::Config::Gcp).to receive(:new).with(account_json, 'some-project-id', source_image, output_directory
+                                                        ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
         allow(packer_runner).to receive(:run).with(command, packer_vars).
@@ -50,7 +51,8 @@ describe Stemcell::Builder do
                                                             image_path: '',
                                                             manifest: manifest_contents,
                                                             apply_spec: apply_spec_contents,
-                                                            output_directory: output_directory
+                                                            output_directory: output_directory,
+                                                            update_list: File.join(output_directory, 'updates.txt')
                                                            ).and_return('path-to-stemcell')
 
         stemcell_path = Stemcell::Builder::Gcp.new(
@@ -74,7 +76,8 @@ describe Stemcell::Builder do
 
           packer_config = double(:packer_config)
           allow(packer_config).to receive(:dump).and_return('some-packer-config')
-          allow(Packer::Config::Gcp).to receive(:new).with(account_json, project_id, source_image).and_return(packer_config)
+          allow(Packer::Config::Gcp).to receive(:new).with(account_json, project_id, source_image, output_directory
+                                                          ).and_return(packer_config)
 
           packer_runner = double(:packer_runner)
           allow(packer_runner).to receive(:run).with('build', packer_vars).and_return(1)
@@ -83,7 +86,7 @@ describe Stemcell::Builder do
           expect {
             Stemcell::Builder::Gcp.new(
               os: '',
-              output_directory: '',
+              output_directory: output_directory,
               version: '',
               agent_commit: '',
               packer_vars: packer_vars,

@@ -49,8 +49,9 @@ module Stemcell
       def build
         run_packer
         image_path, sha = create_image(@output_directory)
+        update_list = File.join(@output_directory, 'updates.txt')
         manifest = Manifest::VSphere.new(@version, sha, @os).dump
-        super(iaas: 'vsphere-esxi', is_light: false, image_path: image_path, manifest: manifest)
+        super(iaas: 'vsphere-esxi', is_light: false, image_path: image_path, manifest: manifest, update_list: update_list)
       end
 
       private

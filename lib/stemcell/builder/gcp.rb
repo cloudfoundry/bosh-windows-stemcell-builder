@@ -11,12 +11,14 @@ module Stemcell
       def build
         image_url = run_packer
         manifest = Manifest::Gcp.new(@version, @os, image_url).dump
-        super(iaas: 'google-kvm', is_light: true, image_path: '', manifest: manifest)
+        update_list = File.join(@output_directory, 'updates.txt')
+        super(iaas: 'google-kvm', is_light: true, image_path: '', manifest: manifest, update_list: update_list)
       end
 
       private
         def packer_config
-          Packer::Config::Gcp.new(@account_json, @project_id, @source_image).dump
+          Packer::Config::Gcp.new(@account_json, @project_id, @source_image, @output_directory
+                                 ).dump
         end
 
         def parse_packer_output(packer_output)

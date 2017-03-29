@@ -81,7 +81,8 @@ module Packer
             'numvcpus' => @num_vcpus.to_s,
             'displayname' => "packer-vmx-#{@timestamp}"
           },
-          'output_directory' => @output_directory
+          'output_directory' => @output_directory,
+          'skip_clean_files' => true
         ]
       end
 
@@ -100,12 +101,13 @@ module Packer
           Provisioners.install_agent('vsphere').freeze,
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
+          Provisioners.download_windows_updates(@output_directory),
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,
           Provisioners::CLEANUP_TEMP_DIRS,
           Provisioners::CLEANUP_ARTIFACTS,
           Provisioners::COMPRESS_DISK
-        ]
+        ].flatten
       end
     end
   end

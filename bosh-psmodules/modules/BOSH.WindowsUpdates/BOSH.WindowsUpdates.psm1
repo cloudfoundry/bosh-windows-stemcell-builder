@@ -252,3 +252,9 @@ function Get-UpdateBatch() {
         $script:MoreUpdates=0
     }
 }
+
+function List-Updates() {
+    $Session = New-Object -ComObject Microsoft.Update.Session
+    $Searcher = $Session.CreateUpdateSearcher()
+    $Searcher.Search("IsInstalled=1").Updates | Sort-Object LastDeploymentChangeTime | ForEach-Object { "KB$($_.KBArticleIDs) | $($_.Title)" }
+}

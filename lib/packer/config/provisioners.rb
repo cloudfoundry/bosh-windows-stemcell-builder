@@ -37,6 +37,21 @@ module Packer
         'restart_timeout' => '12h'
       }.freeze
 
+      def self.download_windows_updates(dest)
+        return [
+          {
+            'type' => 'powershell',
+            'inline' => 'List-Updates | Out-File -FilePath "C:\\updates.txt" -Encoding ASCII'
+          },
+          {
+            'type' => 'file',
+            'source' => 'C:\\updates.txt',
+            'destination' => File.join(dest, 'updates.txt'),
+            'direction' => 'download'
+          }
+        ]
+      end
+
       UNREGISTER_WINDOWSUPDATESTASK= {
         'type' => 'powershell',
         'inline' => ["Unregister-WindowsUpdatesTask"]

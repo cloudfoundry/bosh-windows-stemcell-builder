@@ -14,13 +14,20 @@ module Stemcell
         super(iaas: 'aws-xen-hvm',
               is_light: true,
               image_path: '',
-              manifest: manifest)
+              manifest: manifest,
+              update_list: File.join(@output_directory, 'updates.txt')
+             )
       end
 
       private
 
         def packer_config
-          Packer::Config::Aws.new(@aws_access_key, @aws_secret_key, @amis).dump
+          Packer::Config::Aws.new(
+            @aws_access_key,
+            @aws_secret_key,
+            @amis,
+            @output_directory
+          ).dump
         end
 
         def parse_packer_output(packer_output)

@@ -22,7 +22,7 @@ module Stemcell
       packaged_image
     end
 
-    def self.package(iaas:, os:, is_light:, version:, image_path:, manifest:, apply_spec:, output_directory:)
+    def self.package(iaas:, os:, is_light:, version:, image_path:, manifest:, apply_spec:, output_directory:, update_list:)
       raise InvalidImagePathError unless File.file?(image_path) || is_light
       raise InvalidOutputDirError unless File.directory?(output_directory)
 
@@ -52,6 +52,16 @@ module Stemcell
 
             tar.add_file_simple('apply_spec.yml', 0o666, apply_spec.length) do |io|
               io.write(apply_spec)
+            end
+
+            if update_list
+              tar.add_file_simple('updates.txt', 0o666, File.size(update_list)) do |io|
+                updates = File.open(update_list,'rb')
+                while(cur_line = updates.gets)
+                  io.write(cur_line)
+                end
+                updates.close
+              end
             end
           end
         end

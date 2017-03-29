@@ -1,4 +1,14 @@
-#!/usr/bin/env bash
+#!/usr/bin/env ruby
 
-echo "1488312236,amazon-ebs-us-east-2,artifact,0,id,us-east-2:ami-east2id"
-echo "1488312236,amazon-ebs-us-east-1,artifact,0,id,us-east-1:ami-east1id"
+require 'fileutils'
+require 'json'
+
+packer_config = ARGV.last
+content = File.read(packer_config)
+update_list_path = JSON.parse(content)['provisioners']
+  .detect{|p| p['type'] == 'file' && p['direction'] == 'download'}['destination']
+FileUtils.mkdir_p(File.dirname(update_list_path))
+File.write(update_list_path, "some-updates")
+
+puts "1488312236,amazon-ebs-us-east-2,artifact,0,id,us-east-2:ami-east2id"
+puts "1488312236,amazon-ebs-us-east-1,artifact,0,id,us-east-1:ami-east1id"

@@ -3,10 +3,11 @@ require 'securerandom'
 module Packer
   module Config
     class Aws < Base
-      def initialize(aws_access_key, aws_secret_key, regions)
+      def initialize(aws_access_key, aws_secret_key, regions, output_directory)
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
         @regions = regions
+        @output_directory = output_directory
       end
 
       def builders
@@ -43,12 +44,13 @@ module Packer
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners.install_agent("aws").freeze,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
+          Provisioners.download_windows_updates(@output_directory),
           Provisioners::SET_EC2_PASSWORD,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,
           Provisioners::DISABLE_WINRM_STARTUP,
           Provisioners::CLEANUP_ARTIFACTS
-        ]
+        ].flatten
       end
     end
   end

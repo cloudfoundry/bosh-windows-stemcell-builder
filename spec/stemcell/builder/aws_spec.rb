@@ -25,7 +25,8 @@ describe Stemcell::Builder do
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return('some-packer-config')
-        allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis).and_return(packer_config)
+        allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis, output_directory
+                                                        ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
         allow(packer_runner).to receive(:run).with('build', packer_vars).and_yield(packer_output).and_return(0)
@@ -44,7 +45,8 @@ describe Stemcell::Builder do
                                                             image_path: '',
                                                             manifest: 'manifest-contents',
                                                             apply_spec: 'apply-spec-contents',
-                                                            output_directory: output_directory
+                                                            output_directory: output_directory,
+                                                            update_list: File.join(output_directory, 'updates.txt')
                                                            ).and_return('path-to-stemcell')
 
         stemcell_path = Stemcell::Builder::Aws.new(
@@ -69,7 +71,7 @@ describe Stemcell::Builder do
 
           packer_config = double(:packer_config)
           allow(packer_config).to receive(:dump).and_return('some-packer-config')
-          allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis).and_return(packer_config)
+          allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis, output_directory).and_return(packer_config)
 
           packer_runner = double(:packer_runner)
           allow(packer_runner).to receive(:run).with('build', packer_vars).and_return(1)
@@ -78,7 +80,7 @@ describe Stemcell::Builder do
           expect {
             Stemcell::Builder::Aws.new(
               os: '',
-              output_directory: '',
+              output_directory: output_directory,
               version: '',
               amis: amis,
               aws_access_key: aws_access_key,
