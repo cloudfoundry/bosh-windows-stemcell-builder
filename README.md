@@ -25,7 +25,7 @@ Known working version of Concourse is [v1.6.0](http://concourse.ci/downloads.htm
 
 Currently uses a hand built image as a base. GCP does not currently have a way to turn on winrm, thus we need to do this manually for our base image.
 
-### Testing with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests)
+### Testing stemcell with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests)
 
   Set the following environment variables:
 
@@ -44,9 +44,7 @@ Currently uses a hand built image as a base. GCP does not currently have a way t
     - VM_TYPE:
     - NETWORK:
 
-BWATS will be configured and run automatically if you export
-these environment variables `BOSH_CA_CERT`, `BOSH_CLIENT`, `BOSH_CLIENT_SECRET`, `BOSH_TARGET`,
-`BOSH_UUID`, `STEMCELL_PATH`, `AZ`, `VM_TYPE`, and `NETWORK`, then run:
+Run BWATS:
 
 ```
 rake package:bwats
