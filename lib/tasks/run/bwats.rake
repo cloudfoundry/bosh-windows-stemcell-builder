@@ -28,8 +28,7 @@ def setup_gcp_ssh_tunnel
     exec_command("gcloud auth activate-service-account --quiet #{account_email} --key-file #{f.path}")
 
     FileUtils.mkdir_p("/root/.ssh")
-    `gcloud compute ssh --quiet bosh-bastion --zone=us-east1-d --project=#{project_id} -- -f -N -L 25555:#{ENV['BOSH_PRIVATE_IP']}:25555`
-    puts "Done setting ssh tunnel"
+    Process.fork { exec_command("gcloud compute ssh --quiet bosh-bastion --zone=us-east1-d --project=#{project_id} -- -f -N -L 25555:#{ENV['BOSH_PRIVATE_IP']}:25555") }
   end
 end
 
