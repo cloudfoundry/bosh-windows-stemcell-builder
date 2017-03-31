@@ -11,6 +11,12 @@ def windows?
   (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
 end
 
+def is_port_open?(port)
+  `lsof -i:#{port}`
+  $?.exitstatus == 0
+end
+
+
 def setup_gcp_ssh_tunnel
   throw "GCP tests must be run on linux" if windows?
 
@@ -28,7 +34,23 @@ def setup_gcp_ssh_tunnel
     exec_command("gcloud auth activate-service-account --quiet #{account_email} --key-file #{f.path}")
 
     FileUtils.mkdir_p("/root/.ssh")
-    Process.fork { exec_command("gcloud compute ssh --quiet bosh-bastion --zone=us-east1-d --project=#{project_id} -- -f -N -L 25555:#{ENV['BOSH_PRIVATE_IP']}:25555") }
+    job = fork do
+      exec_command("gcloud compute ssh --quiet bosh-bastion --zone=us-east1-d --project=#{project_id} -- -f -N -L 25555:#{ENV['BOSH_PRIVATE_IP']}:25555")
+    end
+    Process.detach(job)
+
+    tries = 0
+    while true
+      if tries > 3
+        raise 'failed to create SSH tunnel'
+      end
+      if is_port_open?(25555)
+        puts 'SSH tunnel succeeded'
+        break
+      end
+      tries += 1
+      sleep 15
+    end
   end
 end
 
