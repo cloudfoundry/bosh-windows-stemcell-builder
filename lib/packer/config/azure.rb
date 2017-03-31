@@ -3,9 +3,9 @@ require 'securerandom'
 module Packer
   module Config
     class Azure < Base
-      def initialize(client_id, client_secret, tenant_id, subscription_id,
-                     object_id, resource_group_name, storage_account, location,
-                     vm_size, admin_password)
+      def initialize(client_id:, client_secret:, tenant_id:, subscription_id:,
+                     object_id:, resource_group_name:, storage_account:, location:,
+                     vm_size:, admin_password:, output_directory:)
         @client_id = client_id
         @client_secret = client_secret
         @tenant_id = tenant_id
@@ -16,6 +16,7 @@ module Packer
         @storage_account = storage_account
         @location = location
         @vm_size = vm_size
+        @output_directory = output_directory
       end
 
       def builders
@@ -58,12 +59,13 @@ module Packer
           Provisioners::Azure.create_admin(@admin_password),
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
+          Provisioners.download_windows_updates(@output_directory),
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,
           Provisioners::DISABLE_WINRM_STARTUP,
           Provisioners::CLEANUP_ARTIFACTS,
           Provisioners::Azure::SYSPREP_SHUTDOWN
-        ]
+        ].flatten
       end
     end
   end
