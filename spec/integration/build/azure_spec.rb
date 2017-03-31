@@ -59,6 +59,8 @@ describe 'Azure' do
 
       Rake::Task['build:azure'].invoke
 
+      expect(File.read(File.join(@output_directory, "bosh-stemcell-#{version}-azure-vhd-uri.txt"))).to eq 'some-disk-image-url'
+
       stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-#{os_version}-go_agent.tgz")
       stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-#{os_version}-go_agent.tgz.sha")
 
