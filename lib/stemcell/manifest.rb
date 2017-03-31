@@ -22,7 +22,7 @@ module Stemcell
 
     class Aws < Base
       def initialize(version, os, amis)
-        super('bosh-aws-xen-hvm-windows-stemcell-go_agent', version, EMPTY_FILE_SHA, os)
+        super("bosh-aws-xen-hvm-#{os}-stemcell-go_agent", version, EMPTY_FILE_SHA, os)
         cloud_properties = {
           'infrastructure' => 'aws',
           'ami' => {}
@@ -36,7 +36,7 @@ module Stemcell
 
     class Gcp < Base
       def initialize(version, os, image_url)
-        super('bosh-google-kvm-windows2012R2-go_agent', version, EMPTY_FILE_SHA, os)
+        super("bosh-google-kvm-#{os}-go_agent", version, EMPTY_FILE_SHA, os)
         @contents['cloud_properties'] = {
           'infrastructure' => 'google',
           'image_url' => image_url
@@ -46,7 +46,7 @@ module Stemcell
 
     class VSphere < Base
       def initialize(version, sha, os)
-        super('bosh-vsphere-esxi-windows-2012R2-go_agent', version, sha, os)
+        super("bosh-vsphere-esxi-#{os}-go_agent", version, sha, os)
         @contents['cloud_properties'] = {
           'infrastructure' => 'vsphere',
           'hypervisor' => 'esxi'
@@ -55,6 +55,18 @@ module Stemcell
     end
 
     class Azure < Base
+      def initialize(version, os, publisher, offer, sku)
+        super("bosh-azure-hyperv-#{os}-go_agent", version, EMPTY_FILE_SHA, os)
+        @contents['cloud_properties'] = {
+          'infrastructure' => 'azure',
+          'image' => {
+            'offer' => offer,
+            'publisher' => publisher,
+            'sku' => sku,
+            'version' => version
+          }
+        }
+      end
     end
 
     class OpenStack < Base

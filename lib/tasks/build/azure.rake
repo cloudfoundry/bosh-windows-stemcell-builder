@@ -27,6 +27,9 @@ namespace :build do
       storage_account: ENV.fetch('STORAGE_ACCOUNT'),
       location: ENV.fetch('LOCATION'),
       vm_size: ENV.fetch('VM_SIZE'),
+      publisher: ENV.fetch('PUBLISHER'),
+      offer: ENV.fetch('OFFER'),
+      sku: ENV.fetch('SKU'),
       admin_password: ENV.fetch("ADMIN_PASSWORD")
     )
 

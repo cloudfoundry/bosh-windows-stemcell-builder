@@ -29,12 +29,12 @@ describe Stemcell::Manifest do
             'ami_id' => 'ami2'
           }
         ]
-        manifest = Stemcell::Manifest::Aws.new('1.0', 'windows2012R2', amis).dump
+        manifest = Stemcell::Manifest::Aws.new('1.0', 'some-os', amis).dump
         expect(YAML.load(manifest)).to eq(
-          'name' => 'bosh-aws-xen-hvm-windows-stemcell-go_agent',
+          'name' => 'bosh-aws-xen-hvm-some-os-stemcell-go_agent',
           'version' => '1.0',
           'sha1' => 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-          'operating_system' => 'windows2012R2',
+          'operating_system' => 'some-os',
           'cloud_properties' => {
             'infrastructure' => 'aws',
             'ami' => {
@@ -50,13 +50,13 @@ describe Stemcell::Manifest do
   describe 'Gcp' do
     describe 'dump' do
       it 'returns a valid stemcell manifest yaml string' do
-        manifest = Stemcell::Manifest::Gcp.new('1.0', 'windows2012R2',
+        manifest = Stemcell::Manifest::Gcp.new('1.0', 'some-os',
                                                'https://google.com/stemcell').dump
         expect(YAML.load(manifest)).to eq(
-          'name' => 'bosh-google-kvm-windows2012R2-go_agent',
+          'name' => 'bosh-google-kvm-some-os-go_agent',
           'version' => '1.0',
           'sha1' => 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
-          'operating_system' => 'windows2012R2',
+          'operating_system' => 'some-os',
           'cloud_properties' => {
             'infrastructure' => 'google',
             'image_url' => 'https://google.com/stemcell'
@@ -70,12 +70,12 @@ describe Stemcell::Manifest do
     describe 'dump' do
       it 'returns a valid stemcell manifest yaml string' do
         manifest = Stemcell::Manifest::VSphere.new('1.0', 'sha',
-                                                   'windows2012R2').dump
+                                                   'some-os').dump
         expect(YAML.load(manifest)).to eq(
-          'name' => 'bosh-vsphere-esxi-windows-2012R2-go_agent',
+          'name' => 'bosh-vsphere-esxi-some-os-go_agent',
           'version' => '1.0',
           'sha1' => 'sha',
-          'operating_system' => 'windows2012R2',
+          'operating_system' => 'some-os',
           'cloud_properties' => {
             'infrastructure' => 'vsphere',
             'hypervisor' => 'esxi'
@@ -88,8 +88,23 @@ describe Stemcell::Manifest do
   describe 'Azure' do
     describe 'dump' do
       it 'returns a valid stemcell manifest yaml string' do
-        pending('not yet implemented')
-        fail
+        manifest = Stemcell::Manifest::Azure.new('1.0', 'some-os', 'some-publisher',
+                                                 'some-offer', 'some-sku').dump
+        expect(YAML.load(manifest)).to eq(
+          'name' => 'bosh-azure-hyperv-some-os-go_agent',
+          'version' => '1.0',
+          'sha1' => 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
+          'operating_system' => 'some-os',
+          'cloud_properties' => {
+            'infrastructure' => 'azure',
+            'image' => {
+              'offer' => 'some-offer',
+              'publisher' => 'some-publisher',
+              'sku' => 'some-sku',
+              'version' => '1.0'
+            }
+          }
+        )
       end
     end
   end

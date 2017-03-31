@@ -60,29 +60,4 @@ describe Packer::Config::Aws do
       )
     end
   end
-
-  describe 'dump' do
-    it 'outputs a valid packer json config' do
-      pending('packer validate actually requires files to exist')
-      fail
-
-      regions = [
-        {
-          'name' => 'us-east-1',
-          'ami_name' => 'ami1',
-          'base_ami' => 'baseami1',
-          'vpc_id' => 'vpc1',
-          'subnet_id' => 'subnet1',
-          'security_group' => 'sg1'
-        }
-      ]
-      config = Packer::Config::Aws.new('accesskey',
-                                       'secretkey',
-                                       regions).dump
-      puts config
-      runner = Packer::Runner.new(config)
-      success = runner.run('validate', {})
-      expect(success).to be(true)
-    end
-  end
 end
