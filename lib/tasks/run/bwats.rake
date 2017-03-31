@@ -11,9 +11,17 @@ def windows?
   (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
 end
 
-def is_port_open?(port)
-  `lsof -i:#{port}`
-  $?.exitstatus == 0
+def port_open?(port)
+  Timeout::timeout(5) do
+    begin
+      TCPSocket.new('127.0.0.1', port).close
+      true
+    rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError
+      false
+    end
+  end
+rescue Timeout::Error
+  false
 end
 
 
@@ -42,9 +50,10 @@ def setup_gcp_ssh_tunnel
     tries = 0
     while true
       if tries > 3
+        Process.kill 9,job
         raise 'failed to create SSH tunnel'
       end
-      if is_port_open?(25555)
+      if port_open?(25555)
         puts 'SSH tunnel succeeded'
         break
       end
