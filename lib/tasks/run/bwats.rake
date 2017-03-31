@@ -3,6 +3,8 @@ require 'mkmf'
 require 'json'
 require 'fileutils'
 require 'tempfile'
+require 'socket'
+require 'timeout'
 
 require_relative '../../exec_command'
 
