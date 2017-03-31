@@ -21,6 +21,13 @@ function Install-CFFeatures {
     Write-Log "Installed CloudFoundry Cell Windows Features"
 }
 
+function Protect-CFCell {
+  enableRdp
+  # disableService("WinRM")
+  # disableService("W3Svc")
+  # setFirewall
+}
+
 function WindowsFeatureInstall([string]$feature)
 {
   Write-Log "Installing $feature"
@@ -31,3 +38,10 @@ function WindowsFeatureInstall([string]$feature)
     }
   }
 }
+
+function enableRdp {
+  Write-Log "Starting to enable RDP"
+  Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+  Write-Log "Enabled RDP"
+}
+
