@@ -26,6 +26,11 @@ rescue Timeout::Error
   false
 end
 
+def killPid(cmd)
+  pid=`pidof #{cmd}`
+  puts "#{cmd} PID: #{pid}"
+  Process.kill "USR2", pid.to_i
+end
 
 def setup_gcp_ssh_tunnel
   throw "GCP tests must be run on linux" if windows?
@@ -45,19 +50,18 @@ def setup_gcp_ssh_tunnel
 
     FileUtils.mkdir_p("/root/.ssh")
     job = fork do
-      exec_command("gcloud compute ssh --quiet bosh-bastion --zone=us-east1-d --project=#{project_id} -- -f -N -L 25555:#{ENV['BOSH_PRIVATE_IP']}:25555")
+      exec("gcloud compute ssh --quiet bosh-bastion --zone=us-east1-d --project=#{project_id} -- -f -N -L 25555:#{ENV['BOSH_PRIVATE_IP']}:25555")
     end
-    Process.detach(job)
 
     tries = 0
     while true
       if tries > 3
-        Process.kill 9,job
+        Process.kill("KILL", job)
         raise 'failed to create SSH tunnel'
       end
       if port_open?(25555)
-        puts 'SSH tunnel succeeded'
-        break
+        puts "SSH tunnel succeeded: pid:#{job}"
+        return job
       end
       tries += 1
       sleep 15
@@ -69,21 +73,29 @@ namespace :run do
   desc 'Run bosh-windows-acceptance-tests (BWATS)'
   task :bwats, [:iaas] do |t, args|
     if args[:iaas] == 'gcp'
-      setup_gcp_ssh_tunnel
+      job = setup_gcp_ssh_tunnel
     else
+      job = ""
       puts "ignoring IAAS environment key: #{ENV['IAAS']}"
     end
 
-    root_dir = File.expand_path('../../../..', __FILE__)
-    build_dir = File.join(root_dir,'build')
+    begin
+      root_dir = File.expand_path('../../../..', __FILE__)
+      build_dir = File.join(root_dir,'build')
 
-    ginkgo = File.join(build_dir, windows? ? 'gingko.exe' : 'ginkgo')
-    test_path = File.join(
-      root_dir, 'src', 'github.com', 'cloudfoundry-incubator',
-      'bosh-windows-acceptance-tests'
-    )
-    ENV["CONFIG_JSON"] = args.extras[0] || File.join(build_dir,"config.json")
-    ENV["GOPATH"] = root_dir
-    exec_command("#{ginkgo} -r -v #{test_path}")
+      ginkgo = File.join(build_dir, windows? ? 'gingko.exe' : 'ginkgo')
+      test_path = File.join(
+        root_dir, 'src', 'github.com', 'cloudfoundry-incubator',
+        'bosh-windows-acceptance-tests'
+      )
+      ENV["CONFIG_JSON"] = args.extras[0] || File.join(build_dir,"config.json")
+      ENV["GOPATH"] = root_dir
+      exec_command("#{ginkgo} -r -v #{test_path}")
+    ensure
+      if job != ""
+        puts "Running ensure: #{job}"
+        killPid("ssh")
+      end
+    end
   end
 end
