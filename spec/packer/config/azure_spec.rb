@@ -61,11 +61,9 @@ describe Packer::Config::Azure do
       ).provisioners
       expect(provisioners).to eq(
         [
-            Packer::Config::Provisioners::CREATE_PROVISION_DIR,
-            Packer::Config::Provisioners::UPLOAD_BOSH_PSMODULES,
-            Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
-            Packer::Config::Provisioners::UPLOAD_AGENT,
-            Packer::Config::Provisioners.install_agent("azure"),
+            Packer::Config::Provisioners::NEW_PROVISIONER,
+            Packer::Config::Provisioners::BOSH_PSMODULES,
+            Packer::Config::Provisioners.install_agent('azure'),
             Packer::Config::Provisioners::Azure.create_admin('some-admin-password'),
             Packer::Config::Provisioners::INSTALL_CF_FEATURES,
             Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,

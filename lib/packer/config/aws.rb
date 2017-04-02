@@ -37,14 +37,12 @@ module Packer
 
       def provisioners
         [
-          Provisioners::CREATE_PROVISION_DIR,
-          Provisioners::UPLOAD_BOSH_PSMODULES,
-          Provisioners::INSTALL_BOSH_PSMODULES,
-          Provisioners::UPLOAD_AGENT,
+          Provisioners::NEW_PROVISIONER,
+          Provisioners::BOSH_PSMODULES,
           Provisioners::INSTALL_CF_FEATURES,
-          Provisioners.install_agent("aws").freeze,
+          Provisioners.install_agent('aws').freeze,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
-          Provisioners.download_windows_updates(@output_directory),
+          Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::SET_EC2_PASSWORD,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,

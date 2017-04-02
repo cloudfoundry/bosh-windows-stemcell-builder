@@ -12,8 +12,8 @@ update_list_provisioner = JSON.parse(content)['provisioners']
 if update_list_provisioner
   update_list_path = update_list_provisioner['destination']
   FileUtils.mkdir_p(File.dirname(update_list_path))
-  File.write(update_list_path, "some-updates")
+  File.write(update_list_path, 'some-updates')
 end
 Dir.chdir(output_directory) do
-  File.write("file.vmx", "banana")
+  File.write('file.vmx', 'banana')
 end

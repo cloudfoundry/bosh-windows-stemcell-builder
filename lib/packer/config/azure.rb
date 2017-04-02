@@ -51,15 +51,13 @@ module Packer
 
       def provisioners
         [
-          Provisioners::CREATE_PROVISION_DIR,
-          Provisioners::UPLOAD_BOSH_PSMODULES,
-          Provisioners::INSTALL_BOSH_PSMODULES,
-          Provisioners::UPLOAD_AGENT,
-          Provisioners.install_agent("azure"),
-          Provisioners::Azure.create_admin(@admin_password),
+          Provisioners::NEW_PROVISIONER,
+          Provisioners::BOSH_PSMODULES,
+          Provisioners.install_agent('azure').freeze,
+          Provisioners::Azure.create_admin(@admin_password).freeze,
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
-          Provisioners.download_windows_updates(@output_directory),
+          Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,
           Provisioners::DISABLE_WINRM_STARTUP,

@@ -43,12 +43,10 @@ describe Packer::Config::Aws do
       provisioners = Packer::Config::Aws.new('', '', [], 'some-output-directory').provisioners
       expect(provisioners).to eq(
         [
-          Packer::Config::Provisioners::CREATE_PROVISION_DIR,
-          Packer::Config::Provisioners::UPLOAD_BOSH_PSMODULES,
-          Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
-          Packer::Config::Provisioners::UPLOAD_AGENT,
+          Packer::Config::Provisioners::NEW_PROVISIONER,
+          Packer::Config::Provisioners::BOSH_PSMODULES,
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
-          Packer::Config::Provisioners.install_agent("aws"),
+          Packer::Config::Provisioners.install_agent('aws'),
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
           Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
           Packer::Config::Provisioners::SET_EC2_PASSWORD,

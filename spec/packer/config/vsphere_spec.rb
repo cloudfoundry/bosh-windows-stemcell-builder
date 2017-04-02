@@ -56,14 +56,11 @@ describe Packer::Config do
 
         expect(provisioners).to eq(
           [
-            Packer::Config::Provisioners::CREATE_PROVISION_DIR,
-            Packer::Config::Provisioners::UPLOAD_BOSH_PSMODULES,
-            Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
-            Packer::Config::Provisioners::REGISTER_WINDOWSUPDATESTASK,
-            Packer::Config::Provisioners.wait_windowsupdatestask('password').freeze,
-            Packer::Config::Provisioners::UNREGISTER_WINDOWSUPDATESTASK,
-            Packer::Config::Provisioners::OUTPUT_LOG
-          ]
+            Packer::Config::Provisioners::NEW_PROVISIONER,
+            Packer::Config::Provisioners::BOSH_PSMODULES,
+            Packer::Config::Provisioners.install_windows_updates('password'),
+            Packer::Config::Provisioners::GET_LOG
+          ].flatten
         )
       end
     end
@@ -121,17 +118,14 @@ describe Packer::Config do
         ).provisioners
         expect(provisioners).to eq(
           [
-            Packer::Config::Provisioners::CREATE_PROVISION_DIR,
-            Packer::Config::Provisioners::UPLOAD_BOSH_PSMODULES,
-            Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
-            Packer::Config::Provisioners::UPLOAD_AGENT,
-            Packer::Config::Provisioners::POLICY_BASELINE_ZIP,
+            Packer::Config::Provisioners::NEW_PROVISIONER,
+            Packer::Config::Provisioners::BOSH_PSMODULES,
             Packer::Config::Provisioners::LGPO_EXE,
             Packer::Config::Provisioners::VMX_STEMCELL_SYSPREP,
             Packer::Config::Provisioners::ENABLE_RDP,
             Packer::Config::Provisioners::ADD_VCAP_GROUP,
             Packer::Config::Provisioners::RUN_POLICIES,
-            Packer::Config::Provisioners.install_agent("vsphere"),
+            Packer::Config::Provisioners::install_agent('vsphere'),
             Packer::Config::Provisioners::INSTALL_CF_FEATURES,
             Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
             Packer::Config::Provisioners.download_windows_updates('output_directory'),

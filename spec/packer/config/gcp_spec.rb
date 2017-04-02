@@ -41,10 +41,8 @@ describe Packer::Config::Gcp do
       expect(provisioners).to eq(
         [
           Packer::Config::Provisioners::INCREASE_WINRM_LIMITS,
-          Packer::Config::Provisioners::CREATE_PROVISION_DIR,
-          Packer::Config::Provisioners::UPLOAD_BOSH_PSMODULES,
-          Packer::Config::Provisioners::INSTALL_BOSH_PSMODULES,
-          Packer::Config::Provisioners::UPLOAD_AGENT,
+          Packer::Config::Provisioners::NEW_PROVISIONER,
+          Packer::Config::Provisioners::BOSH_PSMODULES,
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners.install_agent("gcp"),
           Packer::Config::Provisioners.download_windows_updates('some-output-directory'),

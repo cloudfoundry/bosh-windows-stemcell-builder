@@ -43,14 +43,11 @@ module Packer
 
       def provisioners
         [
-          Provisioners::CREATE_PROVISION_DIR,
-          Provisioners::UPLOAD_BOSH_PSMODULES,
-          Provisioners::INSTALL_BOSH_PSMODULES,
-          Provisioners::REGISTER_WINDOWSUPDATESTASK,
-          Provisioners.wait_windowsupdatestask(@administrator_password).freeze,
-          Provisioners::UNREGISTER_WINDOWSUPDATESTASK,
-          Provisioners::OUTPUT_LOG
-        ]
+          Provisioners::NEW_PROVISIONER,
+          Provisioners::BOSH_PSMODULES,
+          Provisioners.install_windows_updates(@administrator_password).freeze,
+          Provisioners::GET_LOG
+        ].flatten
       end
     end
 
@@ -88,11 +85,8 @@ module Packer
 
       def provisioners
         [
-          Provisioners::CREATE_PROVISION_DIR,
-          Provisioners::UPLOAD_BOSH_PSMODULES,
-          Provisioners::INSTALL_BOSH_PSMODULES,
-          Provisioners::UPLOAD_AGENT,
-          Provisioners::POLICY_BASELINE_ZIP,
+          Provisioners::NEW_PROVISIONER,
+          Provisioners::BOSH_PSMODULES,
           Provisioners::LGPO_EXE,
           Provisioners::VMX_STEMCELL_SYSPREP,
           Provisioners::ENABLE_RDP,
@@ -101,7 +95,7 @@ module Packer
           Provisioners.install_agent('vsphere').freeze,
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
-          Provisioners.download_windows_updates(@output_directory),
+          Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,
           Provisioners::CLEANUP_TEMP_DIRS,

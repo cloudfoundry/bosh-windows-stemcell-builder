@@ -37,13 +37,11 @@ module Packer
       def provisioners
         [
           Provisioners::INCREASE_WINRM_LIMITS,
-          Provisioners::CREATE_PROVISION_DIR,
-          Provisioners::UPLOAD_BOSH_PSMODULES,
-          Provisioners::INSTALL_BOSH_PSMODULES,
-          Provisioners::UPLOAD_AGENT,
+          Provisioners::NEW_PROVISIONER,
+          Provisioners::BOSH_PSMODULES,
           Provisioners::INSTALL_CF_FEATURES,
-          Provisioners.install_agent("gcp"),
-          Provisioners.download_windows_updates(@output_directory),
+          Provisioners.install_agent('gcp').freeze,
+          Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners::DISABLE_SERVICES,
           Provisioners::SET_FIREWALL,

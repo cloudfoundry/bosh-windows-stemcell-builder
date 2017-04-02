@@ -3,39 +3,23 @@ require 'securerandom'
 module Packer
   module Config
     class Provisioners
-      def self.wait_windowsupdatestask(administrator_password)
-        return {
-          'type' => 'windows-restart',
-          'restart_command' => "powershell.exe -Command Wait-WindowsUpdates -AdministratorPassword #{administrator_password}",
-          'restart_timeout' => '12h'
-        }
-      end
-
-      def self.install_agent(iaas)
-        return {
-          'type' => 'powershell',
-          'inline' => ["Install-Agent -IaaS #{iaas} -agentZipPath 'C:\\provision\\agent.zip'"]
-        }
-      end
-
-      REGISTER_WINDOWSUPDATESTASK= {
-        'type' => 'powershell',
-        'inline' => ["Register-WindowsUpdatesTask"]
-      }.freeze
-
-      CREATE_PROVISION_DIR = {
-        'type' => 'powershell',
-        'inline' => [
-          'if (Test-Path C:\\provision) { Remove-Item -Path C:\\provision -Recurse -Force }',
-          'New-Item -ItemType Directory -Path C:\\provision'
+      def self.install_windows_updates(administrator_password)
+        return [
+          {
+            'type' => 'powershell',
+            'inline' => ["Register-WindowsUpdatesTask"]
+          },
+          {
+            'type' => 'windows-restart',
+            'restart_command' => "powershell.exe -Command Wait-WindowsUpdates -AdministratorPassword #{administrator_password}",
+            'restart_timeout' => '12h'
+          },
+          {
+            'type' => 'powershell',
+            'inline' => ["Unregister-WindowsUpdatesTask"]
+          }
         ]
-      }.freeze
-
-      WAIT_WINDOWSUPDATESTASK = {
-        'type' => 'windows-restart',
-        'restart_command' => 'powershell.exe -Command Wait-WindowsUpdates',
-        'restart_timeout' => '12h'
-      }.freeze
+      end
 
       def self.download_windows_updates(dest)
         return [
@@ -52,27 +36,38 @@ module Packer
         ]
       end
 
-      UNREGISTER_WINDOWSUPDATESTASK= {
+      def self.install_agent(iaas)
+        return [
+          {
+            'type' => 'file',
+            'source' => 'build/agent.zip',
+            'destination' => 'C:\\provision\\agent.zip'
+          },
+          {
+            'type' => 'powershell',
+            'inline' => ["Install-Agent -IaaS #{iaas} -agentZipPath 'C:\\provision\\agent.zip'"]
+          }
+        ]
+      end
+
+      NEW_PROVISIONER = {
         'type' => 'powershell',
-        'inline' => ["Unregister-WindowsUpdatesTask"]
+        'inline' => [
+          'if (Test-Path C:\\provision) { Remove-Item -Path C:\\provision -Recurse -Force }',
+          'New-Item -ItemType Directory -Path C:\\provision'
+        ]
       }.freeze
 
-      UPLOAD_BOSH_PSMODULES = {
-        'type' => 'file',
-        'source' => 'build/bosh-psmodules.zip',
-        'destination' => 'C:\\provision\\bosh-psmodules.zip'
-      }.freeze
-
-      UPLOAD_AGENT = {
-        'type' => 'file',
-        'source' => 'build/agent.zip',
-        'destination' => 'C:\\provision\\agent.zip'
-      }.freeze
-
-      INSTALL_BOSH_PSMODULES = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/install-bosh-psmodules.ps1']
-      }.freeze
+      BOSH_PSMODULES = [
+        {
+          'type' => 'file',
+          'source' => 'build/bosh-psmodules.zip',
+          'destination' => 'C:\\provision\\bosh-psmodules.zip'
+        }, {
+          'type' => 'powershell',
+          'scripts' => ['scripts/install-bosh-psmodules.ps1']
+        }
+      ].freeze
 
       INSTALL_CF_FEATURES = {
         'type' => 'powershell',
@@ -84,10 +79,12 @@ module Packer
         'inline' => ['Compress-Disk']
       }.freeze
 
-      OUTPUT_LOG= {
+      GET_LOG = {
         'type' => 'powershell',
         'inline' => ['if (Test-Path C:\\provision\\log.log) { Get-Content -Path C:\\provision\\log.log } else { Write-Host "Missing log file" }']
       }.freeze
+
+      ##TO BE KEPT ^^^^
 
       VMX_STEMCELL_SYSPREP = {
         'type' => 'file',
@@ -118,16 +115,6 @@ module Packer
       RUN_POLICIES = {
         'type' => 'powershell',
         'scripts' => ['scripts/vsphere/run-policies.ps1']
-      }.freeze
-
-      COMPACT_DISK = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/compact.ps1']
-      }.freeze
-
-      DISABLE_AUTO_LOGON = {
-        'type' => 'windows-shell',
-        'scripts' => ['scripts/vsphere/disable-auto-logon.bat']
       }.freeze
 
       DISABLE_SERVICES = {
@@ -188,10 +175,6 @@ module Packer
         'inline' => ['Get-Service -Name "WinRM" | Set-Service -StartupType Disabled']
       }.freeze
 
-      WINDOWS_RESTART = {
-        'type' => 'windows-restart',
-        'restart_timeout' => '1h'
-      }.freeze
 
       class Azure
         def self.create_admin(admin_password)
