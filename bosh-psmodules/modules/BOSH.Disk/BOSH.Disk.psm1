@@ -5,17 +5,41 @@
     This cmdlet installs the Disk Utilities for BOSH deployed vm
 #>
 
-
-
 function Compress-Disk {
-    $ErrorActionPreference = "Stop";
-    trap { $host.SetShouldExit(1) }
-
     Write-Log "Starting to compress disk"
     DefragDisk
     ZeroDisk
     DefragDisk # Just for good measure
     Write-Log "Finished compressing disk"
+}
+
+function Clear-Disk {
+    Write-Log "Starting to clear disk"
+
+    $TempPath = "C:\\Windows\\Temp"
+    Write-Log "Removing temp files under $TempPath"
+    Get-ChildItem -Path  |
+        Select-Object -expandproperty fullname |
+        Remove-Item -Force -Recurse -ErrorAction Ignore
+    Write-Log "Removed temp files under $TempPath"
+
+    $TempPath= [System.IO.Path]::GetTempPath()
+    Write-Log "Removing temp files under $TempPath"
+    Get-ChildItem -Path $TempPath |
+        Select-Object -expandproperty fullname |
+        Remove-Item -Force -Recurse -ErrorAction Ignore
+    Write-Log "Removed temp files under $TempPath"
+
+    Get-WindowsFeature -Name 'Powershell-ISE' | Remove-WindowsFeature
+    Get-WindowsFeature |
+    ? { $_.InstallState -eq 'Available' } |
+    Uninstall-WindowsFeature -Remove
+
+    # Cleanup WinSxS folder: https://technet.microsoft.com/en-us/library/dn251565.aspx
+    Write-Log "Running Dism"
+    Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
+    Dism.exe /online /Cleanup-Image /SPSuperseded
+    Write-Log "Finished clear disk"
 }
 
 function DefragDisk {

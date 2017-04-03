@@ -126,10 +126,8 @@ describe Packer::Config do
             Packer::Config::Provisioners::install_agent('vsphere'),
             Packer::Config::Provisioners::INSTALL_CF_FEATURES,
             Packer::Config::Provisioners::PROTECT_CF_CELL,
-            Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
             Packer::Config::Provisioners.download_windows_updates('output_directory'),
-            Packer::Config::Provisioners::CLEANUP_TEMP_DIRS,
-            Packer::Config::Provisioners::CLEANUP_ARTIFACTS,
+            Packer::Config::Provisioners::CLEAR_DISK,
             Packer::Config::Provisioners::COMPRESS_DISK,
             Packer::Config::Provisioners::CLEAR_PROVISIONER,
           ].flatten

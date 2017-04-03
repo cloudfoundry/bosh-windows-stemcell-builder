@@ -76,6 +76,11 @@ module Packer
         'inline' => ['Protect-CFCell']
       }.freeze
 
+      CLEAR_DISK = {
+        'type' => 'powershell',
+        'inline' => ['Clear-Disk']
+      }.freeze
+
       COMPRESS_DISK = {
         'type' => 'powershell',
         'inline' => ['Compress-Disk']
@@ -98,21 +103,6 @@ module Packer
         'type' => 'file',
         'source' => 'scripts/vsphere/sysprep.ps1',
         'destination' => 'C:\\sysprep.ps1'
-      }.freeze
-
-      CLEANUP_ARTIFACTS = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/cleanup-artifacts.ps1']
-      }.freeze
-
-      CLEANUP_TEMP_DIRS = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/cleanup-temp-directories.ps1']
-      }.freeze
-
-      CLEANUP_WINDOWS_FEATURES = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/cleanup-windows-features.ps1']
       }.freeze
 
       RUN_POLICIES = {
