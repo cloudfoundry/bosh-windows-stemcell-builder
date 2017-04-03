@@ -97,11 +97,6 @@ module Packer
         'destination' => 'C:\\sysprep.ps1'
       }.freeze
 
-      ADD_VCAP_GROUP = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/vsphere/add-vcap-group.ps1']
-      }.freeze
-
       CLEANUP_ARTIFACTS = {
         'type' => 'powershell',
         'scripts' => ['scripts/cleanup-artifacts.ps1']
