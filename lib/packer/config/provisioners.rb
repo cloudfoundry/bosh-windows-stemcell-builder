@@ -97,39 +97,17 @@ module Packer
         }
       ].freeze
 
-      ##TO BE KEPT ^^^^
-
-      VMX_STEMCELL_SYSPREP = {
+      LGPO_EXE = {
         'type' => 'file',
-        'source' => 'scripts/vsphere/sysprep.ps1',
-        'destination' => 'C:\\sysprep.ps1'
+        'source' => 'build/windows-stemcell-dependencies/lgpo/LGPO.exe',
+        'destination' => 'C:\\windows\\LGPO.exe'
       }.freeze
 
-      RUN_POLICIES = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/vsphere/run-policies.ps1']
-      }.freeze
+      ##TO BE KEPT ^^^^
 
       INSTALL_VMWARE_TOOLS = {
         'type' => 'powershell',
         'scripts' => ['scripts/vm-guest-tools.ps1']
-      }.freeze
-
-      LGPO_EXE = {
-        'type' => 'file',
-        'source' => 'build/windows-stemcell-dependencies/lgpo/LGPO.exe',
-        'destination' => 'C:\\LGPO.exe'
-      }.freeze
-
-      POLICY_BASELINE_ZIP = {
-        'type' => 'file',
-        'source' => 'build/windows-stemcell-dependencies/policy-baseline/policy-baseline.zip',
-        'destination' => 'C:\\policy-baseline.zip'
-      }.freeze
-
-      RUN_LGPO = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/run-lgpo.ps1']
       }.freeze
 
       SET_EC2_PASSWORD = {

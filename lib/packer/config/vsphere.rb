@@ -64,7 +64,7 @@ module Packer
           'source_path' => @source_path,
           'headless' => false,
           'boot_wait' => '2m',
-          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -File C:\\sysprep.ps1 -NewPassword #{@administrator_password} -ProductKey #{@product_key} -Owner #{@owner} -Organization #{@organization}",
+          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -NewPassword #{@administrator_password} -ProductKey #{@product_key} -Owner #{@owner} -Organization #{@organization}",
           'shutdown_timeout' => '1h',
           'communicator' => 'winrm',
           'ssh_username' => 'Administrator',
