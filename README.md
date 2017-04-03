@@ -21,11 +21,12 @@ If the build fails, manual deletion of the `packer-vmware-iso` VM and `packer-vm
 
 Known working version of Concourse is [v1.6.0](http://concourse.ci/downloads.html#v160).
 
-### GCP
-
-Currently uses a hand built image as a base. GCP does not currently have a way to turn on winrm, thus we need to do this manually for our base image.
-
 ### Testing stemcell with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests)
+
+  ##### Requirements
+
+  * Latest stable [bosh-cli](https://bosh.io/docs/cli-v2.html)
+  * [Golang](https://golang.org/dl/) Latest 1.8.x compiler
 
   Set the following environment variables:
 
