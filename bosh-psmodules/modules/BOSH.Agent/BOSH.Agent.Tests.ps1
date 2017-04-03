@@ -177,7 +177,7 @@ Describe "Write-AgentConfig" {
 
 Describe "Set-Path" {
     BeforeEach {
-	    $oldPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
+        $oldPath=(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).Path
         $tempDir=(New-TempDir)
     }
 

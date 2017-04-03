@@ -258,3 +258,18 @@ function List-Updates() {
     $Searcher = $Session.CreateUpdateSearcher()
     $Searcher.Search("IsInstalled=1").Updates | Sort-Object LastDeploymentChangeTime | ForEach-Object { "KB$($_.KBArticleIDs) | $($_.Title)" }
 }
+
+<#
+.Synopsis
+    Disable Automatic Updates
+.Description
+    This cmdlet disables automatic Windows Updates
+#>
+function Disable-AutomaticUpdates() {
+    Stop-Service -Name wuauserv
+    Set-Service -Name wuauserv -StartupType Disabled
+
+    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 1 -Name 'AUOptions'
+    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'EnableFeaturedSoftware'
+    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'IncludeRecommendedUpdates'
+}
