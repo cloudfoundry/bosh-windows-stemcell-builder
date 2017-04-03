@@ -4,8 +4,6 @@
 .Description
     This cmdlet installs the minimum set of features for a CloudFoundry Cell
 #>
-
-
 function Install-CFFeatures {
     Write-Log "Installing CloudFoundry Cell Windows Features"
     $ErrorActionPreference = "Stop";

@@ -75,13 +75,13 @@ function Create-Unattend {
                 <RunSynchronousCommand wcm:action="add">
                     <Description>Disable Windows Updates</Description>
                     <Order>1</Order>
-                    <Path>C:\Windows\System32\cmd.exe /C C:\disable-updates.bat</Path>
+                    <Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command Disable-AutomaticUpdates</Path>
                     <WillReboot>Never</WillReboot>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Description>Apply Group Policies</Description>
                     <Order>2</Order>
-                    <Path>C:\Windows\System32\cmd.exe /C C:\bosh\lgpo\bin\apply-policies.bat</Path>
+                    <Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command Enable-LocalSecurityPolicy</Path>
                     <WillReboot>Always</WillReboot>
                 </RunSynchronousCommand>
             </RunSynchronous>
@@ -115,7 +115,7 @@ function Create-Unattend {
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <FirstLogonCommands>
                 <SynchronousCommand wcm:action="add">
-                    <CommandLine>C:\Windows\System32\cmd.exe /c C:\disable-updates.bat</CommandLine>
+                    <CommandLine>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command Disable-AutomaticUpdates</CommandLine>
                     <Order>1</Order>
                     <Description>Disable Windows Updates</Description>
                 </SynchronousCommand>
@@ -141,4 +141,24 @@ function Create-Unattend {
    Out-File -FilePath $UnattendPath -InputObject $PostUnattend -Encoding utf8
 
    Write-Log "Starting Create-Unattend"
+}
+
+<#
+.Synopsis
+    Sysprep Utilities
+.Description
+    This cmdlet runs Sysprep and generalizes a VM so it can be a BOSH stemcell
+#>
+function Invoke-Sysprep() {
+   Param (
+      [string]$NewPassword,
+      [string]$ProductKey,
+      [string]$Organization,
+      [string]$Owner
+   )
+
+   Write-Log "Invoking Sysprep"
+
+   Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey -Organization $Organization -Owner $Owner
+   C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown
 }
