@@ -50,9 +50,8 @@ module Packer
       end
 
       def provisioners
+        ( Base.instance_method(:pre_provisioners).bind(self).call <<
         [
-          Provisioners::BOSH_PSMODULES,
-          Provisioners::NEW_PROVISIONER,
           Provisioners.install_agent('azure').freeze,
           Provisioners::Azure.create_admin(@admin_password).freeze,
           Provisioners::INSTALL_CF_FEATURES,
@@ -60,8 +59,9 @@ module Packer
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           #Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::CLEANUP_ARTIFACTS,
-          Provisioners::Azure::SYSPREP_SHUTDOWN
-        ].flatten
+        ] <<
+        Base.instance_method(:post_provisioners).bind(self).call <<
+        [ Provisioners::Azure::SYSPREP_SHUTDOWN ]).flatten
       end
     end
   end

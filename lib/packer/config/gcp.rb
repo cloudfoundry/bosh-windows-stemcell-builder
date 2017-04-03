@@ -35,17 +35,16 @@ module Packer
       end
 
       def provisioners
+        ( Base.instance_method(:pre_provisioners).bind(self).call <<
         [
-          Provisioners::INCREASE_WINRM_LIMITS,
-          Provisioners::BOSH_PSMODULES,
-          Provisioners::NEW_PROVISIONER,
           Provisioners.install_agent('gcp').freeze,
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners::PROTECT_CF_CELL,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners::CLEANUP_ARTIFACTS
-        ].flatten
+        ] <<
+        Base.instance_method(:post_provisioners).bind(self).call).flatten
       end
     end
   end

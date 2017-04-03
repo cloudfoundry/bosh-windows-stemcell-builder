@@ -40,7 +40,6 @@ describe Packer::Config::Gcp do
       provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory').provisioners
       expect(provisioners).to eq(
         [
-          Packer::Config::Provisioners::INCREASE_WINRM_LIMITS,
           Packer::Config::Provisioners::BOSH_PSMODULES,
           Packer::Config::Provisioners::NEW_PROVISIONER,
           Packer::Config::Provisioners.install_agent("gcp"),
@@ -48,7 +47,9 @@ describe Packer::Config::Gcp do
           Packer::Config::Provisioners::PROTECT_CF_CELL,
           Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
-          Packer::Config::Provisioners::CLEANUP_ARTIFACTS
+          Packer::Config::Provisioners::CLEANUP_ARTIFACTS,
+          Packer::Config::Provisioners::COMPRESS_DISK,
+          Packer::Config::Provisioners::CLEAR_PROVISIONER
         ].flatten
       )
     end

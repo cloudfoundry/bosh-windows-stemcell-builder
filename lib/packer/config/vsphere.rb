@@ -84,9 +84,8 @@ module Packer
       end
 
       def provisioners
+        ( Base.instance_method(:pre_provisioners).bind(self).call <<
         [
-          Provisioners::BOSH_PSMODULES,
-          Provisioners::NEW_PROVISIONER,
           Provisioners::LGPO_EXE,
           Provisioners::VMX_STEMCELL_SYSPREP,
           Provisioners::RUN_POLICIES,
@@ -97,9 +96,8 @@ module Packer
           Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::CLEANUP_TEMP_DIRS,
           Provisioners::CLEANUP_ARTIFACTS,
-          Provisioners::COMPRESS_DISK,
-          Provisioners::CLEAR_PROVISIONER
-        ].flatten
+        ] <<
+        Base.instance_method(:post_provisioners).bind(self).call).flatten
       end
     end
   end

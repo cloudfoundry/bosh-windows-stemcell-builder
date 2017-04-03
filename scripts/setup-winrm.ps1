@@ -22,6 +22,12 @@ cmd.exe /c 'winrm set winrm/config/client/auth @{Basic="true"}'
 cmd.exe /c 'winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"}'
 "Win RM listener Address/Port (Exit Code: ${LASTEXITCODE})"
 
+winrm set winrm/config/winrs '@{MaxShellsPerUser="100"}'
+winrm set winrm/config/winrs '@{MaxConcurrentUsers="30"}'
+winrm set winrm/config/winrs '@{MaxProcessesPerShell="100"}'
+winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="1024"}'
+winrm set winrm/config/service '@{MaxConcurrentOperationsPerUser="5000"}'
+
 # Win RM adv firewall enable
 cmd.exe /c 'netsh advfirewall firewall set rule group="remote administration" new enable=yes'
 "Win RM adv firewall enable (Exit Code: ${LASTEXITCODE})"

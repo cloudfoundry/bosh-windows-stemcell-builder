@@ -36,9 +36,8 @@ module Packer
       end
 
       def provisioners
+        ( Base.instance_method(:pre_provisioners).bind(self).call <<
         [
-          Provisioners::BOSH_PSMODULES,
-          Provisioners::NEW_PROVISIONER,
           Provisioners.install_agent('aws').freeze,
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners::PROTECT_CF_CELL,
@@ -46,7 +45,8 @@ module Packer
           Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::SET_EC2_PASSWORD,
           Provisioners::CLEANUP_ARTIFACTS
-        ].flatten
+        ] <<
+        Base.instance_method(:post_provisioners).bind(self).call).flatten
       end
     end
   end

@@ -153,11 +153,6 @@ module Packer
         'destination' => 'C:\\VMWare-tools.exe'
       }.freeze
 
-      INCREASE_WINRM_LIMITS = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/increase-winrm-limits.ps1']
-      }.freeze
-
       class Azure
         def self.create_admin(admin_password)
           return {
