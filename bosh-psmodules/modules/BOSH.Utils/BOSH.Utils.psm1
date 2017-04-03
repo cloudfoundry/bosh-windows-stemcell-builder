@@ -22,7 +22,10 @@ function Write-Log {
 }
 
 function Open-Zip {
-    param([string]$ZipFile, [string]$OutPath, [bool]$Keep=$True)
+    param(
+    [string]$ZipFile= $(Throw "Provide a ZipFile to extract"),
+    [string]$OutPath= $(Throw "Provide an OutPath for extract"),
+    [bool]$Keep=$True)
 
     $ZipFile = (Resolve-Path $ZipFile).Path
     $OutPath = (Resolve-Path $OutPath).Path
