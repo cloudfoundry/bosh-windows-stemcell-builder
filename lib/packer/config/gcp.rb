@@ -39,12 +39,11 @@ module Packer
           Provisioners::INCREASE_WINRM_LIMITS,
           Provisioners::NEW_PROVISIONER,
           Provisioners::BOSH_PSMODULES,
-          Provisioners::INSTALL_CF_FEATURES,
           Provisioners.install_agent('gcp').freeze,
+          Provisioners::INSTALL_CF_FEATURES,
+          Provisioners::PROTECT_CF_CELL,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
-          Provisioners::DISABLE_SERVICES,
-          Provisioners::SET_FIREWALL,
           Provisioners::CLEANUP_ARTIFACTS
         ].flatten
       end

@@ -45,14 +45,12 @@ describe Packer::Config::Aws do
         [
           Packer::Config::Provisioners::NEW_PROVISIONER,
           Packer::Config::Provisioners::BOSH_PSMODULES,
-          Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners.install_agent('aws'),
+          Packer::Config::Provisioners::INSTALL_CF_FEATURES,
+          Packer::Config::Provisioners::PROTECT_CF_CELL,
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
           Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
           Packer::Config::Provisioners::SET_EC2_PASSWORD,
-          Packer::Config::Provisioners::DISABLE_SERVICES,
-          Packer::Config::Provisioners::SET_FIREWALL,
-          Packer::Config::Provisioners::DISABLE_WINRM_STARTUP,
           Packer::Config::Provisioners::CLEANUP_ARTIFACTS
         ].flatten
       )

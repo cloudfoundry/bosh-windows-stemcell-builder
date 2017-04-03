@@ -56,11 +56,9 @@ module Packer
           Provisioners.install_agent('azure').freeze,
           Provisioners::Azure.create_admin(@admin_password).freeze,
           Provisioners::INSTALL_CF_FEATURES,
+          Provisioners::PROTECT_CF_CELL,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners.download_windows_updates(@output_directory).freeze,
-          Provisioners::DISABLE_SERVICES,
-          Provisioners::SET_FIREWALL,
-          Provisioners::DISABLE_WINRM_STARTUP,
           Provisioners::CLEANUP_ARTIFACTS,
           Provisioners::Azure::SYSPREP_SHUTDOWN
         ].flatten

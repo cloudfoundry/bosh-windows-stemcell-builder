@@ -43,12 +43,11 @@ describe Packer::Config::Gcp do
           Packer::Config::Provisioners::INCREASE_WINRM_LIMITS,
           Packer::Config::Provisioners::NEW_PROVISIONER,
           Packer::Config::Provisioners::BOSH_PSMODULES,
-          Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners.install_agent("gcp"),
+          Packer::Config::Provisioners::INSTALL_CF_FEATURES,
+          Packer::Config::Provisioners::PROTECT_CF_CELL,
           Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
           Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
-          Packer::Config::Provisioners::DISABLE_SERVICES,
-          Packer::Config::Provisioners::SET_FIREWALL,
           Packer::Config::Provisioners::CLEANUP_ARTIFACTS
         ].flatten
       )

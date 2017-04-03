@@ -39,14 +39,12 @@ module Packer
         [
           Provisioners::NEW_PROVISIONER,
           Provisioners::BOSH_PSMODULES,
-          Provisioners::INSTALL_CF_FEATURES,
           Provisioners.install_agent('aws').freeze,
+          Provisioners::INSTALL_CF_FEATURES,
+          Provisioners::PROTECT_CF_CELL,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::SET_EC2_PASSWORD,
-          Provisioners::DISABLE_SERVICES,
-          Provisioners::SET_FIREWALL,
-          Provisioners::DISABLE_WINRM_STARTUP,
           Provisioners::CLEANUP_ARTIFACTS
         ].flatten
       end

@@ -74,6 +74,11 @@ module Packer
         'inline' => ['Install-CFFeatures']
       }.freeze
 
+      PROTECT_CF_CELL = {
+        'type' => 'powershell',
+        'inline' => ['Protect-CFCell']
+      }.freeze
+
       COMPRESS_DISK = {
         'type' => 'powershell',
         'inline' => ['Compress-Disk']
@@ -117,16 +122,6 @@ module Packer
         'scripts' => ['scripts/vsphere/run-policies.ps1']
       }.freeze
 
-      DISABLE_SERVICES = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/disable-services.ps1']
-      }.freeze
-
-      ENABLE_RDP = {
-        'type' => 'windows-shell',
-        'scripts' => ['scripts/vsphere/enable-rdp.bat']
-      }.freeze
-
       INSTALL_VMWARE_TOOLS = {
         'type' => 'powershell',
         'scripts' => ['scripts/vm-guest-tools.ps1']
@@ -154,11 +149,6 @@ module Packer
         'scripts' => ['scripts/aws/ec2-set-password.ps1']
       }.freeze
 
-      SET_FIREWALL = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/set-firewall.ps1']
-      }.freeze
-
       VMWARE_TOOLS_EXE = {
         'type' => 'file',
         'source' => 'build/windows-stemcell-dependencies/VMware-tools/VMware-tools.exe',
@@ -169,12 +159,6 @@ module Packer
         'type' => 'powershell',
         'scripts' => ['scripts/increase-winrm-limits.ps1']
       }.freeze
-
-      DISABLE_WINRM_STARTUP = {
-        'type' => 'powershell',
-        'inline' => ['Get-Service -Name "WinRM" | Set-Service -StartupType Disabled']
-      }.freeze
-
 
       class Azure
         def self.create_admin(admin_password)
