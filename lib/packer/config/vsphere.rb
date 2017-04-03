@@ -46,6 +46,7 @@ module Packer
           Provisioners::BOSH_PSMODULES,
           Provisioners::NEW_PROVISIONER,
           Provisioners.install_windows_updates(@administrator_password).freeze,
+          Provisioners::GET_LOG,
           Provisioners::CLEAR_PROVISIONER
         ].flatten
       end

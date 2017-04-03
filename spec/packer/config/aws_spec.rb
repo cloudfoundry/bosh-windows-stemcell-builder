@@ -52,6 +52,7 @@ describe Packer::Config::Aws do
           Packer::Config::Provisioners::SET_EC2_PASSWORD,
           Packer::Config::Provisioners::CLEAR_DISK,
           Packer::Config::Provisioners::COMPRESS_DISK,
+          Packer::Config::Provisioners::GET_LOG,
           Packer::Config::Provisioners::CLEAR_PROVISIONER
         ].flatten
       )

@@ -86,16 +86,15 @@ module Packer
         'inline' => ['Compress-Disk']
       }.freeze
 
-      CLEAR_PROVISIONER = [
-        {
-          'type' => 'powershell',
-          'inline' => ['Get-Log']
-        },
-        {
-          'type' => 'powershell',
-          'inline' => ['Clear-Provisioner']
-        }
-      ].freeze
+      CLEAR_PROVISIONER = {
+        'type' => 'powershell',
+        'inline' => ['Clear-Provisioner']
+      }.freeze
+
+      GET_LOG = {
+        'type' => 'powershell',
+        'inline' => ['Get-Log']
+      }.freeze
 
       LGPO_EXE = {
         'type' => 'file',
@@ -105,20 +104,9 @@ module Packer
 
       ##TO BE KEPT ^^^^
 
-      INSTALL_VMWARE_TOOLS = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/vm-guest-tools.ps1']
-      }.freeze
-
       SET_EC2_PASSWORD = {
         'type' => 'powershell',
         'scripts' => ['scripts/aws/ec2-set-password.ps1']
-      }.freeze
-
-      VMWARE_TOOLS_EXE = {
-        'type' => 'file',
-        'source' => 'build/windows-stemcell-dependencies/VMware-tools/VMware-tools.exe',
-        'destination' => 'C:\\VMWare-tools.exe'
       }.freeze
 
       class Azure

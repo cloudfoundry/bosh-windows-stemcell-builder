@@ -15,6 +15,7 @@ module Packer
         [
           Provisioners::CLEAR_DISK,
           Provisioners::COMPRESS_DISK,
+          Provisioners::GET_LOG,
           Provisioners::CLEAR_PROVISIONER
         ]
       end

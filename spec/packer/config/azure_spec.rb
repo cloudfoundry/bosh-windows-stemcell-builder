@@ -70,6 +70,7 @@ describe Packer::Config::Azure do
           #Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
           Packer::Config::Provisioners::CLEAR_DISK,
           Packer::Config::Provisioners::COMPRESS_DISK,
+          Packer::Config::Provisioners::GET_LOG,
           Packer::Config::Provisioners::CLEAR_PROVISIONER,
           Packer::Config::Provisioners::Azure::SYSPREP_SHUTDOWN
         ].flatten
