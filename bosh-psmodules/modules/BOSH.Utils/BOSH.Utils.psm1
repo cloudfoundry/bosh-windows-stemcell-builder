@@ -73,7 +73,5 @@ function Clear-Provisioner {
       if (Test-Path $Dir) {
          Throw "Unable to clean provisioner: $Dir"
       }
-   } else {
-      Throw "Missing provisioner dir: $Dir"
    }
 }
