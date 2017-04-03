@@ -46,7 +46,7 @@ module Packer
           Provisioners::BOSH_PSMODULES,
           Provisioners::NEW_PROVISIONER,
           Provisioners.install_windows_updates(@administrator_password).freeze,
-          Provisioners::GET_LOG
+          Provisioners::CLEAR_PROVISIONER
         ].flatten
       end
     end
@@ -97,7 +97,8 @@ module Packer
           Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::CLEANUP_TEMP_DIRS,
           Provisioners::CLEANUP_ARTIFACTS,
-          Provisioners::COMPRESS_DISK
+          Provisioners::COMPRESS_DISK,
+          Provisioners::CLEAR_PROVISIONER
         ].flatten
       end
     end

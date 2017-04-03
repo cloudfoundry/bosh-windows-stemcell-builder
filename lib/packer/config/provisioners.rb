@@ -81,10 +81,16 @@ module Packer
         'inline' => ['Compress-Disk']
       }.freeze
 
-      GET_LOG = {
-        'type' => 'powershell',
-        'inline' => ['Get-Log']
-      }.freeze
+      CLEAR_PROVISIONER = [
+        {
+          'type' => 'powershell',
+          'inline' => ['Get-Log']
+        },
+        {
+          'type' => 'powershell',
+          'inline' => ['Clear-Provisioner']
+        }
+      ].freeze
 
       ##TO BE KEPT ^^^^
 

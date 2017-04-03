@@ -59,7 +59,7 @@ describe Packer::Config do
             Packer::Config::Provisioners::BOSH_PSMODULES,
             Packer::Config::Provisioners::NEW_PROVISIONER,
             Packer::Config::Provisioners.install_windows_updates('password'),
-            Packer::Config::Provisioners::GET_LOG
+            Packer::Config::Provisioners::CLEAR_PROVISIONER
           ].flatten
         )
       end
@@ -130,7 +130,8 @@ describe Packer::Config do
             Packer::Config::Provisioners.download_windows_updates('output_directory'),
             Packer::Config::Provisioners::CLEANUP_TEMP_DIRS,
             Packer::Config::Provisioners::CLEANUP_ARTIFACTS,
-            Packer::Config::Provisioners::COMPRESS_DISK
+            Packer::Config::Provisioners::COMPRESS_DISK,
+            Packer::Config::Provisioners::CLEAR_PROVISIONER,
           ].flatten
         )
       end

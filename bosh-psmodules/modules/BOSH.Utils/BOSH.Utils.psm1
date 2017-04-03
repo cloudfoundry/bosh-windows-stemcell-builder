@@ -21,6 +21,18 @@ function Write-Log {
    Write-Host $msg
 }
 
+function Get-Log {
+   Param (
+   [string]$LogFile="C:\\provision\\log.log"
+   )
+
+   if (Test-Path $LogFile) {
+      Get-Content -Path $LogFile
+   } else {
+      Throw "Missing log file: $LogFile"
+   }
+}
+
 function Open-Zip {
     param(
     [string]$ZipFile= $(Throw "Provide a ZipFile to extract"),
@@ -51,14 +63,17 @@ function New-Provisioner {
    New-Item -ItemType Directory -Path $Dir
 }
 
-function Get-Log {
-   Param (
-   [string]$LogFile="C:\\provision\\log.log"
+function Clear-Provisioner {
+   param(
+   [string]$Dir="C:\\provision"
    )
 
-   if (Test-Path $LogFile) {
-      Get-Content -Path $LogFile
+   if (Test-Path $Dir) {
+      Remove-Item -Path $Dir -Recurse -Force
+      if (Test-Path $Dir) {
+         Throw "Unable to clean provisioner: $Dir"
+      }
    } else {
-      Throw "Missing log file: $LogFile"
+      Throw "Missing provisioner dir: $Dir"
    }
 }
