@@ -54,8 +54,6 @@ module Packer
         [
           Provisioners.install_agent('azure').freeze,
           Provisioners::Azure.create_admin(@admin_password).freeze,
-          Provisioners::INSTALL_CF_FEATURES,
-          Provisioners::PROTECT_CF_CELL,
           #Provisioners.download_windows_updates(@output_directory).freeze,
         ] <<
         Base.instance_method(:post_provisioners).bind(self).call <<

@@ -39,8 +39,6 @@ module Packer
         ( Base.instance_method(:pre_provisioners).bind(self).call <<
         [
           Provisioners.install_agent('aws').freeze,
-          Provisioners::INSTALL_CF_FEATURES,
-          Provisioners::PROTECT_CF_CELL,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::SET_EC2_PASSWORD,
         ] <<

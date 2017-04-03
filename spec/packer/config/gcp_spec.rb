@@ -42,9 +42,9 @@ describe Packer::Config::Gcp do
         [
           Packer::Config::Provisioners::BOSH_PSMODULES,
           Packer::Config::Provisioners::NEW_PROVISIONER,
-          Packer::Config::Provisioners.install_agent("gcp"),
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners::PROTECT_CF_CELL,
+          Packer::Config::Provisioners.install_agent("gcp"),
           Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
           Packer::Config::Provisioners::CLEAR_DISK,
           Packer::Config::Provisioners::COMPRESS_DISK,

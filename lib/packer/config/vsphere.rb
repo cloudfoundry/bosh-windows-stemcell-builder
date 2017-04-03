@@ -90,8 +90,6 @@ module Packer
           Provisioners::VMX_STEMCELL_SYSPREP,
           Provisioners::RUN_POLICIES,
           Provisioners.install_agent('vsphere').freeze,
-          Provisioners::INSTALL_CF_FEATURES,
-          Provisioners::PROTECT_CF_CELL,
           Provisioners.download_windows_updates(@output_directory).freeze,
         ] <<
         Base.instance_method(:post_provisioners).bind(self).call).flatten

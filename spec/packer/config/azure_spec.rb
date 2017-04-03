@@ -63,10 +63,10 @@ describe Packer::Config::Azure do
         [
           Packer::Config::Provisioners::BOSH_PSMODULES,
           Packer::Config::Provisioners::NEW_PROVISIONER,
-          Packer::Config::Provisioners.install_agent('azure'),
-          Packer::Config::Provisioners::Azure.create_admin('some-admin-password'),
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners::PROTECT_CF_CELL,
+          Packer::Config::Provisioners.install_agent('azure'),
+          Packer::Config::Provisioners::Azure.create_admin('some-admin-password'),
           #Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
           Packer::Config::Provisioners::CLEAR_DISK,
           Packer::Config::Provisioners::COMPRESS_DISK,
