@@ -68,7 +68,7 @@ describe Packer::Config::Azure do
             Packer::Config::Provisioners::INSTALL_CF_FEATURES,
             Packer::Config::Provisioners::PROTECT_CF_CELL,
             Packer::Config::Provisioners::CLEANUP_WINDOWS_FEATURES,
-            Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
+            #Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
             Packer::Config::Provisioners::CLEANUP_ARTIFACTS,
             Packer::Config::Provisioners::Azure::SYSPREP_SHUTDOWN
         ].flatten

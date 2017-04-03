@@ -58,7 +58,7 @@ module Packer
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners::PROTECT_CF_CELL,
           Provisioners::CLEANUP_WINDOWS_FEATURES,
-          Provisioners.download_windows_updates(@output_directory).freeze,
+          #Provisioners.download_windows_updates(@output_directory).freeze,
           Provisioners::CLEANUP_ARTIFACTS,
           Provisioners::Azure::SYSPREP_SHUTDOWN
         ].flatten
