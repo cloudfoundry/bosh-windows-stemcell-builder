@@ -1,4 +1,4 @@
-### Windows Stemcell Builder Setup
+### Stemcell builder with concourse
 
 Instructions for setting up a Windows Concourse worker for building vSphere stemcells.
 
@@ -7,16 +7,10 @@ Instructions for setting up a Windows Concourse worker for building vSphere stem
 	2. At least 200GB of disk space (more is better)
 
 ## Software Requirements
-	1. VMware Workstation Pro
-	  - Add ovftool to the path `C:\Program Files (x86)\VMware\VMware Workstation\ovftool`
-	2. [Ruby](https://rubyinstaller.org/)
-	  - Make sure Ruby is on the system PATH (aka install for all users)
-	  - Bundler `gem install bundler`
-	3. [WinSW v2 or greater (WinSW.NET4.exe)](https://github.com/kohsuke/winsw)
-	4. [concourse_windows_amd64.exe](http://concourse.ci/downloads.html)
-	5. [Packer](https://www.packer.io/downloads.html)
-	6. [tar.exe](https://s3.amazonaws.com/bosh-windows-dependencies/tar-1490035387.exe) (?)
-	5. Golang (?)
+	1. [See create-manual-vsphere-stemcells](create-manual-vsphere-stemcells.md)
+	1. [Packer](https://www.packer.io/downloads.html)
+	1. [concourse_windows_amd64.exe](http://concourse.ci/downloads.html)
+	1. [WinSW v2 or greater (WinSW.NET4.exe)](https://github.com/kohsuke/winsw)
 
 ## Install Concourse Worker
 	1. Create the following directories: C:\containers, C:\concourse, C:\vmx-data
