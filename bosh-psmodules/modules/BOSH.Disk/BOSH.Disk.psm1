@@ -18,7 +18,7 @@ function Clear-Disk {
 
     $TempPath = "C:\\Windows\\Temp"
     Write-Log "Removing temp files under $TempPath"
-    Get-ChildItem -Path  |
+    Get-ChildItem -Path $TempPath  |
         Select-Object -expandproperty fullname |
         Remove-Item -Force -Recurse -ErrorAction Ignore
     Write-Log "Removed temp files under $TempPath"
