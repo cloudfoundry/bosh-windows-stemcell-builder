@@ -33,4 +33,14 @@ Describe "Open-Zip" {
     }
 }
 
+Describe "Get-Log" {
+    Context "when missing log file" {
+        It "throws" {
+            $dir = (New-TempDir)
+            $logFile = (Join-Path $dir "log.log")
+            { Get-Log -LogFile $logFile } | Should Throw "Missing log file: $logFile"
+        }
+    }
+}
+
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore

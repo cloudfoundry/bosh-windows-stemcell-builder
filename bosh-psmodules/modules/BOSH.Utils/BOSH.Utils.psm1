@@ -50,3 +50,15 @@ function New-Provisioner {
    }
    New-Item -ItemType Directory -Path $Dir
 }
+
+function Get-Log {
+   Param (
+   [string]$LogFile="C:\\provision\\log.log"
+   )
+
+   if (Test-Path $LogFile) {
+      Get-Content -Path $LogFile
+   } else {
+      Throw "Missing log file: $LogFile"
+   }
+}

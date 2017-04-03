@@ -50,7 +50,6 @@ module Packer
         ]
       end
 
-
       BOSH_PSMODULES = [
         {
           'type' => 'file',
@@ -84,7 +83,7 @@ module Packer
 
       GET_LOG = {
         'type' => 'powershell',
-        'inline' => ['if (Test-Path C:\\provision\\log.log) { Get-Content -Path C:\\provision\\log.log } else { Write-Host "Missing log file" }']
+        'inline' => ['Get-Log']
       }.freeze
 
       ##TO BE KEPT ^^^^
