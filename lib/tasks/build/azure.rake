@@ -34,5 +34,7 @@ namespace :build do
     )
 
     azure_builder.build
+    puts "bosh-windows-stemcell:"
+    puts `ls #{output_directory}`
   end
 end
