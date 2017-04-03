@@ -1,6 +1,10 @@
 EMPTY_FILE_SHA = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
 require 'zip'
 
+# Mock web requests
+require 'webmock/rspec'
+WebMock.disable_net_connect!(allow_localhost: true)
+
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true

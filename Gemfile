@@ -6,3 +6,5 @@ gem 'aws-sdk'
 gem 'nokogiri'
 gem 'rubyzip'
 gem 'timecop'
+gem 'guard-rspec', require: false
+gem 'webmock'
