@@ -37,8 +37,8 @@ module Packer
 
       def provisioners
         [
-          Provisioners::NEW_PROVISIONER,
           Provisioners::BOSH_PSMODULES,
+          Provisioners::NEW_PROVISIONER,
           Provisioners.install_agent('aws').freeze,
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners::PROTECT_CF_CELL,

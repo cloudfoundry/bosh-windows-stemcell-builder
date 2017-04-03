@@ -39,3 +39,14 @@ function Open-Zip {
         Remove-Item -Path $ZipFile -Force
     }
 }
+
+function New-Provisioner {
+   param(
+   [string]$Dir="C:\\provision"
+   )
+
+   if (Test-Path $Dir) {
+      Remove-Item -Path $Dir -Recurse -Force
+   }
+   New-Item -ItemType Directory -Path $Dir
+}

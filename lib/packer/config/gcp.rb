@@ -37,8 +37,8 @@ module Packer
       def provisioners
         [
           Provisioners::INCREASE_WINRM_LIMITS,
-          Provisioners::NEW_PROVISIONER,
           Provisioners::BOSH_PSMODULES,
+          Provisioners::NEW_PROVISIONER,
           Provisioners.install_agent('gcp').freeze,
           Provisioners::INSTALL_CF_FEATURES,
           Provisioners::PROTECT_CF_CELL,

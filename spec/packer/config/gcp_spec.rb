@@ -41,8 +41,8 @@ describe Packer::Config::Gcp do
       expect(provisioners).to eq(
         [
           Packer::Config::Provisioners::INCREASE_WINRM_LIMITS,
-          Packer::Config::Provisioners::NEW_PROVISIONER,
           Packer::Config::Provisioners::BOSH_PSMODULES,
+          Packer::Config::Provisioners::NEW_PROVISIONER,
           Packer::Config::Provisioners.install_agent("gcp"),
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners::PROTECT_CF_CELL,

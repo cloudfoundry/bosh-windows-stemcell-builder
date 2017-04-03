@@ -43,8 +43,8 @@ module Packer
 
       def provisioners
         [
-          Provisioners::NEW_PROVISIONER,
           Provisioners::BOSH_PSMODULES,
+          Provisioners::NEW_PROVISIONER,
           Provisioners.install_windows_updates(@administrator_password).freeze,
           Provisioners::GET_LOG
         ].flatten
@@ -85,8 +85,8 @@ module Packer
 
       def provisioners
         [
-          Provisioners::NEW_PROVISIONER,
           Provisioners::BOSH_PSMODULES,
+          Provisioners::NEW_PROVISIONER,
           Provisioners::LGPO_EXE,
           Provisioners::VMX_STEMCELL_SYSPREP,
           Provisioners::RUN_POLICIES,

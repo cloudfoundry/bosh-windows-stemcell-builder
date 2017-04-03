@@ -51,8 +51,8 @@ module Packer
 
       def provisioners
         [
-          Provisioners::NEW_PROVISIONER,
           Provisioners::BOSH_PSMODULES,
+          Provisioners::NEW_PROVISIONER,
           Provisioners.install_agent('azure').freeze,
           Provisioners::Azure.create_admin(@admin_password).freeze,
           Provisioners::INSTALL_CF_FEATURES,

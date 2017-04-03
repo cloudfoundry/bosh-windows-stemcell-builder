@@ -43,8 +43,8 @@ describe Packer::Config::Aws do
       provisioners = Packer::Config::Aws.new('', '', [], 'some-output-directory').provisioners
       expect(provisioners).to eq(
         [
-          Packer::Config::Provisioners::NEW_PROVISIONER,
           Packer::Config::Provisioners::BOSH_PSMODULES,
+          Packer::Config::Provisioners::NEW_PROVISIONER,
           Packer::Config::Provisioners.install_agent('aws'),
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
           Packer::Config::Provisioners::PROTECT_CF_CELL,

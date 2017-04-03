@@ -50,13 +50,6 @@ module Packer
         ]
       end
 
-      NEW_PROVISIONER = {
-        'type' => 'powershell',
-        'inline' => [
-          'if (Test-Path C:\\provision) { Remove-Item -Path C:\\provision -Recurse -Force }',
-          'New-Item -ItemType Directory -Path C:\\provision'
-        ]
-      }.freeze
 
       BOSH_PSMODULES = [
         {
@@ -68,6 +61,11 @@ module Packer
           'scripts' => ['scripts/install-bosh-psmodules.ps1']
         }
       ].freeze
+
+      NEW_PROVISIONER = {
+        'type' => 'powershell',
+        'inline' => ['New-Provisioner']
+      }.freeze
 
       INSTALL_CF_FEATURES = {
         'type' => 'powershell',

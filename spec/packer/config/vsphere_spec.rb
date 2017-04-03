@@ -56,8 +56,8 @@ describe Packer::Config do
 
         expect(provisioners).to eq(
           [
-            Packer::Config::Provisioners::NEW_PROVISIONER,
             Packer::Config::Provisioners::BOSH_PSMODULES,
+            Packer::Config::Provisioners::NEW_PROVISIONER,
             Packer::Config::Provisioners.install_windows_updates('password'),
             Packer::Config::Provisioners::GET_LOG
           ].flatten
@@ -118,8 +118,8 @@ describe Packer::Config do
         ).provisioners
         expect(provisioners).to eq(
           [
-            Packer::Config::Provisioners::NEW_PROVISIONER,
             Packer::Config::Provisioners::BOSH_PSMODULES,
+            Packer::Config::Provisioners::NEW_PROVISIONER,
             Packer::Config::Provisioners::LGPO_EXE,
             Packer::Config::Provisioners::VMX_STEMCELL_SYSPREP,
             Packer::Config::Provisioners::RUN_POLICIES,
