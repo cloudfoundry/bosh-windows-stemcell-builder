@@ -4,18 +4,18 @@ require 'uri'
 module Stemcell
 	module Publisher
 		class Azure
-			def self.publish(vm_to_add, api_key, url)
+			def self.publish(vm_to_add, api_key, url, sku_string)
 				offer_data = obtain_offer_data(url, api_key)
-				update_body = self.json(offer_data, vm_to_add)
+				update_body = self.json(offer_data, vm_to_add, sku_string)
 				update_offer(url, update_body, api_key)
 				stage_offer(url, api_key)
 			end
 
-			def self.json(response_string, vm_to_add)
+			def self.json(response_string, vm_to_add, sku_string)
 				response_json = JSON.parse(response_string)
 				json = response_json['Offer']
 
-				vm_images = json['VirtualMachineImagesByServicePlan']['2012r2']['VirtualMachineImages']
+				vm_images = json['VirtualMachineImagesByServicePlan'][sku_string]['VirtualMachineImages']
 				converted_vm_to_add = {
 					'VersionId' => vm_to_add[:version],
 					'VersionLabel' => vm_to_add[:version],

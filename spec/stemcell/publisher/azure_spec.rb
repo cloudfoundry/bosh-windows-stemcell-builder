@@ -116,7 +116,8 @@ describe Stemcell::Publisher::Azure do
 	describe '.json' do
 		before(:each) do
 			vm_to_add = {version: 'some-version', image_url: 'some-image-url'}
-			@actual = Stemcell::Publisher::Azure::json(response, vm_to_add)
+			sku_string = '2012r2'
+			@actual = Stemcell::Publisher::Azure::json(response, vm_to_add, sku_string)
 		end
 
 		it 'contains the Offer contents' do
@@ -148,6 +149,7 @@ describe Stemcell::Publisher::Azure do
 				'Content-Type': 'application/json'
 			}
 			@vm_to_add = {version: 'some-version', image_url: 'some-image-url'}
+			@sku_string = '2012r2'
 			stub_request(:get, @url).
 				with(headers: @headers).
 				to_return(status: 200, body: response, headers: {})
@@ -156,14 +158,14 @@ describe Stemcell::Publisher::Azure do
 		end
 
 		it 'does not print the API key to stdout or stderr' do
-			expect{Stemcell::Publisher::Azure::publish(@vm_to_add, @api_key, @url)}.
+			expect{Stemcell::Publisher::Azure::publish(@vm_to_add, @api_key, @url, @sku_string)}.
 				to_not output(/#{@api_key}/).to_stdout
-			expect{Stemcell::Publisher::Azure::publish(@vm_to_add, @api_key, @url)}.
+			expect{Stemcell::Publisher::Azure::publish(@vm_to_add, @api_key, @url, @sku_string)}.
 				to_not output(/#{@api_key}/).to_stderr
 		end
 
 		it 'invokes the Azure publisher API' do
-			Stemcell::Publisher::Azure::publish(@vm_to_add, @api_key, @url)
+			Stemcell::Publisher::Azure::publish(@vm_to_add, @api_key, @url, @sku_string)
 
 			assert_requested(:get, @url) do |req|
 				headers = req.headers
@@ -180,7 +182,7 @@ describe Stemcell::Publisher::Azure do
 				(headers['Content-Type'] == 'application/json')
 
 				body = req.body
-				expected_body = URI.encode_www_form(Stemcell::Publisher::Azure::json(response, @vm_to_add))
+				expected_body = URI.encode_www_form(Stemcell::Publisher::Azure::json(response, @vm_to_add, @sku_string))
 				body == expected_body
 			end
 			assert_requested(:post, @url+'stage') do |req|
