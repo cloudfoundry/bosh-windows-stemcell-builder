@@ -1,5 +1,6 @@
 require 'rspec/core/rake_task'
 require 'json'
+require_relative '../../stemcell/publisher/azure'
 
 require_relative '../../exec_command'
 
