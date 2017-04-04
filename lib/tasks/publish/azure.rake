@@ -12,7 +12,8 @@ namespace :publish do
 
     container_root = File.expand_path('../../../../..', __FILE__)
     version = File.read(File.join(container_root, 'version', 'number')).chomp
-    image_url = File.read(File.join(container_root, 'azure-base-vhd-uri', '*.txt')).chomp
+    uri_filename = "bosh-stemcell-*-azure-vhd-uri.txt"
+    image_url = File.read(Dir.glob(File.join(container_root, 'azure-base-vhd-uri', uri_filename)).first).chomp
 
     vm_to_add = {version: version, image_url: image_url}
 
