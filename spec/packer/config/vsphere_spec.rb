@@ -128,7 +128,6 @@ describe Packer::Config do
             Packer::Config::Provisioners.download_windows_updates('output_directory'),
             Packer::Config::Provisioners::CLEAR_DISK,
             Packer::Config::Provisioners::COMPRESS_DISK,
-            Packer::Config::Provisioners::GET_LOG,
             Packer::Config::Provisioners::CLEAR_PROVISIONER,
           ].flatten
         )
