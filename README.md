@@ -1,49 +1,66 @@
 # BOSH Windows Stemcell Builder [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
 
-This repo contains a set of scripts for automating the process of building BOSH Windows Stemcells. A [Concourse](http://concourse.ci/) [pipeline](https://github.com/cloudfoundry-incubator/greenhouse-ci/blob/master/bosh-windows-stemcells.yml) for the supported platforms (AWS, vSphere) can be found [here](https://main.bosh-ci.cf-app.com/pipelines/windows-stemcells).
+This repo contains a set of scripts for automating the process of building BOSH Windows Stemcells.
 
-### Dependencies
+#### Dependencies
 
-* [ovftool](https://www.vmware.com/support/developer/ovf/)
-* [Windows ISO](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2012-r2)
-* [Windows Update PowerShell Module](https://gallery.technet.microsoft.com/scriptcenter/2d191bcd-3308-4edd-9de2-88dff796b0bc)
-* [Packer](https://www.packer.io) version [v0.12.0](https://releases.hashicorp.com/packer/0.12.0/)
+* [Ruby](https://www.ruby-lang.org/en/downloads/) Latest 2.3.x version
+* [Golang](https://golang.org/dl/) Latest 1.8.x compiler
+* [Packer](https://www.packer.io) version [v0.12.0](https://releases.hashicorp.com/packer/0.12.0/) for concourse automation
 
-#### Remotely fetched resources
+#### Install
 
-The below binaries are downloaded as part of the provisioning process.
+```
+gem install bundler
+bundle install
+```
 
-* [VMware Tools](https://packages.vmware.com/tools/esx/6.0latest/windows/x64/VMware-tools-10.0.9-3917699-x86_64.exe)
+#### Commands
+```
+rake build:aws                                                                 # Build AWS Stemcell
+rake build:azure                                                               # Build Azure Stemcell
+rake build:gcp                                                                 # Build GCP Stemcell
+rake build:vsphere                                                             # Build VSphere Stemcell
+rake build:vsphere_add_updates                                                 # Apply Windows Updates for VMX
 
-#### Notes
+rake package:agent                                                             # Package BOSH Agent and dependencies into agent.zip
+rake package:bwats                                                             # package bosh-windows-acceptance-tests (BWATS) config.json
+rake package:psmodules                                                         # Package BOSH psmodules into bosh-psmodules.zip
+rake package:vsphere_ova[ova_file_name,output_directory,version,updates_path]  # Package VSphere OVA files into Stemcells
 
-If the build fails, manual deletion of the `packer-vmware-iso` VM and `packer-vmware-iso` datastore directory may be required.
+rake run:bwats[iaas]                                                           # Run bosh-windows-acceptance-tests (BWATS)
+```
 
-Known working version of Concourse is [v1.6.0](http://concourse.ci/downloads.html#v160).
+Instructions for building a manual stemcell for vSphere can be found in the [manual instructions](create-manual-vsphere-stemcells.md).
+
+#### Running the tests
+```
+bundle exec rspec
+```
 
 ### Testing stemcell with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests)
 
-  ##### Requirements
+##### Requirements
 
-  * Latest stable [bosh-cli](https://bosh.io/docs/cli-v2.html)
-  * [Golang](https://golang.org/dl/) Latest 1.8.x compiler
+* Latest stable [bosh-cli](https://bosh.io/docs/cli-v2.html)
+* [Golang](https://golang.org/dl/) Latest 1.8.x compiler
 
-  Set the following environment variables:
+Set the following environment variables:
 
-  ##### [bosh-cli](https://github.com/cloudfoundry/bosh-cli) environment variables
-    - BOSH_TARGET: IP of your BOSH director
-    - BOSH_CLIENT:
-    - BOSH_CLIENT_SECRET:
-    - BOSH_CA_CERT: (not a file name, but the actual cert itself)
-    - BOSH_UUID:
+##### [bosh-cli](https://github.com/cloudfoundry/bosh-cli) environment variables
+- BOSH_TARGET: IP of your BOSH director
+- BOSH_CLIENT:
+- BOSH_CLIENT_SECRET:
+- BOSH_CA_CERT: (not a file name, but the actual cert itself)
+- BOSH_UUID:
 
-  ##### Stemcell to test
-    - STEMCELL_PATH: Path to stemcell tarball
+##### Stemcell to test
+- STEMCELL_PATH: Path to stemcell tarball
 
-  ##### Match with [cloud config](https://bosh.io/docs/cloud-config.html)
-    - AZ:
-    - VM_TYPE:
-    - NETWORK:
+##### Match with [cloud config](https://bosh.io/docs/cloud-config.html)
+- AZ:
+- VM_TYPE:
+- NETWORK:
 
 Run BWATS:
 
