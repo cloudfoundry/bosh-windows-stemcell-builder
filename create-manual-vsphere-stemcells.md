@@ -1,4 +1,4 @@
-# Creating a vCenter/vSphere Stemcell by Hand
+# Creating a vSphere Stemcell by Hand
 
 ## Introduction
 
