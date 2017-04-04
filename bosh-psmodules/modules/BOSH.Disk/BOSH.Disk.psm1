@@ -16,20 +16,6 @@ function Compress-Disk {
 function Clear-Disk {
     Write-Log "Starting to clear disk"
 
-    $TempPath = "C:\\Windows\\Temp"
-    Write-Log "Removing temp files under $TempPath"
-    Get-ChildItem -Path $TempPath  |
-        Select-Object -expandproperty fullname |
-        Remove-Item -Force -Recurse -ErrorAction Ignore
-    Write-Log "Removed temp files under $TempPath"
-
-    $TempPath= [System.IO.Path]::GetTempPath()
-    Write-Log "Removing temp files under $TempPath"
-    Get-ChildItem -Path $TempPath |
-        Select-Object -expandproperty fullname |
-        Remove-Item -Force -Recurse -ErrorAction Ignore
-    Write-Log "Removed temp files under $TempPath"
-
     Get-WindowsFeature -Name 'Powershell-ISE' | Remove-WindowsFeature
     Get-WindowsFeature |
     ? { $_.InstallState -eq 'Available' } |

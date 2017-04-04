@@ -41,7 +41,7 @@ function WindowsFeatureInstall {
 function enable-rdp {
   Write-Log "Starting to enable RDP"
   Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
-	Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -enabled true
+  Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -enabled true
   Write-Log "Enabled RDP"
 }
 
