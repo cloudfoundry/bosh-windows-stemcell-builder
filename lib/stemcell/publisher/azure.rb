@@ -7,16 +7,16 @@ module Stemcell
 			def self.publish(vm_to_add, api_key, url, sku_string)
 				response = obtain_offer_data(url, api_key)
 				if response.code != '200'
-					raise "could not obtain offer data. expected 200 but got '#{response.code}' additional info: #{response.body} "
+					raise "could not obtain offer data. expected 200 but got '#{response.code}'"
 				end
 				update_body = self.json(response.body, vm_to_add, sku_string)
 				response = update_offer(url, update_body, api_key)
 				if response.code != '200'
-					raise "could not update offer data. expected 200 but got '#{response.code}' additional info: #{response.body} "
+					raise "could not update offer data. expected 200 but got '#{response.code}'"
 				end
 				response = stage_offer(url, api_key)
 				if response.code != '200'
-					raise "could not stage offer. expected 200 but got '#{response.code}' additional info: #{response.body} "
+					raise "could not stage offer. expected 200 but got '#{response.code}'"
 				end
 			end
 
