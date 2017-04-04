@@ -146,7 +146,8 @@ rake package:psmodules
 - On your windows VM, start `powershell` and run `Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>`
 
 ## (Optional) Apply security policies and sysprep
-Either:
+
+This step is recommended, but not necessary. Power off the VM if none of the options below is applicable.
 
 **1)** If you would like to enable the recommended local security policy without running sysprep:
 
@@ -160,7 +161,7 @@ Or:
 
   - Download [lgpo.exe](https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip) to the Windows VM you are provisioning and save `lgpo.exe` to `C:\Windows\lgpo.exe`
   - Run the following powershell command `Invoke-Sysprep -NewPassword <NEW_PASSWORD> -ProductKey <PRODUCT_KEY> -Owner <OWNER> -Organization <ORGANIZATION>`
-  - This will shutdown the machine
+  - This will power off the VM
 
 ## Step 5: Export image to OVA format
 
