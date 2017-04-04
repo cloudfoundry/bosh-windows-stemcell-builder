@@ -10,7 +10,7 @@ namespace :publish do
     SKU = ENV['SKU']
     API_KEY = ENV['API_KEY']
 
-    container_root = File.expand_path('../../..', __FILE__)
+    container_root = File.expand_path('../../../../..', __FILE__)
     version = File.read(File.join(container_root, 'version', 'number')).chomp
     image_url = File.read(File.join(container_root, 'azure-base-vhd-uri', '*.txt')).chomp
 
