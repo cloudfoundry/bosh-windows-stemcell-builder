@@ -7,6 +7,11 @@ This document describes using VMware Workstation, VMware Fusion, and vCenter to 
 dependencies and then create a `.tgz` file that can be uploaded to your BOSH director and used
 with Cloud Foundry.
 
+**NOTE** This process is based on the fact that the operator is maintaining an updated template with all Windows recommended
+security updates. You can determine if your image needs updates by creating a VM with the image and going to control panel.
+If any critical or important updates are available we recommend installing updates first, then rebuilding the stemcell.
+Every release of this repo includes a file `updates.txt` that lists the currently recommended `KB` Microsoft hotfixes to have installed.
+
 ### Dependencies
 
 You will need:
@@ -128,25 +133,38 @@ rake package:psmodules
 - Transfer `build/bosh-psmodules.zip` to your Windows VM (Note: you can just drag and drop files if you have installed VMware tools in your VM)
 - Unzip the zip file and copy the `BOSH.*` folders to `C:\Program Files\WindowsPowerShell\Modules`
 
-## Step 3: Build & Install BOSH Agent
+## Step 3: Install CloudFoundry Cell requirements
+
+- On your windows VM, start `powershell` and run `Install-CFFeatures`
+- **Optional** If you would like to apply the recommended ingress and service configuration:
+    - Run the following powershell command `Protect-CFCell`
+
+## Step 4: Build & Install BOSH Agent
 
 - On your host (NOT in the VM for your stemcell), run `rake package:agent`
 - Transfer `build/agent.zip` to your Windows VM.
 - On your windows VM, start `powershell` and run `Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>`
 
-## Step 4: Install CloudFoundry Cell requirements
+## (Optional) Apply security policies and sysprep
+Either:
 
-- On your windows VM, start `powershell` and run `Install-CFFeatures`
-- **Optional** If you would like to enable the recommended local security policy:
-    - Download [lgpo.exe](https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip) to the Windows VM you are provisioning
-    - Run the following powershell command `Enable-LocalSecurityPolicy -LgpoExe <PATH-TO-LGPO-EXE> -PolicyDestination "C:\bosh\lgpo"`
-- **Optional** If you would like to apply the recommended ingress and service configuration:
-    - Run the following powershell command `Protect-CFCell`
-- Power off your VM
+**1)** If you would like to enable the recommended local security policy without running sysprep:
+
+  - Download [lgpo.exe](https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip) to the Windows VM you are provisioning
+  - Run the following powershell command `Enable-LocalSecurityPolicy -LgpoExe <PATH-TO-LGPO-EXE> -PolicyDestination "C:\bosh\lgpo"`
+  - Power off your VM
+
+Or:
+
+**2)** If you would like to run the recommended sysprep:
+
+  - Download [lgpo.exe](https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip) to the Windows VM you are provisioning and save `lgpo.exe` to `C:\Windows\lgpo.exe`
+  - Run the following powershell command `Invoke-Sysprep -NewPassword <NEW_PASSWORD> -ProductKey <PRODUCT_KEY> -Owner <OWNER> -Organization <ORGANIZATION>`
+  - This will shutdown the machine
 
 ## Step 5: Export image to OVA format
 
-If you are using VMware Fusion or Workstation, locate the directory that has your VM's `.vmx` file. This defaults to
+If you are using VMware Fusion or Workstation, after powering off the VM locate the directory that has your VM's `.vmx` file. This defaults to
 the `Documents\\Virtual Machines\\VM-name\\VM-name.vmx` path in your user's home directory.
 Otherwise simply right click on the VM to find its location.
 
@@ -166,3 +184,4 @@ rake package:vsphere_ova[./build/image.ova,./build/stemcell,1035.0.0]
 ```
 
 NOTE: The OVA filename and destination path cannot currently have spaces in them (this will be fixed).
+
