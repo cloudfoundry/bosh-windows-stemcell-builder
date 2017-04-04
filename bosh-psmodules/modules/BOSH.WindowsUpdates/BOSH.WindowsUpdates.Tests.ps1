@@ -4,11 +4,20 @@ Import-Module ./BOSH.WindowsUpdates.psm1
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
 Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 
-Describe "List-Updates" {
+Describe "List-InstalledUpdates" {
     It "lists updates" {
-       $result = List-Updates
+       $result = List-InstalledUpdates
+       write-host $result
        $result.Length | Should BeGreaterThan 0
        $result[0] | Should BeLike 'KB*'
+    }
+
+    Context "when installed updates cannot be found" {
+        Mock -Module BOSH.WindowsUpdates Search-InstalledUpdates { Throw "Failed to find installed updates" }
+
+        It "throws" {
+            { List-InstalledUpdates } | Should Throw "Could not find any installed updates"
+        }
     }
 }
 

@@ -25,7 +25,7 @@ module Packer
         return [
           {
             'type' => 'powershell',
-            'inline' => 'List-Updates | Out-File -FilePath "C:\\updates.txt" -Encoding ASCII'
+            'inline' => 'List-InstalledUpdates | Out-File -FilePath "C:\\updates.txt" -Encoding ASCII'
           },
           {
             'type' => 'file',
