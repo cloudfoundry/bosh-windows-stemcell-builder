@@ -13,7 +13,6 @@ module Packer
       end
       def post_provisioners
         [
-          Provisioners::CLEAR_DISK,
           Provisioners::COMPRESS_DISK,
           Provisioners::CLEAR_PROVISIONER
         ]
