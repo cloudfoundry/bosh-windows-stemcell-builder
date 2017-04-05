@@ -16,8 +16,8 @@ module Stemcell
 					raise "could not update offer data. expected 200 but got '#{response.code}'"
 				end
 				response = stage_offer(url, api_key)
-				if response.code != '200'
-					raise "could not stage offer. expected 200 but got '#{response.code}'"
+				if response.code != '202'
+					raise "could not stage offer. expected 202 but got '#{response.code}'"
 				end
 			end
 
@@ -36,7 +36,7 @@ module Stemcell
 
 				converted_vm_to_add = {
 					'VersionId' => new_version,
-					'VersionLabel' => vm_to_add[:version],
+					'VersionLabel' => new_version,
 					'OsImageUrl' => vm_to_add[:image_url],
 					'isLocked' => false,
 					'DataDiskUrlsByLunNumber' => {}
