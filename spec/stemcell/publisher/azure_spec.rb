@@ -130,11 +130,17 @@ describe Stemcell::Publisher::Azure do
 			expect(new_images.size).to eq(old_images.size+1)
 
 			new_vm = new_images.last
-			expect(new_vm['VersionId']).to eq('some-version')
 			expect(new_vm['VersionLabel']).to eq('some-version')
 			expect(new_vm['OsImageUrl']).to eq('some-image-url')
 			expect(new_vm['isLocked']).to eq(false)
 			expect(new_vm['DataDiskUrlsByLunNumber']).to eq({})
+		end
+
+		it 'bumps the version correctly' do
+			new_images = @actual['VirtualMachineImagesByServicePlan']['2012r2']['VirtualMachineImages']
+			new_vm = new_images.last
+
+			expect(new_vm['VersionId']).to eq('1.0.5')
 		end
 	end
 

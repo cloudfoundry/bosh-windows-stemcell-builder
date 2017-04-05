@@ -26,8 +26,16 @@ module Stemcell
 				json = response_json['Offer']
 
 				vm_images = json['VirtualMachineImagesByServicePlan'][sku_string]['VirtualMachineImages']
+				largest_version = vm_images.map do |x|
+					Gem::Version.new(x['VersionId'])
+				end.max.to_s
+
+				version_nums = largest_version.split '.'
+				new_patch = version_nums[2].to_i + 1
+				new_version = "#{version_nums[0]}.#{version_nums[1]}.#{new_patch}"
+
 				converted_vm_to_add = {
-					'VersionId' => vm_to_add[:version],
+					'VersionId' => new_version,
 					'VersionLabel' => vm_to_add[:version],
 					'OsImageUrl' => vm_to_add[:image_url],
 					'isLocked' => false,
