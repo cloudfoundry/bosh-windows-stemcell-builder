@@ -130,7 +130,6 @@ describe Stemcell::Publisher::Azure do
 			expect(new_images.size).to eq(old_images.size+1)
 
 			new_vm = new_images.last
-			expect(new_vm['VersionLabel']).to eq('some-version')
 			expect(new_vm['OsImageUrl']).to eq('some-image-url')
 			expect(new_vm['isLocked']).to eq(false)
 			expect(new_vm['DataDiskUrlsByLunNumber']).to eq({})
@@ -141,6 +140,7 @@ describe Stemcell::Publisher::Azure do
 			new_vm = new_images.last
 
 			expect(new_vm['VersionId']).to eq('1.0.5')
+			expect(new_vm['VersionLabel']).to eq('1.0.5')
 		end
 	end
 
@@ -160,7 +160,8 @@ describe Stemcell::Publisher::Azure do
 				with(headers: @headers).
 				to_return(status: 200, body: response, headers: {})
 			stub_request(:post, @url+'update')
-			stub_request(:post, @url+'stage')
+			stub_request(:post, @url+'stage').
+				to_return(status: 202)
 		end
 
 		it 'does not print the API key to stdout or stderr' do
