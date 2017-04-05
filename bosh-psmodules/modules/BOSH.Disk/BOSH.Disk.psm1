@@ -13,8 +13,8 @@ function Compress-Disk {
     Write-Log "Finished compressing disk"
 }
 
-function Clear-Disk {
-    Write-Log "Starting to clear disk"
+function Clean-Disk {
+    Write-Log "Starting to clean disk"
 
     Get-WindowsFeature -Name 'Powershell-ISE' | Remove-WindowsFeature
     Get-WindowsFeature |
@@ -33,7 +33,7 @@ function Clear-Disk {
         Write-Log "Error: Running Dism.exe /online /Cleanup-Image /SPSuperseded"
         Throw "Dism.exe failed"
     }
-    Write-Log "Finished clear disk"
+    Write-Log "Finished clean disk"
 }
 
 function DefragDisk {

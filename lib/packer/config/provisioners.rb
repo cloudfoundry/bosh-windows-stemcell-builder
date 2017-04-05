@@ -78,7 +78,7 @@ module Packer
 
       CLEAR_DISK = {
         'type' => 'powershell',
-        'inline' => ['Clear-Disk']
+        'inline' => ['Clean-Disk']
       }.freeze
 
       COMPRESS_DISK = {
