@@ -64,8 +64,9 @@ describe 'Azure' do
 
       Rake::Task['build:azure'].invoke
 
-      yesterday = (Time.now.utc - 1.day).iso8601
-      next_year = (Time.now.utc + 1.year).iso8601
+      now = Time.now.utc
+      yesterday = (now - 1.day).iso8601
+      next_year = (now + 1.year).iso8601
       vhd_uri = File.read(File.join(@output_directory, "bosh-stemcell-#{version}-azure-vhd-uri.txt"))
       vhd_domain = (vhd_uri.split '?')[0]
       vhd_param_string = (vhd_uri.split '?')[1]
