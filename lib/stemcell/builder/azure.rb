@@ -78,8 +78,9 @@ module Stemcell
           end.first.gsub("OSDiskUriReadOnlySas: ", "")
 
           domain = (url.split '?')[0]
-          next_year = Time.now.utc + 1.year
-          yesterday = Time.now.utc - 1.day
+          now = Time.now.utc
+          next_year = now + 1.year
+          yesterday = now - 1.day
           decoded_url = CGI.unescape(url)
           params = CGI.parse ((decoded_url.chomp.split '?')[1])
 
