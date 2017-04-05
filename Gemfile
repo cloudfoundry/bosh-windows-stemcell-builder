@@ -5,6 +5,7 @@ gem 'rake'
 gem 'aws-sdk'
 gem 'nokogiri'
 gem 'rubyzip'
-gem 'timecop'
+gem 'timecop', require:false
 gem 'guard-rspec', require: false
 gem 'webmock'
+gem 'activesupport'

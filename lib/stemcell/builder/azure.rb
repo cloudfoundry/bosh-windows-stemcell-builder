@@ -1,4 +1,6 @@
 require 'open-uri'
+require 'active_support'
+require 'active_support/core_ext'
 
 module Stemcell
   class Builder
@@ -71,9 +73,25 @@ module Stemcell
           unless line.include?("azure-arm,artifact,0") and line.include?("OSDiskUriReadOnlySas:")
             return
           end
-          (line.split '\n').select do |s|
+          url = (line.split '\n').select do |s|
             s.start_with?("OSDiskUriReadOnlySas: ")
           end.first.gsub("OSDiskUriReadOnlySas: ", "")
+
+          decoded_url = URI::decode(url)
+          domain = (decoded_url.split '?')[0]
+          next_year = Time.now.utc + 1.year
+          yesterday = Time.now.utc - 1.day
+
+          params = CGI.parse ((decoded_url.split '?')[1])
+
+          params['se']=next_year.iso8601
+          params['st']=yesterday.iso8601
+          params['sr']='c'
+          params['sp']='rl'
+
+          new_params = URI::decode params.to_query
+
+          domain + "?" + new_params
         end
     end
   end

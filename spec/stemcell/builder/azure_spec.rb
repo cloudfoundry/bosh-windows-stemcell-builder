@@ -22,7 +22,7 @@ describe Stemcell::Builder do
         manifest_contents = 'manifest_contents'
         apply_spec_contents = 'apply_spec_contents'
         packer_vars = {some_var: 'some-value'}
-        disk_image_url = 'some-disk-image-url'
+        disk_image_url = 'https://storageaccount.blob.core.windows.net/system/Microsoft.Compute/Images/bosh-stemcell-osDisk.blah.vhd?se=2017-05-04T21%3A53%3A11Z&sig=mysig&sp=r&sr=b&sv=2015-02-21'
         client_id = 'some-client-id'
         client_secret = 'some-client-secret'
         tenant_id = 'some-tenant-id'
