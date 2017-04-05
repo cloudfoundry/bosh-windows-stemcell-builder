@@ -1,5 +1,6 @@
 require 'net/http'
 require 'uri'
+require 'json'
 
 module Stemcell
 	module Publisher
@@ -33,7 +34,7 @@ module Stemcell
 					'DataDiskUrlsByLunNumber' => {}
 				}
 				vm_images.push(converted_vm_to_add)
-				json
+				json.to_json
 			end
 
 			# Helper Methods
@@ -62,7 +63,7 @@ module Stemcell
 			def self.update_offer(url, body, api_key)
 				uri = URI(url+'update')
 				req = Net::HTTP::Post.new(uri)
-				req.set_form_data(body)
+				req.body = body
 				add_headers!(req, api_key)
 
 				response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|

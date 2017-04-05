@@ -117,7 +117,7 @@ describe Stemcell::Publisher::Azure do
 		before(:each) do
 			vm_to_add = {version: 'some-version', image_url: 'some-image-url'}
 			sku_string = '2012r2'
-			@actual = Stemcell::Publisher::Azure::json(response, vm_to_add, sku_string)
+			@actual = JSON.parse(Stemcell::Publisher::Azure::json(response, vm_to_add, sku_string))
 		end
 
 		it 'contains the Offer contents' do
@@ -182,7 +182,7 @@ describe Stemcell::Publisher::Azure do
 				(headers['Content-Type'] == 'application/json')
 
 				body = req.body
-				expected_body = URI.encode_www_form(Stemcell::Publisher::Azure::json(response, @vm_to_add, @sku_string))
+				expected_body = Stemcell::Publisher::Azure::json(response, @vm_to_add, @sku_string)
 				body == expected_body
 			end
 			assert_requested(:post, @url+'stage') do |req|
