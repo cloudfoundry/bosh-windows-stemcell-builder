@@ -77,19 +77,18 @@ module Stemcell
             s.start_with?("OSDiskUriReadOnlySas: ")
           end.first.gsub("OSDiskUriReadOnlySas: ", "")
 
-          decoded_url = URI::decode(url)
-          domain = (decoded_url.split '?')[0]
+          domain = (url.split '?')[0]
           next_year = Time.now.utc + 1.year
           yesterday = Time.now.utc - 1.day
-
-          params = CGI.parse ((decoded_url.split '?')[1])
+          decoded_url = CGI.unescape(url)
+          params = CGI.parse ((decoded_url.chomp.split '?')[1])
 
           params['se']=next_year.iso8601
           params['st']=yesterday.iso8601
           params['sr']='c'
           params['sp']='rl'
 
-          new_params = URI::decode params.to_query
+          new_params = CGI.unescape(URI.encode_www_form params)
 
           domain + "?" + new_params
         end
