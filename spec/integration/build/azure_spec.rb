@@ -18,7 +18,7 @@ describe 'Azure' do
     @output_directory = 'bosh-windows-stemcell'
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
-    Timecop.freeze (Time.new "2010-1-2")
+    Timecop.freeze (Time.new "2010-1-10T00:00:00Z")
   end
 
   after(:each) do
