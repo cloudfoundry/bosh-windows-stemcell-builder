@@ -126,7 +126,7 @@ describe Packer::Config do
             Packer::Config::Provisioners::LGPO_EXE,
             Packer::Config::Provisioners::install_agent('vsphere'),
             Packer::Config::Provisioners.download_windows_updates('output_directory'),
-            Packer::Config::Provisioners::CLEAR_DISK,
+            Packer::Config::Provisioners::OPTIMIZE_DISK,
             Packer::Config::Provisioners::COMPRESS_DISK,
             Packer::Config::Provisioners::CLEAR_PROVISIONER,
           ].flatten

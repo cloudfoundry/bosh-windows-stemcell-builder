@@ -76,9 +76,9 @@ module Packer
         'inline' => ['Protect-CFCell']
       }.freeze
 
-      CLEAR_DISK = {
+      OPTIMIZE_DISK = {
         'type' => 'powershell',
-        'inline' => ['Clean-Disk']
+        'inline' => ['Optimize-Disk']
       }.freeze
 
       COMPRESS_DISK = {

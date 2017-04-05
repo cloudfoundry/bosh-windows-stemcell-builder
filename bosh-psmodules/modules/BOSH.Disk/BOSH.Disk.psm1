@@ -13,7 +13,7 @@ function Compress-Disk {
     Write-Log "Finished compressing disk"
 }
 
-function Clean-Disk {
+function Optimize-Disk {
     Write-Log "Starting to clean disk"
 
     Get-WindowsFeature -Name 'Powershell-ISE' | Remove-WindowsFeature
