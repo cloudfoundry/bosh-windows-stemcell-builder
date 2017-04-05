@@ -18,7 +18,7 @@ describe 'Azure' do
     @output_directory = 'bosh-windows-stemcell'
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
-    Timecop.freeze (Time.new "2010-1-10T00:00:00Z")
+    Timecop.freeze (Time.utc "2010-1-10T00:00:00Z")
   end
 
   after(:each) do
@@ -78,7 +78,7 @@ describe 'Azure' do
       expect(vhd_params['sp'].first).to eq 'rl'
       expect(vhd_params['sv'].first).to eq '2015-02-21'
       expect(vhd_params['sig'].first).to eq 'mysig'
-      expect(vhd_uri).to eq "https://storageaccount.blob.core.windows.net/system/Microsoft.Compute/Images/bosh-stemcell-osDisk.blah.vhd?se=2011-01-01T05:00:00Z&sig=mysig&sp=rl&sr=c&sv=2015-02-21&st=2009-12-31T05:00:00Z"
+      expect(vhd_uri).to eq "https://storageaccount.blob.core.windows.net/system/Microsoft.Compute/Images/bosh-stemcell-osDisk.blah.vhd?se=2011-01-01T00:00:00Z&sig=mysig&sp=rl&sr=c&sv=2015-02-21&st=2009-12-31T00:00:00Z"
 
       stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-#{os_version}-go_agent.tgz")
       stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-#{os_version}-go_agent.tgz.sha")
