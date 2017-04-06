@@ -13,7 +13,7 @@ namespace :package do
 	required_vars = [
 	    'BOSH_CA_CERT', 'BOSH_CLIENT', 'BOSH_CLIENT_SECRET',
 	    'BOSH_TARGET', 'BOSH_UUID',
-	    'STEMCELL_PATH', 'AZ', 'VM_TYPE','NETWORK'
+	    'STEMCELL_PATH', 'AZ', 'VM_TYPE', 'VM_EXTENSIONS', 'NETWORK'
 	]
 	missing_vars = false
 	required_vars.each do |var|
@@ -42,6 +42,7 @@ namespace :package do
 	    'stemcell_path' => File.absolute_path(ENV['STEMCELL_PATH']),
 	    'az' => ENV['AZ'],
 	    'vm_type' => ENV['VM_TYPE'],
+	    'vm_extensions' => ENV['VM_EXTENSIONS'],
 	    'network' => ENV['NETWORK']
 	}
 	FileUtils.mkdir_p build_dir
