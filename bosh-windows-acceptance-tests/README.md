@@ -21,6 +21,7 @@ You can create a `config.json` file, eg:
   "stemcell_path": "<absolute path to stemcell tgz>",
   "az": "<area zone from bosh cloud config>",
   "vm_type": "<vm_type from bosh cloud config>",
+  "vm_extensions": "<comma separated string of options, e.g. 50GB_ephemeral_disk>",
   "network": "<network from bosh cloud config>"
 }
 ```

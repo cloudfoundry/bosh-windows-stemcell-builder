@@ -57,7 +57,7 @@ instance_groups:
   lifecycle: service
   azs: [{{.AZ}}]
   vm_type: {{.VmType}}
-  vm_extensions: []
+  vm_extensions: [{{.VmExtensions}}]
   networks:
   - name: {{.Network}}
   jobs:
@@ -69,7 +69,7 @@ instance_groups:
   lifecycle: errand
   azs: [{{.AZ}}]
   vm_type: {{.VmType}}
-  vm_extensions: []
+  vm_extensions: [{{.VmExtensions}}]
   networks:
   - name: {{.Network}}
   jobs:
@@ -81,7 +81,7 @@ instance_groups:
   lifecycle: errand
   azs: [{{.AZ}}]
   vm_type: {{.VmType}}
-  vm_extensions: []
+  vm_extensions: [{{.VmExtensions}}]
   networks:
   - name: {{.Network}}
   jobs:
@@ -96,6 +96,7 @@ type ManifestProperties struct {
 	ReleaseName    string
 	AZ             string
 	VmType         string
+	VmExtensions   string
 	Network        string
 }
 
@@ -110,6 +111,7 @@ type Config struct {
 	Stemcellpath string `json:"stemcell_path"`
 	Az           string `json:"az"`
 	VmType       string `json:"vm_type"`
+	VmExtensions string `json:"vm_extensions"`
 	Network      string `json:"network"`
 }
 
@@ -137,6 +139,7 @@ func (c *Config) generateManifest(deploymentName string) ([]byte, error) {
 		ReleaseName:    "bwats-release",
 		AZ:             c.Az,
 		VmType:         c.VmType,
+		VmExtensions:   c.VmExtensions,
 		Network:        c.Network,
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
