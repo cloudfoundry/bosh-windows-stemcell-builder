@@ -38,6 +38,7 @@ describe 'Package::BWATS' do
 			'stemcell_path' => File.absolute_path('some-path'),
 			'az' => 'some-az',
 			'vm_type' => 'some-type',
+			'vm_extensions' => 'some-vm-extensions',
 			'network' => 'some-network'
 		}
 		ENV['BOSH_CA_CERT'] = config['bosh']['ca_cert']
@@ -48,6 +49,7 @@ describe 'Package::BWATS' do
 		ENV['STEMCELL_PATH']= 'some-path'
 		ENV['AZ']= config['az']
 		ENV['VM_TYPE']= config['vm_type']
+		ENV['VM_EXTENSIONS']= config['vm_extensions']
 		ENV['NETWORK']= config['network']
 		Rake::Task['package:bwats'].invoke
 		pattern = File.join(@build_dir, "config.json").gsub('\\', '/')

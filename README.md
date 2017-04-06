@@ -63,6 +63,7 @@ Set the following environment variables:
 ##### Match with [cloud config](https://bosh.io/docs/cloud-config.html)
 - AZ:
 - VM_TYPE:
+- VM_EXTENSIONS:
 - NETWORK:
 
 Run BWATS:
