@@ -110,20 +110,6 @@ module Packer
           }
         ]
       end
-
-      ##TO BE KEPT ^^^^
-
-      class Azure
-        def self.create_admin(admin_password)
-          return {
-            'type' => 'powershell',
-            'inline' => [
-              "NET USER Administrator #{admin_password} /add /y /expires:never",
-              'NET LOCALGROUP Administrators Administrator /add'
-            ]
-          }
-        end
-      end
     end
   end
 end
