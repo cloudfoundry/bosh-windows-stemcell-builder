@@ -10,6 +10,20 @@ function New-TempDir {
     (New-Item -ItemType Directory -Path (Join-Path $parent $name)).FullName
 }
 
+Describe "Invoke-Sysprep" {
+    Context "when not provided an IaaS" {
+        It "throws" {
+            { Invoke-Sysprep } | Should Throw "Provide the IaaS this stemcell will be used for"
+        }
+    }
+
+    Context "when provided an invalid Iaas" {
+        It "throws" {
+            { Invoke-Sysprep -IaaS "OpenShift" } | Should Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
+        }
+    }
+}
+
 Describe "Enable-LocalSecurityPolicy" {
     BeforeEach {
         $PolicyDestination=(New-TempDir)

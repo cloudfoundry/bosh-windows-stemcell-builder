@@ -65,7 +65,7 @@ module Packer
           'source_path' => @source_path,
           'headless' => false,
           'boot_wait' => '2m',
-          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -NewPassword #{@administrator_password} -ProductKey #{@product_key} -Owner #{@owner} -Organization #{@organization}",
+          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword #{@administrator_password} -ProductKey #{@product_key} -Owner #{@owner} -Organization #{@organization}",
           'shutdown_timeout' => '1h',
           'communicator' => 'winrm',
           'ssh_username' => 'Administrator',
@@ -91,7 +91,7 @@ module Packer
           Provisioners.install_agent('vsphere').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
         ] <<
-        Base.instance_method(:post_provisioners).bind(self).call).flatten
+        Base.instance_method(:post_provisioners).bind(self).call('vsphere')).flatten
       end
     end
   end

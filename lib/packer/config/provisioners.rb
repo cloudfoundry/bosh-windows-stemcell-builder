@@ -102,12 +102,16 @@ module Packer
         'destination' => 'C:\\windows\\LGPO.exe'
       }.freeze
 
-      ##TO BE KEPT ^^^^
+      def self.sysprep_shutdown(iaas)
+        return [
+          {
+            'type' => 'windows-shell',
+            'inline' => ["Invoke-Sysprep -IaaS #{iaas}"]
+          }
+        ]
+      end
 
-      SET_EC2_PASSWORD = {
-        'type' => 'powershell',
-        'scripts' => ['scripts/aws/ec2-set-password.ps1']
-      }.freeze
+      ##TO BE KEPT ^^^^
 
       class Azure
         def self.create_admin(admin_password)
@@ -119,12 +123,6 @@ module Packer
             ]
           }
         end
-
-        SYSPREP_SHUTDOWN = {
-          'type' => 'windows-shell',
-          'inline' => ['C:\\Windows\\System32\\Sysprep\\sysprep.exe /generalize /quiet /oobe /quit']
-        }.freeze
-
       end
     end
   end

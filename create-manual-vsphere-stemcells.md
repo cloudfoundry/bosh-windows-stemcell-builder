@@ -160,8 +160,9 @@ Or:
 **2)** If you would like to run the recommended sysprep:
 
   - Download [lgpo.exe](https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip) to the Windows VM you are provisioning and save `lgpo.exe` to `C:\Windows\lgpo.exe`
-  - Run the following powershell command `Invoke-Sysprep -NewPassword <NEW_PASSWORD> -ProductKey <PRODUCT_KEY> -Owner <OWNER> -Organization <ORGANIZATION>`
+  - Run the following powershell command `Invoke-Sysprep -IaaS vsphere -NewPassword <NEW_PASSWORD> -ProductKey <PRODUCT_KEY> -Owner <OWNER> -Organization <ORGANIZATION>`
   - This will power off the VM
+  - Do not turn the VM back on before exporting
 
 ## Step 5: Export image to OVA format
 

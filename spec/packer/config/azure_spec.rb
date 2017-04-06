@@ -71,7 +71,7 @@ describe Packer::Config::Azure do
           Packer::Config::Provisioners::OPTIMIZE_DISK,
           Packer::Config::Provisioners::COMPRESS_DISK,
           Packer::Config::Provisioners::CLEAR_PROVISIONER,
-          Packer::Config::Provisioners::Azure::SYSPREP_SHUTDOWN
+          Packer::Config::Provisioners::sysprep_shutdown('azure')
         ].flatten
       )
     end

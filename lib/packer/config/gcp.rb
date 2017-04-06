@@ -40,7 +40,7 @@ module Packer
           Provisioners.install_agent('gcp').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
         ] <<
-        Base.instance_method(:post_provisioners).bind(self).call).flatten
+        Base.instance_method(:post_provisioners).bind(self).call('gcp')).flatten
       end
     end
   end

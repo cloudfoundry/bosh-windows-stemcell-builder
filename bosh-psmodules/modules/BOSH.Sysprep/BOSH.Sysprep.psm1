@@ -151,14 +151,37 @@ function Create-Unattend {
 #>
 function Invoke-Sysprep() {
    Param (
-      [string]$NewPassword,
-      [string]$ProductKey,
-      [string]$Organization,
-      [string]$Owner
+      [string]$IaaS = $(Throw "Provide the IaaS this stemcell will be used for"),
+      [string]$NewPassword="",
+      [string]$ProductKey="",
+      [string]$Organization="",
+      [string]$Owner=""
    )
 
-   Write-Log "Invoking Sysprep"
+   Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
 
-   Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey -Organization $Organization -Owner $Owner
-   C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown
+   switch ($IaaS) {
+      "aws" {
+         # Enable password generation and retrieval
+         $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
+         ($ec2config.ec2configurationsettings.plugins.plugin | where { $_.Name -eq "Ec2SetPassword" }).State = 'Enabled'
+         $ec2config.Save("C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml")
+
+         # Enable sysprep
+         $ec2settings = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+         ($ec2settings.BundleConfig.Property | where { $_.Name -eq "AutoSysprep" }).Value = 'Yes'
+         $ec2settings.Save('C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+      }
+      "gcp" {
+         GCESysprep
+      }
+      "azure" {
+         C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
+      }
+      "vsphere" {
+         Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey -Organization $Organization -Owner $Owner
+         C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown
+      }
+      Default { Throw "Invalid IaaS '${IaaS}' supported platforms are: AWS, Azure, GCP and Vsphere" }
+   }
 }

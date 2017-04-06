@@ -56,8 +56,7 @@ module Packer
           Provisioners::Azure.create_admin(@admin_password).freeze,
           #Provisioners.download_windows_updates(@output_directory).freeze,
         ] <<
-        Base.instance_method(:post_provisioners).bind(self).call <<
-        [ Provisioners::Azure::SYSPREP_SHUTDOWN ]).flatten
+        Base.instance_method(:post_provisioners).bind(self).call('azure')).flatten
       end
     end
   end

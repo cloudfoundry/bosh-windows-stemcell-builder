@@ -85,7 +85,7 @@ describe Packer::Config do
           'source_path' => 'source_path',
           'headless' => false,
           'boot_wait' => '2m',
-          'shutdown_command' => 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -NewPassword password -ProductKey key -Owner me -Organization me',
+          'shutdown_command' => 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword password -ProductKey key -Owner me -Organization me',
           'shutdown_timeout' => '1h',
           'communicator' => 'winrm',
           'ssh_username' => 'Administrator',

@@ -49,10 +49,10 @@ describe Packer::Config::Aws do
           Packer::Config::Provisioners::PROTECT_CF_CELL,
           Packer::Config::Provisioners.install_agent('aws'),
           Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
-          Packer::Config::Provisioners::SET_EC2_PASSWORD,
           Packer::Config::Provisioners::OPTIMIZE_DISK,
           Packer::Config::Provisioners::COMPRESS_DISK,
-          Packer::Config::Provisioners::CLEAR_PROVISIONER
+          Packer::Config::Provisioners::CLEAR_PROVISIONER,
+          Packer::Config::Provisioners::sysprep_shutdown('aws')
         ].flatten
       )
     end
