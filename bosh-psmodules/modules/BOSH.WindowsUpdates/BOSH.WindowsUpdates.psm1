@@ -99,7 +99,7 @@ function Install-UpdateBatch() {
     $UpdatesToDownload = New-Object -ComObject 'Microsoft.Update.UpdateColl'
     $script:i = 0;
     $CurrentUpdates = $SearchResult.Updates | Select-Object
-    while($script:i -lt $CurrentUpdates.Count -and $script:CycleUpdateCount -lt $script:MaxUpdatesPerCycle) {
+    while($script:i -lt $SearchResult.Updates.Count -and $script:CycleUpdateCount -lt $script:MaxUpdatesPerCycle) {
         $Update = $CurrentUpdates[$script:i]
         if (($null -ne $Update) -and (!$Update.IsDownloaded)) {
             [bool]$addThisUpdate = $false
