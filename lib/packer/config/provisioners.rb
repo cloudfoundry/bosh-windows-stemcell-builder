@@ -105,7 +105,7 @@ module Packer
       def self.sysprep_shutdown(iaas)
         return [
           {
-            'type' => 'windows-shell',
+            'type' => 'powershell',
             'inline' => ["Invoke-Sysprep -IaaS #{iaas}"]
           }
         ]
