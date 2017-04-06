@@ -61,6 +61,11 @@ module Packer
         }
       ].freeze
 
+      TEST_INSTALLED_UPDATES = {
+        'type' => 'powershell',
+        'inline' => ['Test-InstalledUpdates']
+      }.freeze
+
       NEW_PROVISIONER = {
         'type' => 'powershell',
         'inline' => ['New-Provisioner']
