@@ -8,3 +8,5 @@ gem 'rubyzip'
 gem 'timecop'
 gem 'guard-rspec', require: false
 gem 'webmock'
+gem 'activesupport'
+gem 'activemodel'

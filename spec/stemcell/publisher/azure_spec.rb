@@ -1,7 +1,7 @@
 require 'stemcell/publisher/azure'
 
 describe Stemcell::Publisher::Azure do
-	let(:response){
+	let(:response) do
 		<<-HEREDOC
 {
 	"Offer": {
@@ -112,90 +112,78 @@ describe Stemcell::Publisher::Azure do
 	}
 }
 		HEREDOC
-	}
-	describe '.json' do
+end
+
+let(:sas_response) do
+<<-HEREDOC
+{
+  "sas": "some-sas",
+  "url": "https://storageaccount.blob.core.windows.net/containername?some-sas"
+}
+HEREDOC
+end
+
+	describe '#publish' do
 		before(:each) do
-			vm_to_add = {version: 'some-version', image_url: 'some-image-url'}
-			sku_string = '2012r2'
-			@actual = JSON.parse(Stemcell::Publisher::Azure::json(response, vm_to_add, sku_string))
-		end
+      version = 'some-version'
+			sku = '2012r2'
+			api_key = 'some-api-key'
+			azure_storage_account = 'some-azure_storage_account'
+			azure_storage_access_key = 'some-azure_storage_access_key'
+			azure_tenant_id = 'some-azure-tenant-id'
+			azure_client_id = 'some-azure-client-id'
+			azure_client_secret = 'some-azure-client-secret'
+			container_name = 'some-container-name'
+			container_path = 'some-container-path'
 
-		it 'contains the Offer contents' do
-			expect(@actual['VirtualMachineImagesByServicePlan']).not_to be_nil
-		end
+			@publisher = Stemcell::Publisher::Azure.new(
+				version: version, sku: sku, api_key: api_key, azure_storage_account: azure_storage_account,
+        azure_storage_access_key: azure_storage_access_key, azure_tenant_id: azure_tenant_id, azure_client_id: azure_client_id,
+        azure_client_secret: azure_client_secret, container_name: container_name, container_path: container_path
+			)
 
-		it 'adds the latest VM to VirtualMachineImages' do
-			old_images = JSON.parse(response)['Offer']['VirtualMachineImagesByServicePlan']['2012r2']['VirtualMachineImages']
-			new_images = @actual['VirtualMachineImagesByServicePlan']['2012r2']['VirtualMachineImages']
-			expect(new_images.size).to eq(old_images.size+1)
-
-			new_vm = new_images.last
-			expect(new_vm['OsImageUrl']).to eq('some-image-url')
-			expect(new_vm['isLocked']).to eq(false)
-			expect(new_vm['DataDiskUrlsByLunNumber']).to eq({})
-		end
-
-		it 'bumps the version correctly' do
-			new_images = @actual['VirtualMachineImagesByServicePlan']['2012r2']['VirtualMachineImages']
-			new_vm = new_images.last
-
-			expect(new_vm['VersionId']).to eq('1.0.5')
-			expect(new_vm['VersionLabel']).to eq('1.0.5')
-		end
-	end
-
-	describe '.publish' do
-		before(:each) do
-			@url = "https://www.google.com/"
-			@api_key = "API_KEY"
-			@headers = {
-				'Accept': 'application/json',
-				'Authorization': "WAMP apikey=#{@api_key}",
-				'X-Protocol-Version': '2',
-				'Content-Type': 'application/json'
-			}
-			@vm_to_add = {version: 'some-version', image_url: 'some-image-url'}
-			@sku_string = '2012r2'
-			stub_request(:get, @url).
-				with(headers: @headers).
-				to_return(status: 200, body: response, headers: {})
-			stub_request(:post, @url+'update')
-			stub_request(:post, @url+'stage').
-				to_return(status: 202)
+			stub_request(:get, @publisher.base_url).to_return(status: 200, body: response)
+			stub_request(:post, @publisher.base_url+'update').to_return(status: 200)
+			stub_request(:post, @publisher.base_url+'stage').to_return(status: 202)
 		end
 
 		it 'does not print the API key to stdout or stderr' do
-			expect{Stemcell::Publisher::Azure::publish(@vm_to_add, @api_key, @url, @sku_string)}.
-				to_not output(/#{@api_key}/).to_stdout
-			expect{Stemcell::Publisher::Azure::publish(@vm_to_add, @api_key, @url, @sku_string)}.
-				to_not output(/#{@api_key}/).to_stderr
+			expect{@publisher.publish}.
+				to_not output(/#{@publisher.api_key}/).to_stdout
+			expect{@publisher.publish}.
+				to_not output(/#{@publisher.api_key}/).to_stderr
 		end
 
 		it 'invokes the Azure publisher API' do
-			Stemcell::Publisher::Azure::publish(@vm_to_add, @api_key, @url, @sku_string)
+			# Stub azure cli invocation
+			allow(Stemcell::Publisher::Azure.any_instance).to receive(:create_azure_sas).and_return(sas_response)
 
-			assert_requested(:get, @url) do |req|
+			@publisher.publish
+
+			assert_requested(:get, @publisher.base_url) do |req|
 				headers = req.headers
 				(headers['Accept'] == 'application/json') &&
-				(headers['Authorization'] ==  "WAMP apikey=#{@api_key}") &&
+					(headers['Authorization'] ==  "WAMP apikey=#{@publisher.api_key}") &&
 				(headers['X-Protocol-Version'] == '2') &&
 				(headers['Content-Type'] == 'application/json')
 			end
-			assert_requested(:post, @url+'update') do |req|
+
+			assert_requested(:post, @publisher.base_url+'update') do |req|
 				headers = req.headers
 				(headers['Accept'] == 'application/json') &&
-				(headers['Authorization'] ==  "WAMP apikey=#{@api_key}") &&
+					(headers['Authorization'] ==  "WAMP apikey=#{@publisher.api_key}") &&
 				(headers['X-Protocol-Version'] == '2') &&
 				(headers['Content-Type'] == 'application/json')
 
 				body = req.body
-				expected_body = Stemcell::Publisher::Azure::json(response, @vm_to_add, @sku_string)
+				expected_body = 'expected_body'
 				body == expected_body
 			end
-			assert_requested(:post, @url+'stage') do |req|
+
+			assert_requested(:post, @publisher.base_url+'stage') do |req|
 				headers = req.headers
 				(headers['Accept'] == 'application/json') &&
-				(headers['Authorization'] ==  "WAMP apikey=#{@api_key}") &&
+					(headers['Authorization'] ==  "WAMP apikey=#{@publisher.api_key}") &&
 				(headers['X-Protocol-Version'] == '2') &&
 				(headers['Content-Type'] == 'application/json')
 			end
