@@ -33,7 +33,6 @@ const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
 var manifestTemplate = `
 ---
 name: {{.DeploymentName}}
-director_uuid: {{.DirectorUUID}}
 
 releases:
 - name: {{.ReleaseName}}
@@ -92,7 +91,6 @@ instance_groups:
 
 type ManifestProperties struct {
 	DeploymentName string
-	DirectorUUID   string
 	ReleaseName    string
 	AZ             string
 	VmType         string
@@ -106,7 +104,6 @@ type Config struct {
 		Client       string `json:"client"`
 		ClientSecret string `json:"client_secret"`
 		Target       string `json:"target"`
-		Uuid         string `json:"uuid"`
 	} `json:"bosh"`
 	Stemcellpath string `json:"stemcell_path"`
 	Az           string `json:"az"`
@@ -135,7 +132,6 @@ func NewConfig() (*Config, error) {
 func (c *Config) generateManifest(deploymentName string) ([]byte, error) {
 	manifestProperties := ManifestProperties{
 		DeploymentName: deploymentName,
-		DirectorUUID:   c.Bosh.Uuid,
 		ReleaseName:    "bwats-release",
 		AZ:             c.Az,
 		VmType:         c.VmType,
