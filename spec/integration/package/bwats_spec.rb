@@ -32,8 +32,7 @@ describe 'Package::BWATS' do
 				'ca_cert' => 'some-cert',
 				'client' => 'some-client',
 				'client_secret' => 'some-secret',
-				'target' => 'some-target',
-				'uuid' => 'some-uuid'
+				'target' => 'some-target'
 			},
 			'stemcell_path' => File.absolute_path('some-path'),
 			'az' => 'some-az',
@@ -45,7 +44,6 @@ describe 'Package::BWATS' do
 		ENV['BOSH_CLIENT']= config['bosh']['client']
 		ENV['BOSH_CLIENT_SECRET'] = config['bosh']['client_secret']
 		ENV['BOSH_TARGET']= config['bosh']['target']
-		ENV['BOSH_UUID']= config['bosh']['uuid']
 		ENV['STEMCELL_PATH']= 'some-path'
 		ENV['AZ']= config['az']
 		ENV['VM_TYPE']= config['vm_type']
