@@ -33,7 +33,6 @@ describe 'Package::Agent' do
       'deps/job-service-wrapper.exe',
       'deps/pipe.exe',
       'deps/tar.exe',
-      'deps/zlib1.dll',
       'bosh-agent.exe',
       'service_wrapper.exe',
       'service_wrapper.xml')

@@ -52,7 +52,6 @@ Describe "Copy-Agent" {
         Test-Path (Join-Path $depsDir "job-service-wrapper.exe") | Should Be $True
         Test-Path (Join-Path $depsDir "pipe.exe") | Should Be $True
         Test-Path (Join-Path $depsDir "tar.exe") | Should Be $True
-        Test-Path (Join-Path $depsDir "zlib1.dll") | Should Be $True
         Test-Path (Join-Path $depsDir "bosh-blobstore-dav.exe") | Should Be $True
         Test-Path (Join-Path $depsDir "bosh-blobstore-s3.exe") | Should Be $True
     }
