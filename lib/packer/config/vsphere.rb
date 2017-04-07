@@ -46,6 +46,7 @@ module Packer
           Provisioners::BOSH_PSMODULES,
           Provisioners::NEW_PROVISIONER,
           Provisioners.install_windows_updates(@administrator_password).freeze,
+          Provisioners::TEST_INSTALLED_UPDATES,
           Provisioners::GET_LOG,
           Provisioners::CLEAR_PROVISIONER
         ].flatten
@@ -87,6 +88,7 @@ module Packer
       def provisioners
         ( Base.instance_method(:pre_provisioners).bind(self).call <<
         [
+          Provisioners::TEST_INSTALLED_UPDATES,
           Provisioners::LGPO_EXE,
           Provisioners.install_agent('vsphere').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,

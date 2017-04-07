@@ -264,6 +264,10 @@ function Test-InstalledUpdates() {
     $Searcher = $Session.CreateUpdateSearcher()
     $UninstalledUpdates = $Searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0").Updates
     if ($UninstalledUpdates.Count -ne 0) {
+        Write-Log "The following updates are not currently installed:"
+        foreach ($Update in $UninstalledUpdates) {
+            Write-Log "> $($Update.Title)"
+        }
         Throw 'There are uninstalled updates'
     }
 }
