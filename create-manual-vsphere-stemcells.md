@@ -120,7 +120,7 @@ Create a new virtual machine (if you are using an existing template, select the 
 
 If you do not have Ruby to package the BOSH PSModules, skip this step and download the `bosh-psmodules.zip` attached in your desired release.
 
-- Clone [this repo](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) on your host (NOT in the VM for your stemcell), and expand the bosh-agent submodule:
+- Clone [this repo](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) on your host (NOT in the VM for your stemcell), and expand the submodules:
 
 **NOTE**: Do not use the GitHub generated `Source Code.zip` and `Source Code.tar.gz` files from the releases page - they are not Git repositories and are missing submodules.
 
