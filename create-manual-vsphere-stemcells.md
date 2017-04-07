@@ -116,34 +116,43 @@ Create a new virtual machine (if you are using an existing template, select the 
   - Follow along the installation process, and add select a password for Administrator user
 - In the vCenter web client, "Install VMware Tools" in the VM `Summary` tab.
 
-## Step 2: Build & Install BOSH PSModules
+## Step 2: Package BOSH PSModules
+
+If you do not have Ruby to package the BOSH PSModules, skip this step and download the `bosh-psmodules.zip` attached in your desired release.
 
 - Clone [this repo](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) on your host (NOT in the VM for your stemcell), and expand the bosh-agent submodule:
+
+**NOTE**: Do not use the GitHub generated `Source Code.zip` and `Source Code.tar.gz` files from the releases page - they are not Git repositories and are missing submodules.
 
 **NOTE**: On Windows you MUST clone straight into `C:\\`, or the git clone and submodule update will fail due to file path lengths.
 
 ```
 git clone --recursive https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder
+git checkout <DESIRED_STEMCELL_VERSION_TAG>
 cd bosh-windows-stemcell-builder
 gem install bundler
 bundle install
 rake package:psmodules
 ```
 
-- Transfer `build/bosh-psmodules.zip` to your Windows VM (Note: you can just drag and drop files if you have installed VMware tools in your VM)
+## Step 3: Install BOSH PSModules
+
+- Transfer the `build/bosh-psmodules.zip` you built in Step 2, or the `bosh-psmodules.zip` downloaded from the releases page to your Windows VM (Note: you can just drag and drop files if you have installed VMware tools in your VM and are running Workstation or Fusion)
 - Unzip the zip file and copy the `BOSH.*` folders to `C:\Program Files\WindowsPowerShell\Modules`
 
-## Step 3: Install CloudFoundry Cell requirements
+## Step 4: Install CloudFoundry Cell requirements
 
 - On your windows VM, start `powershell` and run `Install-CFFeatures`
 - **Optional** If you would like to apply the recommended ingress and service configuration:
     - Run the following powershell command `Protect-CFCell`
 
-## Step 4: Build & Install BOSH Agent
+## Step 5: Build & Install BOSH Agent
+
+If you do not have Ruby and Golang to package the BOSH Agent, skip the first step below and download the `agent.zip` attached in your desired release.
 
 - On your host (NOT in the VM for your stemcell), run `rake package:agent`
-- Transfer `build/agent.zip` to your Windows VM.
-- On your windows VM, start `powershell` and run `Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>`
+- Transfer `build/agent.zip` you built in the previous step, or the `agent.zip` downloaded from the releases page to your Windows VM.
+- On your Windows VM, start `powershell` and run `Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>`
 
 ## (Optional) Apply security policies and sysprep
 
@@ -164,7 +173,7 @@ Or:
   - This will power off the VM
   - Do not turn the VM back on before exporting
 
-## Step 5: Export image to OVA format
+## Step 6: Export image to OVA format
 
 If you are using VMware Fusion or Workstation, after powering off the VM locate the directory that has your VM's `.vmx` file. This defaults to
 the `Documents\\Virtual Machines\\VM-name\\VM-name.vmx` path in your user's home directory.
@@ -176,7 +185,7 @@ Convert the vmx file into an OVA archive using `ovftool`:
 ovftool <PATH_TO_VMX_FILE> image.ova
 ```
 
-## Step 6: Convert OVA file to a BOSH Stemcell
+## Step 7: Convert OVA file to a BOSH Stemcell
 
 The format of the rake task is `rake package:vsphere_ova[<path_to_ova>,<path_to_stemcell_destination_directory>,stemcell_version]`
 
