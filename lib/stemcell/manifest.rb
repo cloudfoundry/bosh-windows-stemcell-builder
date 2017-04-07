@@ -63,9 +63,15 @@ module Stemcell
             'offer' => offer,
             'publisher' => publisher,
             'sku' => sku,
-            'version' => version
+            'version' => format_version(version)
           }
         }
+      end
+
+      def format_version(version)
+        new_version = version.dup
+        new_version.slice!("0-build.")
+        return new_version
       end
     end
 
