@@ -11,7 +11,6 @@ $files = New-Object System.Collections.ArrayList
     "bosh-blobstore-s3.exe",
     "bosh-blobstore-dav.exe",
     "tar.exe",
-    "zlib1.dll",
     "job-service-wrapper.exe"
 ))
 
