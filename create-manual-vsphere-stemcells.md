@@ -127,9 +127,10 @@ If you do not have Ruby to package the BOSH PSModules, skip this step and downlo
 **NOTE**: On Windows you MUST clone straight into `C:\\`, or the git clone and submodule update will fail due to file path lengths.
 
 ```
-git clone --recursive https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder
-git checkout <DESIRED_STEMCELL_VERSION_TAG>
+git clone https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder
 cd bosh-windows-stemcell-builder
+git checkout <DESIRED_STEMCELL_VERSION_TAG>
+git submodule update --init --recursive
 gem install bundler
 bundle install
 rake package:psmodules
