@@ -5,9 +5,6 @@ require 'rubygems/package'
 require 'tmpdir'
 require 'yaml'
 require 'zlib'
-require 'timecop'
-require 'active_support'
-require 'active_support/core_ext'
 
 load File.expand_path('../../../../lib/tasks/build/azure.rake', __FILE__)
 
@@ -18,14 +15,12 @@ describe 'Azure' do
     @output_directory = 'bosh-windows-stemcell'
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
-    Timecop.freeze (Time.utc "2010-1-10T00:00:00Z")
   end
 
   after(:each) do
     ENV.replace(@original_env)
     FileUtils.remove_dir(@build_dir)
     FileUtils.rm_rf(@output_directory)
-    Timecop.return
   end
 
   it 'should build an azure stemcell' do
@@ -64,21 +59,7 @@ describe 'Azure' do
 
       Rake::Task['build:azure'].invoke
 
-      now = Time.now.utc
-      yesterday = (now - 1.day).iso8601
-      next_year = (now + 1.year).iso8601
-      vhd_uri = File.read(File.join(@output_directory, "bosh-stemcell-#{version}-azure-vhd-uri.txt"))
-      vhd_domain = (vhd_uri.split '?')[0]
-      vhd_param_string = (vhd_uri.split '?')[1]
-      vhd_params = CGI.parse vhd_param_string
-      expect(vhd_domain).to eq "https://storageaccount.blob.core.windows.net/system/Microsoft.Compute/Images/bosh-stemcell-osDisk.blah.vhd"
-      expect(vhd_params['se'].first).to eq next_year
-      expect(vhd_params['st'].first).to eq yesterday
-      expect(vhd_params['sr'].first).to eq 'c'
-      expect(vhd_params['sp'].first).to eq 'rl'
-      expect(vhd_params['sv'].first).to eq '2015-02-21'
-      expect(vhd_params['sig'].first).to eq 'mysig'
-      expect(vhd_uri).to eq "https://storageaccount.blob.core.windows.net/system/Microsoft.Compute/Images/bosh-stemcell-osDisk.blah.vhd?se=2011-01-01T00:00:00Z&sig=mysig&sp=rl&sr=c&sv=2015-02-21&st=2009-12-31T00:00:00Z"
+      expect(File.read(File.join(@output_directory, "bosh-stemcell-#{version}-azure-vhd-uri.txt"))).to eq 'some-disk-image-url'
 
       stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-#{os_version}-go_agent.tgz")
       stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-#{os_version}-go_agent.tgz.sha")
