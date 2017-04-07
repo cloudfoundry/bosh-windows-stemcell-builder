@@ -12,6 +12,7 @@ FunctionsToExport = @('Install-WindowsUpdates',
                       'Unregister-WindowsUpdatesTask',
                       'Wait-WindowsUpdates',
                       'List-InstalledUpdates',
+                      'Test-InstalledUpdates',
                       'Disable-AutomaticUpdates')
 CmdletsToExport = @()
 VariablesToExport = '*'
