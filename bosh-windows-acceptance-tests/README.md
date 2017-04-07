@@ -15,8 +15,7 @@ You can create a `config.json` file, eg:
     "ca_cert": "<contents of your bosh director cert, with \n for newlines>",
     "client": "<bosh client name>",
     "client_secret": "<bosh client secret>",
-    "target": "<IP of your bosh director>",
-    "uuid": "<UUID of your bosh director>"
+    "target": "<IP of your bosh director>"
   },
   "stemcell_path": "<absolute path to stemcell tgz>",
   "az": "<area zone from bosh cloud config>",
