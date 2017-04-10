@@ -57,7 +57,7 @@ module Stemcell
           sas_json = create_azure_sas
           sas_info = JSON.parse sas_json
           sas_split = sas_info['url'].split '?'
-          sas_split[0] + container_path + sas_split[1]
+          sas_split[0] + '/' + container_path + '?' + sas_split[1]
         end
 
         def create_azure_sas

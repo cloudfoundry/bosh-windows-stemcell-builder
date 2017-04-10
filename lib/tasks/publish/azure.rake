@@ -12,7 +12,7 @@ namespace :publish do
     # Get the container path for sas create
     uri_filename = "bosh-stemcell-*-azure-vhd-uri.txt"
     image_url = File.read(Dir.glob(File.join(container_root, 'azure-base-vhd-uri', uri_filename)).first).chomp
-    container_path = (image_url.match %r{(/Microsoft\.Compute/Images/.*vhd\?)})[0]
+    container_path = (image_url.match %r{(Microsoft\.Compute/Images/.*vhd)})[0]
 
     publisher = Stemcell::Publisher::Azure.new(
       version: Stemcell::Manifest::Azure.format_version(version),
