@@ -13,6 +13,7 @@ describe 'Package::BWATS' do
 		@original_env = ENV.to_hash
 		@build_dir = File.expand_path('../../../../build', __FILE__)
 		FileUtils.mkdir_p(@build_dir)
+		Rake::Task['package:bwats'].reenable
 	end
 
 	after(:each) do
