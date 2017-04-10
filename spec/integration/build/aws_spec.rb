@@ -11,6 +11,7 @@ load File.expand_path('../../../../lib/tasks/build/aws.rake', __FILE__)
 describe 'Aws' do
   before(:each) do
     @original_env = ENV.to_hash
+    @build_dir = File.expand_path('../../../../build', __FILE__)
     @version_dir = Dir.mktmpdir('aws')
     @agent_dir = Dir.mktmpdir('aws')
     @base_amis_dir = Dir.mktmpdir('aws')
@@ -38,7 +39,6 @@ describe 'Aws' do
       ENV['OS_VERSION'] = os_version
       ENV['PATH'] = "#{File.join(File.expand_path('../../../..', __FILE__), 'spec', 'fixtures', 'aws')}:#{ENV['PATH']}"
       ENV['VERSION_DIR'] = @version_dir
-      ENV['AGENT_DIR'] = @agent_dir
       ENV['BASE_AMIS_DIR'] = @base_amis_dir
 
       File.write(
@@ -46,8 +46,9 @@ describe 'Aws' do
         'some-version'
       )
 
+      FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
       File.write(
-        File.join(@agent_dir, 'sha'),
+        File.join(@build_dir, 'compiled-agent', 'sha'),
         agent_commit
       )
 

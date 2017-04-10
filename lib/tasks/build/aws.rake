@@ -9,9 +9,10 @@ namespace :build do
     os_version = Stemcell::Builder::validate_env('OS_VERSION')
 
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
-    agent_dir = Stemcell::Builder::validate_env_dir('AGENT_DIR')
     base_amis_dir = Stemcell::Builder::validate_env_dir('BASE_AMIS_DIR')
 
+    build_dir = File.expand_path('../../../../build', __FILE__)
+    agent_dir = File.join(build_dir,'compiled-agent')
     version = File.read(File.join(version_dir, 'number')).chomp
     agent_commit = File.read(File.join(agent_dir, 'sha')).chomp
     base_amis = JSON.parse(
