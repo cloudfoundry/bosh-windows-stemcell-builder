@@ -87,6 +87,7 @@ module Stemcell
 
         # Get request to obtain offer data
         def obtain_offer_data(url, api_key)
+          puts "url: #{url}"
           uri = URI(url)
           req = Net::HTTP::Get.new(uri)
           add_headers!(req, api_key)
@@ -99,6 +100,7 @@ module Stemcell
 
         # Post request to update the offer with latest image
         def update_offer(url, body, api_key)
+          puts "url: #{url}"
           uri = URI(url+'update')
           req = Net::HTTP::Post.new(uri)
           req.body = body
@@ -107,11 +109,13 @@ module Stemcell
           response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
             http.request(req)
           end
+          puts "response: #{response.body}"
           return response
         end
 
         # Post request to stage the offer
         def stage_offer(url, api_key)
+          puts "url: #{url}"
           uri = URI(url+'stage')
           req = Net::HTTP::Post.new(uri)
           add_headers!(req, api_key)
@@ -119,6 +123,7 @@ module Stemcell
           response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
             http.request(req)
           end
+          puts "response: #{response.body}"
           return response
         end
     end
