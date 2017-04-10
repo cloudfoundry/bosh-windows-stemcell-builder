@@ -259,6 +259,19 @@ function Search-InstalledUpdates() {
     $Searcher.Search("IsInstalled=1").Updates | Sort-Object LastDeploymentChangeTime | ForEach-Object { "KB$($_.KBArticleIDs) | $($_.Title)" }
 }
 
+function Test-InstalledUpdates() {
+    $Session = New-Object -ComObject Microsoft.Update.Session
+    $Searcher = $Session.CreateUpdateSearcher()
+    $UninstalledUpdates = $Searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0").Updates
+    if ($UninstalledUpdates.Count -ne 0) {
+        Write-Log "The following updates are not currently installed:"
+        foreach ($Update in $UninstalledUpdates) {
+            Write-Log "> $($Update.Title)"
+        }
+        Throw 'There are uninstalled updates'
+    }
+}
+
 function List-InstalledUpdates() {
     $successful = $FALSE
     $attempts = 0
