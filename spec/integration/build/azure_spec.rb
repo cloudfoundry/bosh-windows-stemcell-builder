@@ -13,6 +13,7 @@ describe 'Azure' do
     @original_env = ENV.to_hash
     @build_dir = File.expand_path('../../../../build', __FILE__)
     @output_directory = 'bosh-windows-stemcell'
+    @version_dir = Dir.mktmpdir('azure')
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
   end
@@ -20,6 +21,7 @@ describe 'Azure' do
   after(:each) do
     ENV.replace(@original_env)
     FileUtils.remove_dir(@build_dir)
+    FileUtils.remove_dir(@version_dir)
     FileUtils.rm_rf(@output_directory)
   end
 
@@ -43,11 +45,11 @@ describe 'Azure' do
       ENV['SKU'] = 'some-sku'
       ENV["ADMIN_PASSWORD"] = 'some-admin-password'
       ENV['OS_VERSION'] = os_version
+      ENV['VERSION_DIR'] = @version_dir
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'azure')}:#{ENV['PATH']}"
 
-      FileUtils.mkdir_p(File.join(@build_dir, 'version'))
       File.write(
-        File.join(@build_dir, 'version', 'number'),
+        File.join(@version_dir, 'number'),
         'some-version'
       )
 
