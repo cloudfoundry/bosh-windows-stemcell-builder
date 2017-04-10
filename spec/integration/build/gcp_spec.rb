@@ -13,6 +13,8 @@ describe 'Gcp' do
     @original_env = ENV.to_hash
     @build_dir = File.expand_path('../../../../build', __FILE__)
     @output_directory = 'bosh-windows-stemcell'
+    @version_dir = Dir.mktmpdir('gcp')
+    @base_image_dir = Dir.mktmpdir('gcp')
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
   end
@@ -20,6 +22,8 @@ describe 'Gcp' do
   after(:each) do
     ENV.replace(@original_env)
     FileUtils.remove_dir(@build_dir)
+    FileUtils.remove_dir(@version_dir)
+    FileUtils.remove_dir(@base_image_dir)
     FileUtils.rm_rf(@output_directory)
   end
 
@@ -32,10 +36,11 @@ describe 'Gcp' do
       ENV['ACCOUNT_JSON'] = {'project_id' => 'some-project-id'}.to_json
       ENV['OS_VERSION'] = os_version
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'gcp')}:#{ENV['PATH']}"
+      ENV['VERSION_DIR'] = @version_dir
+      ENV['BASE_IMAGE_DIR'] = @base_image_dir
 
-      FileUtils.mkdir_p(File.join(@build_dir, 'version'))
       File.write(
-        File.join(@build_dir, 'version', 'number'),
+        File.join(@version_dir, 'number'),
         'some-version'
       )
 
@@ -45,9 +50,8 @@ describe 'Gcp' do
         agent_commit
       )
 
-      FileUtils.mkdir_p(File.join(@build_dir, 'base-gcp-image'))
       File.write(
-        File.join(@build_dir, 'base-gcp-image', 'base-gcp-image-1.json'),
+        File.join(@base_image_dir, 'base-gcp-image-1.json'),
         {'base_image' => 'some-base-image'}.to_json
       )
 

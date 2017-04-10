@@ -6,11 +6,17 @@ namespace :build do
   task :gcp do
     build_dir = File.expand_path("../../../../build", __FILE__)
 
-    version = File.read(File.join(build_dir, 'version', 'number')).chomp
+    account_json = Stemcell::Builder::validate_env('ACCOUNT_JSON')
+    os_version = Stemcell::Builder::validate_env('OS_VERSION')
+
+    version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
+    base_image_dir = Stemcell::Builder::validate_env_dir('BASE_IMAGE_DIR')
+
+    version = File.read(File.join(version_dir, 'number')).chomp
     agent_commit = File.read(File.join(build_dir, 'compiled-agent', 'sha')).chomp
     base_image = JSON.parse(
       File.read(
-        Dir.glob(File.join(build_dir, 'base-gcp-image', 'base-gcp-image-*.json'))[0]
+        Dir.glob(File.join(base_image_dir, 'base-gcp-image-*.json'))[0]
       ).chomp
     )["base_image"]
 
@@ -18,9 +24,9 @@ namespace :build do
     FileUtils.mkdir_p(output_directory)
 
     gcp_builder = Stemcell::Builder::Gcp.new(
-      account_json: ENV.fetch("ACCOUNT_JSON"),
+      account_json: account_json,
       agent_commit: agent_commit,
-      os: ENV.fetch("OS_VERSION"),
+      os: os_version,
       output_directory: output_directory,
       packer_vars: {},
       source_image: base_image,
