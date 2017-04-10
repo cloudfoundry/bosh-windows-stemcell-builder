@@ -11,19 +11,23 @@ load File.expand_path('../../../../lib/tasks/build/aws.rake', __FILE__)
 describe 'Aws' do
   before(:each) do
     @original_env = ENV.to_hash
-    @build_dir = File.expand_path('../../../../build', __FILE__)
+    @version_dir = Dir.mktmpdir('aws')
+    @agent_dir = Dir.mktmpdir('aws')
+    @base_amis_dir = Dir.mktmpdir('aws')
     @output_directory = 'bosh-windows-stemcell'
-    FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
+    Rake::Task['build:aws'].reenable
   end
 
   after(:each) do
     ENV.replace(@original_env)
-    FileUtils.remove_dir(@build_dir)
     FileUtils.rm_rf(@output_directory)
+    FileUtils.rm_rf(@version_dir)
+    FileUtils.rm_rf(@agent_dir)
+    FileUtils.rm_rf(@base_amis_dir)
   end
 
-  it 'should build a aws stemcell' do
+  it 'should build an aws stemcell' do
     Dir.mktmpdir('aws-stemcell-test') do |tmpdir|
       os_version = 'some-os-version'
       version = 'some-version'
@@ -32,23 +36,23 @@ describe 'Aws' do
       ENV['AWS_ACCESS_KEY'] = 'some-aws_access_key'
       ENV['AWS_SECRET_KEY'] = 'some-aws_secret_key'
       ENV['OS_VERSION'] = os_version
-      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'aws')}:#{ENV['PATH']}"
+      ENV['PATH'] = "#{File.join(File.expand_path('../../../..', __FILE__), 'spec', 'fixtures', 'aws')}:#{ENV['PATH']}"
+      ENV['VERSION_DIR'] = @version_dir
+      ENV['AGENT_DIR'] = @agent_dir
+      ENV['BASE_AMIS_DIR'] = @base_amis_dir
 
-      FileUtils.mkdir_p(File.join(@build_dir, 'version'))
       File.write(
-        File.join(@build_dir, 'version', 'number'),
+        File.join(@version_dir, 'number'),
         'some-version'
       )
 
-      FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
       File.write(
-        File.join(@build_dir, 'compiled-agent', 'sha'),
+        File.join(@agent_dir, 'sha'),
         agent_commit
       )
 
-      FileUtils.mkdir_p(File.join(@build_dir, 'base-amis'))
       File.write(
-        File.join(@build_dir, 'base-amis', 'base-amis-1.json'),
+        File.join(@base_amis_dir, 'base-amis-1.json'),
         [
             {
               "name" => "us-east-1",

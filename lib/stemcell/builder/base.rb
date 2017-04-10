@@ -3,6 +3,20 @@ module Stemcell
     class PackerFailure < RuntimeError
     end
 
+    class EnvironmentValidationError < RuntimeError
+    end
+
+    def self.validate_env(var)
+      raise EnvironmentValidationError.new("environment missing #{var}") unless ENV.has_key?(var)
+      ENV[var]
+    end
+
+    def self.validate_env_dir(vars)
+      dir = self.validate_env(vars)
+      raise EnvironmentValidationError.new("directory #{dir} does not exist") unless Dir.exist?(dir)
+      dir
+    end
+
     class Base
       def initialize(os:, output_directory:, version:, agent_commit:, packer_vars:)
         @os = os
