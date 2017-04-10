@@ -31,97 +31,96 @@ module Stemcell
       end
 
       def base_url
-        "https://publish.windowsazure.com/publishers/pivotal/offers/#{sku}"
+        "https://publish.windowsazure.com/publishers/pivotal/offers/#{sku}/"
       end
 
-      def json(response_string)
-        response_json = JSON.parse(response_string)
-        json = response_json['Offer']
+      private
 
-        vm_images = json['VirtualMachineImagesByServicePlan'][sku]['VirtualMachineImages']
+        def json(response_string)
+          response_json = JSON.parse(response_string)
+          json = response_json['Offer']
 
-        converted_vm_to_add = {
-          'VersionId' => version,
-          'VersionLabel' => version,
-          'OsImageUrl' => sas_uri,
-          'isLocked' => false,
-          'DataDiskUrlsByLunNumber' => {}
-        }
-        vm_images.push(converted_vm_to_add)
-        json.to_json
-      end
+          vm_images = json['VirtualMachineImagesByServicePlan'][sku]['VirtualMachineImages']
 
-      def sas_uri
-        sas_json = create_azure_sas
-        sas_info = JSON.parse sas_json
-        sas_split = sas_info['url'].split '?'
-        sas_split[0] + container_path + sas_split[1]
-      end
-
-      def create_azure_sas
-        now = Time.now.utc
-        next_year = (now + 1.year).iso8601
-        yesterday = (now - 1.day).iso8601
-        login_cmd = "azure login --username #{azure_client_id} --password #{azure_client_secret} "\
-          "--service-principal --tenant #{azure_tenant_id} --environment AzureCloud"
-        puts "running azure login"
-        `#{login_cmd}`
-        create_sas_cmd = "azure storage container sas create #{container_name} rl "\
-          "--account-name #{azure_storage_account} --account-key #{azure_storage_access_key} "\
-          "--start #{yesterday} --expiry #{next_year} --json"
-        puts "running azure storage container sas create"
-        `#{create_sas_cmd}`
-      end
-
-      # Helper Methods
-
-      # Add request headers
-      def add_headers!(req, api_key)
-        req['Accept'] = 'application/json'
-        req['Authorization'] =  "WAMP apikey=#{api_key}"
-        req['X-Protocol-Version'] = '2'
-        req['Content-Type'] = 'application/json'
-      end
-
-      # Get request to obtain offer data
-      def obtain_offer_data(url, api_key)
-        uri = URI(url)
-        req = Net::HTTP::Get.new(uri)
-        add_headers!(req, api_key)
-        response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-          http.request(req)
+          converted_vm_to_add = {
+            'VersionId' => version,
+            'VersionLabel' => version,
+            'OsImageUrl' => sas_uri,
+            'isLocked' => false,
+            'DataDiskUrlsByLunNumber' => {}
+          }
+          vm_images.push(converted_vm_to_add)
+          json.to_json
         end
-        puts "response: #{response.body}"
-        return response
-      end
 
-      # Post request to update the offer with latest image
-      def update_offer(url, body, api_key)
-        uri = URI(url+'update')
-        req = Net::HTTP::Post.new(uri)
-        req.body = body
-        add_headers!(req, api_key)
-
-        response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-          http.request(req)
+        def sas_uri
+          sas_json = create_azure_sas
+          sas_info = JSON.parse sas_json
+          sas_split = sas_info['url'].split '?'
+          sas_split[0] + container_path + sas_split[1]
         end
-        puts "response: #{response.body}"
-        return response
-      end
 
-      # Post request to stage the offer
-      def stage_offer(url, api_key)
-        uri = URI(url+'stage')
-        req = Net::HTTP::Post.new(uri)
-        add_headers!(req, api_key)
-
-        response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-          http.request(req)
+        def create_azure_sas
+          now = Time.now.utc
+          next_year = (now + 1.year).iso8601
+          yesterday = (now - 1.day).iso8601
+          login_cmd = "azure login --username #{azure_client_id} --password #{azure_client_secret} "\
+            "--service-principal --tenant #{azure_tenant_id} --environment AzureCloud"
+          puts "running azure login"
+          `#{login_cmd}`
+          create_sas_cmd = "azure storage container sas create #{container_name} rl "\
+            "--account-name #{azure_storage_account} --account-key #{azure_storage_access_key} "\
+            "--start #{yesterday} --expiry #{next_year} --json"
+          puts "running azure storage container sas create"
+          `#{create_sas_cmd}`
         end
-        puts "response: #{response.body}"
-        return response
-      end
 
+        # Helper Methods
+
+        # Add request headers
+        def add_headers!(req, api_key)
+          req['Accept'] = 'application/json'
+          req['Authorization'] =  "WAMP apikey=#{api_key}"
+          req['X-Protocol-Version'] = '2'
+          req['Content-Type'] = 'application/json'
+        end
+
+        # Get request to obtain offer data
+        def obtain_offer_data(url, api_key)
+          uri = URI(url)
+          req = Net::HTTP::Get.new(uri)
+          add_headers!(req, api_key)
+          response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+            http.request(req)
+          end
+          puts "response: #{response.body}"
+          return response
+        end
+
+        # Post request to update the offer with latest image
+        def update_offer(url, body, api_key)
+          uri = URI(url+'update')
+          req = Net::HTTP::Post.new(uri)
+          req.body = body
+          add_headers!(req, api_key)
+
+          response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+            http.request(req)
+          end
+          return response
+        end
+
+        # Post request to stage the offer
+        def stage_offer(url, api_key)
+          uri = URI(url+'stage')
+          req = Net::HTTP::Post.new(uri)
+          add_headers!(req, api_key)
+
+          response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+            http.request(req)
+          end
+          return response
+        end
     end
   end
 end
