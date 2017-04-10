@@ -31,7 +31,7 @@ module Stemcell
       end
 
       def base_url
-        "https://publish.windowsazure.com/publishers/pivotal/offers/#{sku}/"
+        "https://publish.windowsazure.com/publishers/pivotal/offers/bosh-windows-server/"
       end
 
       private
