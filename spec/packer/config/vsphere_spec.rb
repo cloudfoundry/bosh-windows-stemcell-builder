@@ -108,6 +108,9 @@ describe Packer::Config do
 
     describe 'provisioners' do
       it 'returns the expected provisioners' do
+        stemcell_deps_dir = Dir.mktmpdir('vsphere')
+        ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
+
         provisioners = Packer::Config::VSphere.new(
           output_directory: 'output_directory',
           num_vcpus: 1,
@@ -125,7 +128,7 @@ describe Packer::Config do
             Packer::Config::Provisioners::INSTALL_CF_FEATURES,
             Packer::Config::Provisioners::PROTECT_CF_CELL,
             Packer::Config::Provisioners::TEST_INSTALLED_UPDATES,
-            Packer::Config::Provisioners::LGPO_EXE,
+            Packer::Config::Provisioners::lgpo_exe,
             Packer::Config::Provisioners::install_agent('vsphere'),
             Packer::Config::Provisioners.download_windows_updates('output_directory'),
             Packer::Config::Provisioners::OPTIMIZE_DISK,
@@ -133,6 +136,9 @@ describe Packer::Config do
             Packer::Config::Provisioners::CLEAR_PROVISIONER,
           ].flatten
         )
+
+        FileUtils.rm_rf(stemcell_deps_dir)
+        ENV.delete('STEMCELL_DEPS_DIR')
       end
     end
   end

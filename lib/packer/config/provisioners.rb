@@ -101,11 +101,13 @@ module Packer
         'inline' => ['Get-Log']
       }.freeze
 
-      LGPO_EXE = {
-        'type' => 'file',
-        'source' => 'build/windows-stemcell-dependencies/lgpo/LGPO.exe',
-        'destination' => 'C:\\windows\\LGPO.exe'
-      }.freeze
+      def self.lgpo_exe
+        {
+          'type' => 'file',
+          'source' => File.join(Stemcell::Builder::validate_env_dir('STEMCELL_DEPS_DIR'), 'lgpo', 'LGPO.exe'),
+          'destination' => 'C:\\windows\\LGPO.exe'
+        }.freeze
+      end
 
       def self.sysprep_shutdown(iaas)
         return [

@@ -13,6 +13,9 @@ describe 'VSphere' do
     @original_env = ENV.to_hash
     @build_dir = File.expand_path('../../../../build', __FILE__)
     @output_directory = 'bosh-windows-stemcell'
+    @version_dir = Dir.mktmpdir('vsphere')
+    @vmx_version_dir = Dir.mktmpdir('vsphere')
+    @stemcell_deps_dir = Dir.mktmpdir('vsphere')
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
   end
@@ -21,6 +24,9 @@ describe 'VSphere' do
     ENV.replace(@original_env)
     FileUtils.rm_rf(@build_dir)
     FileUtils.rm_rf(@output_directory)
+    FileUtils.rm_rf(@version_dir)
+    FileUtils.rm_rf(@vmx_version_dir)
+    FileUtils.rm_rf(@stemcell_deps_dir)
   end
 
   it 'should build a vsphere_add_updates vmx' do
@@ -32,18 +38,17 @@ describe 'VSphere' do
     ENV['INPUT_BUCKET'] = 'input-vmx-bucket'
     ENV['VMX_CACHE_DIR'] = '/tmp'
     ENV['OUTPUT_BUCKET'] = 'stemcell-output-bucket'
+    ENV['VERSION_DIR'] = @version_dir
 
     ENV['ADMINISTRATOR_PASSWORD'] = 'pass'
 
     ENV['OS_VERSION'] = os_version
     ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'vsphere')}:#{ENV['PATH']}"
 
-    FileUtils.mkdir_p(File.join(@build_dir, 'vmx-version'))
     File.write(
-      File.join(@build_dir, 'vmx-version', 'number'),
+      File.join(@version_dir, 'number'),
       'some-vmx-version'
     )
-
 
     s3_vmx= double(:s3_vmx)
     allow(s3_vmx).to receive(:fetch).and_return("1234")
@@ -83,6 +88,9 @@ describe 'VSphere' do
     ENV['ORGANIZATION'] = 'organization'
 
     ENV['OS_VERSION'] = os_version
+    ENV['VERSION_DIR'] = @version_dir
+    ENV['VMX_VERSION_DIR'] = @vmx_version_dir
+    ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
     ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'vsphere')}:#{ENV['PATH']}"
 
     FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
@@ -91,14 +99,12 @@ describe 'VSphere' do
       agent_commit
     )
 
-    FileUtils.mkdir_p(File.join(@build_dir, 'version'))
     File.write(
-      File.join(@build_dir, 'version', 'number'),
+      File.join(@version_dir, 'number'),
       version
     )
-    FileUtils.mkdir_p(File.join(@build_dir, 'vmx-version'))
     File.write(
-      File.join(@build_dir, 'vmx-version', 'number'),
+      File.join(@vmx_version_dir, 'number'),
       'some-vmx-version'
     )
 
