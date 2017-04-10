@@ -92,19 +92,5 @@ describe Stemcell::Builder do
         expect(stemcell_path).to eq('path-to-stemcell')
       end
     end
-
-    describe 'stage_image' do
-      it 'stages an image on the Azure Marketplace' do
-        pending('not yet implemented')
-        fail
-      end
-    end
-
-    describe 'publish_image' do
-      it 'publishes an image on the Azure Marketplace' do
-        pending('not yet implemented')
-        fail
-      end
-    end
   end
 end
