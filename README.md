@@ -6,7 +6,7 @@ This repo contains a set of scripts for automating the process of building BOSH 
 
 * [Ruby](https://www.ruby-lang.org/en/downloads/) Latest 2.3.x version
 * [Golang](https://golang.org/dl/) Latest 1.8.x compiler
-* [Packer](https://www.packer.io) version [v0.12.0](https://releases.hashicorp.com/packer/0.12.0/) for concourse automation
+* [Packer](https://www.packer.io/downloads.html) for concourse automation
 
 #### Install
 
