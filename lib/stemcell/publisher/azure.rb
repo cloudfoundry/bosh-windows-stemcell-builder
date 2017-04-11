@@ -50,6 +50,8 @@ module Stemcell
             'DataDiskUrlsByLunNumber' => {}
           }
           vm_images.push(converted_vm_to_add)
+          puts "adding new vm image:"
+          puts converted_vm_to_add.inspect
           json.to_json
         end
 
