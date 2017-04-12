@@ -192,7 +192,7 @@ The format of the rake task is `rake package:vsphere_ova[<path_to_ova>,<path_to_
 
 For example:
 ```
-rake package:vsphere_ova[./build/image.ova,./build/stemcell,1035.0.0]
+rake package:vsphere_ova[./build/image.ova,./build/stemcell,1035.0]
 ```
 
 NOTE: The OVA filename and destination path cannot currently have spaces in them (this will be fixed).
