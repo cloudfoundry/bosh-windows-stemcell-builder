@@ -1,20 +1,6 @@
 require 'stemcell/publisher/azure'
 
 describe Stemcell::Publisher::Azure do
-  let(:finalize_response) do
-    <<-HEREDOC
-{
-  "Status": {
-    "production": {
-      "State": "Listed"
-    },
-    "staging": {
-      "State": "Staged"
-    }
-  }
-}
-    HEREDOC
-end
   let(:response) do
     <<-HEREDOC
 {
@@ -137,7 +123,7 @@ let(:sas_response) do
 HEREDOC
 end
 
-let(:progress_response) do
+let(:staging_progress) do
 <<-HEREDOC
 {
   "staging": {
@@ -175,6 +161,18 @@ let(:progress_response) do
 }
 HEREDOC
 end
+let(:production_progress) do
+<<-HEREDOC
+{
+  "staging": {
+    "State": "Staged"
+  },
+  "production": {
+    "State": "Listed"
+  }
+}
+HEREDOC
+end
 
 
   describe '#finalize' do
@@ -183,7 +181,7 @@ end
 
       @publisher = Stemcell::Publisher::Azure.new(api_key: api_key)
 
-      stub_request(:get, @publisher.base_url).to_return(status: 200, body: finalize_response)
+      stub_request(:get, @publisher.base_url+'progress').to_return(status: 200, body: production_progress)
     end
 
     it 'does not print the API key to stdout or stderr' do
@@ -200,7 +198,7 @@ end
 
       @publisher.finalize
 
-      assert_requested(:get, @publisher.base_url) do |req|
+      assert_requested(:get, @publisher.base_url+'progress') do |req|
         headers = req.headers
         (headers['Accept'] == 'application/json') &&
           (headers['Authorization'] ==  "WAMP apikey=#{@publisher.api_key}") &&
@@ -216,7 +214,7 @@ end
 
       @publisher = Stemcell::Publisher::Azure.new(api_key: api_key)
 
-      stub_request(:get, @publisher.base_url+'progress').to_return(status: 200, body: progress_response)
+      stub_request(:get, @publisher.base_url+'progress').to_return(status: 200, body: staging_progress)
       stub_request(:post, @publisher.base_url+'list').to_return(status: 202)
     end
 

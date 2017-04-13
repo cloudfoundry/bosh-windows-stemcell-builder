@@ -15,7 +15,7 @@ module Stemcell
         :azure_client_secret, :container_name, :container_path
 
       def finalize
-        status = poll_status_production
+        status = poll_status('production')
         if status == 'Listed'
           puts "Successfully published offer"
         else
@@ -24,7 +24,7 @@ module Stemcell
       end
 
       def publish
-        status = poll_status_staging
+        status = poll_status('staging')
         if status == 'Staged'
           post(base_url+'list', '')
         else
@@ -54,25 +54,7 @@ module Stemcell
 
       private
 
-        def poll_status_production
-          status = ''
-          while true
-            response = get(base_url)
-            unless response.kind_of? Net::HTTPSuccess
-              raise "could not obtain progress data. expected 200 but got '#{response.code}'"
-            end
-            response_body = JSON.parse(response.body)
-            status = response_body['Status']['production']['State']
-            puts "production status: #{status}"
-            break if status != 'Draft'
-            puts "#{Time.now} Starting to sleep for an hour"
-            sleep 60 * 60
-            puts "#{Time.now} Done sleeping"
-          end
-          return status
-        end
-
-        def poll_status_staging
+        def poll_status(mode)
           status = ''
           while true
             response = get(base_url+'progress')
@@ -80,9 +62,9 @@ module Stemcell
               raise "could not obtain progress data. expected 200 but got '#{response.code}'"
             end
             response_body = JSON.parse(response.body)
-            status = response_body['staging']['State']
-            puts "staging status: #{status}"
-            break if status !=  'InProgress'
+            status = response_body[mode]['State']
+            puts "#{mode} status: #{status}"
+            break if status != 'InProgress'
             puts "#{Time.now} Starting to sleep for an hour"
             sleep 60 * 60
             puts "#{Time.now} Done sleeping"
