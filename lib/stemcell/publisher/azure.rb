@@ -14,18 +14,36 @@ module Stemcell
         :azure_storage_access_key, :azure_tenant_id, :azure_client_id,
         :azure_client_secret, :container_name, :container_path
 
+      def finalize
+        status = poll_status_production
+        if status == 'Listed'
+          puts "Successfully published offer"
+        else
+          raise "could not publish offer. status is #{status}"
+        end
+      end
+
       def publish
-        response = obtain_offer_data(base_url, api_key)
-        if response.code != '200'
+        status = poll_status_staging
+        if status == 'Staged'
+          post(base_url+'list', '')
+        else
+          raise "could not stage offer. status is #{status}"
+        end
+      end
+
+      def stage
+        response = get(base_url)
+        unless response.kind_of? Net::HTTPSuccess
           raise "could not obtain offer data. expected 200 but got '#{response.code}'"
         end
         update_body = json(response.body)
-        response = update_offer(base_url, update_body, api_key)
-        if response.code != '200'
+        response = post(base_url+'update', update_body)
+        unless response.kind_of? Net::HTTPSuccess
           raise "could not update offer data. expected 200 but got '#{response.code}'"
         end
-        response = stage_offer(base_url, api_key)
-        if response.code != '202'
+        response = post(base_url+'stage', '')
+        unless response.kind_of? Net::HTTPSuccess
           raise "could not stage offer. expected 202 but got '#{response.code}'"
         end
       end
@@ -35,6 +53,40 @@ module Stemcell
       end
 
       private
+
+        def poll_status_production
+          status = 'Draft'
+          while status == 'Draft'
+            puts "#{Time.now} Starting to sleep for an hour"
+            sleep 60 * 60
+            puts "#{Time.now} Done sleeping"
+            response = get(base_url)
+            unless response.kind_of? Net::HTTPSuccess
+              raise "could not obtain progress data. expected 200 but got '#{response.code}'"
+            end
+            response_body = JSON.parse(response.body)
+            status = response_body['Status']['production']['State']
+            puts "production status: #{status}"
+          end
+          return status
+        end
+
+        def poll_status_staging
+          status = 'InProgress'
+          while status == 'InProgress'
+            puts "#{Time.now} Starting to sleep for an hour"
+            sleep 60 * 60
+            puts "#{Time.now} Done sleeping"
+            response = get(base_url+'progress')
+            unless response.kind_of? Net::HTTPSuccess
+              raise "could not obtain progress data. expected 200 but got '#{response.code}'"
+            end
+            response_body = JSON.parse(response.body)
+            status = response_body['staging']['State']
+            puts "staging status: #{status}"
+          end
+          return status
+        end
 
         def json(response_string)
           response_json = JSON.parse(response_string)
@@ -87,8 +139,7 @@ module Stemcell
           req['Content-Type'] = 'application/json'
         end
 
-        # Get request to obtain offer data
-        def obtain_offer_data(url, api_key)
+        def get(url)
           puts "url: #{url}"
           uri = URI(url)
           req = Net::HTTP::Get.new(uri)
@@ -100,26 +151,11 @@ module Stemcell
           return response
         end
 
-        # Post request to update the offer with latest image
-        def update_offer(url, body, api_key)
+        def post(url, body)
           puts "url: #{url}"
-          uri = URI(url+'update')
+          uri = URI(url)
           req = Net::HTTP::Post.new(uri)
           req.body = body
-          add_headers!(req, api_key)
-
-          response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-            http.request(req)
-          end
-          puts "response: #{response.body}"
-          return response
-        end
-
-        # Post request to stage the offer
-        def stage_offer(url, api_key)
-          puts "url: #{url}"
-          uri = URI(url+'stage')
-          req = Net::HTTP::Post.new(uri)
           add_headers!(req, api_key)
 
           response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
