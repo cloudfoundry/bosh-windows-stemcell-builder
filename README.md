@@ -28,7 +28,10 @@ rake package:bwats                                                             #
 rake package:psmodules                                                         # Package BOSH psmodules into bosh-psmodules.zip
 rake package:vsphere_ova[ova_file_name,output_directory,version,updates_path]  # Package VSphere OVA files into Stemcells
 
-rake publish:azure                                                             # Publish an image to the Azure marketplace
+rake publish:staging:azure                                                     # Stage an image to the Azure marketplace
+rake publish:production:azure                                                  # Publish an image to the Azure marketplace
+rake publish:finalize:azure                                                    # Wait for finalizing an image to the Azure marketplace
+
 rake publish:gcp                                                               # Publish an image to GCP
 
 rake run:bwats[iaas]                                                           # Run bosh-windows-acceptance-tests (BWATS)

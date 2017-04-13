@@ -1,6 +1,20 @@
 require 'stemcell/publisher/azure'
 
 describe Stemcell::Publisher::Azure do
+  let(:finalize_response) do
+    <<-HEREDOC
+{
+  "Status": {
+    "production": {
+      "State": "Listed"
+    },
+    "staging": {
+      "State": "Staged"
+    }
+  }
+}
+    HEREDOC
+end
   let(:response) do
     <<-HEREDOC
 {
@@ -123,7 +137,121 @@ let(:sas_response) do
 HEREDOC
 end
 
+let(:progress_response) do
+<<-HEREDOC
+{
+  "staging": {
+    "State": "Staged",
+    "Steps": [
+      {
+        "PercentCompleted": 0,
+        "StartDateTimeOffset": "2017-04-12T15:19:04.0249287+00:00",
+        "Failures": [],
+        "StepNames": {
+          "en-us": "2012r2: CertifyVM - Certification is in progress."
+        }
+      },
+      {
+        "PercentCompleted": 0,
+        "StartDateTimeOffset": "2017-04-12T15:19:03.1406153+00:00",
+        "Failures": [],
+        "StepNames": {
+          "en-us": "2012r2: ProvisionVM - This step has not started yet."
+        }
+      },
+      {
+        "PercentCompleted": 0,
+        "StartDateTimeOffset": "2017-04-12T15:19:03.4844813+00:00",
+        "Failures": [],
+        "StepNames": {
+          "en-us": "2012r2: PackageVM - This step has not started yet."
+        }
+      }
+    ]
+  },
+  "production": {
+    "State": "Listed"
+  }
+}
+HEREDOC
+end
+
+
+  describe '#finalize' do
+    before(:each) do
+      api_key = 'some-api-key'
+
+      @publisher = Stemcell::Publisher::Azure.new(api_key: api_key)
+
+      stub_request(:get, @publisher.base_url).to_return(status: 200, body: finalize_response)
+    end
+
+    it 'does not print the API key to stdout or stderr' do
+      allow_any_instance_of(Object).to receive(:sleep)
+
+      expect{@publisher.finalize}.
+        to_not output(/#{@publisher.api_key}/).to_stdout
+      expect{@publisher.finalize}.
+        to_not output(/#{@publisher.api_key}/).to_stderr
+    end
+
+    it 'invokes the Azure publisher API' do
+      allow_any_instance_of(Object).to receive(:sleep)
+
+      @publisher.finalize
+
+      assert_requested(:get, @publisher.base_url) do |req|
+        headers = req.headers
+        (headers['Accept'] == 'application/json') &&
+          (headers['Authorization'] ==  "WAMP apikey=#{@publisher.api_key}") &&
+        (headers['X-Protocol-Version'] == '2') &&
+        (headers['Content-Type'] == 'application/json')
+      end
+    end
+  end
+
   describe '#publish' do
+    before(:each) do
+      api_key = 'some-api-key'
+
+      @publisher = Stemcell::Publisher::Azure.new(api_key: api_key)
+
+      stub_request(:get, @publisher.base_url+'progress').to_return(status: 200, body: progress_response)
+      stub_request(:post, @publisher.base_url+'list').to_return(status: 202)
+    end
+
+    it 'does not print the API key to stdout or stderr' do
+      allow_any_instance_of(Object).to receive(:sleep)
+
+      expect{@publisher.publish}.
+        to_not output(/#{@publisher.api_key}/).to_stdout
+      expect{@publisher.publish}.
+        to_not output(/#{@publisher.api_key}/).to_stderr
+    end
+
+    it 'invokes the Azure publisher API' do
+      allow_any_instance_of(Object).to receive(:sleep)
+
+      @publisher.publish
+
+      assert_requested(:get, @publisher.base_url+'progress') do |req|
+        headers = req.headers
+        (headers['Accept'] == 'application/json') &&
+          (headers['Authorization'] ==  "WAMP apikey=#{@publisher.api_key}") &&
+        (headers['X-Protocol-Version'] == '2') &&
+        (headers['Content-Type'] == 'application/json')
+      end
+      assert_requested(:post, @publisher.base_url+'list') do |req|
+        headers = req.headers
+        (headers['Accept'] == 'application/json') &&
+          (headers['Authorization'] ==  "WAMP apikey=#{@publisher.api_key}") &&
+        (headers['X-Protocol-Version'] == '2') &&
+        (headers['Content-Type'] == 'application/json')
+      end
+    end
+  end
+
+  describe '#stage' do
     before(:each) do
       version = 'some-version'
       sku = '2012r2'
@@ -150,14 +278,14 @@ end
     end
 
     it 'does not print the API key to stdout or stderr' do
-      expect{@publisher.publish}.
+      expect{@publisher.stage}.
         to_not output(/#{@publisher.api_key}/).to_stdout
-      expect{@publisher.publish}.
+      expect{@publisher.stage}.
         to_not output(/#{@publisher.api_key}/).to_stderr
     end
 
     it 'invokes the Azure publisher API' do
-      @publisher.publish
+      @publisher.stage
 
       assert_requested(:get, @publisher.base_url) do |req|
         headers = req.headers
