@@ -5,6 +5,10 @@
     This cmdlet installs all available Windows Updates in batches
 #>
 
+# Do not place these inside a function - they will not behave as expected
+$script:ScriptName = $MyInvocation.MyCommand.ToString()
+$script:ScriptPath = $MyInvocation.MyCommand.Path
+
 function Register-WindowsUpdatesTask {
     $Prin = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
     $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
@@ -14,7 +18,7 @@ function Register-WindowsUpdatesTask {
 }
 
 function Unregister-WindowsUpdatesTask {
-		Unregister-ScheduledTask -TaskName "InstallWindowsUpdates" -Confirm:$false
+        Unregister-ScheduledTask -TaskName "InstallWindowsUpdates" -Confirm:$false
 }
 
 function Wait-WindowsUpdates {
@@ -26,8 +30,7 @@ function Wait-WindowsUpdates {
 }
 
 function Install-WindowsUpdates {
-    $script:ScriptName = $MyInvocation.MyCommand.ToString()
-    $script:ScriptPath = $MyInvocation.MyCommand.Path
+
     $script:UpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
     $script:UpdateSession.ClientApplicationID = 'BOSH.WindowsUpdates'
     $script:UpdateSearcher = $script:UpdateSession.CreateUpdateSearcher()
@@ -203,11 +206,11 @@ function Get-UpdateBatch() {
     Write-Log "Checking For Windows Updates"
     $Username = $env:USERDOMAIN + "\" + $env:USERNAME
 
-    New-EventLog -Source $ScriptName -LogName 'Windows Powershell' -ErrorAction SilentlyContinue
+    New-EventLog -Source $script:ScriptName -LogName 'Windows Powershell' -ErrorAction SilentlyContinue
 
-    $Message = "Script: " + $ScriptPath + "`nScript User: " + $Username + "`nStarted: " + (Get-Date).toString()
+    $Message = "Script: " + $script:ScriptPath + "`nScript User: " + $Username + "`nStarted: " + (Get-Date).toString()
 
-    Write-EventLog -LogName 'Windows Powershell' -Source $ScriptName -EventID "104" -EntryType "Information" -Message $Message
+    Write-EventLog -LogName 'Windows Powershell' -Source $script:ScriptName -EventID "104" -EntryType "Information" -Message $Message
     Write-Log $Message
 
     $script:UpdateSearcher = $script:UpdateSession.CreateUpdateSearcher()
