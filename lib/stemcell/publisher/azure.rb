@@ -55,11 +55,8 @@ module Stemcell
       private
 
         def poll_status_production
-          status = 'Draft'
-          while status == 'Draft'
-            puts "#{Time.now} Starting to sleep for an hour"
-            sleep 60 * 60
-            puts "#{Time.now} Done sleeping"
+          status = ''
+          while true
             response = get(base_url)
             unless response.kind_of? Net::HTTPSuccess
               raise "could not obtain progress data. expected 200 but got '#{response.code}'"
@@ -67,16 +64,17 @@ module Stemcell
             response_body = JSON.parse(response.body)
             status = response_body['Status']['production']['State']
             puts "production status: #{status}"
+            break if status != 'Draft'
+            puts "#{Time.now} Starting to sleep for an hour"
+            sleep 60 * 60
+            puts "#{Time.now} Done sleeping"
           end
           return status
         end
 
         def poll_status_staging
-          status = 'InProgress'
-          while status == 'InProgress'
-            puts "#{Time.now} Starting to sleep for an hour"
-            sleep 60 * 60
-            puts "#{Time.now} Done sleeping"
+          status = ''
+          while true
             response = get(base_url+'progress')
             unless response.kind_of? Net::HTTPSuccess
               raise "could not obtain progress data. expected 200 but got '#{response.code}'"
@@ -84,6 +82,10 @@ module Stemcell
             response_body = JSON.parse(response.body)
             status = response_body['staging']['State']
             puts "staging status: #{status}"
+            break if status !=  'InProgress'
+            puts "#{Time.now} Starting to sleep for an hour"
+            sleep 60 * 60
+            puts "#{Time.now} Done sleeping"
           end
           return status
         end
