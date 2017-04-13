@@ -179,6 +179,30 @@ function Write-AgentConfig {
   }
 }
 "@
+    $openstackConfig = @"
+{
+  "Platform": {
+    "Linux": {
+      "DevicePathResolutionType": "virtio"
+    }
+  },
+  "Infrastructure": {
+    "Settings": {
+      "Sources": [
+        {
+          "Type": "HTTP",
+          "URI": "http://169.254.169.254",
+          "UserDataPath": "/latest/user-data/",
+          "InstanceIDPath": "/latest/meta-data/instance-id/",
+          "SSHKeysPath": "/latest/meta-data/public-keys/0/openssh-key/"
+        }
+      ],
+      "UseRegistry": true,
+      "UseServerName": true
+    }
+  }
+}
+"@
     $vsphereConfig = @"
 {
   "Platform": {
@@ -211,6 +235,9 @@ function Write-AgentConfig {
     } elseif ($IaaS -eq 'gcp') {
         Write-Log "Agent Config: ${gcpConfig}"
         New-Item -ItemType file -path (Join-Path $boshDir "agent.json") -Value $gcpConfig
+    } elseif ($IaaS -eq 'openstack') {
+        Write-Log "Agent Config: ${openstackConfig}"
+        New-Item -ItemType file -path (Join-Path $boshDir "agent.json") -Value $openstackConfig
     } else {
         Throw "IaaS $($IaaS) is not supported"
     }

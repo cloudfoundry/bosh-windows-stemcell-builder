@@ -145,6 +145,16 @@ Describe "Write-AgentConfig" {
         }
     }
 
+    Context "when IaaS is 'openstack'" {
+        It "writes the agent config for openstack" {
+            { Write-AgentConfig -BoshDir $boshDir -IaaS openstack } | Should Not Throw
+            $configPath = (Join-Path $boshDir "agent.json")
+            Test-Path $configPath | Should Be $True
+            ($configPath) | Should Contain ([regex]::Escape('"SSHKeysPath": "/latest/meta-data/public-keys/0/openssh-key/"'))
+            ($configPath) | Should Contain ([regex]::Escape('"UseServerName": true'))
+        }
+    }
+
     Context "when IaaS is 'azure'" {
         It "writes the agent config for azure" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS azure } | Should Not Throw
