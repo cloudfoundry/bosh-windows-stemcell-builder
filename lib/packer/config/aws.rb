@@ -27,6 +27,7 @@ module Packer
             'associate_public_ip_address' => true,
             'communicator' => 'winrm',
             'winrm_username' => 'Administrator',
+            'winrm_timeout' => '1h',
             'user_data_file' => 'scripts/aws/setup_winrm.txt',
             'security_group_id' => region['security_group'],
             'ami_groups' => 'all'

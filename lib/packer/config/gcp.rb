@@ -27,6 +27,7 @@ module Packer
             'communicator' => 'winrm',
             'winrm_username' => 'winrmuser',
             'winrm_use_ssl' => false,
+            'winrm_timeout' => '1h',
             'metadata' => {
               'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/setup-winrm.ps1'
             }

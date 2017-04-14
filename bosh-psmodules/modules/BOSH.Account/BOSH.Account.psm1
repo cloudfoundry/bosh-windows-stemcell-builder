@@ -9,13 +9,18 @@ function Add-Account {
             [string]$User = $(Throw "Provide a user name"),
             [string]$Password = $(Throw "Provide a password")
          )
-    $group = "Administrators"
-
     Write-Log "Add-Account"
+
     Write-Log "Creating new local user $User."
     & NET USER $User $Password /add /y /expires:never
-    Write-Log "Adding local user $User to $group."
-    & NET LOCALGROUP $group $Username /add
+
+    $Group = "Administrators"
+
+    Write-Log "Adding local user $User to $Group."
+    $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
+    $AdminGroup = $adsi.Children | where {$_.SchemaClassName -eq 'group' -and $_.Name -eq $Group }
+    $UserObject = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $User }
+    $AdminGroup.Add($UserObject.Path)
 }
 
 <#
