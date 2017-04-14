@@ -37,12 +37,14 @@ describe Packer::Config::Gcp do
 
   describe 'provisioners' do
     it 'returns the expected provisioners' do
+      allow(SecureRandom).to receive(:hex).and_return("some-password")
       provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory').provisioners
       expect(provisioners).to eq(
         [
           Packer::Config::Provisioners::BOSH_PSMODULES,
           Packer::Config::Provisioners::NEW_PROVISIONER,
           Packer::Config::Provisioners::INSTALL_CF_FEATURES,
+          Packer::Config::Provisioners::install_windows_updates,
           Packer::Config::Provisioners::PROTECT_CF_CELL,
           Packer::Config::Provisioners.install_agent("gcp"),
           Packer::Config::Provisioners.download_windows_updates('some-output-directory'),

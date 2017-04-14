@@ -8,12 +8,15 @@
 $RegistryKey="HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
 function Enable-Autologon {
-    Param ([Parameter(Mandatory=$true)][string]$AdministratorPassword)
+    Param (
+        [Parameter(Mandatory=$true)][string]$Password,
+        [string]$User="Provisioner"
+    )
 
     Write-Log "Enable Autologon"
     Set-ItemProperty -Path $RegistryKey -Name AutoAdminLogon -Value 1 -Force
-    Set-ItemProperty -Path $RegistryKey -Name DefaultUserName -Value Administrator -Force
-    Set-ItemProperty -Path $RegistryKey -Name DefaultPassword -Value $AdministratorPassword -Force
+    Set-ItemProperty -Path $RegistryKey -Name DefaultUserName -Value $User -Force
+    Set-ItemProperty -Path $RegistryKey -Name DefaultPassword -Value $Password -Force
 }
 
 function Disable-Autologon {

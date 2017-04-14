@@ -3,20 +3,32 @@ require 'securerandom'
 module Packer
   module Config
     class Provisioners
-      def self.install_windows_updates(administrator_password)
+      def self.install_windows_updates
+        password = SecureRandom.hex(10)+"!"
         return [
+          {
+            'type' => 'powershell',
+            'inline' => ["Add-Account -User Provisioner -Password #{password}"]
+          },
           {
             'type' => 'powershell',
             'inline' => ["Register-WindowsUpdatesTask"]
           },
           {
             'type' => 'windows-restart',
-            'restart_command' => "powershell.exe -Command Wait-WindowsUpdates -AdministratorPassword #{administrator_password}",
+            'restart_command' => "powershell.exe -Command Wait-WindowsUpdates -Password #{password} -User Provisioner",
             'restart_timeout' => '12h'
           },
           {
             'type' => 'powershell',
             'inline' => ["Unregister-WindowsUpdatesTask"]
+          },
+          {
+            'type' => 'powershell',
+            'inline' => ["Remove-Account -User Provisioner"]
+          }, {
+            'type' => 'powershell',
+            'inline' => ['Test-InstalledUpdates']
           }
         ]
       end
@@ -60,11 +72,6 @@ module Packer
           'scripts' => ['scripts/install-bosh-psmodules.ps1']
         }
       ].freeze
-
-      TEST_INSTALLED_UPDATES = {
-        'type' => 'powershell',
-        'inline' => ['Test-InstalledUpdates']
-      }.freeze
 
       NEW_PROVISIONER = {
         'type' => 'powershell',

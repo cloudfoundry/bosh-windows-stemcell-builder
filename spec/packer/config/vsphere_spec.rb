@@ -45,6 +45,7 @@ describe Packer::Config do
 
     describe 'provisioners' do
       it 'returns the expected provisioners' do
+        allow(SecureRandom).to receive(:hex).and_return("some-password")
 
         provisioners = Packer::Config::VSphereAddUpdates.new(
           output_directory: 'output_directory',
@@ -58,8 +59,7 @@ describe Packer::Config do
           [
             Packer::Config::Provisioners::BOSH_PSMODULES,
             Packer::Config::Provisioners::NEW_PROVISIONER,
-            Packer::Config::Provisioners.install_windows_updates('password'),
-            Packer::Config::Provisioners::TEST_INSTALLED_UPDATES,
+            Packer::Config::Provisioners.install_windows_updates,
             Packer::Config::Provisioners::GET_LOG,
             Packer::Config::Provisioners::CLEAR_PROVISIONER
           ].flatten
@@ -111,6 +111,8 @@ describe Packer::Config do
         stemcell_deps_dir = Dir.mktmpdir('vsphere')
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
+        allow(SecureRandom).to receive(:hex).and_return('some-password')
+
         provisioners = Packer::Config::VSphere.new(
           output_directory: 'output_directory',
           num_vcpus: 1,
@@ -126,8 +128,8 @@ describe Packer::Config do
             Packer::Config::Provisioners::BOSH_PSMODULES,
             Packer::Config::Provisioners::NEW_PROVISIONER,
             Packer::Config::Provisioners::INSTALL_CF_FEATURES,
+            Packer::Config::Provisioners.install_windows_updates,
             Packer::Config::Provisioners::PROTECT_CF_CELL,
-            Packer::Config::Provisioners::TEST_INSTALLED_UPDATES,
             Packer::Config::Provisioners::lgpo_exe,
             Packer::Config::Provisioners::install_agent('vsphere'),
             Packer::Config::Provisioners.download_windows_updates('output_directory'),

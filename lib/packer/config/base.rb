@@ -8,6 +8,7 @@ module Packer
           Provisioners::BOSH_PSMODULES,
           Provisioners::NEW_PROVISIONER,
           Provisioners::INSTALL_CF_FEATURES,
+          Provisioners.install_windows_updates,
           Provisioners::PROTECT_CF_CELL
         ]
       end
