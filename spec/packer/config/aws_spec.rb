@@ -30,6 +30,7 @@ describe Packer::Config::Aws do
         'associate_public_ip_address' => true,
         'communicator' => 'winrm',
         'winrm_username' => 'Administrator',
+        'winrm_timeout' => '1h',
         'user_data_file' => 'scripts/aws/setup_winrm.txt',
         'security_group_id' => 'sg1',
         'ami_groups' => 'all'

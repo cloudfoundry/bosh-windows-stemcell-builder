@@ -38,7 +38,7 @@ describe Packer::Config::Azure do
         'communicator' => 'winrm',
         'winrm_use_ssl' => 'true',
         'winrm_insecure' => 'true',
-        'winrm_timeout' => '3m',
+        'winrm_timeout' => '1h',
         'winrm_username' => 'packer'
       )
     end

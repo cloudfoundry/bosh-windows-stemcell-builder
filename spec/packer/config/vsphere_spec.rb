@@ -28,7 +28,7 @@ describe Packer::Config do
           'communicator' => 'winrm',
           'winrm_username' => 'Administrator',
           'winrm_password' => 'password',
-          'winrm_timeout' => '5m',
+          'winrm_timeout' => '6h',
           'winrm_insecure' => true,
           'vm_name' => 'packer-vmx',
           'shutdown_command' => "C:\\Windows\\System32\\shutdown.exe /s",
@@ -92,7 +92,7 @@ describe Packer::Config do
           'ssh_username' => 'Administrator',
           'winrm_username' => 'Administrator',
           'winrm_password' => 'password',
-          'winrm_timeout' => '8m',
+          'winrm_timeout' => '1h',
           'winrm_insecure' => true,
           'vm_name' => 'packer-vmx',
           'vmx_data' => {
