@@ -41,6 +41,7 @@ function Open-Zip {
 
     $ZipFile = (Resolve-Path $ZipFile).Path
     $OutPath = (Resolve-Path $OutPath).Path
+    Remove-Item "$OutPath\*" -Force -Recurse
     Write-Log "Unzipping: ${ZipFile} to ${OutPath}"
 
     Add-Type -AssemblyName System.IO.Compression.FileSystem

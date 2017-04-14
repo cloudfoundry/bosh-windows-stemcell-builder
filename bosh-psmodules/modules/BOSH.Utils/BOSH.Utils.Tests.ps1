@@ -21,6 +21,13 @@ Describe "Open-Zip" {
             { Open-Zip } | Should Throw "Provide a ZipFile to extract"
         }
     }
+    Context "when output file already exists" {
+        It "does not throw" {
+            New-Item -Path $outPath -Name "file.txt" -ItemType "file" -Value "Hello"
+            { Open-Zip -ZipFile "./example.zip" -OutPath $outPath } | Should Not Throw
+            Get-Content (Join-Path $outPath "file.txt") | Should Be "file"
+        }
+    }
     Context "when OutPath is not provided" {
         It "throws" {
             { Open-Zip -ZipFile "./example.zip" } | Should Throw "Provide an OutPath for extract"
