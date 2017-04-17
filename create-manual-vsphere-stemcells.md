@@ -146,6 +146,8 @@ rake package:psmodules
 - On your windows VM, start `powershell` and run `Install-CFFeatures`
 - **Optional** If you would like to apply the recommended ingress and service configuration:
     - Run the following powershell command `Protect-CFCell`
+    
+**Note:** To make sure you have the proper .NET Framework version(s) installed, follow [this guide](manual-stemcell-dotnet-version-guide.md)
 
 ## Step 5: Build & Install BOSH Agent
 
