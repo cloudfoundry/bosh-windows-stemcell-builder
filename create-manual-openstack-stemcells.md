@@ -125,7 +125,7 @@ where `username` is the user you will run these steps as.
      Install-Agent -IaaS openstack -agentZipPath <path-to-agent.zip>
      ```
      
-     **Note:** To make sure you have the proper .NET Framework version(s) installed, follow [this guide](manual-stemcell-dotnet-version-guide.md)
+**Note:** To make sure you have the proper .NET Framework version(s) installed, follow [this guide](manual-stemcell-dotnet-version-guide.md)
 
   * Optionally apply security policies as described in [create-manual-vsphere-stemcells.md]
 
