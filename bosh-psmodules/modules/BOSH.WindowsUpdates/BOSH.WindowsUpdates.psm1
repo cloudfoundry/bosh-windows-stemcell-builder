@@ -103,7 +103,7 @@ function Install-UpdateBatch() {
     $script:i = 0;
     $CurrentUpdates = $SearchResult.Updates | Select-Object
     while($script:i -lt $SearchResult.Updates.Count -and $script:CycleUpdateCount -lt $script:MaxUpdatesPerCycle) {
-        $Update = $CurrentUpdates[$script:i]
+        $Update = $SearchResult.Updates[$script:i]
         if (($null -ne $Update) -and (!$Update.IsDownloaded)) {
             [bool]$addThisUpdate = $false
             if ($Update.InstallationBehavior.CanRequestUserInput) {
@@ -195,8 +195,8 @@ function Install-UpdateBatch() {
             Title = $UpdatesToInstall.Item($i).Title
             Result = $InstallationResult.GetUpdateResult($i).ResultCode
         }
-        Write-Log "Item: " $UpdatesToInstall.Item($i).Title
-        Write-Log "Result: " $InstallationResult.GetUpdateResult($i).ResultCode;
+        Write-Log "Item: $UpdatesToInstall.Item($i).Title"
+        Write-Log "Result: $InstallationResult.GetUpdateResult($i).ResultCode"
     }
 
     Invoke-RebootOrComplete
