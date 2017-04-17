@@ -103,7 +103,7 @@ function Install-UpdateBatch() {
     $script:i = 0;
     $CurrentUpdates = $SearchResult.Updates | Select-Object
     while($script:i -lt $SearchResult.Updates.Count -and $script:CycleUpdateCount -lt $script:MaxUpdatesPerCycle) {
-        $Update = $SearchResult.Updates[$script:i]
+        $Update = $CurrentUpdates[$script:i]
         if (($null -ne $Update) -and (!$Update.IsDownloaded)) {
             [bool]$addThisUpdate = $false
             if ($Update.InstallationBehavior.CanRequestUserInput) {
