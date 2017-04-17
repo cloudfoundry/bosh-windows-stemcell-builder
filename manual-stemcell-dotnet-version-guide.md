@@ -2,7 +2,8 @@
 
 Running .NET applications on VMs deployed from Windows 2012R2 stemcells requires that the correct
 .NET framework version(s) are installed. Below is a guide to how to enable the desired .NET framework
-on the stemcell you build.
+on the stemcell you build. You can also visit [this link](https://msdn.microsoft.com/en-us/library/bb822049(v=vs.110).aspx)
+for some more detailed information.
 
 ### .NET 4.6.x and .NET 4.5.x
 
