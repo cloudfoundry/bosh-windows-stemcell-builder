@@ -134,4 +134,15 @@ foreach ($feature in $features) {
   }
 }
 
+#Ensure provisioner user is deleted
+$adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
+$user = "Provisioner"
+$existing = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
+if ( $existing -eq $null){
+  Write-Host "$user user is deleted"
+} else {
+  Write-Error "$user user still exists. Please run 'Remove-Account -User $user'"
+}
+
+
 Exit 0
