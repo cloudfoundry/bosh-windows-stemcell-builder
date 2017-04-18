@@ -101,7 +101,11 @@ function Install-UpdateBatch() {
     Write-Log "Evaluating Available Updates with limit of $($script:MaxUpdatesPerCycle):"
     $UpdatesToDownload = New-Object -ComObject 'Microsoft.Update.UpdateColl'
     $script:i = 0;
-    $CurrentUpdates = $SearchResult.Updates
+    if $Host.Version.Major -eq 5 {
+      $CurrentUpdates = $SearchResult.Updates
+    } else {
+      $CurrentUpdates = $SearchResult.Updates | Select-Object
+    }
     while($script:i -lt $SearchResult.Updates.Count -and $script:CycleUpdateCount -lt $script:MaxUpdatesPerCycle) {
         $Update = $CurrentUpdates[$script:i]
         if (($null -ne $Update) -and (!$Update.IsDownloaded)) {
