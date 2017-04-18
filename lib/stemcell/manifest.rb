@@ -59,6 +59,7 @@ module Stemcell
         super("bosh-azure-hyperv-#{os}-go_agent", version, EMPTY_FILE_SHA, os)
         @contents['cloud_properties'] = {
           'infrastructure' => 'azure',
+          'os_type' => 'windows',
           'image' => {
             'offer' => offer,
             'publisher' => publisher,

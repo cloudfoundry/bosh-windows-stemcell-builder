@@ -97,6 +97,7 @@ describe Stemcell::Manifest do
           'operating_system' => 'some-os',
           'cloud_properties' => {
             'infrastructure' => 'azure',
+            'os_type' => 'windows',
             'image' => {
               'offer' => 'some-offer',
               'publisher' => 'some-publisher',
