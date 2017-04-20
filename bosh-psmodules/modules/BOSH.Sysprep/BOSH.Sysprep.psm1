@@ -38,7 +38,8 @@ function Create-Unattend {
       [string]$NewPassword = $(Throw "Provide an Administrator Password"),
       [string]$ProductKey,
       [string]$Organization,
-      [string]$Owner
+      [string]$Owner,
+      [switch]$SkipLGPO
    )
 
    Write-Log "Starting Create-Unattend"
@@ -78,12 +79,16 @@ function Create-Unattend {
                     <Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command Disable-AutomaticUpdates</Path>
                     <WillReboot>Never</WillReboot>
                 </RunSynchronousCommand>
+                $(if (!$SkipLGPO) {
+@"
                 <RunSynchronousCommand wcm:action="add">
                     <Description>Apply Group Policies</Description>
                     <Order>2</Order>
                     <Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command Enable-LocalSecurityPolicy</Path>
                     <WillReboot>Always</WillReboot>
                 </RunSynchronousCommand>
+"@
+                })
             </RunSynchronous>
         </component>
         <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-ServerManager-SvrMgrNc" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
@@ -304,7 +309,8 @@ function Invoke-Sysprep() {
       [string]$NewPassword="",
       [string]$ProductKey="",
       [string]$Organization="",
-      [string]$Owner=""
+      [string]$Owner="",
+      [switch]$SkipLGPO
    )
 
    Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
@@ -329,8 +335,12 @@ function Invoke-Sysprep() {
          C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
       }
       "vsphere" {
-         Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey -Organization $Organization -Owner $Owner
-         C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown
+         Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
+           -Organization $Organization -Owner $Owner -SkipLGPO:$SkipLGPO
+
+         # Exec sysprep and shutdown
+         C:/windows/system32/sysprep/sysprep.exe /generalize /oobe `
+           /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown
       }
       Default { Throw "Invalid IaaS '${IaaS}' supported platforms are: AWS, Azure, GCP and Vsphere" }
    }
