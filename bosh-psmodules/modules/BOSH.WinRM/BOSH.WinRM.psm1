@@ -6,6 +6,9 @@
 #>
 
 function Enable-WinRM {
+      Write-Log "Getting config"
+      runCmd 'winrm get winrm/config'
+
       Write-Log "Start WinRM with defaults"
       runCmd 'winrm quickconfig -q'
 
@@ -33,6 +36,9 @@ function Enable-WinRM {
 
       Write-Log "Win RM port open"
       runCmd 'netsh firewall add portopening TCP 5985 "Port 5985"'
+
+      Write-Log "Getting config after"
+      runCmd 'winrm get winrm/config'
 }
 
 function runCmd {
