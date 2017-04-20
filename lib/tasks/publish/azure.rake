@@ -44,8 +44,14 @@ namespace :publish do
   namespace :finalize do
     desc 'Wait for finalizing an image to the Azure marketplace'
     task :azure do
+      container_root = File.expand_path('../../../../..', __FILE__)
+      version = File.read(File.join(container_root, 'version', 'number')).chomp
       publisher = Stemcell::Publisher::Azure.new(
-        api_key: ENV['API_KEY']
+        version: version,
+        sku: ENV['SKU'],
+        azure_tenant_id: ENV['AZURE_TENANT_ID'],
+        azure_client_id: ENV['AZURE_CLIENT_ID'],
+        azure_client_secret: ENV['AZURE_CLIENT_SECRET']
       )
       publisher.finalize
     end

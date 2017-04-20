@@ -4,6 +4,8 @@ require 'json'
 require 'active_support'
 require 'active_support/core_ext'
 require 'active_model'
+require 'azure_mgmt_resources'
+require_relative '../../exec_command'
 
 module Stemcell
   module Publisher
@@ -15,11 +17,13 @@ module Stemcell
         :azure_client_secret, :container_name, :container_path
 
       def finalize
-        status = poll_status('production')
-        if status == 'Listed'
-          puts "Successfully published offer"
-        else
-          raise "could not publish offer. status is #{status}"
+        login_to_azure
+        while true
+          images = Executor.exec_command("azure vm image list eastus pivotal bosh-windows-server #{sku} --json")
+          if JSON.parse(images).detect {|i| i['name'] == version }
+            break
+          end
+          sleep 60 * 60
         end
       end
 
@@ -102,15 +106,19 @@ module Stemcell
           now = Time.now.utc
           next_year = (now + 1.year).iso8601
           yesterday = (now - 1.day).iso8601
-          login_cmd = "azure login --username #{azure_client_id} --password #{azure_client_secret} "\
-            "--service-principal --tenant #{azure_tenant_id} --environment AzureCloud"
-          puts "running azure login"
-          `#{login_cmd}`
+          login_to_azure
           create_sas_cmd = "azure storage container sas create #{container_name} rl "\
             "--account-name #{azure_storage_account} --account-key #{azure_storage_access_key} "\
             "--start #{yesterday} --expiry #{next_year} --json"
           puts "running azure storage container sas create"
           `#{create_sas_cmd}`
+        end
+
+        def login_to_azure
+          login_cmd = "azure login --username #{azure_client_id} --password #{azure_client_secret} "\
+            "--service-principal --tenant #{azure_tenant_id} --environment AzureCloud"
+          puts "running azure login"
+          Executor.exec_command(login_cmd)
         end
 
         # Helper Methods

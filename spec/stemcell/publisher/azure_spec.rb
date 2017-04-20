@@ -174,37 +174,47 @@ let(:production_progress) do
 HEREDOC
 end
 
+let(:finalize_response1){
+  '[{ "name": "1.0.1" }, { "name": "1.0.3" }]'
+}
+let(:finalize_response2){
+  '[{ "name": "1.0.1" }, { "name": "1.0.3" }, { "name": "some-version" }]'
+}
+
 
   describe '#finalize' do
+    let (:login_cmd) {
+      "azure login --username some-azure-client-id --password some-azure-client-secret "\
+      "--service-principal --tenant some-azure-tenant-id --environment AzureCloud"
+    }
     before(:each) do
-      api_key = 'some-api-key'
+      @publisher = Stemcell::Publisher::Azure.new(sku: 'some-sku',
+                                                  azure_client_id: 'some-azure-client-id',
+                                                  azure_client_secret: 'some-azure-client-secret',
+                                                  azure_tenant_id: 'some-azure-tenant-id',
+                                                  version: 'some-version')
 
-      @publisher = Stemcell::Publisher::Azure.new(api_key: api_key)
-
-      stub_request(:get, @publisher.base_url+'progress').to_return(status: 200, body: production_progress)
+      allow(Executor).to receive(:exec_command).with(login_cmd)
+      allow(Executor).to receive(:exec_command).
+        with("azure vm image list eastus pivotal bosh-windows-server some-sku --json").
+        and_return(finalize_response1, finalize_response2)
+      allow_any_instance_of(Object).to receive(:sleep)
     end
 
-    it 'does not print the API key to stdout or stderr' do
-      allow_any_instance_of(Object).to receive(:sleep)
-
+    it 'does not print the client secret to stdout or stderr' do
       expect{@publisher.finalize}.
-        to_not output(/#{@publisher.api_key}/).to_stdout
+        to_not output(/#{@publisher.azure_client_secret}/).to_stdout
       expect{@publisher.finalize}.
-        to_not output(/#{@publisher.api_key}/).to_stderr
+        to_not output(/#{@publisher.azure_client_secret}/).to_stderr
     end
 
-    it 'invokes the Azure publisher API' do
-      allow_any_instance_of(Object).to receive(:sleep)
-
+    it 'invokes the Azure CLI' do
       @publisher.finalize
 
-      assert_requested(:get, @publisher.base_url+'progress') do |req|
-        headers = req.headers
-        (headers['Accept'] == 'application/json') &&
-          (headers['Authorization'] ==  "WAMP apikey=#{@publisher.api_key}") &&
-        (headers['X-Protocol-Version'] == '2') &&
-        (headers['Content-Type'] == 'application/json')
-      end
+      expect(Executor).to have_received(:exec_command).with(login_cmd)
+      expect(Executor).to have_received(:exec_command).
+        with("azure vm image list eastus pivotal bosh-windows-server some-sku --json").
+        twice
     end
   end
 
