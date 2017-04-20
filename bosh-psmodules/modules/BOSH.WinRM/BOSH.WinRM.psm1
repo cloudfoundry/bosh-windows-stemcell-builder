@@ -6,11 +6,11 @@
 #>
 
 function Enable-WinRM {
-      Write-Log "Getting config"
-      runCmd 'winrm get winrm/config'
-
       Write-Log "Start WinRM with defaults"
       runCmd 'winrm quickconfig -q'
+
+      Write-Log "Getting config"
+      runCmd 'winrm get winrm/config'
 
       Write-Log "Override defaults to allow unlimited shells/processes/memory"
       runCmd 'winrm set winrm/config @{MaxTimeoutms="7200000"}'
