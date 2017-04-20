@@ -29,7 +29,7 @@ module Packer
             'winrm_use_ssl' => false,
             'winrm_timeout' => '1h',
             'metadata' => {
-              'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/consolidate-winrm/scripts/gcp/setup-winrm.ps1'
+              'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1'
             }
           }
         ]

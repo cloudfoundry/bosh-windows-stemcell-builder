@@ -14,7 +14,7 @@ function Write-Log {
    Write-Host $msg
 }
 
-$winrmUrl = 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/consolidate-winrm/bosh-psmodules/modules/BOSH.WinRM/BOSH.WinRM.psm1'
+$winrmUrl = 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/bosh-psmodules/modules/BOSH.WinRM/BOSH.WinRM.psm1'
 Write-Log "Making bosh module directory"
 $dir = 'C:\Program Files\WindowsPowerShell\Modules\BOSH.WinRM'
 New-Item -Path $dir -ItemType Directory -Force
