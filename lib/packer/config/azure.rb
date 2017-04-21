@@ -50,12 +50,11 @@ module Packer
       end
 
       def provisioners
-        ( Base.instance_method(:pre_provisioners).bind(self).call <<
         [
-          Provisioners.install_agent('azure').freeze
-          #Provisioners.download_windows_updates(@output_directory).freeze,
-        ] <<
-        Base.instance_method(:post_provisioners).bind(self).call('azure')).flatten
+          Base.pre_provisioners,
+          Provisioners.install_agent('azure').freeze,
+          Base.post_provisioners('azure')
+        ].flatten
       end
     end
   end
