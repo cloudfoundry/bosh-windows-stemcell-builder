@@ -5,25 +5,38 @@
     This cmdlet installs the minimum set of features for a CloudFoundry Cell
 #>
 function Install-CFFeatures {
-    Write-Log "Installing CloudFoundry Cell Windows Features"
-    $ErrorActionPreference = "Stop";
-    trap { $host.SetShouldExit(1) }
+  Write-Log "Getting WinRM config"
+  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  Write-Log "$winrm_config"
 
-    WindowsFeatureInstall("Web-Webserver")
-    WindowsFeatureInstall("Web-WebSockets")
-    WindowsFeatureInstall("AS-Web-Support")
-    WindowsFeatureInstall("AS-NET-Framework")
-    WindowsFeatureInstall("Web-WHC")
-    WindowsFeatureInstall("Web-ASP")
+  Write-Log "Installing CloudFoundry Cell Windows Features"
+  $ErrorActionPreference = "Stop";
+  trap { $host.SetShouldExit(1) }
 
-    Write-Log "Installed CloudFoundry Cell Windows Features"
+  WindowsFeatureInstall("Web-Webserver")
+  WindowsFeatureInstall("Web-WebSockets")
+  WindowsFeatureInstall("AS-Web-Support")
+  WindowsFeatureInstall("AS-NET-Framework")
+  WindowsFeatureInstall("Web-WHC")
+  WindowsFeatureInstall("Web-ASP")
+
+  Write-Log "Installed CloudFoundry Cell Windows Features"
 }
 
 function Protect-CFCell {
+  Write-Log "Getting WinRM config"
+  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  Write-Log "$winrm_config"
   enable-rdp
+  Write-Log "Getting WinRM config"
+  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  Write-Log "$winrm_config"
   disable-service("WinRM")
   disable-service("W3Svc")
   set-firewall
+  Write-Log "Getting WinRM config"
+  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  Write-Log "$winrm_config"
 }
 
 function WindowsFeatureInstall {

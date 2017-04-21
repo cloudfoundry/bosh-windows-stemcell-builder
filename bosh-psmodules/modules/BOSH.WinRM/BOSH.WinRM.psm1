@@ -9,7 +9,7 @@ function Enable-WinRM {
       Write-Log "Start WinRM with defaults"
       runCmd 'winrm quickconfig -q'
 
-      Write-Log "Getting config"
+      Write-Log "Getting WinRM config"
       runCmd 'winrm get winrm/config'
 
       Write-Log "Override defaults to allow unlimited shells/processes/memory"
@@ -37,7 +37,7 @@ function Enable-WinRM {
       Write-Log "Win RM port open"
       runCmd 'netsh firewall add portopening TCP 5985 "Port 5985"'
 
-      Write-Log "Getting config after"
+      Write-Log "Getting WinRM config after"
       runCmd 'winrm get winrm/config'
 }
 
