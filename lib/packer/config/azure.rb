@@ -53,7 +53,8 @@ module Packer
         [
           Base.pre_provisioners,
           Provisioners.install_agent('azure').freeze,
-          Base.post_provisioners('azure')
+          Provisioners::CLEAR_PROVISIONER,
+          Provisioners::sysprep_shutdown('azure')
         ].flatten
       end
     end
