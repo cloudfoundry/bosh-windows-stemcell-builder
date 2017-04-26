@@ -19,7 +19,7 @@ module Stemcell
       def finalize
         login_to_azure
         while true
-          images = Executor.exec_command("azure vm image list eastus pivotal bosh-windows-server #{sku} --json")
+          images = `azure vm image list eastus pivotal bosh-windows-server #{sku} --json`
           if JSON.parse(images).detect {|i| i['name'] == version }
             break
           end
