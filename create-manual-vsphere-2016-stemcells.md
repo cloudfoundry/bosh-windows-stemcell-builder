@@ -4,11 +4,26 @@
 
 Follow step #1 from [Windows 2012 vSphere stemcell](create-manual-vsphere-stemcells.md) docs to create a VM and install from a Windows 2016 ISO.
 
-NOTE: For Workstation you may be forced to use Hardware version 12.
+NOTE: Select "Windows 2012" as your OS so that you can use hardware version 9.
 
 ## Package BOSH PSModules, Install BOSH PSModules, Build & Install Agent
 
-Follow steps #2, #3, and #5 from [Windows 2012 vSphere stemcell](create-manual-vsphere-stemcells.md)
+First load powershell, then define the unzip function:
+
+```
+function Unzip {
+    param([string]$ZipFile, [string]$OutPath)
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($ZipFile, $OutPath)
+
+    Remove-Item -Path $ZipFile -Force
+}
+Unzip -ZipFile {{PATH_TO_ZIP}} -OutPath {{OUTPUT_PATH}}
+```
+
+Follow steps #2, #3, and #5 from [Windows 2012 vSphere stemcell](create-manual-vsphere-stemcells.md), then shut down the VM.
+You can use the above unzip function to unzip the BOSH PS modules.
 
 (note: skip #4)
 
