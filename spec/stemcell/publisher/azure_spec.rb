@@ -194,9 +194,9 @@ let(:finalize_response2){
                                                   azure_tenant_id: 'some-azure-tenant-id',
                                                   version: 'some-version')
 
+
       allow(Executor).to receive(:exec_command).with(login_cmd)
-      allow(Executor).to receive(:exec_command).
-        with("azure vm image list eastus pivotal bosh-windows-server some-sku --json").
+      allow_any_instance_of(Object).to receive(:`).
         and_return(finalize_response1, finalize_response2)
       allow_any_instance_of(Object).to receive(:sleep)
     end
@@ -212,9 +212,6 @@ let(:finalize_response2){
       @publisher.finalize
 
       expect(Executor).to have_received(:exec_command).with(login_cmd)
-      expect(Executor).to have_received(:exec_command).
-        with("azure vm image list eastus pivotal bosh-windows-server some-sku --json").
-        twice
     end
   end
 
