@@ -23,3 +23,5 @@ Install-WindowsFeature Net-Framework-Core
 
 Installing this Windows feature will enable .NET 3.5 and doing so **before** installing Windows Updates
 will ensure you install the latest patches and security updates for the framework.
+
+_Note that if you're deploying a stemcell on Cloud Foundry and intend to use .NET 3.5, you cannot deploy a .NET application with the HWC Buildpack. You must build your project as a console application and deploy with the binary buildpack._
