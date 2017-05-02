@@ -52,7 +52,7 @@ describe 'Gcp' do
 
       File.write(
         File.join(@base_image_dir, 'base-gcp-image-1.json'),
-        {'base_image' => 'some-base-image'}.to_json
+        {'base_image' => 'some-base-image', 'image_family' => 'some-family'}.to_json
       )
 
       Rake::Task['build:gcp'].invoke

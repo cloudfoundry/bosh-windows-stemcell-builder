@@ -1,10 +1,11 @@
 module Stemcell
   class Builder
     class Gcp < Base
-      def initialize(account_json:, source_image:, **args)
+      def initialize(account_json:, source_image:, image_family:, **args)
         @account_json = account_json
         @project_id = JSON.parse(@account_json)['project_id']
         @source_image = source_image
+        @image_family = image_family
         super(args)
       end
 
@@ -22,8 +23,10 @@ module Stemcell
 
       private
         def packer_config
-          Packer::Config::Gcp.new(@account_json, @project_id, @source_image, @output_directory
-                                 ).dump
+          Packer::Config::Gcp.new(
+            @account_json, @project_id,
+            @source_image, @output_directory, @image_family
+          ).dump
         end
 
         def parse_packer_output(packer_output)

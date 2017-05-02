@@ -25,12 +25,14 @@ describe Stemcell::Builder do
         image_url = "https://www.googleapis.com/compute/v1/projects/some-project-id/global/images/#{image_name}"
         account_json = {'project_id' => 'some-project-id'}.to_json
         packer_output = ",artifact,0,id,#{image_name}"
-        source_image = '{"base_image":"some-source-image"}'
+        source_image = "some-source-image"
+        image_family= "some-family"
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
-        allow(Packer::Config::Gcp).to receive(:new).with(account_json, 'some-project-id', source_image, output_directory
-                                                        ).and_return(packer_config)
+        allow(Packer::Config::Gcp).to receive(:new).with(
+          account_json, 'some-project-id', source_image, output_directory, image_family
+        ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
         allow(packer_runner).to receive(:run).with(command, packer_vars).
@@ -62,7 +64,8 @@ describe Stemcell::Builder do
           agent_commit: agent_commit,
           packer_vars: packer_vars,
           account_json: account_json,
-          source_image: source_image
+          source_image: source_image,
+          image_family: image_family
         ).build
         expect(stemcell_path).to eq('path-to-stemcell')
       end
@@ -71,13 +74,15 @@ describe Stemcell::Builder do
         it 'raises an error' do
           project_id = 'some-project-id'
           account_json = {'project_id' => project_id}.to_json
-          source_image = '{"base_image":"some-source-image"}'
+          source_image = "some-source-image"
+          image_family = "some-family"
           packer_vars = 'some-packer-vars'
 
           packer_config = double(:packer_config)
           allow(packer_config).to receive(:dump).and_return('some-packer-config')
-          allow(Packer::Config::Gcp).to receive(:new).with(account_json, project_id, source_image, output_directory
-                                                          ).and_return(packer_config)
+          allow(Packer::Config::Gcp).to receive(:new).with(
+            account_json, project_id, source_image, output_directory, image_family
+          ).and_return(packer_config)
 
           packer_runner = double(:packer_runner)
           allow(packer_runner).to receive(:run).with('build', packer_vars).and_return(1)
@@ -91,7 +96,8 @@ describe Stemcell::Builder do
               agent_commit: '',
               packer_vars: packer_vars,
               account_json: account_json,
-              source_image: source_image
+              source_image: source_image,
+              image_family: image_family
             ).build
           }.to raise_error(Stemcell::Builder::PackerFailure)
         end

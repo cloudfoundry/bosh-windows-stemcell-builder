@@ -6,12 +6,14 @@ describe Packer::Config::Gcp do
       account_json = 'some-account-json'
       project_id = 'some-project-id'
       source_image = 'some-base-image'
+      image_family = 'some-image-family'
       output_dir = 'some-output-directory'
       builders = Packer::Config::Gcp.new(
         account_json,
         project_id,
         source_image,
-        output_dir
+        output_dir,
+        image_family
       ).builders
       expect(builders[0]).to include(
         'type' => 'googlecompute',
@@ -19,7 +21,7 @@ describe Packer::Config::Gcp do
         'project_id' => project_id,
         'tags' => ['winrm'],
         'source_image' => source_image,
-        'image_family' => 'windows-2012-r2',
+        'image_family' => image_family,
         'zone' => 'us-east1-c',
         'disk_size' => 50,
         'machine_type' => 'n1-standard-4',
@@ -39,7 +41,7 @@ describe Packer::Config::Gcp do
   describe 'provisioners' do
     it 'returns the expected provisioners' do
       allow(SecureRandom).to receive(:hex).and_return("some-password")
-      provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory').provisioners
+      provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2').provisioners
       expect(provisioners).to eq(
         [
           Packer::Config::Provisioners::BOSH_PSMODULES,
