@@ -23,6 +23,16 @@ function Install-CFFeatures {
   Write-Log "Installed CloudFoundry Cell Windows Features"
 }
 
+function Install-ContainersFeature {
+  Write-Log "Installing Windows 2016 Containers Feature"
+  $ErrorActionPreference = "Stop";
+  trap { $host.SetShouldExit(1) }
+
+  WindowsFeatureInstall("Containers")
+
+  Write-Log "Installed Windows 2016 Containers Feature"
+}
+
 function Protect-CFCell {
   Write-Log "Getting WinRM config"
   $winrm_config = & cmd.exe /c 'winrm get winrm/config'

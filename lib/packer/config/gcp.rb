@@ -41,7 +41,8 @@ module Packer
           [
             Provisioners::BOSH_PSMODULES,
             Provisioners::NEW_PROVISIONER,
-            Provisioners.install_agent('gcp').freeze,
+            Provisioners::INSTALL_CONTAINERS_FEATURE,
+            Provisioners.install_agent('gcp').freeze
           ].flatten
         else
           [
