@@ -40,7 +40,7 @@ releases:
 
 stemcells:
 - alias: windows
-  os: windows2012R2
+  os: {{.StemcellOs}}
   version: latest
 
 update:
@@ -96,6 +96,7 @@ type ManifestProperties struct {
 	VmType         string
 	VmExtensions   string
 	Network        string
+	StemcellOs     string
 }
 
 type Config struct {
@@ -106,6 +107,7 @@ type Config struct {
 		Target       string `json:"target"`
 	} `json:"bosh"`
 	Stemcellpath string `json:"stemcell_path"`
+	StemcellOs   string `json:"stemcell_os"`
 	Az           string `json:"az"`
 	VmType       string `json:"vm_type"`
 	VmExtensions string `json:"vm_extensions"`
@@ -137,6 +139,7 @@ func (c *Config) generateManifest(deploymentName string) ([]byte, error) {
 		VmType:         c.VmType,
 		VmExtensions:   c.VmExtensions,
 		Network:        c.Network,
+		StemcellOs:     c.StemcellOs,
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
 	if err != nil {

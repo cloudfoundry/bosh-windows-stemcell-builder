@@ -97,35 +97,45 @@ check-firewall "public"
 check-firewall "private"
 check-firewall "domain"
 
+$windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
 
-# Ensure HWC apps can get started
-Start-Process -FilePath "C:\var\vcap\jobs\check-system\bin\HWCServer.exe" -ArgumentList "9000"
-$status = (Invoke-WebRequest -Uri "http://localhost:9000" -UseBasicParsing).StatusCode
-If ($status -ne 200) {
-  Write-Error "Failed to start HWC app"
-  Exit 1
-} else {
-  Write-Host "HWC apps can start"
+if ($windowsVersion -Match "2012") {
+  # Ensure HWC apps can get started
+  Start-Process -FilePath "C:\var\vcap\jobs\check-system\bin\HWCServer.exe" -ArgumentList "9000"
+  $status = (Invoke-WebRequest -Uri "http://localhost:9000" -UseBasicParsing).StatusCode
+  If ($status -ne 200) {
+    Write-Error "Failed to start HWC app"
+    Exit 1
+  } else {
+    Write-Host "HWC apps can start"
+  }
+
+  $status = try { Invoke-WebRequest -Uri "http://localhost" -UseBasicParsing } catch {}
+  If ($status -ne $nil) {
+    Write-Error "IIS Web Server is not turned off"
+    Exit 1
+  } else {
+    Write-Host "IIS Web Server is turned off"
+  }
 }
 
-$status = try { Invoke-WebRequest -Uri "http://localhost" -UseBasicParsing } catch {}
-If ($status -ne $nil) {
-  Write-Error "IIS Web Server is not turned off"
-  Exit 1
-} else {
-  Write-Host "IIS Web Server is turned off"
-}
-
-# Ensure CF Windows features are installed
-$features = New-Object System.Collections.ArrayList
-[void] $features.AddRange((
+$windowsFeatures = @()
+if ($windowsVersion -Match "2012") {
+  $windowsFeatures = @(
     "Web-Webserver",
     "Web-WebSockets",
     "AS-Web-Support",
     "AS-NET-Framework",
     "Web-WHC",
     "Web-ASP"
-))
+  )
+} elseif ($windowsVersion -Match "2016") {
+  $windowsFeatures = @("Containers")
+}
+
+# Ensure CF Windows features are installed
+$features = New-Object System.Collections.ArrayList
+[void] $features.AddRange($windowsFeatures)
 foreach ($feature in $features) {
   If (!(Get-WindowsFeature $feature).Installed) {
     Write-Error "Failed to find $feature"
