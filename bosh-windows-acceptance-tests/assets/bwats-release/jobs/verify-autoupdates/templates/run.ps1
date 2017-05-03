@@ -1,10 +1,20 @@
+$ReturnCode = 0
+
+if ((Get-Service wuauserv).Status -ne "Stopped") {
+    Write-Error "Error: expected wuauserv service to be Stopped"
+    $ReturnCode = 1
+}
+
+if ((Get-Service wuauserv).StartType -ne "Disabled") {
+    Write-Error "Error: expected wuauserv service StartType to be Disabled"
+    $ReturnCode = 1
+}
+
 $AutoUpdateRegistryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update"
 
 $ExpectedAUOptions = 1
 $ExpectedEnableFeaturedSoftware = 0
 $ExpectedIncludeRecommendedUpdates = 0
-
-$ReturnCode = 0
 
 $AutoUpdateProperties = Get-ItemProperty -Path $AutoUpdateRegistryPath
 
