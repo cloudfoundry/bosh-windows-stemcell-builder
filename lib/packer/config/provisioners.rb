@@ -83,16 +83,6 @@ module Packer
         'inline' => ['Install-CFFeatures']
       }.freeze
 
-      INSTALL_CONTAINERS_FEATURE = [
-        {
-          'type' => 'powershell',
-          'inline' => ['Install-ContainersFeature']
-        }, {
-          'type' => 'windows-restart',
-          'restart_timeout' => '10m'
-        }
-      ].freeze
-
       PROTECT_CF_CELL = {
         'type' => 'powershell',
         'inline' => ['Protect-CFCell']
