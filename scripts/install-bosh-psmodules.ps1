@@ -1,3 +1,6 @@
+$ErrorActionPreference = "Stop";
+trap { $host.SetShouldExit(1) }
+
 function Unzip {
     param([string]$ZipFile, [string]$OutPath, [Switch]$Keep)
 
