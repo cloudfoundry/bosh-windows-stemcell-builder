@@ -143,18 +143,18 @@ where `username` is the user you will run these steps as.
    image_sha=$(sha1sum image | awk '{ print $1 }')
    version='7777.7' # Use whatever version you'd like
    echo "---
-name: bosh-openstack-kvm-windows-go_agent
-version: '$version'
-bosh_protocol: 1
-sha1: $image_sha
-operating_system: 'windows2012R2'
-cloud_properties:
-  name: bosh-openstack-kvm-windows-go_agent
-  version: '$version'
-  infrastructure: openstack
-  disk: 30000
-  disk_format: qcow2
-  container_format: bare
-  os_type: windows" > stemcell.MF
+   name: bosh-openstack-kvm-windows-go_agent
+   version: '$version'
+   bosh_protocol: 1
+   sha1: $image_sha
+   operating_system: 'windows2012R2'
+   cloud_properties:
+     name: bosh-openstack-kvm-windows-go_agent
+     version: '$version'
+     infrastructure: openstack
+     disk: 30000
+     disk_format: qcow2
+     container_format: bare
+     os_type: windows" > stemcell.MF
    tar czf openstack-stemcell.tgz stemcell.MF image
    ```
