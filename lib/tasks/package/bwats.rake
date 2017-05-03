@@ -12,7 +12,7 @@ namespace :package do
     task :bwats do |t|
 	required_vars = [
 	    'BOSH_CA_CERT', 'BOSH_CLIENT', 'BOSH_CLIENT_SECRET',
-	    'BOSH_TARGET',
+	    'BOSH_TARGET', 'STEMCELL_OS',
 	    'STEMCELL_PATH', 'AZ', 'VM_TYPE', 'VM_EXTENSIONS', 'NETWORK'
 	]
 	missing_vars = false
@@ -39,6 +39,7 @@ namespace :package do
 		'target' => ENV['BOSH_TARGET']
 	    },
 	    'stemcell_path' => File.absolute_path(ENV['STEMCELL_PATH']),
+	    'stemcell_os' => ENV['STEMCELL_OS'],
 	    'az' => ENV['AZ'],
 	    'vm_type' => ENV['VM_TYPE'],
 	    'vm_extensions' => ENV['VM_EXTENSIONS'],

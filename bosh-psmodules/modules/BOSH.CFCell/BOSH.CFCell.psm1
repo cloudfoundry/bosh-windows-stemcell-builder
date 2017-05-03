@@ -13,24 +13,19 @@ function Install-CFFeatures {
   $ErrorActionPreference = "Stop";
   trap { $host.SetShouldExit(1) }
 
-  WindowsFeatureInstall("Web-Webserver")
-  WindowsFeatureInstall("Web-WebSockets")
-  WindowsFeatureInstall("AS-Web-Support")
-  WindowsFeatureInstall("AS-NET-Framework")
-  WindowsFeatureInstall("Web-WHC")
-  WindowsFeatureInstall("Web-ASP")
+  $windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
+  if ($windowsVersion -Match "2012") {
+    WindowsFeatureInstall("Web-Webserver")
+    WindowsFeatureInstall("Web-WebSockets")
+    WindowsFeatureInstall("AS-Web-Support")
+    WindowsFeatureInstall("AS-NET-Framework")
+    WindowsFeatureInstall("Web-WHC")
+    WindowsFeatureInstall("Web-ASP")
+  } elseif ($windowsVersion -Match "2016") {
+    WindowsFeatureInstall("Containers")
+  }
 
   Write-Log "Installed CloudFoundry Cell Windows Features"
-}
-
-function Install-ContainersFeature {
-  Write-Log "Installing Windows 2016 Containers Feature"
-  $ErrorActionPreference = "Stop";
-  trap { $host.SetShouldExit(1) }
-
-  WindowsFeatureInstall("Containers")
-
-  Write-Log "Installed Windows 2016 Containers Feature"
 }
 
 function Protect-CFCell {

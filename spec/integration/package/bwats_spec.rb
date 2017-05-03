@@ -36,6 +36,7 @@ describe 'Package::BWATS' do
 				'target' => 'some-target'
 			},
 			'stemcell_path' => File.absolute_path('some-path'),
+			'stemcell_os' => 'some-os',
 			'az' => 'some-az',
 			'vm_type' => 'some-type',
 			'vm_extensions' => 'some-vm-extensions',
@@ -45,7 +46,8 @@ describe 'Package::BWATS' do
 		ENV['BOSH_CLIENT']= config['bosh']['client']
 		ENV['BOSH_CLIENT_SECRET'] = config['bosh']['client_secret']
 		ENV['BOSH_TARGET']= config['bosh']['target']
-		ENV['STEMCELL_PATH']= 'some-path'
+		ENV['STEMCELL_PATH']= config['stemcell_path']
+		ENV['STEMCELL_OS']= config['stemcell_os']
 		ENV['AZ']= config['az']
 		ENV['VM_TYPE']= config['vm_type']
 		ENV['VM_EXTENSIONS']= config['vm_extensions']

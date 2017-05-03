@@ -37,21 +37,12 @@ module Packer
       end
 
       def provisioners
-        if @image_family == 'windows-2016-core'
-          [
-            Provisioners::BOSH_PSMODULES,
-            Provisioners::NEW_PROVISIONER,
-            Provisioners::INSTALL_CONTAINERS_FEATURE,
-            Provisioners.install_agent('gcp').freeze
-          ].flatten
-        else
-          [
-            Base.pre_provisioners,
-            Provisioners.install_agent('gcp').freeze,
-            Provisioners.download_windows_updates(@output_directory).freeze,
-            Base.post_provisioners('gcp')
-          ].flatten
-        end
+        [
+          Base.pre_provisioners,
+          Provisioners.install_agent('gcp').freeze,
+          Provisioners.download_windows_updates(@output_directory).freeze,
+          Base.post_provisioners('gcp')
+        ].flatten
       end
     end
   end
