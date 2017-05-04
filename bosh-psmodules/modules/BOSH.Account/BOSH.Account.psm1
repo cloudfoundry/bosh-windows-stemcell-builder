@@ -35,5 +35,7 @@ function Remove-Account {
          )
     Write-Log "Remove-Account"
     Write-Log "Removing local user $User."
-    & NET USER $User /delete /y
+    $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
+    $adsi.Delete('User', $User)
+    Move-Item -Path "C:\Users\$User" -Destination "$env:windir\Temp\$User" -Force
 }
