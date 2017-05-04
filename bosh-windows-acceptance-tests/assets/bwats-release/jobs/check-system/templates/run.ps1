@@ -153,6 +153,8 @@ if ( $existing -eq $null){
 } else {
   Write-Error "$user user still exists. Please run 'Remove-Account -User $user'"
 }
-
+if ((Resolve-Path "C:\Users\$user*").Length -ne 0) {
+  Write-Error "User $user home dir still exists"
+}
 
 Exit 0
