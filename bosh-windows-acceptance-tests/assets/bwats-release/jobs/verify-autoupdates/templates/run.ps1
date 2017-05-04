@@ -5,9 +5,10 @@ if ((Get-Service wuauserv).Status -ne "Stopped") {
     $ReturnCode = 1
 }
 
-if ((Get-Service wuauserv).StartType -ne "Disabled") {
-    Write-Error "Error: expected wuauserv service StartType to be Disabled"
-    $ReturnCode = 1
+$StartType = (Get-Service wuauserv).StartType
+if ($StartType -ne "Disabled") {
+    # On some IaaS's (AWS) updates are disabled, but the service is not running.
+    Write-Host "Warning: wuauserv service StartType is not disabled: ${StartType}"
 }
 
 $AutoUpdateRegistryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update"
