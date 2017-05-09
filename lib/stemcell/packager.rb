@@ -99,7 +99,8 @@ module Stemcell
       Dir.mktmpdir do |dir|
         exec_command("tar -xf #{ova_file_name} -C #{dir}")
 
-        ovf_file = File.open(find_ovf_file(dir))
+        ovf_file_name = find_ovf_file(dir)
+        ovf_file = File.open(ovf_file_name)
         f = Nokogiri::XML(ovf_file)
         nics = f.css("VirtualHardwareSection Item").select { |x| x.to_s =~ /Ethernet/i }
         if nics.first
@@ -108,7 +109,8 @@ module Stemcell
         File.write(ovf_file, f.to_s)
         ovf_file.close
         Dir.chdir(dir) do
-          exec_command("tar -cf #{ova_file_name} *")
+          # .ova *must* be first - ignore .mf file
+          exec_command("tar -cf #{ova_file_name} #{ovf_file_name} *.vmdk")
         end
       end
     end
