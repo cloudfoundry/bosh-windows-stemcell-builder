@@ -53,11 +53,11 @@ def tgz_extract(file_path, out_dir)
 end
 
 def read_from_tgz(path, filename)
-  contents = ''
+  contents = nil
   tar_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open(path))
   tar_extract.rewind
   tar_extract.each do |entry|
-    if entry.full_name.include?(filename)
+    if entry.full_name == filename
       contents = entry.read
     end
   end

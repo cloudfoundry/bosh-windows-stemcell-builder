@@ -110,7 +110,7 @@ module Stemcell
         ovf_file.close
         Dir.chdir(dir) do
           # .ova *must* be first - ignore .mf file
-          exec_command("tar -cf #{ova_file_name} #{ovf_file_name} *.vmdk")
+          exec_command("tar -cf #{ova_file_name} #{File.basename(ovf_file_name)} *.vmdk")
         end
       end
     end
