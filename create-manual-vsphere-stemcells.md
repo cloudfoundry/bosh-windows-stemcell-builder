@@ -157,7 +157,14 @@ If you do not have Ruby and Golang to package the BOSH Agent, skip the first ste
 - Transfer `build/agent.zip` you built in the previous step, or the `agent.zip` downloaded from the releases page to your Windows VM.
 - On your Windows VM, start `powershell` and run `Install-Agent -IaaS vsphere -agentZipPath <PATH_TO_agent.zip>`
 
-## Step 6: Sysprep and optionally apply security policies
+## Step 6: Optimize and Compress Disk
+
+In order to reduce the stemcell size, you can run the following powershell modules to
+
+- `Optimize-Disk` Run `dism` and clear unnecessary files
+- `Compress-Disk` Defrag and zero out the disk
+
+## Step 7: Sysprep and optionally apply security policies
 
 **1)** If you would like to apply the recommended local security policy:
 
@@ -175,7 +182,7 @@ Or:
   - Do not turn the VM back on before exporting
 
 
-## Step 7: Export image to OVA format
+## Step 8: Export image to OVA format
 
 If you are using VMware Fusion or Workstation, after powering off the VM locate the directory that has your VM's `.vmx` file. This defaults to
 the `Documents\\Virtual Machines\\VM-name\\VM-name.vmx` path in your user's home directory.
@@ -187,7 +194,7 @@ Convert the vmx file into an OVA archive using `ovftool`:
 ovftool <PATH_TO_VMX_FILE> image.ova
 ```
 
-## Step 8: Convert OVA file to a BOSH Stemcell
+## Step 9: Convert OVA file to a BOSH Stemcell
 
 The format of the rake task is `rake package:vsphere_ova[<path_to_ova>,<path_to_stemcell_destination_directory>,stemcell_version]`
 
