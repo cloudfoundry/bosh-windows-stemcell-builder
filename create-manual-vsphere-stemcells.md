@@ -118,7 +118,9 @@ Create a new virtual machine (if you are using an existing template, select the 
 
 ## Step 2: Package BOSH PSModules
 
-If you do not have Ruby to package the BOSH PSModules, skip this step and download the `bosh-psmodules.zip` attached in your desired release.
+PS Modules are provided as a package in releases on Github.
+
+If you need to build from source, then use the provided steps to do so.
 
 - Clone [this repo](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) on your host (NOT in the VM for your stemcell), and expand the submodules:
 
@@ -151,7 +153,9 @@ rake package:psmodules
 
 ## Step 5: Build & Install BOSH Agent
 
-If you do not have Ruby and Golang to package the BOSH Agent, skip the first step below and download the `agent.zip` attached in your desired release.
+BOSH Agent and dependencies are provided as a package in releases on Github.
+
+If you need to build from source, then use the provided steps to do so.
 
 - On your host (NOT in the VM for your stemcell), run `rake package:agent`
 - Transfer `build/agent.zip` you built in the previous step, or the `agent.zip` downloaded from the releases page to your Windows VM.
