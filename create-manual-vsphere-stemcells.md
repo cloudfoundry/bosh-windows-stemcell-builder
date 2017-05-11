@@ -209,3 +209,7 @@ rake package:vsphere_ova[./build/image.ova,./build/stemcell,1035.0]
 
 NOTE: The OVA filename and destination path cannot currently have spaces in them (this will be fixed).
 
+## Step 10: Testing Stemcell with bosh-windows-acceptance-tests
+
+Here are the [instructions for running bosh-windows-acceptance-tests(BWATS)](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/tree/develop#testing-stemcell-with-bosh-windows-acceptance-tests)
+
