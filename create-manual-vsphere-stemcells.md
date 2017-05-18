@@ -107,14 +107,26 @@ Create a new virtual machine (if you are using an existing template, select the 
 - In `Select compatibility` ensure that you choose `ESXi 5.5 and later` 
 - Select Windows as `Guest OS Family` and Microsoft Windows Server 2012 as `Guest OS version`
 - In `Customize hardware`
-    - Select `Datastore ISO File` under `New CD\DVD Drive`
-    - Expand the menu and select `Connect At Power On`
-    - Click `Browse` and select the ISO you uploaded to your datastore
+    - Under `New CD\DVD Drive`
+      - Select `Datastore ISO File` 
+      - Expand the menu and select `Connect At Power On`
+      - Click `Browse` and select the ISO you uploaded to your datastore
+      - Select `IDE` as the Virtual Device Node
+    - Remove floppy drive, if present
+    - Remove SATA Controller, if present
 - After creating VM, click Power On in the `Actions` tab for your VM, then install Windows:
   - Select server with GUI
   - Select custom installation
   - Follow along the installation process, and add select a password for Administrator user
 - In the vCenter web client, "Install VMware Tools" in the VM `Summary` tab.
+- With the VM powered off, select `Edit Settings`
+  - Remove CD/DVD drive
+  - Select `New device` > `CD/DVD Drive` and click `Add`
+  - Under `New CD\DVD Drive`
+      - Select `Client Device` 
+      - Expand the menu and select `IDE` as the Virtual Device Node
+      - Note: `Connect At Power On` should **not** be selected
+  - Remove New SATA Controller, if present
 
 ## Step 2: Download BOSH PSModules
 
