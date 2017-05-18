@@ -116,11 +116,11 @@ Create a new virtual machine (if you are using an existing template, select the 
   - Follow along the installation process, and add select a password for Administrator user
 - In the vCenter web client, "Install VMware Tools" in the VM `Summary` tab.
 
-## Step 2: Package BOSH PSModules
+## Step 2: Download BOSH PSModules
 
-PS Modules are provided as a package in releases on Github.
+Download the **bosh-psmodules.zip** for your desired release [here](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/releases).
 
-If you need to build from source, then use the provided steps to do so.
+Or, if you really need to build from source, follow the steps below.
 
 - Clone [this repo](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) on your host (NOT in the VM for your stemcell), and expand the submodules:
 
@@ -151,11 +151,11 @@ rake package:psmodules
     
 **Note:** To make sure you have the proper .NET Framework version(s) installed, follow [this guide](manual-stemcell-dotnet-version-guide.md)
 
-## Step 5: Build & Install BOSH Agent
+## Step 5: Download & Install BOSH Agent
 
-BOSH Agent and dependencies are provided as a package in releases on Github.
+Download the **agent.zip** for your desired release [here](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/releases).
 
-If you need to build from source, then use the provided steps to do so.
+Or, if you really need to build from source, follow the steps below.
 
 - On your host (NOT in the VM for your stemcell), run `rake package:agent`
 - Transfer `build/agent.zip` you built in the previous step, or the `agent.zip` downloaded from the releases page to your Windows VM.
