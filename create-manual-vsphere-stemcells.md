@@ -180,18 +180,16 @@ In order to reduce the stemcell size, you can run the following powershell modul
 - `Optimize-Disk` Run `dism` and clear unnecessary files
 - `Compress-Disk` Defrag and zero out the disk
 
-## Step 7: Sysprep and optionally apply security policies
+## Step 7: Sysprep and apply security policies
 
-**1)** If you would like to apply the recommended local security policy:
+Sysprep the system and apply the recommended local security policy. This ensures uptime as well as secure operations of the stemcell's VMs, especially when deployed with Cloud Foundry. (One notable behavior this sets is to disable Windows Automatic Updates, which tends to restart the OS. When this occurs, BOSH will attempt to recreate the VM.)
 
   - Download [lgpo.exe](https://msdnshared.blob.core.windows.net/media/2016/09/LGPOv2-PRE-RELEASE.zip) to the Windows VM you are provisioning and save `lgpo.exe` to `C:\Windows\lgpo.exe`
   - Run the following powershell command `Invoke-Sysprep -IaaS vsphere -NewPassword <NEW_PASSWORD> -ProductKey <PRODUCT_KEY> -Owner <OWNER> -Organization <ORGANIZATION>`
   - This will power off the VM
   - Do not turn the VM back on before exporting
   
-Or:
-
-**2)** If you would like to simply sysprep the image without applying the recommended security policies use the `-SkipLGPO` flag:
+While it is not recommended, it is possible to sysprep the image without applying these policies. You may do this in development setups or testing scenarios that don't require such security, or if you are using your own local policies. To do this, use the `-SkipLGPO` flag:
 
   - Run the following powershell command `Invoke-Sysprep -IaaS vsphere -NewPassword <NEW_PASSWORD> -ProductKey <PRODUCT_KEY> -Owner <OWNER> -Organization <ORGANIZATION> -SkipLGPO`
   - This will power off the VM
