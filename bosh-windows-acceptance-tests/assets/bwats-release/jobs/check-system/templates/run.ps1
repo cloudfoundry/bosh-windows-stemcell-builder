@@ -144,6 +144,21 @@ foreach ($feature in $features) {
   }
 }
 
+# Ensure docker is installed on Windows2016
+if ($windowsVersion -Match "2016") {
+  if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
+    Write-Error "Docker is not installed"
+  } else {
+    write-host "Docker is installed"
+    docker.exe history microsoft/windowsservercore
+    if ($? -eq $False) {
+      Write-Error "microsoft/windowsservercore image is not downloaded"
+    } else {
+      Write-Host "microsoft/windowsservercore image is downloaded"
+    }
+  }
+}
+
 #Ensure provisioner user is deleted
 $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
 $user = "Provisioner"
