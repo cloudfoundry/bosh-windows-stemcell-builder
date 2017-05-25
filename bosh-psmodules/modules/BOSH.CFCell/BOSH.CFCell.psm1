@@ -23,6 +23,19 @@ function Install-CFFeatures {
     WindowsFeatureInstall("Web-ASP")
   } elseif ($windowsVersion -Match "2016") {
     WindowsFeatureInstall("Containers")
+    if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
+      Write-Host "Installing Docker"
+
+      Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+      Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
+      Install-Package -Name docker -ProviderName DockerMsftProvider -Force
+
+      Start-Service Docker
+
+      Write-Host "Installed Docker"
+    }
+
+    docker.exe pull microsoft/windowsservercore
   }
 
   Write-Log "Installed CloudFoundry Cell Windows Features"
