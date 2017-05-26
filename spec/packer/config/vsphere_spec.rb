@@ -18,7 +18,8 @@ describe Packer::Config do
           num_vcpus: 1,
           mem_size: 1000,
           administrator_password: 'password',
-          source_path: 'source_path'
+          source_path: 'source_path',
+          os: 'windows2012R2'
         ).builders
         expect(builders[0]).to eq(
           'type' => 'vmware-vmx',
@@ -52,16 +53,22 @@ describe Packer::Config do
           num_vcpus: 1,
           mem_size: 1000,
           administrator_password: 'password',
-          source_path: 'source_path'
+          source_path: 'source_path',
+          os: 'windows2012R2'
         ).provisioners
-
         expect(provisioners).to eq(
           [
-            Packer::Config::Provisioners::BOSH_PSMODULES,
-            Packer::Config::Provisioners::NEW_PROVISIONER,
-            Packer::Config::Provisioners.install_windows_updates,
-            Packer::Config::Provisioners::GET_LOG,
-            Packer::Config::Provisioners::CLEAR_PROVISIONER
+            {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
+            {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
+            {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Wait-WindowsUpdates -Password some-password! -User Provisioner", "restart_timeout"=>"12h"},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Test-InstalledUpdates"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-Log"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
           ].flatten
         )
       end
@@ -79,7 +86,8 @@ describe Packer::Config do
           organization: 'me',
           owner: 'me',
           administrator_password: 'password',
-          source_path: 'source_path'
+          source_path: 'source_path',
+          os: 'windows2012R2'
         ).builders
         expect(builders[0]).to eq(
           'type' => 'vmware-vmx',
@@ -121,22 +129,29 @@ describe Packer::Config do
           organization: 'me',
           owner: 'me',
           administrator_password: 'password',
-          source_path: 'source_path'
+          source_path: 'source_path',
+          os: 'windows2012R2'
         ).provisioners
-        expect(provisioners).to eq(
-          [
-            Packer::Config::Provisioners::BOSH_PSMODULES,
-            Packer::Config::Provisioners::NEW_PROVISIONER,
-            Packer::Config::Provisioners::INSTALL_CF_FEATURES,
-            Packer::Config::Provisioners.install_windows_updates,
-            Packer::Config::Provisioners::PROTECT_CF_CELL,
-            Packer::Config::Provisioners::lgpo_exe,
-            Packer::Config::Provisioners::install_agent('vsphere'),
-            Packer::Config::Provisioners.download_windows_updates('output_directory'),
-            Packer::Config::Provisioners::OPTIMIZE_DISK,
-            Packer::Config::Provisioners::COMPRESS_DISK,
-            Packer::Config::Provisioners::CLEAR_PROVISIONER,
-          ].flatten
+        expect(provisioners).to include(
+          {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
+          {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
+          {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Wait-WindowsUpdates -Password some-password! -User Provisioner", "restart_timeout"=>"12h"},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Test-InstalledUpdates"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell"]},
+          # {"type"=>"file", "source"=>"/var/folders/44/zr3txl1n45b23kd2kgx1xqq00000gn/T/vsphere20170526-23301-1fv8m07/lgpo/LGPO.exe", "destination"=>"C:\\windows\\LGPO.exe"},
+          {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS vsphere -agentZipPath 'C:\\provision\\agent.zip'"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "List-InstalledUpdates | Out-File -FilePath \"C:\\updates.txt\" -Encoding ASCII"]},
+          {"type"=>"file", "source"=>"C:\\updates.txt", "destination"=>"output_directory/updates.txt", "direction"=>"download"},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Optimize-Disk"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Compress-Disk"]},
+          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
         )
 
         FileUtils.rm_rf(stemcell_deps_dir)

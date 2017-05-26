@@ -29,6 +29,7 @@ namespace :build do
       num_vcpus: ENV.fetch('NUM_VCPUS', '8'),
       output_directory: output_directory,
       packer_vars: {},
+      os: Stemcell::Builder::validate_env('OS_VERSION')
     )
 
     vsphere.build

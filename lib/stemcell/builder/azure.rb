@@ -54,7 +54,8 @@ module Stemcell
             location: @location,
             vm_size: @vm_size,
             admin_password: @admin_password,
-            output_directory: @output_directory
+            output_directory: @output_directory,
+            os: @os
           ).dump
         end
 

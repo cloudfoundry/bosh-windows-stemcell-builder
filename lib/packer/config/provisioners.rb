@@ -26,6 +26,11 @@ module Packer
         }
       ].freeze
       NEW_PROVISIONER = powershell_provisioner('New-Provisioner')
+      INSTALL_CONTAINERS = {
+        'type' => 'windows-restart',
+        'restart_command' => "powershell.exe -Command Install-ContainersFeature",
+        'restart_timeout' => '1h'
+      }
       INSTALL_CF_FEATURES = powershell_provisioner('Install-CFFeatures')
       PROTECT_CF_CELL = powershell_provisioner('Protect-CFCell')
       OPTIMIZE_DISK = powershell_provisioner('Optimize-Disk')

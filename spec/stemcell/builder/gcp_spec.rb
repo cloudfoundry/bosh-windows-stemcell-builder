@@ -31,7 +31,7 @@ describe Stemcell::Builder do
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
         allow(Packer::Config::Gcp).to receive(:new).with(
-          account_json, 'some-project-id', source_image, output_directory, image_family
+          account_json, 'some-project-id', source_image, output_directory, image_family, os
         ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
@@ -77,11 +77,12 @@ describe Stemcell::Builder do
           source_image = "some-source-image"
           image_family = "some-family"
           packer_vars = 'some-packer-vars'
+          os = 'windows2012R2'
 
           packer_config = double(:packer_config)
           allow(packer_config).to receive(:dump).and_return('some-packer-config')
           allow(Packer::Config::Gcp).to receive(:new).with(
-            account_json, project_id, source_image, output_directory, image_family
+            account_json, project_id, source_image, output_directory, image_family, os
           ).and_return(packer_config)
 
           packer_runner = double(:packer_runner)
@@ -90,7 +91,7 @@ describe Stemcell::Builder do
 
           expect {
             Stemcell::Builder::Gcp.new(
-              os: '',
+              os: os,
               output_directory: output_directory,
               version: '',
               agent_commit: '',

@@ -3,14 +3,25 @@ require 'securerandom'
 module Packer
   module Config
     class Base
-      def self.pre_provisioners
-        [
-          Provisioners::BOSH_PSMODULES,
-          Provisioners::NEW_PROVISIONER,
-          Provisioners::INSTALL_CF_FEATURES,
-          Provisioners.install_windows_updates,
-          Provisioners::PROTECT_CF_CELL
-        ]
+      def self.pre_provisioners(os)
+        if os == 'windows2012R2'
+          [
+            Provisioners::BOSH_PSMODULES,
+            Provisioners::NEW_PROVISIONER,
+            Provisioners::INSTALL_CF_FEATURES,
+            Provisioners.install_windows_updates,
+            Provisioners::PROTECT_CF_CELL
+          ]
+        elsif os == 'windows2016'
+          [
+            Provisioners::BOSH_PSMODULES,
+            Provisioners::NEW_PROVISIONER,
+            Provisioners::INSTALL_CONTAINERS,
+            Provisioners::INSTALL_CF_FEATURES,
+            Provisioners.install_windows_updates,
+            Provisioners::PROTECT_CF_CELL
+          ]
+        end
       end
 
       def self.post_provisioners(iaas)

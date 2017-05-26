@@ -26,7 +26,8 @@ module Stemcell
             @aws_access_key,
             @aws_secret_key,
             @amis,
-            @output_directory
+            @output_directory,
+            @os
           ).dump
         end
 

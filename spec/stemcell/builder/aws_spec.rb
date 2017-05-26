@@ -25,7 +25,7 @@ describe Stemcell::Builder do
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return('some-packer-config')
-        allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis, output_directory
+        allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis, output_directory, os
                                                         ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
@@ -68,10 +68,11 @@ describe Stemcell::Builder do
           aws_access_key = 'some-aws-access-key'
           aws_secret_key = 'some-aws-secret-key'
           packer_vars = 'some-packer-vars'
+          os = 'windows2012R2'
 
           packer_config = double(:packer_config)
           allow(packer_config).to receive(:dump).and_return('some-packer-config')
-          allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis, output_directory).and_return(packer_config)
+          allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis, output_directory, os).and_return(packer_config)
 
           packer_runner = double(:packer_runner)
           allow(packer_runner).to receive(:run).with('build', packer_vars).and_return(1)
@@ -79,7 +80,7 @@ describe Stemcell::Builder do
 
           expect {
             Stemcell::Builder::Aws.new(
-              os: '',
+              os: os,
               output_directory: output_directory,
               version: '',
               amis: amis,

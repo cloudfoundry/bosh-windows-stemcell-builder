@@ -36,7 +36,8 @@ describe Stemcell::Builder do
           source_path: source_path,
           output_directory: output_directory,
           mem_size: mem_size,
-          num_vcpus: num_vcpus).and_return(packer_config)
+          num_vcpus: num_vcpus,
+          os: os).and_return(packer_config)
 
         Stemcell::Builder::VSphereAddUpdates.new(
           os: os,
@@ -77,7 +78,8 @@ describe Stemcell::Builder do
             source_path: source_path,
             output_directory: output_directory,
             mem_size: mem_size,
-            num_vcpus: num_vcpus).and_return(packer_config)
+            num_vcpus: num_vcpus,
+            os: os).and_return(packer_config)
 
           expect {
             Stemcell::Builder::VSphereAddUpdates.new(
@@ -137,7 +139,8 @@ describe Stemcell::Builder do
           num_vcpus: num_vcpus,
           product_key: product_key,
           owner: owner,
-          organization: organization).and_return(packer_config)
+          organization: organization,
+          os: os).and_return(packer_config)
 
         vsphere_manifest = double(:vsphere_manifest)
         allow(vsphere_manifest).to receive(:dump).and_return(manifest_contents)
@@ -208,7 +211,8 @@ describe Stemcell::Builder do
             num_vcpus: num_vcpus,
             product_key: product_key,
             owner: owner,
-            organization: organization).and_return(packer_config)
+            organization: organization,
+            os: os).and_return(packer_config)
 
           expect {
             Stemcell::Builder::VSphere.new(

@@ -4,13 +4,14 @@ module Packer
   module Config
     class VSphereBase < Base
       def initialize(administrator_password:, source_path:, output_directory:,
-                     mem_size:, num_vcpus:)
+                     mem_size:, num_vcpus:, os:)
         @administrator_password = administrator_password
         @source_path = source_path
         @output_directory = output_directory
         @mem_size = mem_size
         @num_vcpus = num_vcpus
         @timestamp = Time.now.getutc.to_i
+        @os = os
       end
     end
 
@@ -86,7 +87,7 @@ module Packer
 
       def provisioners
         [
-          Base.pre_provisioners,
+          Base.pre_provisioners(@os),
           Provisioners::lgpo_exe,
           Provisioners.install_agent('vsphere').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,

@@ -19,7 +19,6 @@ module Stemcell
       def initialize(**args)
         args[:agent_commit] = ""
         args[:version] = ""
-        args[:os] = ""
         super(args)
       end
       def build
@@ -33,7 +32,8 @@ module Stemcell
           source_path: @source_path,
           output_directory: @output_directory,
           mem_size: @mem_size,
-          num_vcpus: @num_vcpus
+          num_vcpus: @num_vcpus,
+          os: @os
         ).dump
       end
     end
@@ -69,7 +69,8 @@ module Stemcell
           num_vcpus: @num_vcpus,
           product_key: @product_key,
           owner: @owner,
-          organization: @organization
+          organization: @organization,
+          os: @os
         ).dump
       end
 

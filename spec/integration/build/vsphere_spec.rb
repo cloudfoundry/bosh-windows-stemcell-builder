@@ -30,7 +30,7 @@ describe 'VSphere' do
   end
 
   it 'should build a vsphere_add_updates vmx' do
-    os_version = 'some-os-version'
+    os_version = 'windows2012R2'
 
     ENV['AWS_ACCESS_KEY_ID']= 'some-key'
     ENV['AWS_SECRET_ACCESS_KEY'] = 'secret-key'
@@ -71,7 +71,7 @@ describe 'VSphere' do
   end
 
   it 'should build a vsphere stemcell' do
-    os_version = 'some-os-version'
+    os_version = 'windows2012R2'
     version = 'some-version'
     agent_commit = 'some-agent-commit'
 

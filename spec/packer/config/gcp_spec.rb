@@ -13,7 +13,8 @@ describe Packer::Config::Gcp do
         project_id,
         source_image,
         output_dir,
-        image_family
+        image_family,
+        'windows2012R'
       ).builders
       expect(builders[0]).to include(
         'type' => 'googlecompute',
@@ -39,22 +40,60 @@ describe Packer::Config::Gcp do
   end
 
   describe 'provisioners' do
-    it 'returns the expected provisioners' do
-      allow(SecureRandom).to receive(:hex).and_return("some-password")
-      provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2').provisioners
-      expect(provisioners).to eq(
-        [
-          Packer::Config::Provisioners::BOSH_PSMODULES,
-          Packer::Config::Provisioners::NEW_PROVISIONER,
-          Packer::Config::Provisioners::INSTALL_CF_FEATURES,
-          Packer::Config::Provisioners::install_windows_updates,
-          Packer::Config::Provisioners::PROTECT_CF_CELL,
-          Packer::Config::Provisioners.install_agent("gcp"),
-          Packer::Config::Provisioners.download_windows_updates('some-output-directory'),
-          Packer::Config::Provisioners::CLEAR_PROVISIONER,
-          Packer::Config::Provisioners::sysprep_shutdown('gcp')
-        ].flatten
-      )
+    context 'windows 2012' do
+      it 'returns the expected provisioners' do
+        allow(SecureRandom).to receive(:hex).and_return("some-password")
+        provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2', 'windows2012R2').provisioners
+        expect(provisioners).to eq(
+          [
+            {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
+            {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
+            {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Wait-WindowsUpdates -Password some-password! -User Provisioner", "restart_timeout"=>"12h"},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Test-InstalledUpdates"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell"]},
+            {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "List-InstalledUpdates | Out-File -FilePath \"C:\\updates.txt\" -Encoding ASCII"]},
+            {"type"=>"file", "source"=>"C:\\updates.txt", "destination"=>"some-output-directory/updates.txt", "direction"=>"download"},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Invoke-Sysprep -IaaS gcp"]}
+          ].flatten
+        )
+      end
+    end
+    context 'windows 2016' do
+      it 'returns the expected provisioners' do
+        allow(SecureRandom).to receive(:hex).and_return("some-password")
+        provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2', 'windows2016').provisioners
+        expect(provisioners).to eq(
+          [
+            {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
+            {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
+            {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Install-ContainersFeature", "restart_timeout"=>"1h"},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
+            {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Wait-WindowsUpdates -Password some-password! -User Provisioner", "restart_timeout"=>"12h"},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Test-InstalledUpdates"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell"]},
+            {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "List-InstalledUpdates | Out-File -FilePath \"C:\\updates.txt\" -Encoding ASCII"]},
+            {"type"=>"file", "source"=>"C:\\updates.txt", "destination"=>"some-output-directory/updates.txt", "direction"=>"download"},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Invoke-Sysprep -IaaS gcp"]}
+          ].flatten
+        )
+      end
     end
   end
 end

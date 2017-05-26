@@ -30,7 +30,7 @@ describe 'Aws' do
 
   it 'should build an aws stemcell' do
     Dir.mktmpdir('aws-stemcell-test') do |tmpdir|
-      os_version = 'some-os-version'
+      os_version = 'windows2012R2'
       version = 'some-version'
       agent_commit = 'some-agent-commit'
 

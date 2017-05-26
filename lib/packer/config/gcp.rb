@@ -3,12 +3,13 @@ require 'securerandom'
 module Packer
   module Config
     class Gcp < Base
-      def initialize(account_json, project_id, source_image, output_directory, image_family)
+      def initialize(account_json, project_id, source_image, output_directory, image_family, os)
         @account_json = account_json
         @project_id = project_id
         @source_image = source_image
         @output_directory = output_directory
         @image_family = image_family
+        @os = os
       end
 
       def builders
@@ -38,7 +39,7 @@ module Packer
 
       def provisioners
         [
-          Base.pre_provisioners,
+          Base.pre_provisioners(@os),
           Provisioners.install_agent('gcp').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Base.post_provisioners('gcp')

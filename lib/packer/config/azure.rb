@@ -5,7 +5,7 @@ module Packer
     class Azure < Base
       def initialize(client_id:, client_secret:, tenant_id:, subscription_id:,
                      object_id:, resource_group_name:, storage_account:, location:,
-                     vm_size:, admin_password:, output_directory:)
+                     vm_size:, admin_password:, output_directory:, os:)
         @client_id = client_id
         @client_secret = client_secret
         @tenant_id = tenant_id
@@ -17,6 +17,7 @@ module Packer
         @location = location
         @vm_size = vm_size
         @output_directory = output_directory
+        @os = os
       end
 
       def builders
@@ -51,7 +52,7 @@ module Packer
 
       def provisioners
         [
-          Base.pre_provisioners,
+          Base.pre_provisioners(@os),
           Provisioners.install_agent('azure').freeze,
           Base.post_provisioners('azure')
         ].flatten
