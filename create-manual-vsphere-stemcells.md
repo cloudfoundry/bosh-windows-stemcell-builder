@@ -194,7 +194,8 @@ While it is not recommended, it is possible to sysprep the image without applyin
   - Run the following powershell command `Invoke-Sysprep -IaaS vsphere -NewPassword <NEW_PASSWORD> -ProductKey <PRODUCT_KEY> -Owner <OWNER> -Organization <ORGANIZATION> -SkipLGPO`
   - This will power off the VM
   - Do not turn the VM back on before exporting
-
+  
+  **Note:** Do not use any special character in the password other than '!'. For example, "Example12!" is fine, but not "Example#12". This is a bug that will be fixed in future versions as noted.
 
 ## Step 8: Export image to OVA format
 
