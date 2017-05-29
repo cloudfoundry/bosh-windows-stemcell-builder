@@ -28,9 +28,9 @@ You will need:
 
 ## Step 1: Create base VM for stemcell
 
-NOTE: These are instructions for installing windows from a Windows installation disk ISO.
-You may adapt the instructions if you are starting from some different Windows image. Make sure
-that your image **has `Hardware Compatibility` set to version 9**, and that it has VMware tools
+NOTE: These are instructions for installing windows from a Windows installation disk ISO (either a volume licensed copy or a retail copy from MSDN). We recommend maintaining a separate, updated Windows VM based on this ISO to serve as the basis for the installation steps below. This way, you may apply Windows Updates and create new stemcells without having to reinstall all updates from scratch.
+
+Make sure that your image **has `Hardware Compatibility` set to version 9**, and that it has VMware tools
 installed.
 
 ### For VMware Fusion:
