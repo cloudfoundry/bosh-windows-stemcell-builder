@@ -224,3 +224,6 @@ NOTE: The OVA filename and destination path cannot currently have spaces in them
 
 Here are the [instructions for running bosh-windows-acceptance-tests(BWATS)](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/tree/develop#testing-stemcell-with-bosh-windows-acceptance-tests)
 
+# Known Issues
+
+- There is a known issue using special characters in the password during the sysrep step. We recommend only using the "!" as a special character until this issue is resolved.
