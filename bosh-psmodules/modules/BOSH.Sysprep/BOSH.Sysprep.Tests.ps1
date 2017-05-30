@@ -72,6 +72,23 @@ Describe "Create-Unattend" {
         Test-Path (Join-Path $UnattendDestination "unattend.xml") | Should Be $True
     }
 
+    It "handles special chars in passwords" {
+        $NewPassword = "<!--Password123" 
+        {
+        Create-Unattend -UnattendDestination $UnattendDestination `
+                -NewPassword $NewPassword `
+                -ProductKey $ProductKey `
+                -Organization $Organization `
+                -Owner $Owner
+        } | Should Not Throw
+
+        $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
+        [xml]$unattendXML = Get-Content -Path $unattendPath
+        
+        $encodedPassword = $unattendXML.unattend.settings.component.UserAccounts.AdministratorPassword.Value
+        [system.text.encoding]::Unicode.GetString([system.convert]::Frombase64string($encodedPassword)) | Should Be ($newPassword + "AdministratorPassword")
+    }
+
     Context "failure scenarios" {
         It "throws when there is no new password provided" {
             {
@@ -98,10 +115,6 @@ Describe "Create-Unattend" {
             [xml]$unattendXML = Get-Content -Path $unattendPath
             $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
             $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
-        }
-
-        It "contains a New Password" {
-            $unattendXML.unattend.settings.component.UserAccounts.AdministratorPassword.Value | Should Be $NewPassword
         }
 
         It "contains a Product Key, Organization, and Owner when Product Key is provided" {

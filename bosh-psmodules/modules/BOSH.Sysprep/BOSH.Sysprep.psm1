@@ -42,6 +42,7 @@ function Create-Unattend {
       [switch]$SkipLGPO
    )
 
+   $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
    Write-Log "Starting Create-Unattend"
 
    New-Item -ItemType directory $UnattendDestination -Force
@@ -135,7 +136,7 @@ function Create-Unattend {
             <UserAccounts>
                 <AdministratorPassword>
                     <Value>$NewPassword</Value>
-                    <PlainText>true</PlainText>
+                    <PlainText>false</PlainText>
                 </AdministratorPassword>
             </UserAccounts>
         </component>
