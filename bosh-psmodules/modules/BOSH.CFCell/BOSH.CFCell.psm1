@@ -46,7 +46,8 @@ function Install-ContainersFeature {
     Write-Log "Setting WinRM startup type to automatic"
     Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
     WindowsFeatureInstall("Containers")
-    shutdown /r /c "packer restart" /t 5 && net stop winrm
+    shutdown /r /c "packer restart" /t 5
+    net stop winrm
   }
 }
 
