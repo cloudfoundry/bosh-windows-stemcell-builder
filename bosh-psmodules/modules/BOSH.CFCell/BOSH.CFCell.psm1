@@ -41,6 +41,15 @@ function Install-CFFeatures {
   Write-Log "Installed CloudFoundry Cell Windows Features"
 }
 
+function Install-ContainersFeature {
+  if ($windowsVersion -Match "2016") {
+    Write-Log "Setting WinRM startup type to automatic"
+    Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
+    WindowsFeatureInstall("Containers")
+    shutdown /r /c "packer restart" /t 5 && net stop winrm
+  }
+}
+
 function Protect-CFCell {
   Write-Log "Getting WinRM config"
   $winrm_config = & cmd.exe /c 'winrm get winrm/config'
