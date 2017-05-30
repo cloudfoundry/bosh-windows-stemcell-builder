@@ -17,9 +17,6 @@ module Packer
 
       BOSH_PSMODULES = [
         {
-          'type' => 'powershell',
-          'inline' => ['mkdir C:\\provision']
-        }, {
           'type' => 'file',
           'source' => 'build/bosh-psmodules.zip',
           'destination' => 'C:\\provision\\bosh-psmodules.zip'
