@@ -22,7 +22,6 @@ function Install-CFFeatures {
     WindowsFeatureInstall("Web-WHC")
     WindowsFeatureInstall("Web-ASP")
   } elseif ($windowsVersion -Match "2016") {
-    WindowsFeatureInstall("Containers")
     if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
       Write-Host "Installing Docker"
 
@@ -36,6 +35,9 @@ function Install-CFFeatures {
     }
 
     docker.exe pull microsoft/windowsservercore
+    if ($LASTEXITCODE -ne 0) {
+      Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull microsoft/windowsservercore"
+    }
   }
 
   Write-Log "Installed CloudFoundry Cell Windows Features"
