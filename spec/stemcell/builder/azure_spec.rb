@@ -58,7 +58,7 @@ describe Stemcell::Builder do
                                                                offer,
                                                                sku).and_return(azure_manifest)
         allow(Stemcell::ApplySpec).to receive(:new).with(agent_commit).and_return(azure_apply)
-        allow(Stemcell::Packager).to receive(:package).with(iaas: 'azure',
+        allow(Stemcell::Packager).to receive(:package).with(iaas: 'azure-hyperv',
                                                             os: os,
                                                             is_light: true,
                                                             version: version,

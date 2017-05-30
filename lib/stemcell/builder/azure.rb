@@ -25,7 +25,7 @@ module Stemcell
         disk_uri = run_packer
         File.write(File.join(@output_directory, "bosh-stemcell-#{@version}-azure-vhd-uri.txt"), disk_uri.strip)
         manifest = Manifest::Azure.new(@version, @os, @publisher, @offer, @sku).dump
-        super(iaas: 'azure',
+        super(iaas: 'azure-hyperv',
               is_light: true,
               image_path: '',
               manifest: manifest,

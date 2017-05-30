@@ -63,8 +63,8 @@ describe 'Azure' do
 
       expect(File.read(File.join(@output_directory, "bosh-stemcell-#{version}-azure-vhd-uri.txt"))).to eq 'some-disk-image-url'
 
-      stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-#{os_version}-go_agent.tgz")
-      stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-#{os_version}-go_agent.tgz.sha")
+      stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-hyperv-#{os_version}-go_agent.tgz")
+      stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-hyperv-#{os_version}-go_agent.tgz.sha")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq(version)
