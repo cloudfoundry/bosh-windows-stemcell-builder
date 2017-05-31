@@ -26,12 +26,15 @@ function Install-CFFeatures {
       Write-Host "Installing Docker"
 
       Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-      Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
-      Install-Package -Name docker -ProviderName DockerMsftProvider -Force
-
+      $version = (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/docker/docker/master/VERSION).Content.Trim()
+      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+      Invoke-WebRequest "https://master.dockerproject.org/windows/amd64/docker-$($version).zip" -OutFile "$env:TEMP\docker.zip" -UseBasicParsing
+      Expand-Archive -Path "$env:TEMP\docker.zip" -DestinationPath $env:ProgramFiles
+      $env:path += ";$env:ProgramFiles\Docker"
+      $existingMachinePath = [Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::Machine)
+      [Environment]::SetEnvironmentVariable("Path", $existingMachinePath + ";$env:ProgramFiles\Docker", [EnvironmentVariableTarget]::Mac
+      dockerd --register-service
       Start-Service Docker
-      Get-Service | Where-Object {$_.Name -eq "Docker" } | Set-Service -StartupType Automatic
-
       Write-Host "Installed Docker"
     }
 
@@ -39,6 +42,7 @@ function Install-CFFeatures {
     if ($LASTEXITCODE -ne 0) {
       Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull microsoft/windowsservercore"
     }
+    Write-Host "installed microsoft/windowsservercore image!"
   }
 
   Write-Log "Installed CloudFoundry Cell Windows Features"
