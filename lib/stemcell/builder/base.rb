@@ -41,7 +41,6 @@ module Stemcell
         )
       end
 
-      private
 
       def run_packer
         packer_artifact = nil
@@ -53,6 +52,8 @@ module Stemcell
         end
         packer_artifact
       end
+
+      private
 
       def exec_command(cmd)
         STDOUT.sync = true
