@@ -32,7 +32,7 @@ function Install-CFFeatures {
       Expand-Archive -Path "$env:TEMP\docker.zip" -DestinationPath $env:ProgramFiles
       $env:path += ";$env:ProgramFiles\Docker"
       $existingMachinePath = [Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::Machine)
-      [Environment]::SetEnvironmentVariable("Path", $existingMachinePath + ";$env:ProgramFiles\Docker", [EnvironmentVariableTarget]::Mac
+      [Environment]::SetEnvironmentVariable("Path", $existingMachinePath + ";$env:ProgramFiles\Docker", [EnvironmentVariableTarget]::Machine)
       dockerd --register-service
       Start-Service Docker
       Write-Host "Installed Docker"
