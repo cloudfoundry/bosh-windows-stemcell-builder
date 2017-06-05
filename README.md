@@ -37,7 +37,7 @@ rake publish:gcp                                                               #
 rake run:bwats[iaas]                                                           # Run bosh-windows-acceptance-tests (BWATS)
 ```
 
-Instructions for building a manual stemcell for vSphere can be found in the [manual instructions](create-manual-vsphere-stemcells.md).
+Instructions for building a manual stemcell for vSphere can be found in the [wiki](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/wiki/Creating-a-vSphere-Stemcell-by-Hand).
 
 #### Running the tests
 ```
