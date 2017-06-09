@@ -48,6 +48,27 @@ Describe "Enable-LocalSecurityPolicy" {
     }
 }
 
+Describe "ModifyInfFile" {
+    BeforeEach {
+        $InfFileDirectory = (New-TempDir)
+        $InfFilePath = Join-Path $InfFileDirectory "infFile.inf"
+
+        "something=something`nkey=blah`nx=x" | Out-File $InfFilePath
+    }
+
+    AfterEach {
+        Remove-Item -Recurse -Force $InfFileDirectory
+    }
+
+    It "modifies the inf key" {
+        ModifyInfFile -InfFilePath $InfFilePath -KeyName 'key' -KeyValue 'value'
+
+        $actual = (Get-Content $InfFilePath) -join "`n"
+
+        $actual | Should Be "something=something`nkey=value`nx=x"
+    }
+}
+
 Describe "Create-Unattend" {
     BeforeEach {
         $UnattendDestination=(New-TempDir)
@@ -73,7 +94,7 @@ Describe "Create-Unattend" {
     }
 
     It "handles special chars in passwords" {
-        $NewPassword = "<!--Password123" 
+        $NewPassword = "<!--Password123"
         {
         Create-Unattend -UnattendDestination $UnattendDestination `
                 -NewPassword $NewPassword `
@@ -84,7 +105,7 @@ Describe "Create-Unattend" {
 
         $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
         [xml]$unattendXML = Get-Content -Path $unattendPath
-        
+
         $encodedPassword = $unattendXML.unattend.settings.component.UserAccounts.AdministratorPassword.Value
         [system.text.encoding]::Unicode.GetString([system.convert]::Frombase64string($encodedPassword)) | Should Be ($newPassword + "AdministratorPassword")
     }

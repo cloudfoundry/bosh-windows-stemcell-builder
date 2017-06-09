@@ -7,21 +7,28 @@
 function Enable-LocalSecurityPolicy {
     Param (
       [string]$LgpoExe ="C:\windows\lgpo.exe",
-      [string]$PolicyDestination = "C:\bosh\lgpo"
+      [string]$PolicyDestination = "C:\bosh\lgpo",
+      [switch]$EnableRDP
     )
 
     Write-Log "Starting LocalSecurityPolicy"
 
-    New-Item -Path "$PolicyDestination" -ItemType Directory -Force
     $policyZipFile = Join-Path $PSScriptRoot "policy-baseline.zip"
+    New-Item -Path "$PolicyDestination" -ItemType Directory -Force
     Open-Zip -ZipFile $policyZipFile -OutPath $PolicyDestination
-    if (-Not (Test-Path "$PolicyDestination\policy-baseline")) {
-	Write-Error "ERROR: could not extract policy-baseline"
+    $PolicyBaseLine = "$PolicyDestination\policy-baseline"
+    if (-Not (Test-Path $PolicyBaseLine)) {
+      Write-Error "ERROR: could not extract policy-baseline"
+    }
+
+    if($EnableRDP) {
+      $InfFilePath = Join-Path $PolicyBaseLine "DomainSysvol/GPO/Machine/microsoft/windows nt/SecEdit/GptTmpl.inf"
+      ModifyInfFile -InfFilePath $InfFilePath -KeyName "SeDenyNetworkLogonRight" -KeyValue "*S-1-5-32-546"
     }
 
     Invoke-Expression "$LgpoExe /g $PolicyDestination\policy-baseline /v 2>&1 > $PolicyDestination\LGPO.log"
     if ($LASTEXITCODE -ne 0) {
-	Throw "lgpo.exe exited with $LASTEXITCODE"
+      Throw "lgpo.exe exited with $LASTEXITCODE"
     }
     Write-Log "Ending LocalSecurityPolicy"
 }
@@ -39,7 +46,8 @@ function Create-Unattend {
       [string]$ProductKey,
       [string]$Organization,
       [string]$Owner,
-      [switch]$SkipLGPO
+      [switch]$SkipLGPO,
+      [switch]$EnableRDP
    )
 
    $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
@@ -85,7 +93,11 @@ function Create-Unattend {
                 <RunSynchronousCommand wcm:action="add">
                     <Description>Apply Group Policies</Description>
                     <Order>2</Order>
-                    <Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command Enable-LocalSecurityPolicy</Path>
+                    $(if ($EnableRDP) {
+                        "<Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command Enable-LocalSecurityPolicy -EnableRDP</Path>"
+                    } else {
+                        "<Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command Enable-LocalSecurityPolicy</Path>"
+                    })
                     <WillReboot>Always</WillReboot>
                 </RunSynchronousCommand>
 "@
@@ -311,7 +323,8 @@ function Invoke-Sysprep() {
       [string]$ProductKey="",
       [string]$Organization="",
       [string]$Owner="",
-      [switch]$SkipLGPO
+      [switch]$SkipLGPO,
+      [switch]$EnableRDP
    )
 
    Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
@@ -337,7 +350,7 @@ function Invoke-Sysprep() {
       }
       "vsphere" {
          Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
-           -Organization $Organization -Owner $Owner -SkipLGPO:$SkipLGPO
+           -Organization $Organization -Owner $Owner -SkipLGPO:$SkipLGPO -EnableRDP:$EnableRDP
 
          # Exec sysprep and shutdown
          C:/windows/system32/sysprep/sysprep.exe /generalize /oobe `
@@ -345,4 +358,25 @@ function Invoke-Sysprep() {
       }
       Default { Throw "Invalid IaaS '${IaaS}' supported platforms are: AWS, Azure, GCP and Vsphere" }
    }
+}
+
+function ModifyInfFile() {
+    Param(
+        [string]$InfFilePath = $(Throw "inf file path missing"),
+        [string]$KeyName = $(Throw "keyname missing"),
+        [string]$KeyValue = $(Throw "keyvalue missing")
+    )
+
+    $Regex = "^$KeyName"
+    $TempFile = $InfFilePath + ".tmp"
+
+    Get-Content $InfFilePath | ForEach-Object {
+        $ValueToWrite=$_
+        if($_ -match $Regex) {
+            $ValueToWrite="$KeyName=$KeyValue"
+        }
+        $ValueToWrite | Out-File -Append $TempFile
+    }
+
+    Move-Item -Path $TempFile -Destination $InfFilePath -Force
 }
