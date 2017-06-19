@@ -331,9 +331,14 @@ function Invoke-Sysprep() {
 
    switch ($IaaS) {
       "aws" {
-         # Enable password generation and retrieval
          $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
+
+         # Enable password generation and retrieval
          ($ec2config.ec2configurationsettings.plugins.plugin | where { $_.Name -eq "Ec2SetPassword" }).State = 'Enabled'
+
+         # Disable SetDnsSuffixList setting
+         $ec2config.ec2configurationsettings.GlobalSettings.SetDnsSuffixList = "false"
+
          $ec2config.Save("C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml")
 
          # Enable sysprep
