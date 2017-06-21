@@ -62,6 +62,7 @@ Set the following environment variables:
 
 ##### Stemcell to test
 - STEMCELL_PATH: Path to stemcell tarball
+- STEMCELL_OS: (e.g. windows2012R2)
 
 ##### Match with [cloud config](https://bosh.io/docs/cloud-config.html)
 - AZ:
