@@ -2,6 +2,9 @@
 
 This repo contains a set of scripts for automating the process of building BOSH Windows Stemcells.
 
+#### Contributing
+Please submit PR's to the `develop` branch
+
 #### Dependencies
 
 * [Ruby](https://www.ruby-lang.org/en/downloads/) Latest 2.3.x version
