@@ -40,7 +40,7 @@ function Install-CFFeatures {
 
     docker.exe pull microsoft/windowsservercore
     if ($LASTEXITCODE -ne 0) {
-      Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull microsoft/windowsservercore"
+      Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull cloudfoundry/cfwindowsfs"
     }
     Write-Host "installed microsoft/windowsservercore image!"
   }
