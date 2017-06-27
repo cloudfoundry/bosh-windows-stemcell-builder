@@ -368,6 +368,18 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(Succeed())
 	})
 
+	// The Agent changes the start type of it's service wrapper to 'Manual' immediately
+	// before the first job is started - this is prevent the Agent from coming back up
+	// after a restart, which we don't support.
+	//
+	// Since the Agent will have changed it's start type by the time that this errand
+	// runs we check for the presence of a registry key that is an artifact of the
+	// original 'Automatic (Delayed Start)' configuration.
+	It("had a Service StartType of 'Delayed'", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand verify-delayed-start --tty", deploymentName))
+		Expect(err).To(Succeed())
+	})
+
 	It("checks system dependencies and security", func() {
 		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-system --tty", deploymentName))
 		Expect(err).To(Succeed())
