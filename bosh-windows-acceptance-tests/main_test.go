@@ -74,6 +74,18 @@ instance_groups:
   jobs:
   - name: verify-autoupdates
     release: {{.ReleaseName}}
+- name: verify-delayed-start
+  instances: 1
+  stemcell: windows
+  lifecycle: errand
+  azs: [{{.AZ}}]
+  vm_type: {{.VmType}}
+  vm_extensions: [{{.VmExtensions}}]
+  networks:
+  - name: {{.Network}}
+  jobs:
+  - name: verify-delayed-start
+    release: {{.ReleaseName}}
 - name: check-system
   instances: 1
   stemcell: windows
