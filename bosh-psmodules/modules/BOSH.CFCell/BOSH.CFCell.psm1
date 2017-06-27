@@ -28,7 +28,7 @@ function Install-CFFeatures {
       Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
       $version = (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/docker/docker/master/VERSION).Content.Trim()
       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-      Invoke-WebRequest "https://master.dockerproject.org/windows/amd64/docker-$($version).zip" -OutFile "$env:TEMP\docker.zip" -UseBasicParsing
+      Invoke-WebRequest "https://master.dockerproject.org/windows/x86_64/docker-$($version).zip" -OutFile "$env:TEMP\docker.zip" -UseBasicParsing
       Expand-Archive -Path "$env:TEMP\docker.zip" -DestinationPath $env:ProgramFiles
       $env:path += ";$env:ProgramFiles\Docker"
       $existingMachinePath = [Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::Machine)
