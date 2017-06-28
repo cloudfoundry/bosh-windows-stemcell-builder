@@ -48,7 +48,9 @@ module Packer
           Provisioners::NEW_PROVISIONER,
           Provisioners.install_windows_updates,
           Provisioners::GET_LOG,
-          Provisioners::CLEAR_PROVISIONER
+          Provisioners::CLEAR_PROVISIONER,
+          Provisioners::WAIT_AND_RESTART,
+          Provisioners::WAIT_AND_RESTART
         ].flatten
       end
     end

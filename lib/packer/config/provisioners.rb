@@ -31,6 +31,11 @@ module Packer
         'restart_command' => "powershell.exe -Command Install-ContainersFeature",
         'restart_timeout' => '1h'
       }
+      WAIT_AND_RESTART = {
+        'type' => 'windows-restart',
+        'restart_command' => 'powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer',
+        'restart_timeout' => '1h'
+      }
       INSTALL_CF_FEATURES = powershell_provisioner('Install-CFFeatures')
       PROTECT_CF_CELL = powershell_provisioner('Protect-CFCell')
       OPTIMIZE_DISK = powershell_provisioner('Optimize-Disk')
