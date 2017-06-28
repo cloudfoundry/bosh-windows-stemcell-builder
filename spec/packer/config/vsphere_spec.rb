@@ -69,8 +69,8 @@ describe Packer::Config do
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Test-InstalledUpdates"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-Log"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
-            {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer", "restart_timeout"=>"1h"},
-            {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer", "restart_timeout"=>"1h"}
+            {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force", "restart_timeout"=>"1h"},
+            {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force", "restart_timeout"=>"1h"}
           ].flatten
         )
       end
