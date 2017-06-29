@@ -1,4 +1,4 @@
-﻿################################################
+################################################
 #  / __\   _ _ __   ___| |_(_) ___  _ __  ___  #
 # / _\| | | | '_ \ / __| __| |/ _ \| '_ \/ __| #
 #/ /  | |_| | | | | (__| |_| | (_) | | | \__ \ #
@@ -109,7 +109,7 @@ Unzip -zipfile "C:\bin\packer_windows.zip" -outpath "C:\bin\"
 Move-Item -Path "C:\bin\packer_windows_amd64\packer.exe"-Destination "C:\bin\packer.exe"
 
 Write-Host "reload environemnt"
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
 Write-Host "bundler (sometimes this takes a few minutes)"
 gem install bundler -V
