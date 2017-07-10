@@ -90,6 +90,18 @@ module Packer
         }.freeze
       end
 
+      def self.setup_kms_server(host)
+        {
+          'type' => 'powershell',
+          'inline' => [
+            '$ErrorActionPreference = "Stop";',
+            'netsh advfirewall firewall add rule name="Open inbound 1688 for KMS Server" dir=in action=allow protocol=TCP localport=1688',
+            'netsh advfirewall firewall add rule name="Open outbound 1688 for KMS Server" dir=out action=allow protocol=TCP localport=1688',
+            "cscript //B 'C:\\Windows\\System32\\slmgr.vbs' /skms #{host}:1688"
+          ]
+        }
+      end
+
       def self.sysprep_shutdown(iaas)
         return [powershell_provisioner("Invoke-Sysprep -IaaS #{iaas}")]
       end

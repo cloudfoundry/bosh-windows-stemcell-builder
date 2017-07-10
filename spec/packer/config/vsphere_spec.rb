@@ -89,14 +89,18 @@ describe Packer::Config do
           owner: 'me',
           administrator_password: 'password',
           source_path: 'source_path',
-          os: 'windows2012R2'
+          os: 'windows2012R2',
+          enable_rdp: false,
+          enable_kms: false,
+          kms_host: '',
+          new_password: 'new-password'
         ).builders
         expect(builders[0]).to eq(
           'type' => 'vmware-vmx',
           'source_path' => 'source_path',
           'headless' => false,
           'boot_wait' => '2m',
-          'shutdown_command' => 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword password -ProductKey key -Owner me -Organization me',
+          'shutdown_command' => 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword new-password -ProductKey key -Owner me -Organization me',
           'shutdown_timeout' => '1h',
           'communicator' => 'winrm',
           'ssh_username' => 'Administrator',
@@ -113,6 +117,25 @@ describe Packer::Config do
           'output_directory' => 'output_directory',
           'skip_clean_files' => true
         )
+      end
+
+      it 'adds the EnableRdp flag to shutdown command' do
+        builders = Packer::Config::VSphere.new(
+          output_directory: 'output_directory',
+          num_vcpus: 1,
+          mem_size: 1000,
+          product_key: 'key',
+          organization: 'me',
+          owner: 'me',
+          administrator_password: 'password',
+          source_path: 'source_path',
+          os: 'windows2012R2',
+          enable_rdp: true,
+          enable_kms: false,
+          kms_host: '',
+          new_password: 'new-password'
+        ).builders
+        expect(builders[0]['shutdown_command']).to eq 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword new-password -ProductKey key -Owner me -Organization me -EnableRdp'
       end
     end
 
@@ -132,7 +155,11 @@ describe Packer::Config do
           owner: 'me',
           administrator_password: 'password',
           source_path: 'source_path',
-          os: 'windows2012R2'
+          os: 'windows2012R2',
+          enable_rdp: false,
+          enable_kms: false,
+          kms_host: '',
+          new_password: 'new-password'
         ).provisioners
         expect(provisioners).to include(
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
@@ -154,6 +181,44 @@ describe Packer::Config do
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Optimize-Disk"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Compress-Disk"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
+        )
+
+        FileUtils.rm_rf(stemcell_deps_dir)
+        ENV.delete('STEMCELL_DEPS_DIR')
+      end
+
+      it 'adds the kms host provisioner' do
+        stemcell_deps_dir = Dir.mktmpdir('vsphere')
+        ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
+
+        allow(SecureRandom).to receive(:hex).and_return('some-password')
+
+        provisioners = Packer::Config::VSphere.new(
+          output_directory: 'output_directory',
+          num_vcpus: 1,
+          mem_size: 1000,
+          product_key: 'key',
+          organization: 'me',
+          owner: 'me',
+          administrator_password: 'password',
+          source_path: 'source_path',
+          os: 'windows2012R2',
+          enable_rdp: false,
+          enable_kms: true,
+          kms_host: "myhost.com",
+          new_password: 'new-password'
+        ).provisioners
+        expect(provisioners).to include(
+          {
+            "type"=>"powershell",
+            "inline"=>
+            [
+              "$ErrorActionPreference = \"Stop\";",
+              "netsh advfirewall firewall add rule name=\"Open inbound 1688 for KMS Server\" dir=in action=allow protocol=TCP localport=1688",
+              "netsh advfirewall firewall add rule name=\"Open outbound 1688 for KMS Server\" dir=out action=allow protocol=TCP localport=1688",
+              "cscript //B 'C:\\Windows\\System32\\slmgr.vbs' /skms myhost.com:1688"
+            ]
+          }
         )
 
         FileUtils.rm_rf(stemcell_deps_dir)

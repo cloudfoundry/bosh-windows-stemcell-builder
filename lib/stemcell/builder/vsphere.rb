@@ -6,11 +6,21 @@ require 'nokogiri'
 module Stemcell
   class Builder
     class VSphereBase < Base
-      def initialize(source_path:, administrator_password:, mem_size:, num_vcpus: , **args)
+      def initialize(source_path:,
+                     administrator_password:,
+                     mem_size:,
+                     num_vcpus:,
+                     enable_rdp: false,
+                     enable_kms: false,
+                     kms_host: '',
+                     **args)
         @source_path = source_path
         @administrator_password = administrator_password
         @mem_size = mem_size
         @num_vcpus = num_vcpus
+        @enable_rdp = enable_rdp
+        @enable_kms = enable_kms
+        @kms_host = kms_host
         super(args)
       end
     end
@@ -39,10 +49,11 @@ module Stemcell
     end
 
     class VSphere < VSphereBase
-      def initialize(product_key:, owner:, organization:, **args)
+      def initialize(product_key:, owner:, organization:, new_password:, **args)
         @product_key = product_key
         @owner = owner
         @organization = organization
+        @new_password = new_password
         super(args)
       end
 
@@ -63,6 +74,7 @@ module Stemcell
       def packer_config
         Packer::Config::VSphere.new(
           administrator_password: @administrator_password,
+          new_password: @new_password,
           source_path: @source_path,
           output_directory: @output_directory,
           mem_size: @mem_size,
@@ -70,7 +82,10 @@ module Stemcell
           product_key: @product_key,
           owner: @owner,
           organization: @organization,
-          os: @os
+          os: @os,
+          kms_host: @kms_host,
+          enable_kms: @enable_kms,
+          enable_rdp: @enable_rdp
         ).dump
       end
 

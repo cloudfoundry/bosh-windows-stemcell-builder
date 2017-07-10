@@ -3,8 +3,12 @@ require 'securerandom'
 module Packer
   module Config
     class VSphereBase < Base
-      def initialize(administrator_password:, source_path:, output_directory:,
-                     mem_size:, num_vcpus:, os:)
+      def initialize(administrator_password:,
+                     source_path:,
+                     output_directory:,
+                     mem_size:,
+                     num_vcpus:,
+                     os:)
         @administrator_password = administrator_password
         @source_path = source_path
         @output_directory = output_directory
@@ -56,19 +60,32 @@ module Packer
     end
 
     class VSphere < VSphereBase
-      def initialize(product_key:,owner:,organization:,**args)
+      def initialize(product_key:,
+                     owner:,
+                     organization:,
+                     enable_rdp:,
+                     enable_kms:,
+                     kms_host:,
+                     new_password:,
+                     **args)
         @product_key = product_key
         @owner = owner
         @organization = organization
+        @enable_rdp = enable_rdp
+        @enable_kms = enable_kms
+        @kms_host = kms_host
+        @new_password = new_password
         super(args)
       end
+
       def builders
+        enable_rdp = @enable_rdp ? ' -EnableRdp' : ''
         [
           'type' => 'vmware-vmx',
           'source_path' => @source_path,
           'headless' => false,
           'boot_wait' => '2m',
-          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword #{@administrator_password} -ProductKey #{@product_key} -Owner #{@owner} -Organization #{@organization}",
+          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword #{@new_password} -ProductKey #{@product_key} -Owner #{@owner} -Organization #{@organization}#{enable_rdp}",
           'shutdown_timeout' => '1h',
           'communicator' => 'winrm',
           'ssh_username' => 'Administrator',
@@ -88,13 +105,17 @@ module Packer
       end
 
       def provisioners
-        [
+        provisioner_list = [
           Base.pre_provisioners(@os),
           Provisioners::lgpo_exe,
           Provisioners.install_agent('vsphere').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Base.post_provisioners('vsphere')
         ].flatten
+        if @enable_kms && !@kms_host.nil? && !@kms_host.empty?
+          provisioner_list << Provisioners.setup_kms_server(@kms_host)
+        end
+        provisioner_list
       end
     end
   end

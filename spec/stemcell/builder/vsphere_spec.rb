@@ -140,7 +140,12 @@ describe Stemcell::Builder do
           product_key: product_key,
           owner: owner,
           organization: organization,
-          os: os).and_return(packer_config)
+          os: os,
+          enable_rdp: false,
+          enable_kms: false,
+          kms_host: '',
+          new_password: ''
+        ).and_return(packer_config)
 
         vsphere_manifest = double(:vsphere_manifest)
         allow(vsphere_manifest).to receive(:dump).and_return(manifest_contents)
@@ -175,6 +180,7 @@ describe Stemcell::Builder do
           product_key: product_key,
           owner: owner,
           organization: organization,
+          new_password: ''
         )
         allow(builder).to receive(:create_image).and_return([image,sha])
         expect(builder.build).to eq('path-to-stemcell')
@@ -212,7 +218,12 @@ describe Stemcell::Builder do
             product_key: product_key,
             owner: owner,
             organization: organization,
-            os: os).and_return(packer_config)
+            os: os,
+            enable_rdp: false,
+            enable_kms: false,
+            kms_host: '',
+            new_password: ''
+          ).and_return(packer_config)
 
           expect {
             Stemcell::Builder::VSphere.new(
@@ -228,6 +239,7 @@ describe Stemcell::Builder do
               product_key: product_key,
               owner: owner,
               organization: organization,
+              new_password: ''
             ).build }.to raise_error(Stemcell::Builder::PackerFailure)
         end
       end

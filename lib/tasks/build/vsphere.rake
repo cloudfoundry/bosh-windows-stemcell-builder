@@ -66,20 +66,25 @@ namespace :build do
 
 
     source_path = vmx.fetch(vmx_version)
+    administrator_password = Stemcell::Builder::validate_env('ADMINISTRATOR_PASSWORD')
 
     vsphere = Stemcell::Builder::VSphere.new(
       mem_size: ENV.fetch('MEM_SIZE', '4096'),
-      num_vcpus: ENV.fetch('NUM_VCPUS', '8'),
+      num_vcpus: ENV.fetch('NUM_VCPUS', '4'),
       source_path: source_path,
       agent_commit: agent_commit,
-      administrator_password: Stemcell::Builder::validate_env('ADMINISTRATOR_PASSWORD'),
+      administrator_password: administrator_password,
+      new_password: ENV.fetch('NEW_PASSWORD', administrator_password),
       product_key: Stemcell::Builder::validate_env('PRODUCT_KEY'),
       owner: Stemcell::Builder::validate_env('OWNER'),
       organization: Stemcell::Builder::validate_env('ORGANIZATION'),
       os: Stemcell::Builder::validate_env('OS_VERSION'),
       output_directory: output_directory,
       packer_vars: {},
-      version: version
+      version: version,
+      enable_rdp: ENV['ENABLE_RDP'] ? (ENV['ENABLE_RDP'].downcase == 'true') : false,
+      enable_kms: ENV['ENABLE_KMS'] ? (ENV['ENABLE_KMS'].downcase == 'true') : false,
+      kms_host: ENV.fetch('KMS_HOST', '')
     )
 
     vsphere.build
