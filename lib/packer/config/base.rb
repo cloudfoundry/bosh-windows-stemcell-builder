@@ -4,7 +4,6 @@ module Packer
   module Config
     class Base
       def self.pre_provisioners(os, skip_windows_update: false)
-        puts skip_windows_update
         if os == 'windows2012R2'
           pre = [
             Provisioners::BOSH_PSMODULES,

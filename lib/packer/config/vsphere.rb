@@ -57,8 +57,7 @@ module Packer
         post = [
           Provisioners::GET_LOG,
           Provisioners::CLEAR_PROVISIONER,
-          Provisioners::WAIT_AND_RESTART,
-          Provisioners::WAIT_AND_RESTAR
+          Provisioners::WAIT_AND_RESTART
         ]
 
         (pre + windows_updates + post).flatten
@@ -112,7 +111,7 @@ module Packer
 
       def provisioners
         pre = [
-          Base.pre_provisioners(@os, skip_windows_update: true),
+          Base.pre_provisioners(@os, skip_windows_update: @skip_windows_update),
           Provisioners::lgpo_exe,
           Provisioners.install_agent('vsphere').freeze,
         ]
