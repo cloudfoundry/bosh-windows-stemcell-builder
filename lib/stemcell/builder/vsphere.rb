@@ -49,11 +49,12 @@ module Stemcell
     end
 
     class VSphere < VSphereBase
-      def initialize(product_key:, owner:, organization:, new_password:, **args)
+      def initialize(product_key:, owner:, organization:, new_password:, skip_windows_update:,**args)
         @product_key = product_key
         @owner = owner
         @organization = organization
         @new_password = new_password
+        @skip_windows_update = skip_windows_update
         super(args)
       end
 
@@ -85,7 +86,8 @@ module Stemcell
           os: @os,
           kms_host: @kms_host,
           enable_kms: @enable_kms,
-          enable_rdp: @enable_rdp
+          enable_rdp: @enable_rdp,
+          skip_windows_update: @skip_windows_update
         ).dump
       end
 

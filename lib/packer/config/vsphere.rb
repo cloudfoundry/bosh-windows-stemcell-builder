@@ -8,7 +8,8 @@ module Packer
                      output_directory:,
                      mem_size:,
                      num_vcpus:,
-                     os:)
+                     os:,
+                     skip_windows_update:)
         @administrator_password = administrator_password
         @source_path = source_path
         @output_directory = output_directory
@@ -16,6 +17,7 @@ module Packer
         @num_vcpus = num_vcpus
         @timestamp = Time.now.getutc.to_i
         @os = os
+        @skip_windows_update = skip_windows_update
       end
     end
 
@@ -47,15 +49,19 @@ module Packer
       end
 
       def provisioners
-        [
+        pre = [
           Provisioners::BOSH_PSMODULES,
-          Provisioners::NEW_PROVISIONER,
-          Provisioners.install_windows_updates,
+          Provisioners::NEW_PROVISIONER
+        ]
+        windows_updates = @skip_windows_update?[]:[Provisioners.install_windows_updates]
+        post = [
           Provisioners::GET_LOG,
           Provisioners::CLEAR_PROVISIONER,
           Provisioners::WAIT_AND_RESTART,
-          Provisioners::WAIT_AND_RESTART
-        ].flatten
+          Provisioners::WAIT_AND_RESTAR
+        ]
+
+        (pre + windows_updates + post).flatten
       end
     end
 
@@ -105,17 +111,21 @@ module Packer
       end
 
       def provisioners
-        provisioner_list = [
-          Base.pre_provisioners(@os),
+        pre = [
+          Base.pre_provisioners(@os, skip_windows_update: true),
           Provisioners::lgpo_exe,
           Provisioners.install_agent('vsphere').freeze,
-          Provisioners.download_windows_updates(@output_directory).freeze,
-          Base.post_provisioners('vsphere')
-        ].flatten
+        ]
+        download_windows_updates = @skip_windows_update?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
+
+        setup_kms_server = []
         if @enable_kms && !@kms_host.nil? && !@kms_host.empty?
-          provisioner_list << Provisioners.setup_kms_server(@kms_host)
+          setup_kms_server << Provisioners.setup_kms_server(@kms_host)
         end
-        provisioner_list
+
+        post = [Base.post_provisioners('vsphere')]
+
+        (pre + download_windows_updates + post + setup_kms_server).flatten
       end
     end
   end
