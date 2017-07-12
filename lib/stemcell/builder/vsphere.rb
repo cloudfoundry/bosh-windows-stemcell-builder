@@ -49,7 +49,7 @@ module Stemcell
     end
 
     class VSphere < VSphereBase
-      def initialize(product_key:, owner:, organization:, new_password:, skip_windows_update:,**args)
+      def initialize(product_key:, owner:, organization:, new_password:, skip_windows_update:false,**args)
         @product_key = product_key
         @owner = owner
         @organization = organization

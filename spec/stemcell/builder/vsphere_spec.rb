@@ -144,7 +144,8 @@ describe Stemcell::Builder do
           enable_rdp: false,
           enable_kms: false,
           kms_host: '',
-          new_password: ''
+          new_password: '',
+          skip_windows_update: false
         ).and_return(packer_config)
 
         vsphere_manifest = double(:vsphere_manifest)
@@ -222,7 +223,8 @@ describe Stemcell::Builder do
             enable_rdp: false,
             enable_kms: false,
             kms_host: '',
-            new_password: ''
+            new_password: '',
+            skip_windows_update: false
           ).and_return(packer_config)
 
           expect {

@@ -9,7 +9,7 @@ module Packer
                      mem_size:,
                      num_vcpus:,
                      os:,
-                     skip_windows_update:)
+                     skip_windows_update:false)
         @administrator_password = administrator_password
         @source_path = source_path
         @output_directory = output_directory
@@ -57,6 +57,7 @@ module Packer
         post = [
           Provisioners::GET_LOG,
           Provisioners::CLEAR_PROVISIONER,
+          Provisioners::WAIT_AND_RESTART,
           Provisioners::WAIT_AND_RESTART
         ]
 
