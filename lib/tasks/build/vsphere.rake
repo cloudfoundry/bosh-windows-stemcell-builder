@@ -75,7 +75,7 @@ namespace :build do
       agent_commit: agent_commit,
       administrator_password: administrator_password,
       new_password: ENV.fetch('NEW_PASSWORD', administrator_password),
-      product_key: Stemcell::Builder::validate_env('PRODUCT_KEY'),
+      product_key: ENV['PRODUCT_KEY'],
       owner: Stemcell::Builder::validate_env('OWNER'),
       organization: Stemcell::Builder::validate_env('ORGANIZATION'),
       os: Stemcell::Builder::validate_env('OS_VERSION'),
