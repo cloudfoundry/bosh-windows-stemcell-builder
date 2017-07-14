@@ -22,6 +22,7 @@ module Packer
         args_combined += "-var \"#{name}=#{value}\""
       end
 
+      puts "config file path: #{config_file.path}"
       packer_command = "packer #{command} -machine-readable #{args_combined} #{config_file.path}"
 
       Open3.popen2e(packer_command) do |stdin, out, wait_thr|
