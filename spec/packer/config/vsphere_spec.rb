@@ -137,6 +137,25 @@ describe Packer::Config do
         ).builders
         expect(builders[0]['shutdown_command']).to eq 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword new-password -ProductKey key -Owner me -Organization me -EnableRdp'
       end
+
+      it 'does not include -ProductKey if product key is empty string' do
+        builders = Packer::Config::VSphere.new(
+          output_directory: 'output_directory',
+          num_vcpus: 1,
+          mem_size: 1000,
+          product_key: '',
+          organization: 'me',
+          owner: 'me',
+          administrator_password: 'password',
+          source_path: 'source_path',
+          os: 'windows2012R2',
+          enable_rdp: true,
+          enable_kms: false,
+          kms_host: '',
+          new_password: 'new-password'
+        ).builders
+        expect(builders[0]['shutdown_command']).to eq 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword new-password -Owner me -Organization me -EnableRdp'
+      end
     end
 
     describe 'provisioners' do
