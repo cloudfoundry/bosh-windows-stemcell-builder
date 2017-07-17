@@ -16,4 +16,5 @@ if update_list_provisioner
 end
 Dir.chdir(output_directory) do
   File.write('file.vmx', 'banana')
+  File.write('file.vmdk', 'some-vmdk')
 end

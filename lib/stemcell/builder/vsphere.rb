@@ -60,15 +60,7 @@ module Stemcell
 
       def build
         run_packer
-        image_path, sha = create_image(@output_directory)
-        manifest = Manifest::VSphere.new(@version, sha, @os).dump
-        super(
-          iaas: 'vsphere-esxi',
-          is_light: false,
-          image_path: image_path,
-          manifest: manifest,
-          update_list: update_list_path
-        )
+        run_stembuild
       end
 
       private
@@ -91,16 +83,25 @@ module Stemcell
         ).dump
       end
 
-      def find_vmx_file(dir)
-        pattern = File.join(dir, "*.vmx").gsub('\\', '/')
+      def find_file_by_extn(dir, extn)
+        pattern = File.join(dir, "*.#{extn}").gsub('\\', '/')
         files = Dir.glob(pattern)
         if files.length == 0
-          raise "No vmx files in directory: #{dir}"
+          raise "No #{extn} files in directory: #{dir}"
         end
         if files.length > 1
-          raise "Too many vmx files in directory: #{files}"
+          raise "Too many #{extn} files in directory: #{files}"
         end
         return files[0]
+      end
+
+      def run_stembuild
+        vmdk_file = find_file_by_extn(@output_directory, "vmdk")
+        `stembuild -vmdk #{vmdk_file} -v #{@version} -output #{@output_directory}`
+      end
+
+      def find_vmx_file(dir)
+        find_file_by_extn(dir, "vmx")
       end
 
       def gzip_file(name, output)

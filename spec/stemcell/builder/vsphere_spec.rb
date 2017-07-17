@@ -148,26 +148,6 @@ describe Stemcell::Builder do
           skip_windows_update: false
         ).and_return(packer_config)
 
-        vsphere_manifest = double(:vsphere_manifest)
-        allow(vsphere_manifest).to receive(:dump).and_return(manifest_contents)
-
-        vsphere_apply = double(:vsphere_apply)
-        allow(vsphere_apply).to receive(:dump).and_return(apply_spec_contents)
-
-        allow(Stemcell::Manifest::VSphere).to receive(:new).with(version, sha, os).and_return(vsphere_manifest)
-        allow(Stemcell::ApplySpec).to receive(:new).with(agent_commit).and_return(vsphere_apply)
-        allow(Stemcell::Packager).to receive(:package).with(
-          iaas: 'vsphere-esxi',
-          os: os,
-          is_light: false,
-          version: version,
-          image_path: image,
-          manifest: manifest_contents,
-          apply_spec: apply_spec_contents,
-          output_directory: output_directory,
-          update_list: nil
-        ).and_return('path-to-stemcell')
-
         builder = Stemcell::Builder::VSphere.new(
           os: os,
           output_directory: output_directory,
@@ -183,8 +163,8 @@ describe Stemcell::Builder do
           organization: organization,
           new_password: ''
         )
-        allow(builder).to receive(:create_image).and_return([image,sha])
-        expect(builder.build).to eq('path-to-stemcell')
+        allow(builder).to receive(:run_packer)
+        allow(builder).to receive(:run_stembuild)
       end
 
       context 'when packer fails' do
