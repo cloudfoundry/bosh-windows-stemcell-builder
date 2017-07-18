@@ -71,8 +71,8 @@ module Stemcell
 
       def self.format_version(version)
         new_version = version.dup
-        new_version.slice!("0-build.")
-        return new_version
+        md = new_version.match(/(\d+\.\d+)\.\d+-build\.(\d+)/)
+        return md[1] + '.' + md[2]
       end
     end
 

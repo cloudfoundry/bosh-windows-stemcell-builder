@@ -28,7 +28,7 @@ describe 'Azure' do
   it 'should build an azure stemcell' do
     Dir.mktmpdir('azure-stemcell-test') do |tmpdir|
       os_version = 'windows2012R2'
-      version = 'some-version'
+      version = '1200.0.1-build.7'
       agent_commit = 'some-agent-commit'
 
       ENV['CLIENT_ID'] = 'some-azure_access_key'
@@ -50,7 +50,7 @@ describe 'Azure' do
 
       File.write(
         File.join(@version_dir, 'number'),
-        'some-version'
+        version
       )
 
       FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
@@ -74,7 +74,7 @@ describe 'Azure' do
       expect(stemcell_manifest['cloud_properties']['image']['offer']).to eq('some-offer')
       expect(stemcell_manifest['cloud_properties']['image']['publisher']).to eq('some-publisher')
       expect(stemcell_manifest['cloud_properties']['image']['sku']).to eq('some-sku')
-      expect(stemcell_manifest['cloud_properties']['image']['version']).to eq('some-version')
+      expect(stemcell_manifest['cloud_properties']['image']['version']).to eq('1200.0.7')
 
       apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
       expect(apply_spec['agent_commit']).to eq(agent_commit)
