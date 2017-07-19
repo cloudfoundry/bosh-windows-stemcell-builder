@@ -21,6 +21,9 @@ module S3
       @s3_resource.bucket(bucket).object(key).upload_file(file_name)
       puts "Finished uploading the #{file_name} to #{bucket}:#{key}"
     end
+    def list(bucket)
+      @s3_resource.bucket(bucket).objects.map {|x| x.key}
+    end
   end
 
   class Vmx
