@@ -97,7 +97,7 @@ module Stemcell
 
       def run_stembuild
         vmdk_file = find_file_by_extn(@output_directory, "vmdk")
-        `stembuild -vmdk #{vmdk_file} -v #{@version} -output #{@output_directory}`
+        `stembuild -vmdk '#{vmdk_file}' -v '#{@version}' -output '#{@output_directory}'`
       end
 
       def find_vmx_file(dir)
@@ -125,7 +125,7 @@ module Stemcell
         Dir.mktmpdir do |tmpdir|
           vmx_file = find_vmx_file(vmx_dir)
           ova_file = File.join(tmpdir, 'image.ova')
-          exec_command("ovftool #{vmx_file} #{ova_file}")
+          exec_command("ovftool '#{vmx_file}' '#{ova_file}'")
           removeNIC(ova_file)
           gzip_file(ova_file, image_file)
           sha1_sum = Digest::SHA1.file(image_file).hexdigest
