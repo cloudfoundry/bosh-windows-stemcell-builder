@@ -57,53 +57,6 @@ Describe "Copy-Agent" {
     }
 }
 
-Describe  "Protect-Dir" {
-    BeforeEach {
-        $aclDir=(New-TempDir)
-        New-Item -Path $aclDir -ItemType Directory -Force
-
-        cacls.exe $aclDir /T /E /P "BUILTIN\Users:F"
-        $LASTEXITCODE | Should Be 0
-        cacls.exe $aclDir /T /E /P "BUILTIN\IIS_IUSRS:F"
-        $LASTEXITCODE | Should Be 0
-    }
-
-    AfterEach {
-        Remove-Item -Recurse -Force $aclDir
-    }
-
-    Context "when not provided a directory" {
-        It "throws" {
-            { Protect-Dir } | Should Throw "Provide a directory to set ACL on"
-        }
-    }
-
-    Context "when provided a nonexistent directory" {
-        It "throws" {
-            { Protect-Dir -path "nonexistent-dir" } | Should Throw "Error setting ACL for nonexistent-dir: does not exist"
-        }
-    }
-
-    It "sets the correct ACLs on the provided directory" {
-        { Protect-Dir -path $aclDir } | Should Not Throw
-
-        $acl = (Get-Acl $aclDir)
-        $acl.Owner | Should Be "BUILTIN\Administrators"
-        $acl.Access | where { $_.IdentityReference -eq "BUILTIN\Users" } | Should BeNullOrEmpty
-        $acl.Access | where { $_.IdentityReference -eq "BUILTIN\IIS_IUSRS" } | Should BeNullOrEmpty
-        $adminAccess = ($acl.Access | where { $_.IdentityReference -eq "BUILTIN\Administrators" })
-        $adminAccess | Should Not BeNullOrEmpty
-        $adminAccess.FileSystemRights | Should Be "FullControl"
-    }
-
-    Context "when inheritance is disabled" {
-        It "disables ACL inheritance on the provided directory " {
-            { Protect-Dir -path $aclDir -disableInheritance $True } | Should Not Throw
-
-            (Get-Acl $aclDir).AreAccessRulesProtected | Should Be $True
-        }
-    }
-}
 
 Describe "Write-AgentConfig" {
     BeforeEach {

@@ -76,3 +76,39 @@ function Clear-Provisioner {
       }
    }
 }
+
+function Protect-Dir {
+    Param(
+        [string]$path = $(Throw "Provide a directory to set ACL on"),
+        [bool]$disableInheritance=$True
+    )
+
+    if (-Not (Test-Path $path)) {
+        Throw "Error setting ACL for ${path}: does not exist"
+    }
+
+    Write-Log "Protect-Dir: Remove BUILTIN\Users"
+    cacls.exe $path /T /E /R "BUILTIN\Users"
+    if ($LASTEXITCODE -ne 0) {
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+    }
+
+    Write-Log "Protect-Dir: Remove BUILTIN\IIS_IUSRS"
+    cacls.exe $path /T /E /R "BUILTIN\IIS_IUSRS"
+    if ($LASTEXITCODE -ne 0) {
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+    }
+
+    Write-Log "Protect-Dir: Grant Administrator"
+    cacls.exe $path /T /E /P Administrators:F
+    if ($LASTEXITCODE -ne 0) {
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+    }
+
+    if ($disableInheritance) {
+        Write-Log "Protect-Dir: Disable Inheritance"
+        $acl = Get-ACL -Path $path
+        $acl.SetAccessRuleProtection($True, $True)
+        Set-Acl -Path $path -AclObject $acl
+    }
+}

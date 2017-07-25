@@ -1,18 +1,18 @@
-@{
-RootModule = 'BOSH.Utils'
+﻿@{
+RootModule = 'BOSH.SSH'
 ModuleVersion = '0.1'
-GUID = '1113e65d-b18e-4277-abc8-12c60a8f1f52'
+GUID = '50c1c4b1-e154-4b07-92bc-718a3efba6b3'
 Author = 'BOSH'
 Copyright = '(c) 2017 BOSH'
-Description = 'Common Utils on a BOSH deployed vm'
+Description = 'Install Microsoft SSHD'
 PowerShellVersion = '4.0'
-FunctionsToExport = @('Write-Log','Get-Log','Open-Zip','New-Provisioner','Clear-Provisioner','Protect-Dir')
+FunctionsToExport = @('Install-SSHD')
 CmdletsToExport = @()
 VariablesToExport = '*'
 AliasesToExport = @()
 PrivateData = @{
     PSData = @{
-        Tags = @('Utils')
+        Tags = @('BOSH', 'SSHD')
         LicenseUri = 'https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/blob/master/LICENSE'
         ProjectUri = 'https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder'
     }
