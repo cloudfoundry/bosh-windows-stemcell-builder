@@ -82,6 +82,15 @@ module Packer
         ]
       end
 
+      INSTALL_SSHD = [
+        {
+          'type' => 'file',
+          'source' => '../sshd/OpenSSH-Win64.zip',
+          'destination' => 'C:\\provision\\OpenSSH-Win64.zip'
+        },
+        powershell_provisioner("Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'")
+      ]
+
       def self.lgpo_exe
         {
           'type' => 'file',

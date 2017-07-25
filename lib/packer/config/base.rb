@@ -4,16 +4,13 @@ module Packer
   module Config
     class Base
       def self.pre_provisioners(os, skip_windows_update: false)
+        pre = []
         if os == 'windows2012R2'
           pre = [
             Provisioners::BOSH_PSMODULES,
             Provisioners::NEW_PROVISIONER,
             Provisioners::INSTALL_CF_FEATURES
           ]
-          install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
-          post = [Provisioners::PROTECT_CF_CELL]
-
-          pre + install_windows_updates + post
         elsif os == 'windows2016'
           pre = [
             Provisioners::BOSH_PSMODULES,
@@ -21,11 +18,9 @@ module Packer
             Provisioners::INSTALL_CONTAINERS,
             Provisioners::INSTALL_CF_FEATURES
           ]
-          install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
-          post = [Provisioners::PROTECT_CF_CELL]
-
-          pre + install_windows_updates + post
         end
+        install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
+        pre + install_windows_updates + [Provisioners::PROTECT_CF_CELL, Provisioners::INSTALL_SSHD]
       end
 
       def self.post_provisioners(iaas)
