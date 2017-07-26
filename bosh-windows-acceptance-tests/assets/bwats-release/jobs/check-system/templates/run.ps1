@@ -62,14 +62,31 @@ $errCount = 0
 $errCount += Check-Acls "C:\var"
 $errCount += Check-Acls "C:\bosh"
 $errCount += Check-Acls "C:\Windows\Panther\Unattend"
+$errCount += Check-Acls "C:\Program Files\OpenSSH"
 if ($errCount -ne 0) {
     Write-Error "FAILED: $errCount"
     Exit 1
 }
 
+# Check Services 
+
 # Check WinRM
 If ( (Get-Service WinRM).Status -ne "Stopped") {
   $msg = "WinRM is not Stopped. It is {0}" -f $(Get-Service WinRM).Status
+  Write-Error $msg
+  Exit 1
+}
+
+# Check sshd startup type
+If ( (Get-Service sshd).StartType -ne "Disabled") {
+  $msg = "sshd is not disabled. It is {0}" -f $(Get-Service sshd).StartType
+  Write-Error $msg
+  Exit 1
+}
+
+# Check ssh-agent startup type
+If ( (Get-Service ssh-agent).StartType -ne "Disabled") {
+  $msg = "ssh-agent is not disabled. It is {0}" -f $(Get-Service ssh-agent).StartType
   Write-Error $msg
   Exit 1
 }
@@ -118,6 +135,8 @@ if ($windowsVersion -Match "2012") {
     Write-Host "IIS Web Server is turned off"
   }
 }
+
+# Check installed features
 
 $windowsFeatures = @()
 if ($windowsVersion -Match "2012") {
