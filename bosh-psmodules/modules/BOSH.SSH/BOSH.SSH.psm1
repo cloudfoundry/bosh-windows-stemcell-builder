@@ -1,7 +1,7 @@
 ﻿function Install-SSHD {
     param([string]$SSHZipFile= $(Throw "Provide an SSHD zipfile"))
 
-    Open-Zip -ZipFile $SSHZipFile -OutPath "C:\Program Files\" -Keep
+    Open-Zip -ZipFile $SSHZipFile -OutPath "C:\Program Files\"
     Move-Item -Force "C:\Program Files\OpenSSH-Win64" "C:\Program Files\OpenSSH"
 
     # Remove users from 'OpenSSH' before installing.  The install process
