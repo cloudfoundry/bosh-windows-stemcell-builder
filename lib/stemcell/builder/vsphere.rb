@@ -97,7 +97,7 @@ module Stemcell
 
       def run_stembuild
         vmdk_file = find_file_by_extn(@output_directory, "vmdk")
-        cmd = "stembuild -vmdk '#{vmdk_file}' -v '#{@version}' -output '#{@output_directory}'"
+        cmd = "stembuild -vmdk \"#{vmdk_file}\" -v \"#{@version}\" -output \"#{@output_directory}\""
         puts "running stembuild command: [[ #{cmd} ]]"
         `#{cmd}`
       end
