@@ -13,6 +13,7 @@
     Push-Location "C:\Program Files\OpenSSH"
         powershell -ExecutionPolicy Bypass -File install-sshd.ps1
         .\ssh-keygen.exe -A
+        dir
         .\FixHostFilePermissions.ps1 -Confirm:$false
     Pop-Location
 
