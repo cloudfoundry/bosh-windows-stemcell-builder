@@ -41,18 +41,23 @@ function Check-Acls {
     $errCount = 0
 
     Get-ChildItem -Path $path -Recurse | foreach {
-        $name = $_.FullName
-        If (-Not ($_.Attributes -match "ReparsePoint")) {
-            Get-Acl $name | Select -ExpandProperty Access | ForEach-Object {
-                $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
-                If (-Not $expectedacls.Contains($ident)) {
-                    If (-Not ($ident -match "NT [\w]+\\[\w]+,Allow")) {
-                        $errCount += 1
-                        Write-Host "Error ($name): $ident"
-                    }
-                }
+      $name = $_.FullName
+      If (-Not ($_.Attributes -match "ReparsePoint")) {
+        Get-Acl $name | Select -ExpandProperty Access | ForEach-Object {
+          If ($name -match 'ssh_\w+.pub$') {
+            Continue # public ssh keys can be open
+          }
+          Else {
+            $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
+            If (-Not $expectedacls.Contains($ident)) {
+              If (-Not ($ident -match "NT [\w]+\\[\w]+,Allow")) {
+                $errCount += 1
+                  Write-Host "Error ($name): $ident"
+              }
             }
+          }
         }
+      }
     }
 
     return $errCount
