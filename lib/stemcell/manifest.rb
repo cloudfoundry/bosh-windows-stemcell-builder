@@ -71,8 +71,10 @@ module Stemcell
 
       def self.format_version(version)
         new_version = version.dup
-        md = new_version.match(/(\d+\.\d+)\.\d+-build\.(\d+)/)
-        return md[1] + '.' + md[2]
+        md = new_version.match(/(\d+\.\d+)\.(\d+)-build\.(\d+)/)
+        patch = sprintf '%03d', md[2]
+        build = sprintf '%03d', md[3]
+        return md[1] + '.' + patch + build
       end
     end
 

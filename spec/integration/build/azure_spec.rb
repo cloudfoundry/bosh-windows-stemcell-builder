@@ -74,7 +74,7 @@ describe 'Azure' do
       expect(stemcell_manifest['cloud_properties']['image']['offer']).to eq('some-offer')
       expect(stemcell_manifest['cloud_properties']['image']['publisher']).to eq('some-publisher')
       expect(stemcell_manifest['cloud_properties']['image']['sku']).to eq('some-sku')
-      expect(stemcell_manifest['cloud_properties']['image']['version']).to eq('1200.0.7')
+      expect(stemcell_manifest['cloud_properties']['image']['version']).to eq('1200.0.001007')
 
       apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
       expect(apply_spec['agent_commit']).to eq(agent_commit)

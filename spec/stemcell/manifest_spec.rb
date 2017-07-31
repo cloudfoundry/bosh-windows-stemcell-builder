@@ -102,7 +102,7 @@ describe Stemcell::Manifest do
               'offer' => 'some-offer',
               'publisher' => 'some-publisher',
               'sku' => 'some-sku',
-              'version' => '1.0.1'
+              'version' => '1.0.000001'
             }
           }
         )
