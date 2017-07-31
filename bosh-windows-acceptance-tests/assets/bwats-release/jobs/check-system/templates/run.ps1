@@ -35,6 +35,14 @@ $expectedacls = New-Object System.Collections.ArrayList
     "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow"
 ))
 
+# for 2016, for some reason every file in C:\Program Files\OpenSSH
+# ends up with "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow".
+# adding this to unblock 2016 pipeline
+$windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
+if ($windowsVersion -Match "2016") {
+  $expectedacls.Add("APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow")
+}
+
 function Check-Acls {
     param([string]$path)
 
@@ -44,16 +52,11 @@ function Check-Acls {
       $name = $_.FullName
       If (-Not ($_.Attributes -match "ReparsePoint")) {
         Get-Acl $name | Select -ExpandProperty Access | ForEach-Object {
-          If ($name -match 'ssh_\w+.pub$') {
-            Continue # public ssh keys can be open
-          }
-          Else {
-            $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
-            If (-Not $expectedacls.Contains($ident)) {
-              If (-Not ($ident -match "NT [\w]+\\[\w]+,Allow")) {
-                $errCount += 1
-                  Write-Host "Error ($name): $ident"
-              }
+          $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
+          If (-Not $expectedacls.Contains($ident)) {
+            If (-Not ($ident -match "NT [\w]+\\[\w]+,Allow")) {
+              $errCount += 1
+                Write-Host "Error ($name): $ident"
             }
           }
         }
