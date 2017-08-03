@@ -191,7 +191,7 @@ func (c *BoshCommand) args(command string) []string {
 
 func (c *BoshCommand) Run(command string) error {
 	cmd := exec.Command("bosh", c.args(command)...)
-	log.Printf("RUNNING %q\n", strings.Join(cmd.Args, " "))
+	log.Printf("\nRUNNING %q\n", strings.Join(cmd.Args, " "))
 
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	if err != nil {
