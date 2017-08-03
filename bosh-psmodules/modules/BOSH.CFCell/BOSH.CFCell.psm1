@@ -38,11 +38,11 @@ function Install-CFFeatures {
       Write-Host "Installed Docker"
     }
 
-    docker.exe pull cloudfoundry/cfwindowsfs
+    docker.exe pull cloudfoundry/windows2016fs
     if ($LASTEXITCODE -ne 0) {
-      Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull cloudfoundry/cfwindowsfs"
+      Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull cloudfoundry/windows2016fs"
     }
-    Write-Host "installed cloudfoundry/cfwindowsfs image!"
+    Write-Host "installed cloudfoundry/windows2016fs image!"
   }
 
   Write-Log "Installed CloudFoundry Cell Windows Features"
