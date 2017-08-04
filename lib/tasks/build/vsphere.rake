@@ -118,7 +118,7 @@ namespace :build do
     s3_client.put(output_bucket, "patchfiles/#{patch_filename}", diff_path)
   end
 
-  desk 'Build VSphere Stemcell from Diff'
+  desc 'Build VSphere Stemcell from Diff'
   task :vsphere_from_diff do
     # Concourse inputs
     version_dir = '../version' # Such as 1200.0.2-build.1
