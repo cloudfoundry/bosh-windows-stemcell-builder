@@ -1,6 +1,7 @@
 require 'rspec/core/rake_task'
 require 'json'
 require_relative '../../s3'
+require_relative '../../file_helper'
 
 namespace :build do
   desc 'Apply Windows Updates for VMX'
