@@ -83,7 +83,7 @@ module Stemcell
         ).dump
       end
 
-      def find_file_by_extn(dir, extn)
+      def self.find_file_by_extn(dir, extn)
         pattern = File.join(dir, "*.#{extn}").gsub('\\', '/')
         files = Dir.glob(pattern)
         if files.length == 0
@@ -93,6 +93,10 @@ module Stemcell
           raise "Too many #{extn} files in directory: #{files}"
         end
         return files[0]
+      end
+
+      def find_file_by_extn(dir, extn)
+        self.class.find_file_by_extn(dir, extn)
       end
 
       def run_stembuild
