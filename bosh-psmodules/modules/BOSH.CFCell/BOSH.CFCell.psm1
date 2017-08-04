@@ -22,6 +22,8 @@ function Install-CFFeatures {
     WindowsFeatureInstall("Web-WHC")
     WindowsFeatureInstall("Web-ASP")
   } elseif ($windowsVersion -Match "2016") {
+    WindowsFeatureInstall("FS-Resource-Manager")
+  
     if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
       Write-Host "Installing Docker"
 
