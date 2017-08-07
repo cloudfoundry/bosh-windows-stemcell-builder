@@ -167,7 +167,7 @@ namespace :build do
     `#{patch_command}`
 
     # Find stemcell .tgz
-    stemcell_path = Stemcell::Builder::Vsphere.find_file_by_extn(Dir.pwd, 'tgz')
+    stemcell_path = Stemcell::Builder::VSphere.find_file_by_extn(Dir.pwd, 'tgz')
     stemcell_filename = File.basename(stemcell_path)
 
     s3_client.put(output_bucket, stemcell_filename, stemcell_path)
