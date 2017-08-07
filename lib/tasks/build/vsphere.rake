@@ -3,6 +3,7 @@ require 'json'
 require 'fileutils'
 require_relative '../../s3'
 require_relative '../../file_helper'
+require_relative '../../stemcell/builder/vsphere'
 
 namespace :build do
   desc 'Apply Windows Updates for VMX'
