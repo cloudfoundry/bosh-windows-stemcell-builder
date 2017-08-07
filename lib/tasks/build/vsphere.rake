@@ -144,6 +144,7 @@ namespace :build do
     # Get the most recent vhd
     last_file = s3_client.list(image_bucket).select{|file| /.vhd$/.match(file)}.sort.last
     image_basename = File.basename(last_file, File.extname(last_file))
+    vhd_version = FileHelper.parse_vhd_version(image_basename)
 
     # Look for base vhd and patchfile in diffcell worker cache
     vhd_filename = image_basename + '.vhd'
