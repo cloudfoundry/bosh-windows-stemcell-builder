@@ -1,5 +1,6 @@
 require 'rspec/core/rake_task'
 require 'json'
+require 'fileutils'
 require_relative '../../s3'
 require_relative '../../file_helper'
 
@@ -114,8 +115,10 @@ namespace :build do
     puts "generating diff: #{diff_command}"
     `#{diff_command}`
 
-    patch_filename = File.basename diff_path
-    s3_client.put(output_bucket, "patchfiles/#{patch_filename}", diff_path)
+    diff_filename = File.basename diff_path
+    s3_client.put(output_bucket, "patchfiles/#{diff_filename}", diff_path)
+    #cache diff file
+    FileUtils.mv(diff_path, File.join(cache_dir, diff_filename))
   end
 
   desc 'Build VSphere Stemcell from Diff'
@@ -130,7 +133,7 @@ namespace :build do
     aws_region = Stemcell::Builder::validate_env('AWS_REGION')
 
     image_bucket = Stemcell::Builder::validate_env('VHD_VMDK_BUCKET')
-    output_bucket = Stemcell::Builder::validate_env('DIFF_OUTPUT_BUCKET')
+    output_bucket = Stemcell::Builder::validate_env('STEMCELL_OUTPUT_BUCKET')
     cache_dir = Stemcell::Builder::validate_env('CACHE_DIR')
 
     s3_client = S3::Client.new(
