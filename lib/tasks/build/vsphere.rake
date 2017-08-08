@@ -39,13 +39,12 @@ namespace :build do
     vmx.put(output_directory, vmx_version)
   end
 
-  desc 'Build VSphere Diff'
+  desc 'Build VSphere Diff and create stemcell with it'
   task :vsphere_diff do
     version_dir = '../version'
-    output_directory = '../bosh-windows-stemcell/packer-output' # packer-output must not exist before packer is run!
-
     version = File.read(File.join(version_dir, 'number')).chomp
 
+    output_directory = '../bosh-windows-stemcell/packer-output' # packer-output must not exist before packer is run!
     signature_path = File.join(output_directory, 'signature')
 
     aws_access_key_id = Stemcell::Builder::validate_env('AWS_ACCESS_KEY_ID')
@@ -53,7 +52,8 @@ namespace :build do
     aws_region = Stemcell::Builder::validate_env('AWS_REGION')
 
     image_bucket = Stemcell::Builder::validate_env('VHD_VMDK_BUCKET')
-    output_bucket = Stemcell::Builder::validate_env('DIFF_OUTPUT_BUCKET')
+    diff_output_bucket = Stemcell::Builder::validate_env('DIFF_OUTPUT_BUCKET')
+    stemcell_output_bucket = Stemcell::Builder::validate_env('STEMCELL_OUTPUT_BUCKET')
     cache_dir = Stemcell::Builder::validate_env('CACHE_DIR')
 
     s3_client = S3::Client.new(
@@ -117,51 +117,9 @@ namespace :build do
     `#{diff_command}`
 
     diff_filename = File.basename diff_path
-    s3_client.put(output_bucket, "patchfiles/#{diff_filename}", diff_path)
-    #cache diff file
-    FileUtils.mv(diff_path, File.join(cache_dir, diff_filename))
-  end
+    s3_client.put(diff_output_bucket, "patchfiles/#{diff_filename}", diff_path)
 
-  desc 'Build VSphere Stemcell from Diff'
-  task :vsphere_from_diff do
-    # Concourse inputs
-    version_dir = '../version' # Such as 1200.0.2-build.1
-    version = File.read(File.join(version_dir, 'number')).chomp
-
-    # S3
-    aws_access_key_id = Stemcell::Builder::validate_env('AWS_ACCESS_KEY_ID')
-    aws_secret_access_key = Stemcell::Builder::validate_env('AWS_SECRET_ACCESS_KEY')
-    aws_region = Stemcell::Builder::validate_env('AWS_REGION')
-
-    image_bucket = Stemcell::Builder::validate_env('VHD_VMDK_BUCKET')
-    output_bucket = Stemcell::Builder::validate_env('STEMCELL_OUTPUT_BUCKET')
-    cache_dir = Stemcell::Builder::validate_env('CACHE_DIR')
-
-    s3_client = S3::Client.new(
-      aws_access_key_id: aws_access_key_id,
-      aws_secret_access_key: aws_secret_access_key,
-      aws_region: aws_region)
-
-    # Get the most recent vhd
-    last_file = s3_client.list(image_bucket).select{|file| /.vhd$/.match(file)}.sort.last
-    image_basename = File.basename(last_file, File.extname(last_file))
-    vhd_version = FileHelper.parse_vhd_version(image_basename)
-
-    # Look for base vhd and patchfile in diffcell worker cache
-    vhd_filename = image_basename + '.vhd'
-    vhd_path = File.join(cache_dir, vhd_filename)
-    diff_filename = "patchfile-#{version}-#{vhd_version}"
-    diff_path = File.join(cache_dir, diff_filename)
-
-    # Download files from S3 if not cached
-    if !File.exist?(vhd_path)
-      s3_client.get(image_bucket, vhd_filename, vhd_path)
-    end
-    if !File.exist?(diff_path)
-      s3_client.get(image_bucket, "patchfiles/#{diff_filename}", diff_path)
-    end
-
-    # Apply patch
+    # Apply patch to create stemcell
     patch_command = "stembuild -vhd #{vhd_path} -delta #{diff_path} -version #{version}"
     puts "applying patch: #{patch_command}"
     `#{patch_command}`
@@ -170,7 +128,7 @@ namespace :build do
     stemcell_path = Stemcell::Builder::VSphere.find_file_by_extn(Dir.pwd, 'tgz')
     stemcell_filename = File.basename(stemcell_path)
 
-    s3_client.put(output_bucket, stemcell_filename, stemcell_path)
+    s3_client.put(stemcell_output_bucket, stemcell_filename, stemcell_path)
   end
 
   desc 'Build VSphere Stemcell'
