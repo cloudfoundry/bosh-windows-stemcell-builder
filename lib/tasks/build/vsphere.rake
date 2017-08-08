@@ -83,7 +83,7 @@ namespace :build do
     end
 
     # Setup base vmx file for packer to use
-    vmx_template_txt = File.read("../ci/bosh-windows-stemcell-builder/create-vsphere-vmdk/old-base-vmx.vmx")
+    vmx_template_txt = File.read("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff/old-base-vmx.vmx")
     new_vmx_txt = vmx_template_txt.gsub("INIT_VMDK",vmdk_path)
     File.write("config.vmx", new_vmx_txt)
     vmx_path = File.absolute_path("config.vmx").gsub("/", "\\")
