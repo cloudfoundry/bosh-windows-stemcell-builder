@@ -31,7 +31,8 @@ module Packer
             'winrm_timeout' => '1h',
             'user_data_file' => 'scripts/aws/setup_winrm.txt',
             'security_group_id' => region['security_group'],
-            'ami_groups' => 'all'
+            'ami_groups' => 'all',
+            'temporary_key_pair_name' => "packer_#{region['name']}"
           )
         end
         builders
