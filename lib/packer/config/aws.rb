@@ -32,7 +32,7 @@ module Packer
             'user_data_file' => 'scripts/aws/setup_winrm.txt',
             'security_group_id' => region['security_group'],
             'ami_groups' => 'all',
-            'temporary_key_pair_name' => "packer_#{region['name']}"
+            'ssh_keypair_name' => 'packer_ci'
           )
         end
         builders
