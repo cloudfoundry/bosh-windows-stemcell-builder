@@ -101,7 +101,7 @@ namespace :build do
       output_directory: output_directory,
       packer_vars: {},
       version: version,
-      skip_windows_update: true,
+      skip_windows_update: false,
       new_password: Stemcell::Builder::validate_env('ADMINISTRATOR_PASSWORD')
     )
 
