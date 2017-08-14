@@ -77,6 +77,22 @@ describe Stemcell::Packager do
     end
   end
 
+  describe 'aggregate the amis' do
+    it 'aggregates the amis' do
+      amis_path = File.join(File.expand_path('../../..', __FILE__), 'spec', 'fixtures', 'aws', 'amis')
+      output_dir = Dir.mktmpdir
+      Stemcell::Packager.aggregate_the_amis(amis_path, output_dir)
+
+      stemcell_path = File.join(output_dir, 'light-bosh-stemcell-1089.0-aws-xen-hvm-windows2012R2-go_agent.tgz')
+      expect(File.exist?(stemcell_path)).to eq(true)
+
+
+
+      # .MF.cloud_properties.ami.some-region-1 == some-ami-1
+      # .MF.cloud_properties.ami.some-region-2 == some-ami-2
+    end
+  end
+
   describe 'package' do
     it 'creates a valid stemcell tarball and sha in the output directory' do
       expect {

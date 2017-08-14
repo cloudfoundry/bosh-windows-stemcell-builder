@@ -22,6 +22,15 @@ module Stemcell
       packaged_image
     end
 
+    def self.aggregate_the_amis(amis_path, output_directory)
+      #light-bosh-stemcell-1089.0-aws-xen-hvm-windows2012R2-some-go_agent-region-1.tgz
+      first_ami = Dir.entries(amis_path).last
+      output_ami_name = /(.*go_agent)-(.*)\.tgz/.match(first_ami)[1] + ".tgz"
+
+      puts output_ami_name
+      FileUtils.cp(File.join(amis_path, first_ami), File.join(output_directory, output_ami_name))
+    end
+
     def self.package(iaas:, os:, is_light:, version:, image_path:, manifest:, apply_spec:, output_directory:, update_list:, region: nil)
       raise InvalidImagePathError unless File.file?(image_path) || is_light
       raise InvalidOutputDirError unless File.directory?(output_directory)
