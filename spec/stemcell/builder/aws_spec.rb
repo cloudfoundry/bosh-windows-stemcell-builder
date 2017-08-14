@@ -22,6 +22,7 @@ describe Stemcell::Builder do
         aws_access_key = 'some-aws-access-key'
         aws_secret_key = 'some-aws-secret-key'
         packer_vars = 'some-packer-vars'
+        region = 'some-region'
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return('some-packer-config')
@@ -46,7 +47,8 @@ describe Stemcell::Builder do
                                                             manifest: 'manifest-contents',
                                                             apply_spec: 'apply-spec-contents',
                                                             output_directory: output_directory,
-                                                            update_list: nil
+                                                            update_list: nil,
+                                                            region: region
                                                            ).and_return('path-to-stemcell')
 
         stemcell_path = Stemcell::Builder::Aws.new(
@@ -57,7 +59,8 @@ describe Stemcell::Builder do
           aws_access_key: aws_access_key,
           aws_secret_key: aws_secret_key,
           agent_commit: agent_commit,
-          packer_vars: packer_vars
+          packer_vars: packer_vars,
+          region: region
         ).build
         expect(stemcell_path).to eq('path-to-stemcell')
       end

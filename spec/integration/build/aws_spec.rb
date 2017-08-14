@@ -40,6 +40,7 @@ describe 'Aws' do
       ENV['PATH'] = "#{File.join(File.expand_path('../../../..', __FILE__), 'spec', 'fixtures', 'aws')}:#{ENV['PATH']}"
       ENV['VERSION_DIR'] = @version_dir
       ENV['BASE_AMIS_DIR'] = @base_amis_dir
+      ENV['REGION'] = region = 'us-east-1'
 
       File.write(
         File.join(@version_dir, 'number'),
@@ -68,8 +69,8 @@ describe 'Aws' do
 
       Rake::Task['build:aws'].invoke
 
-      stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-aws-xen-hvm-#{os_version}-go_agent.tgz")
-      stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-aws-xen-hvm-#{os_version}-go_agent.tgz.sha")
+      stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-aws-xen-hvm-#{os_version}-#{region}-go_agent.tgz")
+      stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-aws-xen-hvm-#{os_version}-#{region}-go_agent.tgz.sha")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq(version)
@@ -77,7 +78,7 @@ describe 'Aws' do
       expect(stemcell_manifest['operating_system']).to eq(os_version)
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('aws')
       expect(stemcell_manifest['cloud_properties']['ami']['us-east-1']).to eq('ami-east1id')
-      expect(stemcell_manifest['cloud_properties']['ami']['us-east-2']).to eq('ami-east2id')
+      expect(stemcell_manifest['cloud_properties']['ami']['us-east-2']).to be_nil
 
       apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
       expect(apply_spec['agent_commit']).to eq(agent_commit)

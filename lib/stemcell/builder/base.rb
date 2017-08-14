@@ -18,12 +18,13 @@ module Stemcell
     end
 
     class Base
-      def initialize(os:, output_directory:, version:, agent_commit:, packer_vars:)
+      def initialize(os:, output_directory:, version:, agent_commit:, packer_vars:, region: nil)
         @os = os
         @output_directory = output_directory
         @version = version
         @agent_commit = agent_commit
         @packer_vars = packer_vars
+        @region = region
       end
 
       def build(iaas:, is_light:, image_path:, manifest:, update_list:)
@@ -37,7 +38,8 @@ module Stemcell
           manifest: manifest,
           apply_spec: apply_spec,
           output_directory: @output_directory,
-          update_list: update_list
+          update_list: update_list,
+          region: @region
         )
       end
 

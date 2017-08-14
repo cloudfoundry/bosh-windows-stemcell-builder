@@ -22,11 +22,13 @@ module Stemcell
       packaged_image
     end
 
-    def self.package(iaas:, os:, is_light:, version:, image_path:, manifest:, apply_spec:, output_directory:, update_list:)
+    def self.package(iaas:, os:, is_light:, version:, image_path:, manifest:, apply_spec:, output_directory:, update_list:, region: nil)
       raise InvalidImagePathError unless File.file?(image_path) || is_light
       raise InvalidOutputDirError unless File.directory?(output_directory)
 
-      stemcell_tarball_file = "bosh-stemcell-#{version}-#{iaas}-#{os}-go_agent.tgz"
+      region = region ? "#{region}-" : ''
+
+      stemcell_tarball_file = "bosh-stemcell-#{version}-#{iaas}-#{os}-#{region}go_agent.tgz"
       if is_light
         stemcell_tarball_file = "light-#{stemcell_tarball_file}"
       end

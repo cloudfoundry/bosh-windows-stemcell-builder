@@ -6,6 +6,7 @@ namespace :build do
   task :aws do
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     base_amis_dir = Stemcell::Builder::validate_env_dir('BASE_AMIS_DIR')
+    region = Stemcell::Builder::validate_env('REGION')
 
     build_dir = File.expand_path('../../../../build', __FILE__)
     agent_dir = File.join(build_dir,'compiled-agent')
@@ -15,7 +16,7 @@ namespace :build do
       File.read(
         Dir.glob(File.join(base_amis_dir, 'base-amis-*.json'))[0]
       ).chomp
-    )
+    ).select { |ami| ami['name'] == region }
 
     output_directory = File.absolute_path("bosh-windows-stemcell")
     FileUtils.mkdir_p(output_directory)
@@ -28,7 +29,8 @@ namespace :build do
       os: Stemcell::Builder::validate_env('OS_VERSION'),
       output_directory: output_directory,
       packer_vars: {},
-      version: version
+      version: version,
+      region: region
     )
 
     aws_builder.build

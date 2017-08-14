@@ -10,5 +10,4 @@ update_list_path = JSON.parse(content)['provisioners']
 FileUtils.mkdir_p(File.dirname(update_list_path))
 File.write(update_list_path, "some-updates")
 
-puts "1488312236,amazon-ebs-us-east-2,artifact,0,id,us-east-2:ami-east2id"
 puts "1488312236,amazon-ebs-us-east-1,artifact,0,id,us-east-1:ami-east1id"
