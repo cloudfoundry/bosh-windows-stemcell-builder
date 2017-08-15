@@ -17,6 +17,7 @@ namespace :build do
         Dir.glob(File.join(base_amis_dir, 'base-amis-*.json'))[0]
       ).chomp
     ).select { |ami| ami['name'] == region }
+    puts "base_amis.count: #{base_amis.count}"
 
     output_directory = File.absolute_path("bosh-windows-stemcell")
     FileUtils.mkdir_p(output_directory)
