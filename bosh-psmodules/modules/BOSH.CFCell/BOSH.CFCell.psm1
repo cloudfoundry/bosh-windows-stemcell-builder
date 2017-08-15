@@ -1,10 +1,12 @@
-<#
+﻿<#
 .Synopsis
     Install CloudFoundry Cell components
 .Description
     This cmdlet installs the minimum set of features for a CloudFoundry Cell
 #>
 function Install-CFFeatures {
+  param ([switch]$ReduceMTU)
+
   Write-Log "Getting WinRM config"
   $winrm_config = & cmd.exe /c 'winrm get winrm/config'
   Write-Log "$winrm_config"
@@ -23,9 +25,11 @@ function Install-CFFeatures {
     WindowsFeatureInstall("Web-ASP")
   } elseif ($windowsVersion -Match "2016") {
     WindowsFeatureInstall("FS-Resource-Manager")
-  
+
     if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
       Write-Host "Installing Docker"
+
+      $ifaces = (Get-NetIPInterface)
 
       Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
       $version = (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/docker/docker/master/VERSION).Content.Trim()
@@ -38,7 +42,14 @@ function Install-CFFeatures {
       dockerd --register-service
       Start-Service Docker
       Write-Host "Installed Docker"
+
+      if ($ReduceMTU) {
+	Write-Host "Reducing MTU of vEthernet interfaces to 1460"
+	(Get-NetIPInterface | where { -Not ($_.InterfaceAlias -in ($ifaces).InterfaceAlias) -and $_.NlMtu -eq 1500 }) | `
+	  Set-NetIPInterface -NlMtuBytes 1460
+      }
     }
+
 
     docker.exe pull cloudfoundry/windows2016fs
     if ($LASTEXITCODE -ne 0) {

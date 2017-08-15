@@ -39,7 +39,7 @@ module Packer
 
       def provisioners
         [
-          Base.pre_provisioners(@os),
+          Base.pre_provisioners(@os, reduce_mtu: true),
           Provisioners.install_agent('gcp').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Base.post_provisioners('gcp')

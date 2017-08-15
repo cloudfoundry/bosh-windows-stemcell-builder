@@ -37,6 +37,7 @@ module Packer
         'restart_timeout' => '1h'
       }
       INSTALL_CF_FEATURES = powershell_provisioner('Install-CFFeatures')
+      INSTALL_CF_FEATURES_REDUCE_MTU = powershell_provisioner('Install-CFFeatures -ReduceMTU')
       PROTECT_CF_CELL = powershell_provisioner('Protect-CFCell')
       OPTIMIZE_DISK = powershell_provisioner('Optimize-Disk')
       COMPRESS_DISK = powershell_provisioner('Compress-Disk')
