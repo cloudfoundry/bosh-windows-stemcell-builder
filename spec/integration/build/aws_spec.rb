@@ -5,6 +5,7 @@ require 'rubygems/package'
 require 'tmpdir'
 require 'yaml'
 require 'zlib'
+require 's3'
 
 load File.expand_path('../../../../lib/tasks/build/aws.rake', __FILE__)
 
@@ -34,13 +35,15 @@ describe 'Aws' do
       version = 'some-version'
       agent_commit = 'some-agent-commit'
 
-      ENV['AWS_ACCESS_KEY'] = 'some-aws_access_key'
-      ENV['AWS_SECRET_KEY'] = 'some-aws_secret_key'
+      ENV['AWS_ACCESS_KEY'] = aws_access_key = 'some-aws_access_key'
+      ENV['AWS_SECRET_KEY'] = aws_secret_key = 'some-aws_secret_key'
       ENV['OS_VERSION'] = os_version
       ENV['PATH'] = "#{File.join(File.expand_path('../../../..', __FILE__), 'spec', 'fixtures', 'aws')}:#{ENV['PATH']}"
       ENV['VERSION_DIR'] = @version_dir
       ENV['BASE_AMIS_DIR'] = @base_amis_dir
       ENV['REGION'] = region = 'us-east-1'
+      ENV['OUTPUT_BUCKET_REGION'] = output_bucket_region = 'some-output-bucket-region'
+      ENV['OUTPUT_BUCKET_NAME'] = output_bucket_name = 'some-output-bucket-name'
 
       File.write(
         File.join(@version_dir, 'number'),
@@ -66,6 +69,14 @@ describe 'Aws' do
             }
         ].to_json
       )
+
+      s3_client = double(:s3_client)
+      allow(s3_client).to receive(:put)
+      allow(S3::Client).to receive(:new).with(
+        aws_access_key_id: aws_access_key,
+        aws_secret_access_key: aws_secret_key,
+        aws_region: output_bucket_region
+      ).and_return(s3_client)
 
       Rake::Task['build:aws'].invoke
 
