@@ -23,12 +23,53 @@ module Stemcell
     end
 
     def self.aggregate_the_amis(amis_path, output_directory)
-      #light-bosh-stemcell-1089.0-aws-xen-hvm-windows2012R2-some-go_agent-region-1.tgz
-      first_ami = Dir.entries(amis_path).last
-      output_ami_name = /(.*go_agent)-(.*)\.tgz/.match(first_ami)[1] + ".tgz"
+      tar_files = get_tar_files_from(amis_path)
 
-      puts output_ami_name
-      FileUtils.cp(File.join(amis_path, first_ami), File.join(output_directory, output_ami_name))
+      # extract first tgz to output directory
+      exec_command("tar xzvf #{File.join(amis_path, tar_files.first)} -C #{output_directory}")
+
+      master_manifest_contents = read_from_tgz(File.join(amis_path, tar_files.first), 'stemcell.MF')
+      master_manifest = YAML.load(master_manifest_contents)
+
+      tar_files.each do |tgz|
+        stemcell_manifest_contents = read_from_tgz(File.join(amis_path, tgz), 'stemcell.MF')
+        manifest = YAML.load(stemcell_manifest_contents)
+
+        ami_data = manifest['cloud_properties']['ami'].first
+        ami_key = ami_data[0]
+        ami_value = ami_data[1]
+
+        master_manifest['cloud_properties']['ami'][ami_key] = ami_value
+      end
+
+      master_manifest_contents = YAML.dump(master_manifest)
+
+      # overwrite stemcell.MF in output_directory
+      File.write(File.join(output_directory, 'stemcell.MF'), master_manifest_contents)
+
+      # create final tgz
+      output_tgz_name = /(.*go_agent)-(.*)\.tgz/.match(tar_files.first)[1] + ".tgz"
+
+      Dir.chdir(output_directory) do |dir|
+        exec_command("tar czvf #{output_tgz_name} *")
+      end
+    end
+
+    def self.get_tar_files_from(path)
+      Dir.entries(path).select do |x| x.end_with?('.tgz') end
+    end
+
+    def self.read_from_tgz(path, filename)
+      contents = nil
+      tar_extract = Gem::Package::TarReader.new(Zlib::GzipReader.open(path))
+      tar_extract.rewind
+      tar_extract.each do |entry|
+        if entry.full_name == filename
+          contents = entry.read
+        end
+      end
+      tar_extract.close
+      contents
     end
 
     def self.package(iaas:, os:, is_light:, version:, image_path:, manifest:, apply_spec:, output_directory:, update_list:, region: nil)

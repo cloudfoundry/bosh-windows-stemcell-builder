@@ -78,18 +78,29 @@ describe Stemcell::Packager do
   end
 
   describe 'aggregate the amis' do
-    it 'aggregates the amis' do
+    it 'creates a single tar file' do
       amis_path = File.join(File.expand_path('../../..', __FILE__), 'spec', 'fixtures', 'aws', 'amis')
       output_dir = Dir.mktmpdir
       Stemcell::Packager.aggregate_the_amis(amis_path, output_dir)
 
       stemcell_path = File.join(output_dir, 'light-bosh-stemcell-1089.0-aws-xen-hvm-windows2012R2-go_agent.tgz')
       expect(File.exist?(stemcell_path)).to eq(true)
+    end
 
+    it 'aggregates the amis inside the tar file' do
+      amis_path = File.join(File.expand_path('../../..', __FILE__), 'spec', 'fixtures', 'aws', 'amis')
+      output_dir = Dir.mktmpdir
 
+      Stemcell::Packager.aggregate_the_amis(amis_path, output_dir)
 
-      # .MF.cloud_properties.ami.some-region-1 == some-ami-1
-      # .MF.cloud_properties.ami.some-region-2 == some-ami-2
+      stemcell_path = File.join(output_dir, 'light-bosh-stemcell-1089.0-aws-xen-hvm-windows2012R2-go_agent.tgz')
+
+      stemcell_manifest_contents = read_from_tgz(stemcell_path, "stemcell.MF")
+      manifest = YAML.load(stemcell_manifest_contents)
+      amis = manifest['cloud_properties']['ami']
+
+      expect(amis['some-region-2']).to eq("some-ami-2")
+      expect(amis['some-region-1']).to eq("some-ami-1")
     end
   end
 
