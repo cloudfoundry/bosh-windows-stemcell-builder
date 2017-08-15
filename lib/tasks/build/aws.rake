@@ -35,5 +35,15 @@ namespace :build do
     )
 
     aws_builder.build
+
+    # Upload the final tgz to S3
+    artifact_name = Stemcell::Packager::get_tar_files_from(output_directory).first
+
+    client = S3::Client.new(
+      Stemcell::Builder::validate_env('AWS_ACCESS_KEY'),
+      Stemcell::Builder::validate_env('AWS_SECRET_KEY'),
+      Stemcell::Builder::validate_env('OUTPUT_BUCKET_REGION')
+    )
+    client.put(Stemcell::Builder::validate_env('OUTPUT_BUCKET_NAME'), artifact_name, File.join(output_directory, artifact_name))
   end
 end

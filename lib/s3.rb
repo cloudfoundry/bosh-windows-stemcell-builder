@@ -24,6 +24,9 @@ module S3
     def list(bucket)
       @s3_resource.bucket(bucket).objects.map {|x| x.key}
     end
+    def clear(bucket)
+      @s3_resource.bucket(bucket).clear!
+    end
   end
 
   class Vmx
