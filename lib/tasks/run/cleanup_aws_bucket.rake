@@ -9,7 +9,7 @@ namespace :run do
     aws_region = Stemcell::Builder::validate_env('REGION')
     bucket_name = Stemcell::Builder::validate_env('BUCKET_NAME')
 
-    client = S3::Client.new(aws_access_key_id, aws_secret_access_key, aws_region)
+    client = S3::Client.new(aws_access_key_id: aws_access_key_id, aws_secret_access_key: aws_secret_access_key, aws_region: aws_region)
     client.clear(bucket_name)
   end
 end
