@@ -10,6 +10,7 @@ Please submit PR's to the `develop` branch
 * [Ruby](https://www.ruby-lang.org/en/downloads/) Latest 2.3.x version
 * [Golang](https://golang.org/dl/) Latest 1.8.x compiler
 * [Packer](https://www.packer.io/downloads.html) for concourse automation
+* [Win32-OpenSSH](https://github.com/PowerShell/Win32-OpenSSH) Release [v0.0.18.0](https://github.com/PowerShell/Win32-OpenSSH/releases/tag/v0.0.18.0) is tested.
 
 #### Install
 
