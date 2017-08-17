@@ -25,7 +25,9 @@ module S3
       @s3_resource.bucket(bucket).objects.map {|x| x.key}
     end
     def clear(bucket)
+      puts "Clearing bucket #{bucket}"
       @s3_resource.bucket(bucket).clear!
+      puts "Finished: clearing bucket #{bucket}"
     end
   end
 
