@@ -76,9 +76,9 @@ module Stemcell
       raise InvalidImagePathError unless File.file?(image_path) || is_light
       raise InvalidOutputDirError unless File.directory?(output_directory)
 
-      region = region ? "#{region}-" : ''
+      region = region ? "-#{region}" : ''
 
-      stemcell_tarball_file = "bosh-stemcell-#{version}-#{iaas}-#{os}-#{region}go_agent.tgz"
+      stemcell_tarball_file = "bosh-stemcell-#{version}-#{iaas}-#{os}-go_agent#{region}.tgz"
       if is_light
         stemcell_tarball_file = "light-#{stemcell_tarball_file}"
       end
