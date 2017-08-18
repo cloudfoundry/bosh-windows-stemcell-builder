@@ -32,7 +32,7 @@ describe 'Aws' do
   it 'should build an aws stemcell' do
     Dir.mktmpdir('aws-stemcell-test') do |tmpdir|
       os_version = 'windows2012R2'
-      version = 'some-version'
+      version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
 
       ENV['AWS_ACCESS_KEY'] = aws_access_key = 'some-aws_access_key'
@@ -47,7 +47,7 @@ describe 'Aws' do
 
       File.write(
         File.join(@version_dir, 'number'),
-        'some-version'
+        version
       )
 
       FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
@@ -84,7 +84,7 @@ describe 'Aws' do
       stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-aws-xen-hvm-#{os_version}-go_agent-#{region}.tgz.sha")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
-      expect(stemcell_manifest['version']).to eq(version)
+      expect(stemcell_manifest['version']).to eq('1200.3')
       expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
       expect(stemcell_manifest['operating_system']).to eq(os_version)
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('aws')

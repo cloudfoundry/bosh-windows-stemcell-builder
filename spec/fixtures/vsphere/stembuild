@@ -3,3 +3,4 @@ require 'fileutils'
 
 OUTPUT_DIR = ARGV[5]
 FileUtils.cp(File.join(__dir__, "bosh-stemcell-5555.5-vsphere-esxi-windows2012R2-go_agent.tgz"), OUTPUT_DIR)
+File.write(File.join(OUTPUT_DIR, "myargs"), ARGV.inspect)

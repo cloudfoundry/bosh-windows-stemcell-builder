@@ -47,7 +47,7 @@ describe 'VSphere' do
 
     File.write(
       File.join(@version_dir, 'number'),
-      'some-vmx-version'
+      'some-version'
     )
 
     s3_vmx= double(:s3_vmx)
@@ -72,7 +72,7 @@ describe 'VSphere' do
 
   it 'should build a vsphere stemcell' do
     os_version = 'windows2012R2'
-    version = 'some-version'
+    version = '1200.3.1-build.2'
     agent_commit = 'some-agent-commit'
 
     ENV['AWS_ACCESS_KEY_ID']= 'some-key'
@@ -135,7 +135,9 @@ describe 'VSphere' do
     Rake::Task['build:vsphere'].invoke
     packer_output_vmdk = File.join(@output_directory, 'fake.vmdk')
     expect(packer_output_vmdk).not_to be_nil
-    stemcell = File.join(@output_directory, "bosh-stemcell-#{version}-vsphere-esxi-#{os_version}-go_agent.tgz")
-    expect(stemcell).not_to be_nil
+    stembuild_version_arg = JSON.parse(File.read("#{@output_directory}/myargs"))[3]
+    expect(stembuild_version_arg).to eq('1200.3')
+    stemcell_filename = File.basename(Dir["#{@output_directory}/*.tgz"].first)
+    expect(stemcell_filename).to eq "bosh-stemcell-1200.3.1-build.2-vsphere-esxi-windows2012R2-go_agent.tgz"
   end
 end

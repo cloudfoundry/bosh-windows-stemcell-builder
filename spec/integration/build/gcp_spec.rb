@@ -30,7 +30,7 @@ describe 'Gcp' do
   it 'should build a gcp stemcell' do
     Dir.mktmpdir('gcp-stemcell-test') do |tmpdir|
       os_version = 'windows2012R2'
-      version = 'some-version'
+      version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
 
       ENV['ACCOUNT_JSON'] = {'project_id' => 'some-project-id'}.to_json
@@ -41,7 +41,7 @@ describe 'Gcp' do
 
       File.write(
         File.join(@version_dir, 'number'),
-        'some-version'
+        version
       )
 
       FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
@@ -59,7 +59,7 @@ describe 'Gcp' do
       stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-google-kvm-#{os_version}-go_agent.tgz")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
-      expect(stemcell_manifest['version']).to eq(version)
+      expect(stemcell_manifest['version']).to eq('1200.3')
       expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
       expect(stemcell_manifest['operating_system']).to eq(os_version)
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('google')

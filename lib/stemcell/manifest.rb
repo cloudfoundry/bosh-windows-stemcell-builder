@@ -5,10 +5,19 @@ module Stemcell
     EMPTY_FILE_SHA = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'.freeze
 
     class Base
+      def self.strip_version_build_number(version)
+        md = version.match(/(\d+\.\d+)\.(\d+)-build\.(\d+)/)
+        if md
+          return md[1]
+        else
+          return version
+        end
+      end
+
       def initialize(name, version, sha, os)
         @contents = {
           'name' => name,
-          'version' => version,
+          'version' => self.class.strip_version_build_number(version),
           'sha1' => sha,
           'operating_system' => os,
           'cloud_properties' => {}

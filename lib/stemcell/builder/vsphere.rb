@@ -2,6 +2,7 @@ require 'digest'
 require 'tmpdir'
 require 'zlib'
 require 'nokogiri'
+require 'fileutils'
 
 module Stemcell
   class Builder
@@ -101,9 +102,12 @@ module Stemcell
 
       def run_stembuild
         vmdk_file = find_file_by_extn(@output_directory, "vmdk")
-        cmd = "stembuild -vmdk \"#{vmdk_file}\" -v \"#{@version}\" -output \"#{@output_directory}\""
+        cmd = "stembuild -vmdk \"#{vmdk_file}\" -v \"#{Stemcell::Manifest::Base.strip_version_build_number(@version)}\" -output \"#{@output_directory}\""
         puts "running stembuild command: [[ #{cmd} ]]"
         `#{cmd}`
+        new_filename = "bosh-stemcell-#{@version}-vsphere-esxi-windows2012R2-go_agent.tgz"
+        puts "renaming stemcell to #{new_filename}"
+        FileUtils.mv Dir[File.join(@output_directory, "*.tgz")].first, File.join(@output_directory, new_filename)
       end
 
       def find_vmx_file(dir)
