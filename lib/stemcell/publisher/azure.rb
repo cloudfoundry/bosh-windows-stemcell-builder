@@ -29,6 +29,7 @@ module Stemcell
 
       def publish
         status = poll_status('staging')
+        puts "staging status: #{status}"
         if status == 'Staged'
           post(base_url+'list', '')
         else
@@ -37,6 +38,14 @@ module Stemcell
       end
 
       def stage
+        if(is_staging)
+          raise "an offer is staging"
+        end
+
+        if(is_staged)
+          raise "an offer is staged"
+        end
+
         response = get(base_url)
         unless response.kind_of? Net::HTTPSuccess
           raise "could not obtain offer data. expected 200 but got '#{response.code}'"
@@ -61,19 +70,32 @@ module Stemcell
         def poll_status(mode)
           status = ''
           while true
-            response = get(base_url+'progress')
-            unless response.kind_of? Net::HTTPSuccess
-              raise "could not obtain progress data. expected 200 but got '#{response.code}'"
-            end
-            response_body = JSON.parse(response.body)
-            status = response_body[mode]['State']
-            puts "#{mode} status: #{status}"
+            status = get_status(mode)
             break if status != 'InProgress'
             puts "#{Time.now} Starting to sleep for an hour"
             sleep 60 * 60
             puts "#{Time.now} Done sleeping"
           end
           return status
+        end
+
+        def get_status(mode)
+            response = get(base_url+'progress')
+            unless response.kind_of? Net::HTTPSuccess
+              raise "could not obtain progress data. expected 200 but got '#{response.code}'"
+            end
+            response_body = JSON.parse(response.body)
+            response_body[mode]['State']
+        end
+
+        def is_staged()
+          status = get_status('staging')
+          status == 'Staged'
+        end
+
+        def is_staging()
+          status = get_status('staging')
+          status == 'InProgress'
         end
 
         def json(response_string)

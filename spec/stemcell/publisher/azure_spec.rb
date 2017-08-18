@@ -280,6 +280,21 @@ let(:finalize_response2){
       stub_request(:get, @publisher.base_url).to_return(status: 200, body: response)
       stub_request(:post, @publisher.base_url+'update').to_return(status: 200)
       stub_request(:post, @publisher.base_url+'stage').to_return(status: 202)
+      stub_request(:get, @publisher.base_url+'progress').to_return(status: 200, body: '{"staging":{"State":"whatever the state of an unstaged thing is"}}')
+    end
+
+    it 'does not try to stage if an offer is already staged' do
+      staged_response = '{"staging":{"State":"Staged"}}'
+      stub_request(:get, @publisher.base_url+'progress').to_return(status: 200, body: staged_response)
+
+      expect{@publisher.stage}.to raise_error('an offer is staged')
+    end
+
+    it 'does not try to stage if an offer is staging' do
+      staged_response = '{"staging":{"State":"InProgress"}}'
+      stub_request(:get, @publisher.base_url+'progress').to_return(status: 200, body: staged_response)
+
+      expect{@publisher.stage}.to raise_error('an offer is staging')
     end
 
     it 'does not print the API key to stdout or stderr' do
