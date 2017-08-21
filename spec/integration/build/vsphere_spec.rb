@@ -60,7 +60,8 @@ describe 'VSphere' do
       aws_region: 'some-region',
       input_bucket: 'input-vmx-bucket',
       output_bucket: 'stemcell-output-bucket',
-      vmx_cache_dir: '/tmp')
+      vmx_cache_dir: '/tmp',
+      endpoint: nil)
       .and_return(s3_vmx)
 
     Rake::Task['build:vsphere_add_updates'].invoke
@@ -119,7 +120,8 @@ describe 'VSphere' do
       aws_region: 'some-region',
       input_bucket: 'input-vmx-bucket',
       output_bucket: 'stemcell-output-bucket',
-      vmx_cache_dir: '/tmp')
+      vmx_cache_dir: '/tmp',
+      endpoint: nil)
       .and_return(s3_vmx)
 
     s3_client= double(:s3_client)
@@ -128,7 +130,8 @@ describe 'VSphere' do
     allow(S3::Client).to receive(:new).with(
       aws_access_key_id: 'some-key',
       aws_secret_access_key: 'secret-key',
-      aws_region: 'some-region'
+      aws_region: 'some-region',
+      endpoint: nil
     ).and_return(s3_client)
 
 

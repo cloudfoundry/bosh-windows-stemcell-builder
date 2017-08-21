@@ -40,7 +40,7 @@ module S3
   class Vmx
     def initialize(
       aws_access_key_id:,aws_secret_access_key:,aws_region:,
-      input_bucket:, output_bucket:,vmx_cache_dir:, endpoint:)
+      input_bucket:, output_bucket:,vmx_cache_dir:, endpoint: "")
       @client = S3::Client.new(aws_access_key_id: aws_access_key_id,
                                aws_secret_access_key: aws_secret_access_key,
                                aws_region: aws_region,

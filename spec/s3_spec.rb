@@ -17,7 +17,8 @@ describe S3 do
         .with(
           aws_access_key_id: aws_access_key_id,
           aws_secret_access_key: aws_secret_access_key,
-          aws_region: aws_region).and_return(s3_client)
+          aws_region: aws_region,
+          endpoint: '').and_return(s3_client)
 
       vmx_version = "vmx-v2.tgz"
       allow(s3_client).to receive(:get)
