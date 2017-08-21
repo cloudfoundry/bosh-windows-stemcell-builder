@@ -3,12 +3,17 @@ require_relative 'exec_command'
 
 module S3
   class Client
-    def initialize(aws_access_key_id:, aws_secret_access_key:, aws_region:, endpoint:)
+    def initialize(aws_access_key_id:, aws_secret_access_key:, aws_region:, endpoint: "")
       Aws.use_bundled_cert!
       Aws.config.update(force_path_style: true)
       credentials =  Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
-      @s3 = Aws::S3::Client.new(region: aws_region, credentials: credentials, endpoint: endpoint)
-      @s3_resource = Aws::S3::Resource.new(region: aws_region, credentials: credentials, endpoint: endpoint)
+      if (endpoint.to_s.empty?)
+        @s3 = Aws::S3::Client.new(region: aws_region, credentials: credentials)
+        @s3_resource = Aws::S3::Resource.new(region: aws_region, credentials: credentials)
+      else
+        @s3 = Aws::S3::Client.new(region: aws_region, credentials: credentials, endpoint: endpoint)
+        @s3_resource = Aws::S3::Resource.new(region: aws_region, credentials: credentials, endpoint: endpoint)
+      end
     end
     def get(bucket,key,file_name)
       puts "Downloading the #{key} from #{bucket} to #{file_name}"
