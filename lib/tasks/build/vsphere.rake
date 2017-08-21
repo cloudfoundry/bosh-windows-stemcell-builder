@@ -21,7 +21,7 @@ namespace :build do
       input_bucket: Stemcell::Builder::validate_env("INPUT_BUCKET"),
       output_bucket: Stemcell::Builder::validate_env("OUTPUT_BUCKET"),
       vmx_cache_dir: Stemcell::Builder::validate_env("VMX_CACHE_DIR"),
-      endpoint: Stemcell::Builder::validate_env("S3_ENDPOINT")
+      endpoint: ENV["S3_ENDPOINT"]
     )
 
     source_path = vmx.fetch(vmx_version)
@@ -158,7 +158,7 @@ namespace :build do
       input_bucket: Stemcell::Builder::validate_env('INPUT_BUCKET'),
       output_bucket: Stemcell::Builder::validate_env('OUTPUT_BUCKET'),
       vmx_cache_dir: Stemcell::Builder::validate_env('VMX_CACHE_DIR'),
-      endpoint: Stemcell::Builder::validate_env("S3_ENDPOINT")
+      endpoint: ENV["S3_ENDPOINT"]
     )
 
 
@@ -189,7 +189,7 @@ namespace :build do
       aws_access_key_id: aws_access_key_id,
       aws_secret_access_key: aws_secret_access_key,
       aws_region: aws_region,
-      endpoint: Stemcell::Builder::validate_env("S3_ENDPOINT")
+      endpoint: ENV["S3_ENDPOINT"]
     )
 
     pattern = File.join(output_directory, "*.tgz").gsub('\\', '/')
