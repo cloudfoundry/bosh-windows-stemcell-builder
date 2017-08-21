@@ -29,8 +29,6 @@ function Install-CFFeatures {
     if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
       Write-Host "Installing Docker"
 
-      $ifaces = (Get-NetIPInterface)
-
       Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
       $version = (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/docker/docker/master/VERSION).Content.Trim()
       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -45,8 +43,9 @@ function Install-CFFeatures {
 
       if ($ReduceMTU) {
 	Write-Host "Reducing MTU of vEthernet interfaces to 1460"
-	(Get-NetIPInterface | where { -Not ($_.InterfaceAlias -in ($ifaces).InterfaceAlias) -and $_.NlMtu -eq 1500 }) | `
-	  Set-NetIPInterface -NlMtuBytes 1460
+	netsh interface ipv4 set subinterface "vEthernet (HNSTransparent)" mtu=1460 store=persistent
+	if ($LASTEXITCODE -ne 0) {
+	  Write-Error "netsh: non-zero exit code: $LASTEXITCODE"
       }
     }
 
