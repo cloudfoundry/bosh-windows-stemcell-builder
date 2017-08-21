@@ -18,6 +18,7 @@ You can create a `config.json` file, eg:
     "target": "<IP of your bosh director>"
   },
   "stemcell_path": "<absolute path to stemcell tgz>",
+  "stemcell_os": "<stemcell OS either (windows2012R2 or windows2016)>",
   "az": "<area zone from bosh cloud config>",
   "vm_type": "<vm_type from bosh cloud config>",
   "vm_extensions": "<comma separated string of options, e.g. 50GB_ephemeral_disk>",

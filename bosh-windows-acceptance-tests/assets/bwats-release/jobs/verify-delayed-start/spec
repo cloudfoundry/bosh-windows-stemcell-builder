@@ -1,9 +1,0 @@
----
-name: verify-delayed-start
-
-description: "This errand verifies that the bosh-agent service had a delayed start"
-
-templates:
-  run.ps1: bin/run.ps1
-
-packages: []

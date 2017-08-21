@@ -74,7 +74,7 @@ instance_groups:
   jobs:
   - name: verify-autoupdates
     release: {{.ReleaseName}}
-- name: verify-delayed-start
+- name: verify-agent-start-type
   instances: 1
   stemcell: windows
   lifecycle: errand
@@ -84,7 +84,7 @@ instance_groups:
   networks:
   - name: {{.Network}}
   jobs:
-  - name: verify-delayed-start
+  - name: verify-agent-start-type
     release: {{.ReleaseName}}
 - name: check-system
   instances: 1
@@ -139,6 +139,9 @@ func NewConfig() (*Config, error) {
 	err = json.Unmarshal(body, &config)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse config file: %v", body)
+	}
+	if config.StemcellOs == "" {
+		return nil, fmt.Errorf("missing required field: ", "stemcell_os")
 	}
 	return &config, nil
 }
@@ -387,8 +390,8 @@ var _ = Describe("BOSH Windows", func() {
 	// Since the Agent will have changed it's start type by the time that this errand
 	// runs we check for the presence of a registry key that is an artifact of the
 	// original 'Automatic (Delayed Start)' configuration.
-	It("had a Service StartType of 'Delayed'", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand verify-delayed-start --tty", deploymentName))
+	It("currently has a Service StartType of 'Manual' and initially had a StartType of 'Delayed'", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand verify-agent-start-type --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
