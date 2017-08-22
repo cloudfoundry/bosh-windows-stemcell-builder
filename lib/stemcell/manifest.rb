@@ -6,7 +6,7 @@ module Stemcell
 
     class Base
       def self.strip_version_build_number(version)
-        md = version.match(/(\d+\.\d+)\.(\d+)-build\.(\d+)/)
+        md = version.match(/(\d+\.\d+)\.((\d+)-build\.(\d+))?/)
         if md
           return md[1]
         else
