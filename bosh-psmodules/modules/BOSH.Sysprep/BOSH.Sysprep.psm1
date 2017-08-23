@@ -163,9 +163,9 @@ function Create-Unattend {
 </unattend>
 "@
 
-   Out-File -FilePath $UnattendPath -InputObject $PostUnattend -Encoding utf8
+    Out-File -FilePath $UnattendPath -InputObject $PostUnattend -Encoding utf8
 
-   Write-Log "Starting Create-Unattend"
+    Write-Log "Starting Create-Unattend"
 }
 
 <#
@@ -176,7 +176,7 @@ function Create-Unattend {
 #>
 function Check-Default-GCP-Unattend() {
 
-[xml]$Expected = @'
+    [xml]$Expected = @'
 <?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
     <!--
@@ -336,39 +336,45 @@ function Invoke-Sysprep() {
 
     Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
 
-   switch ($IaaS) {
-      "aws" {
-         $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
+    switch ($IaaS) {
+        "aws" {
+            $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
 
-         # Enable password generation and retrieval
-         ($ec2config.ec2configurationsettings.plugins.plugin | where { $_.Name -eq "Ec2SetPassword" }).State = 'Enabled'
+            # Enable password generation and retrieval
+            ($ec2config.ec2configurationsettings.plugins.plugin | where { $_.Name -eq "Ec2SetPassword" }).State = 'Enabled'
 
-         # Disable SetDnsSuffixList setting
-         $ec2config.ec2configurationsettings.GlobalSettings.SetDnsSuffixList = "false"
+            # Disable SetDnsSuffixList setting
+            $ec2config.ec2configurationsettings.GlobalSettings.SetDnsSuffixList = "false"
 
-         $ec2config.Save("C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml")
+            $ec2config.Save("C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml")
 
-         # Enable sysprep
-         $ec2settings = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
-         ($ec2settings.BundleConfig.Property | where { $_.Name -eq "AutoSysprep" }).Value = 'Yes'
-         $ec2settings.Save('C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
-      }
-      "gcp" {
-         Create-Unattend-GCP
-         GCESysprep
-      }
-      "azure" {
-         C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
-      }
-      "vsphere" {
-         Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
-           -Organization $Organization -Owner $Owner -SkipLGPO:$SkipLGPO -EnableRDP:$EnableRDP
+            # Enable sysprep
+            $ec2settings = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+            ($ec2settings.BundleConfig.Property | where { $_.Name -eq "AutoSysprep" }).Value = 'Yes'
+            $ec2settings.Save('C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+        }
+        "gcp" {
+            Create-Unattend-GCP
+            GCESysprep
+        }
+        "azure" {
+            C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
+        }
+        "vsphere" {
+            if ($SkipLGPO -eq $false) {
+                if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
+                    Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
+                }
+            }
 
-         # Exec sysprep and shutdown
-         C:/windows/system32/sysprep/sysprep.exe /generalize /oobe `
-           /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown
-      }
-      Default { Throw "Invalid IaaS '${IaaS}' supported platforms are: AWS, Azure, GCP and Vsphere" }
+            Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
+                -Organization $Organization -Owner $Owner -SkipLGPO:$SkipLGPO -EnableRDP:$EnableRDP
+
+            # Exec sysprep and shutdown
+            C:/windows/system32/sysprep/sysprep.exe /generalize /oobe `
+                /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown
+        }
+        Default { Throw "Invalid IaaS '${IaaS}' supported platforms are: AWS, Azure, GCP and Vsphere" }
    }
 }
 
