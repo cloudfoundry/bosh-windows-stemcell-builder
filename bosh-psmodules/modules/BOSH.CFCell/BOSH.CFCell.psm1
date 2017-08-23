@@ -44,12 +44,8 @@ function Install-CFFeatures {
       Write-Host "Installed Docker"
 
       if ($ReduceMTU) {
-        Write-Host "Reducing MTU of vEthernet interfaces to 1460"
-
         # Get a list of network interfaces created by installing Docker.
-        $newIfaces=(Get-NetIPInterface -AddressFamily IPv4 | where {
-          -Not ($_.InterfaceAlias -in $ifaces) -and $_.NlMtu -eq 1500
-        }).InterfaceAlias
+        $newIfaces=Wait-ForNewIfaces $ifaces
 
         foreach ($name in $newIfaces) {
           Write-Host "Setting the MTU of network interface to 1460: $name"
@@ -71,6 +67,29 @@ function Install-CFFeatures {
   }
 
   Write-Log "Installed CloudFoundry Cell Windows Features"
+}
+
+function Wait-ForNewIfaces() {
+    param([string]$ifaces)
+    $max = 20
+    $try = 0
+
+    while($try -le $max) {
+        # Get a list of network interfaces created by installing Docker.
+        $newIfaces=(Get-NetIPInterface -AddressFamily IPv4 | where {
+        -Not ($_.InterfaceAlias -in $ifaces) -and $_.NlMtu -eq 1500
+        }).InterfaceAlias
+
+        if($newIfaces.Count -gt 0) {
+            Write-Host "Docker added interfaces: $newIfaces"
+            return $newIfaces
+        }
+        Start-Sleep -s 5
+        $try++
+    }
+
+    Write-Error "Time-out waiting for docker to add Network Interface on GCP"
+    Throw "Should not get here"
 }
 
 function Install-ContainersFeature {
