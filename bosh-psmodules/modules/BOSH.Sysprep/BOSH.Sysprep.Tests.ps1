@@ -119,15 +119,6 @@ Describe "Create-Unattend" {
                     -Owner $Owner
             } | Should Throw "Provide an Administrator Password"
         }
-
-        It "throws when Organization or Owner are not present and Product Key is provided" {
-            {
-                Create-Unattend -UnattendDestination $UnattendDestination `
-                    -NewPassword $NewPassword `
-                    -ProductKey $ProductKey
-            } | Should Throw "Provide an Organization and Owner"
-        }
-
     }
 
     Context "the generated Unattend file" {
@@ -153,8 +144,18 @@ Describe "Create-Unattend" {
             $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
             $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
             $unattendXML.SelectSingleNode("//ns:ProductKey", $ns).'#text' | Should Be $Null
-            $unattendXML.SelectSingleNode("//ns:RegisteredOrganization", $ns).'#text' | Should Be $Null
-            $unattendXML.SelectSingleNode("//ns:RegisteredOwner", $ns).'#text' | Should Be $Null
+        }
+
+        It "when Product Key is not provided: Organization and Owner are not removed" {
+            {
+                Create-Unattend -UnattendDestination $UnattendDestination `
+                    -NewPassword $NewPassword -Organization 'Test-Org' -Owner 'Test-Owner'
+            } | Should Not Throw
+            [xml]$unattendXML = Get-Content -Path $unattendPath
+            $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
+            $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
+            $unattendXML.SelectSingleNode("//ns:RegisteredOrganization", $ns).'#text' | Should Be 'Test-Org'
+            $unattendXML.SelectSingleNode("//ns:RegisteredOwner", $ns).'#text' | Should Be 'Test-Owner'
         }
     }
 }

@@ -6,9 +6,9 @@
 #>
 function Enable-LocalSecurityPolicy {
     Param (
-      [string]$LgpoExe ="C:\windows\lgpo.exe",
-      [string]$PolicyDestination = "C:\bosh\lgpo",
-      [switch]$EnableRDP
+        [string]$LgpoExe ="C:\windows\lgpo.exe",
+        [string]$PolicyDestination = "C:\bosh\lgpo",
+        [switch]$EnableRDP
     )
 
     Write-Log "Starting LocalSecurityPolicy"
@@ -18,17 +18,17 @@ function Enable-LocalSecurityPolicy {
     Open-Zip -ZipFile $policyZipFile -OutPath $PolicyDestination
     $PolicyBaseLine = "$PolicyDestination\policy-baseline"
     if (-Not (Test-Path $PolicyBaseLine)) {
-      Write-Error "ERROR: could not extract policy-baseline"
+        Write-Error "ERROR: could not extract policy-baseline"
     }
 
     if($EnableRDP) {
-      $InfFilePath = Join-Path $PolicyBaseLine "DomainSysvol/GPO/Machine/microsoft/windows nt/SecEdit/GptTmpl.inf"
-      ModifyInfFile -InfFilePath $InfFilePath -KeyName "SeDenyNetworkLogonRight" -KeyValue "*S-1-5-32-546"
+        $InfFilePath = Join-Path $PolicyBaseLine "DomainSysvol/GPO/Machine/microsoft/windows nt/SecEdit/GptTmpl.inf"
+        ModifyInfFile -InfFilePath $InfFilePath -KeyName "SeDenyNetworkLogonRight" -KeyValue "*S-1-5-32-546"
     }
 
     Invoke-Expression "$LgpoExe /g $PolicyDestination\policy-baseline /v 2>&1 > $PolicyDestination\LGPO.log"
     if ($LASTEXITCODE -ne 0) {
-      Throw "lgpo.exe exited with $LASTEXITCODE"
+        Throw "lgpo.exe exited with $LASTEXITCODE"
     }
     Write-Log "Ending LocalSecurityPolicy"
 }
@@ -41,32 +41,37 @@ function Enable-LocalSecurityPolicy {
 #>
 function Create-Unattend {
     Param (
-      [string]$UnattendDestination = "C:\Windows\Panther\Unattend",
-      [string]$NewPassword = $(Throw "Provide an Administrator Password"),
-      [string]$ProductKey,
-      [string]$Organization,
-      [string]$Owner,
-      [switch]$SkipLGPO,
-      [switch]$EnableRDP
-   )
+        [string]$UnattendDestination = "C:\Windows\Panther\Unattend",
+        [string]$NewPassword = $(Throw "Provide an Administrator Password"),
+        [string]$ProductKey,
+        [string]$Organization,
+        [string]$Owner,
+        [switch]$SkipLGPO,
+        [switch]$EnableRDP
+    )
 
-   $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
-   Write-Log "Starting Create-Unattend"
+    $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
+    Write-Log "Starting Create-Unattend"
 
-   New-Item -ItemType directory $UnattendDestination -Force
-   $UnattendPath = Join-Path $UnattendDestination "unattend.xml"
+    New-Item -ItemType directory $UnattendDestination -Force
+    $UnattendPath = Join-Path $UnattendDestination "unattend.xml"
 
-   Write-Log "Writing unattend.xml to $UnattendPath"
+    Write-Log "Writing unattend.xml to $UnattendPath"
 
-   $ProductKeyXML="<RegisteredOwner />"
-   if ($ProductKey -ne "") {
-      if ($Organization -eq "" -or $Owner -eq "") {
-         Throw "Provide an Organization and Owner"
-      }
-      $ProductKeyXML="<ProductKey>$ProductKey</ProductKey>
-      <RegisteredOrganization>$Organization</RegisteredOrganization>
-      <RegisteredOwner>$Owner</RegisteredOwner>"
-   }
+    $ProductKeyXML=""
+    if ($ProductKey -ne "") {
+        $ProductKeyXML="<ProductKey>$ProductKey</ProductKey>"
+    }
+
+    $OrganizationXML="<RegisteredOrganization />"
+    if ($Organization -ne "" -and $Organization -ne $null) {
+        $OrganizationXML="<RegisteredOrganization>$Organization</RegisteredOrganization>"
+    }
+
+    $OwnerXML="<RegisteredOwner />"
+    if ($Owner -ne "" -and $Owner -ne $null) {
+        $OwnerXML="<RegisteredOwner>$Owner</RegisteredOwner>"
+    }
 
     $PostUnattend = @"
 <?xml version="1.0" encoding="utf-8"?>
@@ -79,6 +84,8 @@ function Create-Unattend {
             <ComputerName>*</ComputerName>
             <TimeZone>UTC</TimeZone>
             $ProductKeyXML
+            $OrganizationXML
+            $OwnerXML
         </component>
         <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
             <RunSynchronous>
@@ -317,17 +324,17 @@ function Create-Unattend-GCP() {
     This cmdlet runs Sysprep and generalizes a VM so it can be a BOSH stemcell
 #>
 function Invoke-Sysprep() {
-   Param (
-      [string]$IaaS = $(Throw "Provide the IaaS this stemcell will be used for"),
-      [string]$NewPassword="",
-      [string]$ProductKey="",
-      [string]$Organization="",
-      [string]$Owner="",
-      [switch]$SkipLGPO,
-      [switch]$EnableRDP
-   )
+    Param (
+        [string]$IaaS = $(Throw "Provide the IaaS this stemcell will be used for"),
+        [string]$NewPassword="",
+        [string]$ProductKey="",
+        [string]$Organization="",
+        [string]$Owner="",
+        [switch]$SkipLGPO,
+        [switch]$EnableRDP
+    )
 
-   Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
+    Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
 
    switch ($IaaS) {
       "aws" {
