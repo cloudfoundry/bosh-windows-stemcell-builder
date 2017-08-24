@@ -45,9 +45,7 @@ function Create-Unattend {
         [string]$NewPassword = $(Throw "Provide an Administrator Password"),
         [string]$ProductKey,
         [string]$Organization,
-        [string]$Owner,
-        [switch]$SkipLGPO,
-        [switch]$EnableRDP
+        [string]$Owner
     )
 
     $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
@@ -95,20 +93,6 @@ function Create-Unattend {
                     <Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -Command Disable-AutomaticUpdates</Path>
                     <WillReboot>Never</WillReboot>
                 </RunSynchronousCommand>
-                $(if (!$SkipLGPO) {
-@"
-                <RunSynchronousCommand wcm:action="add">
-                    <Description>Apply Group Policies</Description>
-                    <Order>2</Order>
-                    $(if ($EnableRDP) {
-                        "<Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -Command Enable-LocalSecurityPolicy -EnableRDP</Path>"
-                    } else {
-                        "<Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -Command Enable-LocalSecurityPolicy</Path>"
-                    })
-                    <WillReboot>Always</WillReboot>
-                </RunSynchronousCommand>
-"@
-                })
             </RunSynchronous>
         </component>
         <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-ServerManager-SvrMgrNc" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
@@ -361,14 +345,15 @@ function Invoke-Sysprep() {
             C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
         }
         "vsphere" {
-            if ($SkipLGPO -eq $false) {
+            if (-Not $SkipLGPO) {
                 if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
                     Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
                 }
+                Enable-LocalSecurityPolicy -EnableRDP:$EnableRDP
             }
 
             Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
-                -Organization $Organization -Owner $Owner -SkipLGPO:$SkipLGPO -EnableRDP:$EnableRDP
+                -Organization $Organization -Owner $Owner
 
             # Exec sysprep and shutdown
             C:/windows/system32/sysprep/sysprep.exe /generalize /oobe `
