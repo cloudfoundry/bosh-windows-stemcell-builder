@@ -46,7 +46,7 @@ namespace :publish do
     task :azure do
       container_root = File.expand_path('../../../../..', __FILE__)
       version = File.read(File.join(container_root, 'version', 'number')).chomp.split('.')
-      image_version = "#{version[0]}.#{version[1]}.#{version.last}"
+      image_version = Stemcell::Manifest::Azure.format_version(version)
       publisher = Stemcell::Publisher::Azure.new(
         version: image_version,
         sku: ENV['SKU'],
