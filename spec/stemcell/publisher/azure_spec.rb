@@ -178,7 +178,7 @@ let(:finalize_response1){
   '[{ "name": "1.0.1" }, { "name": "1.0.3" }]'
 }
 let(:finalize_response2){
-  '[{ "name": "1.0.1" }, { "name": "1.0.3" }, { "name": "some-version" }]'
+  '[{ "name": "1.0.1" }, { "name": "1.0.3" }, { "name": "1200.3.003001" }]'
 }
 
 
@@ -192,7 +192,7 @@ let(:finalize_response2){
                                                   azure_client_id: 'some-azure-client-id',
                                                   azure_client_secret: 'some-azure-client-secret',
                                                   azure_tenant_id: 'some-azure-tenant-id',
-                                                  version: 'some-version')
+                                                  version: '1200.3.3-build.1')
 
 
       allow(Executor).to receive(:exec_command).with(login_cmd)
