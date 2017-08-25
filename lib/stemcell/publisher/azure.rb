@@ -20,7 +20,7 @@ module Stemcell
         login_to_azure
         while true
           images = `azure vm image list eastus pivotal bosh-windows-server #{sku} --json`
-          if JSON.parse(images).detect {|i| i['name'] == Stemcell::Manifest::Azure.format_version(version) }
+          if JSON.parse(images).detect {|i| i['name'] == version }
             break
           end
           sleep 60 * 60
