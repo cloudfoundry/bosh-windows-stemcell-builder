@@ -45,7 +45,7 @@ namespace :publish do
     desc 'Wait for finalizing an image to the Azure marketplace'
     task :azure do
       container_root = File.expand_path('../../../../..', __FILE__)
-      version = File.read(File.join(container_root, 'version', 'number')).chomp.split('.')
+      version = File.read(File.join(container_root, 'version', 'number')).chomp
       image_version = Stemcell::Manifest::Azure.format_version(version)
       publisher = Stemcell::Publisher::Azure.new(
         version: image_version,
