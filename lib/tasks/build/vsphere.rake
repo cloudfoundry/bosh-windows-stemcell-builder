@@ -129,7 +129,8 @@ namespace :build do
     stemcell_path = Stemcell::Builder::VSphere.find_file_by_extn(Dir.pwd, 'tgz')
     stemcell_filename = File.basename(stemcell_path)
 
-    s3_client.put(stemcell_output_bucket, stemcell_filename, stemcell_path)
+    upload_keyname = stemcell_filename.gsub('vsphere-esxi', 'diff-vsphere-esxi')
+    s3_client.put(stemcell_output_bucket, upload_keyname, stemcell_path)
   end
 
   desc 'Build VSphere Stemcell'
