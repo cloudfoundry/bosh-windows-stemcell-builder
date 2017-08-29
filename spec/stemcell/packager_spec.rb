@@ -118,17 +118,18 @@ describe Stemcell::Packager do
                                    output_directory:  @output_directory)
       }.not_to raise_error
 
-      output_files = Dir[File.join(@output_directory, '*')]
-      expect(output_files.length).to eq(2)
+      expect(Dir[File.join(@output_directory, '*')].length).to eq(2)
+      tgz_file = Dir[File.join(@output_directory, '*.tgz')].first
+      sha_file = Dir[File.join(@output_directory, '*.sha')].first
 
       stemcell_tarball_file = 'bosh-stemcell-9999.99-foo-iaas-bar-os-go_agent.tgz'
-      expect(File.basename(output_files[0])).to eq(stemcell_tarball_file)
+      expect(File.basename(tgz_file)).to eq(stemcell_tarball_file)
 
       stemcell_tarball_sha_file = 'bosh-stemcell-9999.99-foo-iaas-bar-os-go_agent.tgz.sha'
-      expect(File.basename(output_files[1])).to eq(stemcell_tarball_sha_file)
-      expect(File.read(output_files[1])).to eq(Digest::SHA1.hexdigest(File.read(output_files[0])))
+      expect(File.basename(sha_file)).to eq(stemcell_tarball_sha_file)
+      expect(File.read(sha_file)).to eq(Digest::SHA1.hexdigest(File.read(tgz_file)))
 
-      expect { tgz_extract(output_files[0], @untar_dir) }.not_to raise_error
+      expect { tgz_extract(tgz_file, @untar_dir) }.not_to raise_error
 
       stemcell_files = Dir[File.join(@untar_dir, '*')]
       expect(stemcell_files.length).to eq(4)
@@ -161,6 +162,7 @@ describe Stemcell::Packager do
         expect(output_files.length).to eq(2)
 
         expect(File.basename(output_files[0])).to start_with('light-')
+        expect(File.basename(output_files[1])).to start_with('light-')
       end
 
       it 'creates an empty image file' do
@@ -176,10 +178,10 @@ describe Stemcell::Packager do
                                      update_list: @update_list.path)
         }.not_to raise_error
 
-        output_files = Dir[File.join(@output_directory, '*')]
-        expect(output_files.length).to eq(2)
+        tgz_file = Dir[File.join(@output_directory, '*.tgz')].first
+        expect(Dir[File.join(@output_directory, '*')].length).to eq(2)
 
-        expect { tgz_extract(output_files[0], @untar_dir) }.not_to raise_error
+        expect { tgz_extract(tgz_file, @untar_dir) }.not_to raise_error
 
         stemcell_files = Dir[File.join(@untar_dir, '*')]
         expect(stemcell_files.length).to eq(4)
@@ -200,10 +202,11 @@ describe Stemcell::Packager do
                                      update_list: @update_list.path)
         }.not_to raise_error
 
-        output_files = Dir[File.join(@output_directory, '*')]
-        expect(output_files.length).to eq(2)
+        expect(Dir[File.join(@output_directory, '*')].length).to eq(2)
+        tgz_file = Dir[File.join(@output_directory, '*.tgz')].first
+        sha_file = Dir[File.join(@output_directory, '*.sha')].first
 
-        expect(File.read(output_files[1])).to eq(Digest::SHA1.hexdigest(File.read(output_files[0])))
+        expect(File.read(sha_file)).to eq(Digest::SHA1.hexdigest(File.read(tgz_file)))
       end
     end
 
@@ -237,8 +240,8 @@ describe Stemcell::Packager do
                                      update_list: nil)
         }.not_to raise_error
 
-        output_files = Dir[File.join(@output_directory, '*')]
-        expect { tgz_extract(output_files[0], @untar_dir) }.not_to raise_error
+        tgz_file = Dir[File.join(@output_directory, '*.tgz')].first
+        expect { tgz_extract(tgz_file, @untar_dir) }.not_to raise_error
 
         stemcell_files = Dir[File.join(@untar_dir, '*')]
         expect(stemcell_files).not_to include('updates.txt')
