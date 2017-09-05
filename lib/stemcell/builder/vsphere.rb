@@ -102,10 +102,16 @@ module Stemcell
 
       def run_stembuild
         vmdk_file = find_file_by_extn(@output_directory, "vmdk")
-        cmd = "stembuild -vmdk \"#{vmdk_file}\" -v \"#{Stemcell::Manifest::Base.strip_version_build_number(@version)}\" -output \"#{@output_directory}\""
+        if @os == 'windows2016'
+          os_flag = '2016'
+        else
+          os_flag = '2012R2'
+        end
+        version_flag = Stemcell::Manifest::Base.strip_version_build_number(@version)
+        cmd = "stembuild -vmdk \"#{vmdk_file}\" -v \"#{version_flag}\" -output \"#{@output_directory}\" -os #{os_flag}"
         puts "running stembuild command: [[ #{cmd} ]]"
         `#{cmd}`
-        new_filename = "bosh-stemcell-#{@version}-vsphere-esxi-windows2012R2-go_agent.tgz"
+        new_filename = "bosh-stemcell-#{@version}-vsphere-esxi-#{@os}-go_agent.tgz"
         puts "renaming stemcell to #{new_filename}"
         FileUtils.mv Dir[File.join(@output_directory, "*.tgz")].first, File.join(@output_directory, new_filename)
       end
