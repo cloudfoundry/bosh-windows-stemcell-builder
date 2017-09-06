@@ -57,7 +57,7 @@ function ZeroDisk {
     $FilePath = "C:\zero.tmp"
     $Volume = Get-WmiObject win32_logicaldisk -filter "DeviceID='C:'"
     $ArraySize = 64kb
-    $SpaceToLeave = $Volume.Size * 0.05
+    $SpaceToLeave = $Volume.Size * 0.005
     $FileSize = $Volume.FreeSpace - $SpacetoLeave
     $ZeroArray = New-Object byte[]($ArraySize)
 
