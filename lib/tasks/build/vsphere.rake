@@ -144,6 +144,8 @@ namespace :build do
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     vmx_version_dir = Stemcell::Builder::validate_env_dir('VMX_VERSION_DIR')
 
+    skip_windows_update = ENV.fetch('SKIP_WINDOWS_UPDATE', 'false').downcase == 'true'
+
     version = File.read(File.join(version_dir, 'number')).chomp
     vmx_version = File.read(File.join(vmx_version_dir, 'number')).chomp
     agent_commit = File.read(File.join(build_dir, 'compiled-agent', 'sha')).chomp
@@ -180,9 +182,10 @@ namespace :build do
       output_directory: output_directory,
       packer_vars: {},
       version: version,
-      enable_rdp: ENV['ENABLE_RDP'] ? (ENV['ENABLE_RDP'].downcase == 'true') : false,
-      enable_kms: ENV['ENABLE_KMS'] ? (ENV['ENABLE_KMS'].downcase == 'true') : false,
-      kms_host: ENV.fetch('KMS_HOST', '')
+      enable_rdp: ENV.fetch('ENABLE_RDP', 'false').downcase == 'true',
+      enable_kms: ENV.fetch('ENABLE_KMS', 'false').downcase == 'true',
+      kms_host: ENV.fetch('KMS_HOST', ''),
+      skip_windows_update: skip_windows_update
     )
 
     vsphere.build
