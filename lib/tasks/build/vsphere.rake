@@ -5,6 +5,10 @@ require_relative '../../s3'
 require_relative '../../file_helper'
 require_relative '../../stemcell/builder/vsphere'
 
+
+STDOUT.sync = true
+STDERR.sync = true
+
 namespace :build do
   desc 'Apply Windows Updates for VMX'
   task :vsphere_add_updates do
