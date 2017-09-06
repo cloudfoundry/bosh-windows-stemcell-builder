@@ -16,7 +16,6 @@ function Compress-Disk {
 function Optimize-Disk {
     Write-Log "Starting to clean disk"
 
-    Get-WindowsFeature -Name 'Powershell-ISE' | Remove-WindowsFeature
     Get-WindowsFeature |
     ? { $_.InstallState -eq 'Available' } |
     Uninstall-WindowsFeature -Remove
