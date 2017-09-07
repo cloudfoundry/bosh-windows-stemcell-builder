@@ -303,6 +303,14 @@ function Invoke-Sysprep() {
 
     Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
 
+    # WARN WARN: this should be removed when Microsoft fixes this bug
+    # See tracker story https://www.pivotaltracker.com/story/show/150238324
+    # Skip sysprep if using Windows Server 2016 insider build with UALSVC bug
+    $RegPath="HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+    If ((Get-ItemProperty -Path $RegPath).CurrentBuildNumber -Eq '16278') {
+      Stop-Computer
+    }
+
     switch ($IaaS) {
         "aws" {
             $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
