@@ -229,16 +229,6 @@ function Create-Unattend-GCP() {
                 <Extend>true</Extend>
             </ExtendOSPartition>
         </component>
-        <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-            <RunSynchronous>
-                <RunSynchronousCommand wcm:action="add">
-                    <Description>Disable Windows Updates</Description>
-                    <Order>1</Order>
-                    <Path>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -Command Disable-AutomaticUpdates</Path>
-                    <WillReboot>Never</WillReboot>
-                </RunSynchronousCommand>
-            </RunSynchronous>
-        </component>
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <!-- Random ComputerName, will be replaced by specialize script -->
             <ComputerName></ComputerName>
