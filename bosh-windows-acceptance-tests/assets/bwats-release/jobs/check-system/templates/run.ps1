@@ -38,8 +38,9 @@ $expectedacls = New-Object System.Collections.ArrayList
 # for 2016, for some reason every file in C:\Program Files\OpenSSH
 # ends up with "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow".
 # adding this to unblock 2016 pipeline
-$windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
-if ($windowsVersion -Match "2016") {
+$windowsVersion = [environment]::OSVersion.Version.Major
+if ($windowsVersion -ge "10") {
+  "Adding 2016 ACLs"
   $expectedacls.Add("APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow")
 }
 
