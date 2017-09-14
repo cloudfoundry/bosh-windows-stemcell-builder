@@ -125,6 +125,9 @@ namespace :build do
     s3_client.put(diff_output_bucket, "patchfiles/#{diff_filename}", diff_path)
 
     # Apply patch to create stemcell
+    if version.include? 'build'
+      throw 'VERSION FLAG INCLUDES BUILD SUFFIX - FIX THIS'
+    end
     patch_command = "stembuild -vhd #{vhd_path} -delta #{diff_path} -version #{version}"
     puts "applying patch: #{patch_command}"
     `#{patch_command}`
