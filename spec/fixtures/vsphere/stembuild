@@ -1,6 +1,12 @@
 #!/usr/bin/env ruby
 require 'fileutils'
 
-OUTPUT_DIR = ARGV[5]
-FileUtils.cp(File.join(__dir__, "bosh-stemcell-5555.5-vsphere-esxi-windows2012R2-go_agent.tgz"), OUTPUT_DIR)
-File.write(File.join(OUTPUT_DIR, "myargs"), ARGV.inspect)
+output_dir =
+  if ARGV[0] == "-vmdk" # stembuild used to package packer output vmdk into tgz
+    ARGV[5]
+  elsif ARGV[0] == "-vhd" # stembuild used to apply patchfile and package output into tgz
+    ENV['OUTPUT_DIR']
+  end
+
+FileUtils.cp(File.join(__dir__, "bosh-stemcell-5555.5-vsphere-esxi-windows2012R2-go_agent.tgz"), output_dir)
+File.write(File.join(output_dir, "myargs"), ARGV.inspect)

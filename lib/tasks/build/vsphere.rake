@@ -46,10 +46,10 @@ namespace :build do
 
   desc 'Build VSphere Diff and create stemcell with it'
   task :vsphere_diff do
-    version_dir = '../version'
+    version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     version = File.read(File.join(version_dir, 'number')).chomp
 
-    output_directory = '../bosh-windows-stemcell/packer-output' # packer-output must not exist before packer is run!
+    output_directory = Stemcell::Builder::validate_env('OUTPUT_DIR') # packer-output must not exist before packer is run!
     signature_path = File.join(output_directory, 'signature')
 
     aws_access_key_id = Stemcell::Builder::validate_env('AWS_ACCESS_KEY_ID')
@@ -64,7 +64,9 @@ namespace :build do
     s3_client = S3::Client.new(
       aws_access_key_id: aws_access_key_id,
       aws_secret_access_key: aws_secret_access_key,
-      aws_region: aws_region)
+      aws_region: aws_region,
+      endpoint: ENV["S3_ENDPOINT"]
+    )
 
     # Get the most recent vhd
     last_file = s3_client.list(image_bucket).select{|file| /.vhd$/.match(file)}.sort.last
@@ -125,12 +127,12 @@ namespace :build do
     s3_client.put(diff_output_bucket, "patchfiles/#{diff_filename}", diff_path)
 
     # Apply patch to create stemcell
-    if version.include? 'build'
-      throw 'VERSION FLAG INCLUDES BUILD SUFFIX - FIX THIS'
-    end
-    patch_command = "stembuild -vhd #{vhd_path} -delta #{diff_path} -version #{version}"
+    version_flag = Stemcell::Manifest::Base.strip_version_build_number(version)
+    patch_command = "stembuild -vhd #{vhd_path} -delta #{diff_path} -version #{version_flag}"
     puts "applying patch: #{patch_command}"
     `#{patch_command}`
+
+    vsphere.rename_stembuild_output
 
     # Find stemcell .tgz
     stemcell_path = Stemcell::Builder::VSphere.find_file_by_extn(Dir.pwd, 'tgz')

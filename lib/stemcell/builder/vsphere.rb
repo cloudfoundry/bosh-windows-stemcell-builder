@@ -64,6 +64,13 @@ module Stemcell
         run_stembuild
       end
 
+      def rename_stembuild_output
+        # stembuild will output a tgz file with the trimmed down version, but we want to retain the original version in the filename
+        new_filename = "bosh-stemcell-#{@version}-vsphere-esxi-#{@os}-go_agent.tgz"
+        puts "renaming stemcell to #{new_filename}"
+        FileUtils.mv Dir[File.join(@output_directory, "*.tgz")].first, File.join(@output_directory, new_filename)
+      end
+
       private
       def packer_config
         Packer::Config::VSphere.new(
@@ -111,9 +118,8 @@ module Stemcell
         cmd = "stembuild -vmdk \"#{vmdk_file}\" -v \"#{version_flag}\" -output \"#{@output_directory}\" -os #{os_flag}"
         puts "running stembuild command: [[ #{cmd} ]]"
         `#{cmd}`
-        new_filename = "bosh-stemcell-#{@version}-vsphere-esxi-#{@os}-go_agent.tgz"
-        puts "renaming stemcell to #{new_filename}"
-        FileUtils.mv Dir[File.join(@output_directory, "*.tgz")].first, File.join(@output_directory, new_filename)
+
+        rename_stembuild_output
       end
 
       def find_vmx_file(dir)
