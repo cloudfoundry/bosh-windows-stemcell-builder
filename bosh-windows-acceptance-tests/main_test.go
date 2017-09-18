@@ -205,8 +205,17 @@ func (c *BoshCommand) args(command string) []string {
 }
 
 func (c *BoshCommand) Run(command string) error {
+	return c.RunIn(command, "")
+}
+
+func (c *BoshCommand) RunIn(command, dir string) error {
 	cmd := exec.Command("bosh", c.args(command)...)
-	log.Printf("\nRUNNING %q\n", strings.Join(cmd.Args, " "))
+	if dir != "" {
+		cmd.Dir = dir
+		log.Printf("\nRUNNING %q IN %q\n", strings.Join(cmd.Args, " "), dir)
+	} else {
+		log.Printf("\nRUNNING %q\n", strings.Join(cmd.Args, " "))
+	}
 
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	if err != nil {
@@ -303,8 +312,7 @@ var _ = Describe("BOSH Windows", func() {
 
 		pwd, err := os.Getwd()
 		Expect(err).To(Succeed())
-		Expect(os.Chdir(filepath.Join(pwd, "assets", "bwats-release"))).To(Succeed()) // push
-		defer os.Chdir(pwd)                                                           // pop
+		releaseDir := filepath.Join(pwd, "assets", "bwats-release")
 
 		manifest, err := config.generateManifest(deploymentName)
 		Expect(err).To(Succeed())
@@ -321,11 +329,11 @@ var _ = Describe("BOSH Windows", func() {
 		goZipPath, err := downloadGo()
 		Expect(err).To(Succeed())
 
-		Expect(bosh.Run("add-blob " + goZipPath + " golang-windows/" + GoZipFile)).To(Succeed())
+		Expect(bosh.RunIn("add-blob "+goZipPath+" golang-windows/"+GoZipFile, releaseDir)).To(Succeed())
 
-		Expect(bosh.Run("create-release --force --timestamp-version")).To(Succeed())
+		Expect(bosh.RunIn("create-release --force --timestamp-version", releaseDir)).To(Succeed())
 
-		Expect(bosh.Run("upload-release")).To(Succeed())
+		Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
 
 		matches, err := filepath.Glob(config.Stemcellpath)
 		Expect(err).To(Succeed())
@@ -364,23 +372,19 @@ var _ = Describe("BOSH Windows", func() {
 
 		pwd, err := os.Getwd()
 		Expect(err).To(BeNil())
-		Expect(os.Chdir(filepath.Join(pwd, "assets", "bwats-release"))).To(Succeed()) // push
-		defer os.Chdir(pwd)                                                           // pop
+		releaseDir := filepath.Join(pwd, "assets", "bwats-release")
 
-		pwd, err = os.Getwd()
-		Expect(err).To(BeNil())
-		f, err := os.OpenFile(filepath.Join(pwd, "jobs", "simple-job", "templates", "pre-start.ps1"),
+		f, err := os.OpenFile(filepath.Join(releaseDir, "jobs", "simple-job", "templates", "pre-start.ps1"),
 			os.O_APPEND|os.O_WRONLY, 0600)
-		Expect(err).To(BeNil())
+		Expect(err).ToNot(HaveOccurred())
 		defer f.Close()
 
 		for i := 0; i < redeployRetries; i++ {
-			_, err = f.WriteString(fmt.Sprintf("Write-Host \"Redeploy attempt #%d\"", i))
-			Expect(err).To(Succeed())
+			log.Printf("Redeploy attempt: #%d\n", i)
 
-			Expect(bosh.Run("create-release --force --timestamp-version")).To(Succeed())
+			Expect(bosh.RunIn("create-release --force --timestamp-version", releaseDir)).To(Succeed())
 
-			Expect(bosh.Run("upload-release")).To(Succeed())
+			Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
 
 			err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentName, manifestPath))
 			if err != nil {
