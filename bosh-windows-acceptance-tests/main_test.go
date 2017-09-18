@@ -99,6 +99,18 @@ instance_groups:
   jobs:
   - name: check-system
     release: {{.ReleaseName}}
+- name: verify-updated
+  instances: 1
+  stemcell: windows
+  lifecycle: errand
+  azs: [{{.AZ}}]
+  vm_type: {{.VmType}}
+  vm_extensions: [{{.VmExtensions}}]
+  networks:
+  - name: {{.Network}}
+  jobs:
+  - name: verify-updated
+    release: {{.ReleaseName}}
 `
 
 type ManifestProperties struct {
@@ -321,7 +333,7 @@ var _ = Describe("BOSH Windows", func() {
 
 		err = bosh.Run(fmt.Sprintf("upload-stemcell %s", matches[0]))
 		if err != nil {
-			//AWS takes a while to distribute the AMI across accounts
+			// AWS takes a while to distribute the AMI across accounts
 			time.Sleep(2 * time.Minute)
 		}
 		Expect(err).To(Succeed())
@@ -397,6 +409,11 @@ var _ = Describe("BOSH Windows", func() {
 
 	It("checks system dependencies and security", func() {
 		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-system --tty", deploymentName))
+		Expect(err).To(Succeed())
+	})
+
+	It("Is fully updated", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs verify-updated --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
