@@ -128,14 +128,14 @@ namespace :build do
 
     # Apply patch to create stemcell
     version_flag = Stemcell::Manifest::Base.strip_version_build_number(version)
-    patch_command = "stembuild -vhd #{vhd_path} -delta #{diff_path} -version #{version_flag}"
+    patch_command = "stembuild -vhd \"#{vhd_path}\" -delta \"#{diff_path}\" -version \"#{version_flag}\" -output \"#{output_directory}\""
     puts "applying patch: #{patch_command}"
     `#{patch_command}`
 
     vsphere.rename_stembuild_output
 
     # Find stemcell .tgz
-    stemcell_path = Stemcell::Builder::VSphere.find_file_by_extn(Dir.pwd, 'tgz')
+    stemcell_path = Stemcell::Builder::VSphere.find_file_by_extn(output_directory, 'tgz')
     stemcell_filename = File.basename(stemcell_path)
 
     upload_keyname = stemcell_filename.gsub('vsphere-esxi', 'diff-vsphere-esxi')
