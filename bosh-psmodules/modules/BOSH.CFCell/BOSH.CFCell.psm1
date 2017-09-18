@@ -1,72 +1,87 @@
 ﻿<#
 .Synopsis
-    Install CloudFoundry Cell components
+    Install Windows 2012 CloudFoundry Cell components
 .Description
-    This cmdlet installs the minimum set of features for a CloudFoundry Cell
+    This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows 2012R2
 #>
-function Install-CFFeatures {
+function Install-CFFeatures2012 {
+  Write-Log "Getting WinRM config"
+  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  Write-Log "$winrm_config"
+
+  Write-Log "Installing CloudFoundry Cell Windows 2012 Features"
+  $ErrorActionPreference = "Stop";
+  trap { $host.SetShouldExit(1) }
+
+  WindowsFeatureInstall("Web-Webserver")
+  WindowsFeatureInstall("Web-WebSockets")
+  WindowsFeatureInstall("AS-Web-Support")
+  WindowsFeatureInstall("AS-NET-Framework")
+  WindowsFeatureInstall("Web-WHC")
+  WindowsFeatureInstall("Web-ASP")
+
+  Write-Log "Installed CloudFoundry Cell Windows 2012 Features"
+}
+
+<#
+.Synopsis
+    Install Windows 2016 CloudFoundry Cell components
+.Description
+    This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows 2016
+#>
+function Install-CFFeatures2016 {
   param ([switch]$ReduceMTU)
 
   Write-Log "Getting WinRM config"
   $winrm_config = & cmd.exe /c 'winrm get winrm/config'
   Write-Log "$winrm_config"
 
-  Write-Log "Installing CloudFoundry Cell Windows Features"
+  Write-Log "Installing CloudFoundry Cell Windows 2016 Features"
   $ErrorActionPreference = "Stop";
   trap { $host.SetShouldExit(1) }
 
-  $windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
-  if ($windowsVersion -Match "2012") {
-    WindowsFeatureInstall("Web-Webserver")
-    WindowsFeatureInstall("Web-WebSockets")
-    WindowsFeatureInstall("AS-Web-Support")
-    WindowsFeatureInstall("AS-NET-Framework")
-    WindowsFeatureInstall("Web-WHC")
-    WindowsFeatureInstall("Web-ASP")
-  } elseif ($windowsVersion -Match "2016") {
-    WindowsFeatureInstall("FS-Resource-Manager")
+  WindowsFeatureInstall("FS-Resource-Manager")
 
-    if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
-      Write-Host "Installing Docker"
+  if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
+    Write-Host "Installing Docker"
 
-      $ifaces = (Get-NetIPInterface -AddressFamily IPv4).InterfaceAlias
+    $ifaces = (Get-NetIPInterface -AddressFamily IPv4).InterfaceAlias
 
-      Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-      $version = (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/docker/docker/master/VERSION).Content.Trim()
-      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-      Invoke-WebRequest "https://master.dockerproject.org/windows/x86_64/docker-$($version).zip" -OutFile "$env:TEMP\docker.zip" -UseBasicParsing
-      Expand-Archive -Path "$env:TEMP\docker.zip" -DestinationPath $env:ProgramFiles
-      $env:path += ";$env:ProgramFiles\Docker"
-      $existingMachinePath = [Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::Machine)
-      [Environment]::SetEnvironmentVariable("Path", $existingMachinePath + ";$env:ProgramFiles\Docker", [EnvironmentVariableTarget]::Machine)
-      dockerd --register-service
-      Start-Service Docker
-      Write-Host "Installed Docker"
+    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+    $version = (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/docker/docker/master/VERSION).Content.Trim()
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Invoke-WebRequest "https://master.dockerproject.org/windows/x86_64/docker-$($version).zip" -OutFile "$env:TEMP\docker.zip" -UseBasicParsing
+    Expand-Archive -Path "$env:TEMP\docker.zip" -DestinationPath $env:ProgramFiles
+    $env:path += ";$env:ProgramFiles\Docker"
+    $existingMachinePath = [Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::Machine)
+    [Environment]::SetEnvironmentVariable("Path", $existingMachinePath + ";$env:ProgramFiles\Docker", [EnvironmentVariableTarget]::Machine)
+    dockerd --register-service
+    Start-Service Docker
+    Write-Host "Installed Docker"
 
-      if ($ReduceMTU) {
-        # Get a list of network interfaces created by installing Docker.
-        $newIfaces=Wait-ForNewIfaces $ifaces
+    if ($ReduceMTU) {
+      # Get a list of network interfaces created by installing Docker.
+      $newIfaces=Wait-ForNewIfaces $ifaces
 
-        foreach ($name in $newIfaces) {
-          Write-Host "Setting the MTU of network interface to 1460: $name"
+      foreach ($name in $newIfaces) {
+        Write-Host "Setting the MTU of network interface to 1460: $name"
 
-          netsh.exe interface ipv4 set subinterface "$name" mtu=1460 store=persistent
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Error setting MTU for network interface: '$name': exit code: $LASTEXITCODE"
-          }
+        netsh.exe interface ipv4 set subinterface "$name" mtu=1460 store=persistent
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "Error setting MTU for network interface: '$name': exit code: $LASTEXITCODE"
         }
       }
     }
-
-
-    docker.exe pull cloudfoundry/windows2016fs
-    if ($LASTEXITCODE -ne 0) {
-      Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull cloudfoundry/windows2016fs"
-    }
-    Write-Host "installed cloudfoundry/windows2016fs image!"
   }
 
-  Write-Log "Installed CloudFoundry Cell Windows Features"
+
+  docker.exe pull cloudfoundry/windows2016fs
+  if ($LASTEXITCODE -ne 0) {
+    Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull cloudfoundry/windows2016fs"
+  }
+  Write-Host "installed cloudfoundry/windows2016fs image!"
+
+  Write-Log "Installed CloudFoundry Cell Windows 2016 Features"
 }
 
 function Wait-ForNewIfaces() {

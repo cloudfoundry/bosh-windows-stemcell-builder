@@ -9,14 +9,14 @@ module Packer
           pre = [
             Provisioners::BOSH_PSMODULES,
             Provisioners::NEW_PROVISIONER,
-            Provisioners::INSTALL_CF_FEATURES
+            Provisioners::INSTALL_CF_FEATURES_2012
           ]
         elsif os == 'windows2016'
           pre = [
             Provisioners::BOSH_PSMODULES,
             Provisioners::NEW_PROVISIONER,
             Provisioners::INSTALL_CONTAINERS,
-            (reduce_mtu ? Provisioners::INSTALL_CF_FEATURES_REDUCE_MTU : Provisioners::INSTALL_CF_FEATURES)
+            (reduce_mtu ? Provisioners::INSTALL_CF_FEATURES_REDUCE_MTU : Provisioners::INSTALL_CF_FEATURES_2016)
           ]
         end
         install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
