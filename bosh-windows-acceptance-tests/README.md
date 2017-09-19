@@ -22,7 +22,8 @@ You can create a `config.json` file, eg:
   "az": "<area zone from bosh cloud config>",
   "vm_type": "<vm_type from bosh cloud config>",
   "vm_extensions": "<comma separated string of options, e.g. 50GB_ephemeral_disk>",
-  "network": "<network from bosh cloud config>"
+  "network": "<network from bosh cloud config>",
+  "skip_cleanup": "<skip cleanup - if this is false all unused stemcells are deleted>"
 }
 ```
 

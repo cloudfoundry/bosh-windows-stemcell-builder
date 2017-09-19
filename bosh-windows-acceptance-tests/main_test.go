@@ -136,6 +136,7 @@ type Config struct {
 	VmType       string `json:"vm_type"`
 	VmExtensions string `json:"vm_extensions"`
 	Network      string `json:"network"`
+	SkipCleanup  bool   `json:"skip_cleanup"`
 }
 
 func NewConfig() (*Config, error) {
@@ -288,9 +289,11 @@ var (
 )
 
 var _ = Describe("BOSH Windows", func() {
+	var config *Config
 
 	BeforeSuite(func() {
-		config, err := NewConfig()
+		var err error
+		config, err = NewConfig()
 		Expect(err).To(Succeed())
 
 		cert := config.Bosh.CaCert
@@ -353,7 +356,9 @@ var _ = Describe("BOSH Windows", func() {
 	AfterSuite(func() {
 		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
 
-		bosh.Run("clean-up --all")
+		if !config.SkipCleanup {
+			bosh.Run("clean-up --all")
+		}
 		if bosh.CertPath != "" {
 			os.RemoveAll(bosh.CertPath)
 		}
