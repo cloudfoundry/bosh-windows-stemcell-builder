@@ -9,7 +9,7 @@ after_uniq = before_uniq.uniq
 puts "after uniq: #{after_uniq.size}"
 
 library = after_uniq.group_by {|x| x.split("\r\n")[1..2].join('\\')}
-dups = library.keys.find {|k| library[k].size > 1}
+dups = library.keys.select {|k| library[k].size > 1}
 
 if(dups.nil?)
   puts "found 0 conflicts"
