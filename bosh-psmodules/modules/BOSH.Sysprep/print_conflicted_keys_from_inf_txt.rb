@@ -27,7 +27,11 @@ class Inf
 
   def uniq()
     trim_contents = contents.map { |x| x.strip }
-    Inf.new(name, trim_contents.uniq)
+    Inf.new(name, trim_contents.uniq {|text| text.split('=')[0].downcase + text.split('=')[1..-1].join('')})
+  end
+
+  def sort()
+    Inf.new(name, contents.sort)
   end
 
   def size()
@@ -78,10 +82,14 @@ unique = merged.map do |section|
   section.uniq
 end
 
-print_section_summary(unique)
+sorted = unique.map do |section|
+  section.sort
+end
+
+print_section_summary(sorted)
 
 puts "listing conflicts"
-unique.each do |section|
+sorted.each do |section|
   elements = section.contents
   title = section.name
 
@@ -97,5 +105,5 @@ unique.each do |section|
 end
 
 new_file = 'GptTmpl-merged.inf'
-File.write new_file, unique.map{|section| section.name + "\n" + section.contents.join("\n")}.join("\n")
+File.write new_file, sorted.map{|section| section.name + "\n" + section.contents.join("\n")}.join("\n")
 puts "merged files with uniques removed outputted to #{new_file}"
