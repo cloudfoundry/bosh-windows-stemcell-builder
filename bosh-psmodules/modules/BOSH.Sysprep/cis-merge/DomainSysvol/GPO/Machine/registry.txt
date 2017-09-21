@@ -1,4 +1,14 @@
 Computer
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System
+LocalAccountTokenFilterPolicy
+DWORD:0
+
+Computer
+SOFTWARE\Policies\Microsoft\Windows\Windows Search
+AllowIndexingEncryptedStoresOrItems
+DWORD:0
+
+Computer
 SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest
 UseLogonCredential
 DWORD:0
@@ -28,7 +38,6 @@ SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters
 DisableIPSourceRouting
 DWORD:2
 
-
 Computer
 SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
 DisableIPSourceRouting
@@ -50,9 +59,19 @@ ScreenSaverGracePeriod
 SZ:5
 
 Computer
+Software\Microsoft\Windows\CurrentVersion\Policies\CredUI
+EnumerateAdministrators
+DWORD:0
+
+Computer
 Software\Microsoft\Windows\CurrentVersion\Policies\Explorer
 NoAutorun
 DWORD:1
+
+Computer
+Software\Microsoft\Windows\CurrentVersion\Policies\Explorer
+NoDriveTypeAutoRun
+DWORD:255
 
 Computer
 Software\Microsoft\Windows\CurrentVersion\Policies\Explorer
@@ -68,11 +87,6 @@ Computer
 Software\Microsoft\Windows\CurrentVersion\Policies\System
 DisableBkGndGroupPolicy
 DELETE
-
-Computer
-Software\Microsoft\Windows\CurrentVersion\Policies\System
-LocalAccountTokenFilterPolicy
-DWORD:0
 
 Computer
 Software\Microsoft\Windows\CurrentVersion\Policies\System
@@ -1195,11 +1209,6 @@ DefaultConsent
 DWORD:1
 
 Computer
-Software\Policies\Microsoft\Windows\Windows Search
-AllowIndexingEncryptedStoresOrItems
-DWORD:0
-
-Computer
 Software\Policies\Microsoft\Windows\WindowsUpdate\AU
 AUOptions
 DWORD:4
@@ -1228,8 +1237,3 @@ Computer
 Software\Policies\Microsoft\Windows\WindowsUpdate\AU
 ScheduledInstallTime
 DWORD:3
-
-Computer
-Software\Microsoft\Windows\CurrentVersion\Policies\Explorer
-NoDriveTypeAutoRun
-DWORD:255
