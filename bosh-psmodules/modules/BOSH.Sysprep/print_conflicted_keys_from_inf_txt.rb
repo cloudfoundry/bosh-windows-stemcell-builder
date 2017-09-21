@@ -1,3 +1,11 @@
+#!/usr/bin/env ruby
+
+class Infs
+  def self.from_string(s)
+    Inf.from_string_array(s.split(/(?=\[.+\])/))
+  end
+end
+
 class Inf
   attr_accessor :name
   attr_accessor :contents
@@ -37,27 +45,43 @@ def print_section_summary(sections)
   end
 end
 
+def convert_to_utf8(name)
+  `iconv -f UTF-16LE -t UTF-8 #{name} > /tmp/registry-tmp`
+  File.read '/tmp/registry-tmp', encoding: 'bom|utf-8'
+end
+
+def merge(a, b)
+  a_no_comment = a.split("\r\n").reject {|x| x.strip.gsub(/^;.*/,'').empty?}.join("\r\n").strip
+  b_no_comment = b.split("\r\n").reject {|x| x.strip.gsub(/^;.*/,'').empty?}.join("\r\n").strip
+
+  a_infs = Infs.from_string(a_no_comment)
+  b_infs = Infs.from_string(b_no_comment)
+
+  (a_infs + b_infs).group_by {|x| x.name}.map {|section_name,infs| Inf.new(section_name, infs.map{|x| x.contents}.flatten)}
+end
+
 target = 'GptTmpl.inf' #filename of the target
 destination = 'GptTmpl-utf8.txt'
 `iconv -f UTF-16LE -t UTF-8 #{target} > #{destination}`
 
-contents = File.read destination, encoding: 'bom|utf-8'
-contents_by_section = Inf.from_string_array(contents.split(/(?=\[.+\])/))
+a_contents = convert_to_utf8('GptTmpl-ms-baseline.inf')
+b_contents = convert_to_utf8('GptTmpl-cis-baseline.inf')
 
-puts "found #{contents_by_section.size} sections"
+puts "merged"
+merged = merge(a_contents, b_contents)
 
-print_section_summary(contents_by_section)
+print_section_summary(merge(a_contents, b_contents))
 
 puts "removing dups"
 
-contents_by_section.map do |section|
+unique = merged.map do |section|
   section.uniq
 end
 
-print_section_summary(contents_by_section)
+print_section_summary(unique)
 
 puts "listing conflicts"
-contents_by_section.each do |section|
+unique.each do |section|
   elements = section.contents
   title = section.name
 
@@ -71,3 +95,7 @@ contents_by_section.each do |section|
     dups.each {|x| puts x}
   end
 end
+
+new_file = 'GptTmpl-merged.inf'
+File.write new_file, unique.map{|section| section.name + "\n" + section.contents.join("\n")}.join("\n")
+puts "merged files with uniques removed outputted to #{new_file}"
