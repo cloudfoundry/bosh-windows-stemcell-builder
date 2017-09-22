@@ -75,4 +75,10 @@ function Disable-WinRM {
     Write-Log "Disable WinRM"
     Get-Service | Where-Object { $_.Name -eq "WinRM" } | Set-Service -StartupType Disabled
     Get-Service | Where-Object { $_.Name -eq "WinRM" } | Stop-Service
+
+    Write-Log "Ensure the Windows firewall stops allowing WinRM traffic through"
+    Disable-NetFirewallRule -DisplayName "Windows Remote Management (HTTP-In)"
+
+    Write-Log "Close Win RM port"
+    runCmd 'netsh firewall delete portopening TCP 5985'
 }
