@@ -1,3 +1,18 @@
+﻿function Run-Lgpo {
+    Param (
+        [string]$LgpoExe ="C:\windows\lgpo.exe",
+        [string]$LogDir,
+        [string]$ArgumentList
+    )
+    New-Item -Path $LogDir -ItemType Directory -Force
+    Start-Process -Filepath $LgpoExe -ArgumentList $ArgumentList -Wait `
+        -RedirectStandardOutput $LogDir\stdout.txt `
+        -RedirectStandardError $LogDir\stderr.txt
+    if ($? -ne $True) {
+        Throw "lgpo.exe completed with errors"
+    }
+}
+
 <#
 .Synopsis
     Sysprep Utilities
@@ -13,23 +28,69 @@ function Enable-LocalSecurityPolicy {
 
     Write-Log "Starting LocalSecurityPolicy"
 
-    $policyZipFile = Join-Path $PSScriptRoot "policy-baseline.zip"
-    New-Item -Path "$PolicyDestination" -ItemType Directory -Force
+    # Record the current values
+    $AUOptionsPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update"
+    Write-Log "Current value: ${Get-ItemProperty $AUOptionsPath}"
+    $OtherAUOptionsPath = "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU"
+    Write-Log "Current value: ${Get-ItemProperty $OtherAUOptionsPath}"
+
+    # Apply Merged policy dir
+
+    $policyZipFile = Join-Path $PSScriptRoot "cis-merged.zip"
+    New-Item -Path $PolicyDestination -ItemType Directory -Force
     Open-Zip -ZipFile $policyZipFile -OutPath $PolicyDestination
-    $PolicyBaseLine = "$PolicyDestination\policy-baseline"
-    if (-Not (Test-Path $PolicyBaseLine)) {
-        Write-Error "ERROR: could not extract policy-baseline"
-    }
 
     if($EnableRDP) {
-        $InfFilePath = Join-Path $PolicyBaseLine "DomainSysvol/GPO/Machine/microsoft/windows nt/SecEdit/GptTmpl.inf"
+        $InfFilePath = Join-Path $PolicyDestination "DomainSysvol/GPO/Machine/microsoft/windows nt/SecEdit/GptTmpl.inf"
         ModifyInfFile -InfFilePath $InfFilePath -KeyName "SeDenyNetworkLogonRight" -KeyValue "*S-1-5-32-546"
     }
 
-    Invoke-Expression "$LgpoExe /g $PolicyDestination\policy-baseline /v 2>&1 > $PolicyDestination\LGPO.log"
-    if ($LASTEXITCODE -ne 0) {
-        Throw "lgpo.exe exited with $LASTEXITCODE"
-    }
+    Run-Lgpo -ArgumentList "/g $PolicyDestination/DomainSysvol /v" -LogDir $PolicyDestination\CIS-MSL1-Logs
+
+    # Reapply the current default values
+
+    # Record the current values after applying policy
+    $AUOptionsPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update"
+    Write-Log "Current value: ${Get-ItemProperty $AUOptionsPath}"
+    $OtherAUOptionsPath = "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU"
+    Write-Log "Current value: ${Get-ItemProperty $OtherAUOptionsPath}"
+
+    $LGPODefaultsDirectory = "C:\bosh\lgpo-defaults"
+    New-Item -Path $LGPODefaultsDirectory -ItemType Directory -Force
+    $InfFileContents=@"
+[Unicode]
+Unicode=yes
+[Version]
+signature=`$CHICAGO`$
+Revision=1
+[Registry Values]
+[System Access]
+MinimumPasswordAge=0
+EnableAdminAccount=1
+NewAdministratorName = \"Administrator\"
+NewGuestName = \"Guest\"
+[Privilege Rights]
+"@
+    $InfFileContents | Out-File -FilePath "$LGPODefaultsDirectory\defaults.inf" -Encoding unicode -Force
+
+    Run-Lgpo -ArgumentList "/s $LGPODefaultsDirectory\defaults.inf" -LogDir $PolicyDestination\Undo-MSL1-Logs
+
+    Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters" "EnableICMPRedirect" 1
+    Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" "CachedAUOptions" 1
+
+    # Removing L1 registry keys that may break the BOSH stemcell (currently unknown if they do)
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft Services\AdmPwd" "AdmPwdEnabled"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft Services\AdmPwd" "PasswordAgeDays"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft Services\AdmPwd" "PasswordComplexity"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft Services\AdmPwd" "PasswordLength"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft Services\AdmPwd" "PwdExpirationProtectionEnabled"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft\WindowsFirewall" "PolicyVersion"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft\Windows\WcmSvc\GroupPolicy" "fMinimizeConnections"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" "AUOptions"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" "NoAutoUpdate"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" "ScheduledInstallDay"
+    Remove-ItemProperty "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" "ScheduledInstallTime"
+
     Write-Log "Ending LocalSecurityPolicy"
 }
 
