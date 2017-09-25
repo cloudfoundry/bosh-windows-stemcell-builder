@@ -21,19 +21,21 @@
 #>
 function Enable-LocalSecurityPolicy {
     Param (
-        [string]$LgpoExe ="C:\windows\lgpo.exe",
-        [string]$PolicyDestination = "C:\bosh\lgpo",
-        [switch]$EnableRDP
+        [string]$LgpoExe = "C:\windows\lgpo.exe",
+        [string]$PolicySource = (Join-Path $PSScriptRoot "cis-merge")
     )
 
     Write-Log "Starting LocalSecurityPolicy"
 
-    # Apply Merged policy dir
-    $policyZipFile = Join-Path $PSScriptRoot "cis-merged.zip"
-    New-Item -Path $PolicyDestination -ItemType Directory -Force
-    Open-Zip -ZipFile $policyZipFile -OutPath $PolicyDestination
+    # Convert registry.txt files into registry.pol files
+    $MachineDir="$PolicySource/DomainSysvol/GPO/Machine"
+    Run-Lgpo -ArgumentList "/r $MachineDir/registry.txt /w $MachineDir/registry.pol" -LogDir "$PolicySource\Write-Machine-Pol"
 
-    Run-Lgpo -ArgumentList "/g $PolicyDestination/DomainSysvol /v" -LogDir $PolicyDestination\CIS-Merged-Logs
+    $UserDir="$PolicySource/DomainSysvol/GPO/User"
+    Run-Lgpo -ArgumentList "/r $UserDir/registry.txt /w $UserDir/registry.pol" -LogDir "$PolicySource\Write-User-Pol"
+
+    # Apply policies
+    Run-Lgpo -ArgumentList "/g $PolicySource/DomainSysvol /v" -LogDir $PolicySource\Apply-Policies
 
     Write-Log "Ending LocalSecurityPolicy"
 }
@@ -335,7 +337,7 @@ function Invoke-Sysprep() {
                 if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
                     Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
                 }
-                Enable-LocalSecurityPolicy -EnableRDP:$EnableRDP
+                Enable-LocalSecurityPolicy
             }
 
             Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `

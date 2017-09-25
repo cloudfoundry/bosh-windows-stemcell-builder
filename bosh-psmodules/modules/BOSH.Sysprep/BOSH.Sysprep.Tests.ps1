@@ -26,24 +26,17 @@ Describe "Invoke-Sysprep" {
 
 Describe "Enable-LocalSecurityPolicy" {
     BeforeEach {
-        $PolicyDestination=(New-TempDir)
+        $PolicySource=(New-TempDir)
     }
 
     AfterEach {
-        Remove-Item -Recurse -Force $PolicyDestination
-    }
-
-    It "places the policy files in the destination and runs lgpo.exe" {
-        $lgpoExe = "cmd.exe /c 'echo hello'"
-        { Enable-LocalSecurityPolicy -LgpoExe $lgpoExe -PolicyDestination $PolicyDestination } | Should Not Throw
-        (Test-Path (Join-Path $PolicyDestination "policy-baseline")) | Should Be $True
-        (Join-Path $PolicyDestination "lgpo.log") | Should Contain "hello"
+        Remove-Item -Recurse -Force $PolicySource
     }
 
     Context "when lgpo.exe fails" {
         It "throws" {
             $lgpoExe = "cmd.exe /c 'exit 1'"
-            { Enable-LocalSecurityPolicy -LgpoExe $lgpoExe -PolicyDestination $PolicyDestination } | Should Throw "lgpo.exe exited with 1"
+            { Enable-LocalSecurityPolicy -LgpoExe $lgpoExe -PolicySource $PolicySource } | Should Throw "lgpo.exe exited with 1"
         }
     }
 }
