@@ -77,7 +77,7 @@ if ($errCount -ne 0) {
     Exit 1
 }
 
-# Check Services 
+# Check Services
 
 # Check WinRM
 If ( (Get-Service WinRM).Status -ne "Stopped") {
@@ -178,6 +178,7 @@ $features = New-Object System.Collections.ArrayList
 foreach ($feature in $features) {
   If (!(Get-WindowsFeature $feature).Installed) {
     Write-Error "Failed to find $feature"
+    Exit 1
   } else {
     Write-Host "Found $feature feature"
   }
@@ -187,11 +188,13 @@ foreach ($feature in $features) {
 if ($windowsVersion -Match "2016") {
   if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
     Write-Error "Docker is not installed"
+    Exit 1
   } else {
     write-host "Docker is installed"
     docker.exe history microsoft/windowsservercore
     if ($? -eq $False) {
       Write-Error "microsoft/windowsservercore image is not downloaded"
+      Exit 1
     } else {
       Write-Host "microsoft/windowsservercore image is downloaded"
     }
@@ -206,9 +209,20 @@ if ( $existing -eq $null){
   Write-Host "$user user is deleted"
 } else {
   Write-Error "$user user still exists. Please run 'Remove-Account -User $user'"
+  Exit 1
 }
 if ((Resolve-Path "C:\Users\$user*").Length -ne 0) {
   Write-Error "User $user home dir still exists"
+  Exit 1
+}
+
+$DisabledNetBIOS = $false
+nbtstat.exe -n | foreach {
+    $DisabledNetBIOS = $DisabledNetBIOS -or $_ -like '*No names in cache*'
+}
+if (-Not $DisabledNetBIOS) {
+    Write-Error "NetBIOS over TCP is not disabled"
+    Exit 1
 }
 
 Exit 0
