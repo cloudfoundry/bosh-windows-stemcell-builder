@@ -58,15 +58,14 @@ def merge(a, b)
   a_no_comment = a.split("\r\n").reject {|x| x.strip.gsub(/^;.*/,'').empty?}.join("\r\n").strip
   b_no_comment = b.split("\r\n").reject {|x| x.strip.gsub(/^;.*/,'').empty?}.join("\r\n").strip
 
-  a_infs = Infs.from_string(a_no_comment)
-  b_infs = Infs.from_string(b_no_comment)
+  a_normalize_equals = a_no_comment.gsub(' = ', '=').gsub(" =\r\n", "=\r\n")
+  b_normalize_equals = b_no_comment.gsub(' = ', '=').gsub(" =\r\n", "=\r\n")
+
+  a_infs = Infs.from_string(a_normalize_equals)
+  b_infs = Infs.from_string(b_normalize_equals)
 
   (a_infs + b_infs).group_by {|x| x.name}.map {|section_name,infs| Inf.new(section_name, infs.map{|x| x.contents}.flatten)}
 end
-
-target = 'GptTmpl.inf' #filename of the target
-destination = 'GptTmpl-utf8.txt'
-`iconv -f UTF-16LE -t UTF-8 #{target} > #{destination}`
 
 a_contents = convert_to_utf8('GptTmpl-ms-baseline.inf')
 b_contents = convert_to_utf8('GptTmpl-cis-baseline.inf')
