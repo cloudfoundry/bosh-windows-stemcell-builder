@@ -44,11 +44,6 @@ DisableIPSourceRouting
 DWORD:2
 
 Computer
-SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
-EnableICMPRedirect
-DWORD:0
-
-Computer
 Software\Microsoft\Windows NT\CurrentVersion\Winlogon
 AutoAdminLogon
 SZ:0
@@ -97,31 +92,6 @@ Computer
 Software\Microsoft\Windows\CurrentVersion\Policies\System\Audit
 ProcessCreationIncludeCmdLine_Enabled
 DWORD:0
-
-Computer
-Software\Policies\Microsoft Services\AdmPwd
-AdmPwdEnabled
-DWORD:1
-
-Computer
-Software\Policies\Microsoft Services\AdmPwd
-PasswordAgeDays
-DWORD:30
-
-Computer
-Software\Policies\Microsoft Services\AdmPwd
-PasswordComplexity
-DWORD:4
-
-Computer
-Software\Policies\Microsoft Services\AdmPwd
-PasswordLength
-DWORD:15
-
-Computer
-Software\Policies\Microsoft Services\AdmPwd
-PwdExpirationProtectionEnabled
-DWORD:1
 
 Computer
 Software\Policies\Microsoft\EMET\Defaults
@@ -804,11 +774,6 @@ Software\Policies\Microsoft\Windows NT\Terminal Services\RAUnsolicit
 DELETEALLVALUES
 
 Computer
-Software\Policies\Microsoft\WindowsFirewall
-PolicyVersion
-DWORD:532
-
-Computer
 Software\Policies\Microsoft\WindowsFirewall\DomainProfile
 AllowLocalIPsecPolicyMerge
 DWORD:1
@@ -1159,11 +1124,6 @@ EnumerateLocalUsers
 DWORD:0
 
 Computer
-Software\Policies\Microsoft\Windows\WcmSvc\GroupPolicy
-fMinimizeConnections
-DWORD:1
-
-Computer
 Software\Policies\Microsoft\Windows\WinRM\Client
 AllowBasic
 DWORD:0
@@ -1210,11 +1170,6 @@ DWORD:1
 
 Computer
 Software\Policies\Microsoft\Windows\WindowsUpdate\AU
-AUOptions
-DWORD:4
-
-Computer
-Software\Policies\Microsoft\Windows\WindowsUpdate\AU
 AutomaticMaintenanceEnabled
 DELETE
 
@@ -1222,18 +1177,3 @@ Computer
 Software\Policies\Microsoft\Windows\WindowsUpdate\AU
 NoAutoRebootWithLoggedOnUsers
 DWORD:0
-
-Computer
-Software\Policies\Microsoft\Windows\WindowsUpdate\AU
-NoAutoUpdate
-DWORD:0
-
-Computer
-Software\Policies\Microsoft\Windows\WindowsUpdate\AU
-ScheduledInstallDay
-DWORD:0
-
-Computer
-Software\Policies\Microsoft\Windows\WindowsUpdate\AU
-ScheduledInstallTime
-DWORD:3
