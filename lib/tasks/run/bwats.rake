@@ -9,6 +9,11 @@ def windows?
   (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
 end
 
+if windows?
+  STDOUT.sync = true
+  STDERR.sync = true
+end
+
 namespace :run do
   desc 'Run bosh-windows-acceptance-tests (BWATS)'
   task :bwats, [:iaas] do |t, args|
