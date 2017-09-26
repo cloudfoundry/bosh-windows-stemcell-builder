@@ -1,19 +1,4 @@
-﻿function Run-Lgpo {
-    Param (
-        [string]$LgpoExe ="C:\windows\lgpo.exe",
-        [string]$LogDir,
-        [string]$ArgumentList
-    )
-    New-Item -Path $LogDir -ItemType Directory -Force
-    Start-Process -Filepath $LgpoExe -ArgumentList $ArgumentList -Wait `
-        -RedirectStandardOutput $LogDir\stdout.txt `
-        -RedirectStandardError $LogDir\stderr.txt
-    if ($? -ne $True) {
-        Throw "lgpo.exe completed with errors"
-    }
-}
-
-<#
+﻿<#
 .Synopsis
     Sysprep Utilities
 .Description
@@ -21,7 +6,6 @@
 #>
 function Enable-LocalSecurityPolicy {
     Param (
-        [string]$LgpoExe = "C:\windows\lgpo.exe",
         [string]$PolicySource = (Join-Path $PSScriptRoot "cis-merge")
     )
 
@@ -29,13 +13,22 @@ function Enable-LocalSecurityPolicy {
 
     # Convert registry.txt files into registry.pol files
     $MachineDir="$PolicySource/DomainSysvol/GPO/Machine"
-    Run-Lgpo -ArgumentList "/r $MachineDir/registry.txt /w $MachineDir/registry.pol" -LogDir "$PolicySource\Write-Machine-Pol"
+    LGPO.exe /r "$MachineDir/registry.txt" /w "$MachineDir/registry.pol"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Generating policy: Machine"
+    }
 
     $UserDir="$PolicySource/DomainSysvol/GPO/User"
-    Run-Lgpo -ArgumentList "/r $UserDir/registry.txt /w $UserDir/registry.pol" -LogDir "$PolicySource\Write-User-Pol"
+    LGPO.exe /r "$UserDir/registry.txt" /w "$UserDir/registry.pol"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Generating policy: User"
+    }
 
     # Apply policies
-    Run-Lgpo -ArgumentList "/g $PolicySource/DomainSysvol /v" -LogDir $PolicySource\Apply-Policies
+    LGPO.exe /g "$PolicySource/DomainSysvol" /v
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Applying policy: $PolicySource/DomainSysvol"
+    }
 
     Write-Log "Ending LocalSecurityPolicy"
 }

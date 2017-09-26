@@ -24,23 +24,6 @@ Describe "Invoke-Sysprep" {
     }
 }
 
-Describe "Enable-LocalSecurityPolicy" {
-    BeforeEach {
-        $PolicySource=(New-TempDir)
-    }
-
-    AfterEach {
-        Remove-Item -Recurse -Force $PolicySource
-    }
-
-    Context "when lgpo.exe fails" {
-        It "throws" {
-            $lgpoExe = "cmd.exe /c 'exit 1'"
-            { Enable-LocalSecurityPolicy -LgpoExe $lgpoExe -PolicySource $PolicySource } | Should Throw "lgpo.exe exited with 1"
-        }
-    }
-}
-
 Describe "ModifyInfFile" {
     BeforeEach {
         $InfFileDirectory = (New-TempDir)
