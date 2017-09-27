@@ -28,3 +28,5 @@ You can create a `config.json` file, eg:
 ```
 
 And then run these tests with `CONFIG_JSON=<path-to-config.json> ginkgo`.
+
+The timeout for BOSH commands can be overridden with the BWATS_BOSH_TIMEOUT environment variable.
