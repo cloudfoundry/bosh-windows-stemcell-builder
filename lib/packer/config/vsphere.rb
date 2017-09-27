@@ -120,7 +120,7 @@ module Packer
         download_windows_updates = []
         # download_windows_updates = @skip_windows_update?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
 
-        # setup_kms_server = []
+        setup_kms_server = []
         # if @enable_kms && !@kms_host.nil? && !@kms_host.empty?
         #   setup_kms_server << Provisioners.setup_kms_server(@kms_host)
         # end
