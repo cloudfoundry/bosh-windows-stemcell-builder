@@ -62,7 +62,6 @@ Set the following environment variables:
 - BOSH_CLIENT:
 - BOSH_CLIENT_SECRET:
 - BOSH_CA_CERT: (not a file name, but the actual cert itself)
-- BOSH_UUID:
 
 ##### Stemcell to test
 - STEMCELL_PATH: Path to stemcell tarball
