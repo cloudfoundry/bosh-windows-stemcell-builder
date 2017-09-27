@@ -12,11 +12,11 @@ function Enable-LocalSecurityPolicy {
     Write-Log "Starting LocalSecurityPolicy"
 
     # Convert registry.txt files into registry.pol files
-    $MachineDir="$PolicySource/DomainSysvol/GPO/Machine"
-    LGPO.exe /r "$MachineDir/registry.txt" /w "$MachineDir/registry.pol"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Generating policy: Machine"
-    }
+    # $MachineDir="$PolicySource/DomainSysvol/GPO/Machine"
+    # LGPO.exe /r "$MachineDir/registry.txt" /w "$MachineDir/registry.pol"
+    # if ($LASTEXITCODE -ne 0) {
+    #     Write-Error "Generating policy: Machine"
+    # }
 
     $UserDir="$PolicySource/DomainSysvol/GPO/User"
     LGPO.exe /r "$UserDir/registry.txt" /w "$UserDir/registry.pol"
