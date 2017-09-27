@@ -284,8 +284,12 @@ function Search-InstalledUpdates() {
 }
 
 function Test-InstalledUpdates() {
+    Write-Host "Running Get-HotFix:"
+    Get-HotFix
     $Session = New-Object -ComObject Microsoft.Update.Session
+    Write-Host "Session: $Session"
     $Searcher = $Session.CreateUpdateSearcher()
+    Write-Host "Searcher: $Searcher"
     $UninstalledUpdates = $Searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0").Updates
     if ($UninstalledUpdates.Count -ne 0) {
         Write-Log "The following updates are not currently installed:"
