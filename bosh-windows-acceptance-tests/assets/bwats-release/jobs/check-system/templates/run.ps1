@@ -200,10 +200,15 @@ if ( $existing -eq $null){
   Write-Error "$user user still exists. Please run 'Remove-Account -User $user'"
   Exit 1
 }
-if ((Resolve-Path "C:\Users\$user*").Length -ne 0) {
-  Write-Error "User $user home dir still exists"
-  Exit 1
-}
+
+# We have a chore (https://www.pivotaltracker.com/story/show/149592041)
+# to ensure the Provisioner user's home directory is deleted when the user
+# is removed.
+#
+# if ((Resolve-Path "C:\Users\$user*").Length -ne 0) {
+#   Write-Error "User $user home dir still exists"
+#   Exit 1
+# }
 
 $DisabledNetBIOS = $false
 nbtstat.exe -n | foreach {
