@@ -433,7 +433,7 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(Succeed())
 	})
 
-	It("Is fully updated", func() {
+	PIt("Is fully updated", func() {
 		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs verify-updated --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
