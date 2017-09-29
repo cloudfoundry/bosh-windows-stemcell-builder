@@ -38,7 +38,7 @@ module Packer
       }
       INSTALL_CF_FEATURES_2012 = powershell_provisioner('Install-CFFeatures2012')
       INSTALL_CF_FEATURES_2016 = powershell_provisioner('Install-CFFeatures2016')
-      INSTALL_CF_FEATURES_REDUCE_MTU = powershell_provisioner('Install-CFFeatures2016 -ReduceMTU')
+      INSTALL_DOCKER_2016_REDUCE_MTU = powershell_provisioner('Install-Docker2016 -ReduceMTU')
       PROTECT_CF_CELL = powershell_provisioner('Protect-CFCell')
       OPTIMIZE_DISK = powershell_provisioner('Optimize-Disk')
       COMPRESS_DISK = powershell_provisioner('Compress-Disk')

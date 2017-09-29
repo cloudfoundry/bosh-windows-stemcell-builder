@@ -3,7 +3,7 @@ require 'securerandom'
 module Packer
   module Config
     class Base
-      def self.pre_provisioners(os, skip_windows_update: false, reduce_mtu: false)
+      def self.pre_provisioners(os, skip_windows_update: false, reduce_mtu: false, iaas: '')
         pre = []
         if os == 'windows2012R2'
           pre = [
@@ -16,9 +16,10 @@ module Packer
             Provisioners::BOSH_PSMODULES,
             Provisioners::NEW_PROVISIONER,
             Provisioners::INSTALL_CONTAINERS,
-            (reduce_mtu ? Provisioners::INSTALL_CF_FEATURES_REDUCE_MTU : Provisioners::INSTALL_CF_FEATURES_2016)
+            Provisioners::INSTALL_CF_FEATURES_2016,
           ]
         end
+        pre << Provisioners::INSTALL_DOCKER_2016_REDUCE_MTU if iaas == 'gcp' && os == 'windows2016'
         install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
         pre + install_windows_updates + [Provisioners::PROTECT_CF_CELL, Provisioners::INSTALL_SSHD]
       end

@@ -30,8 +30,6 @@ function Install-CFFeatures2012 {
     This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows 2016
 #>
 function Install-CFFeatures2016 {
-  param ([switch]$ReduceMTU)
-
   Write-Log "Getting WinRM config"
   $winrm_config = & cmd.exe /c 'winrm get winrm/config'
   Write-Log "$winrm_config"
@@ -41,6 +39,21 @@ function Install-CFFeatures2016 {
   trap { $host.SetShouldExit(1) }
 
   WindowsFeatureInstall("FS-Resource-Manager")
+  Write-Log "Installed CloudFoundry Cell Windows 2016 Features"
+}
+
+<#
+.Synopsis
+    Install Docker and cloudfoundry/windows2016fs for Windows 2016 CloudFoundry Cell
+.Description
+    This cmdlet installs docker and the cloudfoundry windows rootfs for a Cell on Windows 2016
+#>
+function Install-Docker2016 {
+  param ([switch]$ReduceMTU)
+
+  Write-Log "Installing Docker and cloudfoundry/windows2016fs image for Windows 2016"
+  $ErrorActionPreference = "Stop";
+  trap { $host.SetShouldExit(1) }
 
   if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
     Write-Host "Installing Docker"
@@ -74,14 +87,11 @@ function Install-CFFeatures2016 {
     }
   }
 
-
   docker.exe pull cloudfoundry/windows2016fs
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull cloudfoundry/windows2016fs"
   }
   Write-Host "installed cloudfoundry/windows2016fs image!"
-
-  Write-Log "Installed CloudFoundry Cell Windows 2016 Features"
 }
 
 function Wait-ForNewIfaces() {
