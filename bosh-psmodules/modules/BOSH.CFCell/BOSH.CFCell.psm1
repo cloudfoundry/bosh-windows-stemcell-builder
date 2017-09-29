@@ -118,14 +118,11 @@ function Wait-ForNewIfaces() {
 }
 
 function Install-ContainersFeature {
-  $windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
-  if ($windowsVersion -Match "2016") {
-    Write-Log "Setting WinRM startup type to automatic"
-    Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
-    WindowsFeatureInstall("Containers")
-    shutdown /r /c "packer restart" /t 5
-    net stop winrm
-  }
+  Write-Log "Setting WinRM startup type to automatic"
+  Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
+  WindowsFeatureInstall("Containers")
+  shutdown /r /c "packer restart" /t 5
+  net stop winrm
 }
 
 function Protect-CFCell {
