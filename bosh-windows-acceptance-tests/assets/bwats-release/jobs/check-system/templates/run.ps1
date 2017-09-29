@@ -210,12 +210,16 @@ if ( $existing -eq $null){
 #   Exit 1
 # }
 
-$DisabledNetBIOS = $false
-nbtstat.exe -n | foreach {
+sabledNetBIOS = $false
+$nbtstat = nbtstat.exe -n
+"results for nbtstat: $nbtstat"
+
+$nbtstat | foreach {
     $DisabledNetBIOS = $DisabledNetBIOS -or $_ -like '*No names in cache*'
 }
+
 if (-Not $DisabledNetBIOS) {
-    Write-Error "NetBIOS over TCP is not disabled"
+    Write-Error "NetBIOS over TCP is not disabled: $nbtstat"
     Exit 1
 }
 
