@@ -210,7 +210,7 @@ if ( $existing -eq $null){
 #   Exit 1
 # }
 
-sabledNetBIOS = $false
+$DisabledNetBIOS = $false
 $nbtstat = nbtstat.exe -n
 "results for nbtstat: $nbtstat"
 
