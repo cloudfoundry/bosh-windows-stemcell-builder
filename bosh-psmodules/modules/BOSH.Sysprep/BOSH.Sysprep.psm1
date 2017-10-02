@@ -301,6 +301,8 @@ function Invoke-Sysprep() {
       Stop-Computer
     }
 
+    Disable-WinRM
+
     switch ($IaaS) {
         "aws" {
             $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')

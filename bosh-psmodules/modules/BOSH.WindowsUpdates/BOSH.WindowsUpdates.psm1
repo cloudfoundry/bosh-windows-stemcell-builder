@@ -31,7 +31,7 @@ function Wait-WindowsUpdates {
     $winrm_config = & cmd.exe /c 'winrm get winrm/config'
     Write-Log "$winrm_config"
 
-    Disable-WinRM
+    disable-service("WinRM")
 
     Write-Log "Getting WinRM config"
     $winrm_config = & cmd.exe /c 'winrm get winrm/config'
