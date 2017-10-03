@@ -16,6 +16,7 @@ module S3
       end
     end
     def get(bucket,key,file_name)
+      bucket, key = rationalize(bucket, key)
       puts "Downloading the #{key} from #{bucket} to #{file_name}"
       File.open(file_name, 'wb') do |file|
         @s3.get_object({ bucket:bucket , key:key, response_target: file })
@@ -23,11 +24,14 @@ module S3
       puts "Finished Downloading the #{key} from #{bucket} to #{file_name}"
     end
     def put(bucket,key,file_name)
+      bucket, key = rationalize(bucket, key)
       puts "Uploading the #{file_name} to #{bucket}:#{key}"
       @s3_resource.bucket(bucket).object(key).upload_file(file_name)
       puts "Finished uploading the #{file_name} to #{bucket}:#{key}"
     end
     def list(bucket)
+      bucket, _ = rationalize(bucket, '')
+      puts "Listing bucket #{bucket}"
       @s3_resource.bucket(bucket).objects.map {|x| x.key}
     end
     def clear(bucket)
@@ -35,6 +39,12 @@ module S3
       @s3_resource.bucket(bucket).clear!
       puts "Finished: clearing bucket #{bucket}"
     end
+    private
+      def rationalize(bucket, key)
+        new_bucket, folder = bucket.split('/', 2)
+        new_key = folder ? [folder, key].join('/') : key
+        return new_bucket, new_key
+      end
   end
 
   class Vmx
