@@ -14,6 +14,7 @@ describe S3 do
       allow(s3_object).to receive(:upload_file).and_return(nil)
 
       s3 = double(:s3)
+      allow(s3).to receive(:list_objects).and_return({contents: [{key: "some-contents"}]})
       allow(Aws::S3::Client).to receive(:new).and_return(s3)
       allow(File).to receive(:open) # WARN
 
