@@ -29,7 +29,7 @@ describe S3 do
         let(:bucket) { 'bucket/with/slashes' }
         it 'lists rationalized bucket' do
           expect{ @s3_client.list(bucket) }.to output(
-            /Listing bucket bucket\n/
+            /Listing bucket bucket with prefix with\/slashes/
           ).to_stdout
         end
       end
@@ -37,7 +37,7 @@ describe S3 do
         let(:bucket) { 'bucket-without-slashes' }
         it 'lists' do
           expect{ @s3_client.list(bucket) }.to output(
-            /Listing bucket bucket-without-slashes/
+            /Listing bucket bucket-without-slashes with prefix /
           ).to_stdout
         end
       end

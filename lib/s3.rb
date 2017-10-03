@@ -30,9 +30,14 @@ module S3
       puts "Finished uploading the #{file_name} to #{bucket}:#{key}"
     end
     def list(bucket)
-      bucket, _ = rationalize(bucket, '')
-      puts "Listing bucket #{bucket}"
-      @s3_resource.bucket(bucket).objects.map {|x| x.key}
+      bucket, prefix = rationalize(bucket, '')
+      puts "Listing bucket #{bucket} with prefix #{prefix}"
+      resp = @s3.list_objects({
+        bucket: bucket,
+        delimiter: '/',
+        prefix: prefix
+      })
+      resp.to_h[:contents].map { |x| x[:key] }
     end
     def clear(bucket)
       puts "Clearing bucket #{bucket}"
@@ -40,6 +45,8 @@ module S3
       puts "Finished: clearing bucket #{bucket}"
     end
     private
+      # Our ci passes the bucket and key as bucket: bucket/path/to/file,
+      # key: some-filename
       def rationalize(bucket, key)
         new_bucket, folder = bucket.split('/', 2)
         new_key = folder ? [folder, key].join('/') : key
