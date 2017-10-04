@@ -890,11 +890,6 @@ DWORD:0
 
 Computer
 Software\Policies\Microsoft\WindowsFirewall\PublicProfile
-AllowLocalPolicyMerge
-DWORD:0
-
-Computer
-Software\Policies\Microsoft\WindowsFirewall\PublicProfile
 DefaultInboundAction
 DWORD:1
 

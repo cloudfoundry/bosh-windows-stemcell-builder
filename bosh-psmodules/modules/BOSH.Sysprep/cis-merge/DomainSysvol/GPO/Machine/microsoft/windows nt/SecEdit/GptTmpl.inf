@@ -85,7 +85,6 @@ LockoutBadCount=10
 LockoutDuration=15
 MaximumPasswordAge=42
 MinimumPasswordAge=0
-MinimumPasswordLength=14
 NewAdministratorName="Administrator"
 NewGuestName="Guest"
 PasswordComplexity=1
