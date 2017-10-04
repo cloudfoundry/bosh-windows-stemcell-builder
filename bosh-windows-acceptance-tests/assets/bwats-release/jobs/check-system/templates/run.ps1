@@ -1,4 +1,4 @@
-# Do not set ErrorActionPreference to stop as Get-Acl will error
+﻿# Do not set ErrorActionPreference to stop as Get-Acl will error
 # if we do not have permission to read file permissions.
 
 # Check for dependencies
@@ -139,31 +139,40 @@ if ($windowsVersion -Match "2012") {
 }
 
 # Check installed features
-
-$windowsFeatures = @()
-if ($windowsVersion -Match "2012") {
-  $windowsFeatures = @(
-    "Web-Webserver",
-    "Web-WebSockets",
-    "AS-Web-Support",
-    "AS-NET-Framework",
-    "Web-WHC",
-    "Web-ASP"
+function Assert-IsInstalled {
+  param (
+    [string] $feature= (Throw "feature param required")
   )
-} elseif ($windowsVersion -Match "2016") {
-  $windowsFeatures = @("Containers")
-}
-
-# Ensure CF Windows features are installed
-$features = New-Object System.Collections.ArrayList
-[void] $features.AddRange($windowsFeatures)
-foreach ($feature in $features) {
   If (!(Get-WindowsFeature $feature).Installed) {
     Write-Error "Failed to find $feature"
     Exit 1
   } else {
     Write-Host "Found $feature feature"
   }
+}
+function Assert-IsNotInstalled {
+  Param (
+    [string] $feature = (Throw "feature param required")
+  )
+  If ((Get-WindowsFeature $feature).Installed) {
+    Write-Error "$feature should not be installed"
+    Exit 1
+  } else {
+    Write-Host "$feature is not installed"
+  }
+}
+
+# Ensure correct CF Windows features are installed
+if ($windowsVersion -Match "2012") {
+  Assert-IsInstalled "Web-Webserver"
+  Assert-IsInstalled "Web-WebSockets"
+  Assert-IsInstalled "AS-Web-Support"
+  Assert-IsInstalled "AS-NET-Framework"
+  Assert-IsInstalled "Web-WHC"
+  Assert-IsInstalled "Web-ASP"
+} elseif ($windowsVersion -Match "2016") {
+  Assert-IsInstalled "Containers"
+  Assert-IsNotInstalled "Windows-Defender-Features"
 }
 
 # Ensure docker is installed on Windows2016
