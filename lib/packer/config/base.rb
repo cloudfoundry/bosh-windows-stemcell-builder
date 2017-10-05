@@ -17,7 +17,6 @@ module Packer
             Provisioners::NEW_PROVISIONER,
             Provisioners::INSTALL_CONTAINERS,
             Provisioners::INSTALL_CF_FEATURES_2016,
-            Provisioners::DISABLE_WINDOWS_DEFENDER
           ]
         end
         pre << Provisioners::INSTALL_DOCKER_2016_REDUCE_MTU if iaas == 'gcp' && os == 'windows2016'

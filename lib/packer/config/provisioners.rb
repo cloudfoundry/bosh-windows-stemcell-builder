@@ -36,7 +36,6 @@ module Packer
         'restart_command' => 'powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force',
         'restart_timeout' => '1h'
       }
-      DISABLE_WINDOWS_DEFENDER = powershell_provisioner('Remove-WindowsFeature Windows-Defender-Features')
       INSTALL_CF_FEATURES_2012 = powershell_provisioner('Install-CFFeatures2012')
       INSTALL_CF_FEATURES_2016 = powershell_provisioner('Install-CFFeatures2016')
       INSTALL_DOCKER_2016_REDUCE_MTU = powershell_provisioner('Install-Docker2016 -ReduceMTU')
