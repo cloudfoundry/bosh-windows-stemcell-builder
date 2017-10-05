@@ -26,9 +26,9 @@ module Packer
         }
       ].freeze
       NEW_PROVISIONER = powershell_provisioner('New-Provisioner')
-      INSTALL_CONTAINERS = {
+      INSTALL_CF_FEATURES_2016  = {
         'type' => 'windows-restart',
-        'restart_command' => "powershell.exe -Command Install-ContainersFeature",
+        'restart_command' => "powershell.exe -Command Install-CFFeatures2016",
         'restart_timeout' => '1h'
       }
       WAIT_AND_RESTART = {
@@ -37,7 +37,6 @@ module Packer
         'restart_timeout' => '1h'
       }
       INSTALL_CF_FEATURES_2012 = powershell_provisioner('Install-CFFeatures2012')
-      INSTALL_CF_FEATURES_2016 = powershell_provisioner('Install-CFFeatures2016')
       INSTALL_DOCKER_2016_REDUCE_MTU = powershell_provisioner('Install-Docker2016 -ReduceMTU')
       PROTECT_CF_CELL = powershell_provisioner('Protect-CFCell')
       OPTIMIZE_DISK = powershell_provisioner('Optimize-Disk')

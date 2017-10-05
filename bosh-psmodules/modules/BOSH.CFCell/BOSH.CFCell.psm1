@@ -39,7 +39,15 @@ function Install-CFFeatures2016 {
   trap { $host.SetShouldExit(1) }
 
   WindowsFeatureInstall("FS-Resource-Manager")
+  WindowsFeatureInstall("Containers")
+  Remove-WindowsFeature Windows-Defender-Features
+
   Write-Log "Installed CloudFoundry Cell Windows 2016 Features"
+
+  Write-Log "Setting WinRM startup type to automatic"
+  Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
+  shutdown /r /c "packer restart" /t 5
+  net stop winrm
 }
 
 <#
@@ -115,14 +123,6 @@ function Wait-ForNewIfaces() {
 
     Write-Error "Time-out waiting for docker to add Network Interface on GCP"
     Throw "Should not get here"
-}
-
-function Install-ContainersFeature {
-  Write-Log "Setting WinRM startup type to automatic"
-  Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
-  WindowsFeatureInstall("Containers")
-  shutdown /r /c "packer restart" /t 5
-  net stop winrm
 }
 
 function Protect-CFCell {

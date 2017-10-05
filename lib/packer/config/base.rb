@@ -15,7 +15,6 @@ module Packer
           pre = [
             Provisioners::BOSH_PSMODULES,
             Provisioners::NEW_PROVISIONER,
-            Provisioners::INSTALL_CONTAINERS,
             Provisioners::INSTALL_CF_FEATURES_2016,
           ]
         end
