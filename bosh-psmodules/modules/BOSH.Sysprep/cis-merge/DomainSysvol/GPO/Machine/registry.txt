@@ -5,18 +5,8 @@ DWORD:1
 
 Computer
 Software\Policies\Microsoft\WindowsFirewall\DomainProfile
-AllowLocalPolicyMerge
-DWORD:1
-
-Computer
-Software\Policies\Microsoft\WindowsFirewall\DomainProfile
 DefaultInboundAction
 DWORD:1
-
-Computer
-Software\Policies\Microsoft\WindowsFirewall\DomainProfile
-DefaultOutboundAction
-DWORD:0
 
 Computer
 Software\Policies\Microsoft\WindowsFirewall\DomainProfile
@@ -60,18 +50,8 @@ DWORD:1
 
 Computer
 Software\Policies\Microsoft\WindowsFirewall\PrivateProfile
-AllowLocalPolicyMerge
-DWORD:1
-
-Computer
-Software\Policies\Microsoft\WindowsFirewall\PrivateProfile
 DefaultInboundAction
 DWORD:1
-
-Computer
-Software\Policies\Microsoft\WindowsFirewall\PrivateProfile
-DefaultOutboundAction
-DWORD:0
 
 Computer
 Software\Policies\Microsoft\WindowsFirewall\PrivateProfile
@@ -117,11 +97,6 @@ Computer
 Software\Policies\Microsoft\WindowsFirewall\PublicProfile
 DefaultInboundAction
 DWORD:1
-
-Computer
-Software\Policies\Microsoft\WindowsFirewall\PublicProfile
-DefaultOutboundAction
-DWORD:0
 
 Computer
 Software\Policies\Microsoft\WindowsFirewall\PublicProfile
