@@ -175,23 +175,6 @@ if ($windowsVersion -Match "2012") {
   Assert-IsNotInstalled "Windows-Defender-Features"
 }
 
-# Ensure docker is installed on Windows2016
-if ($windowsVersion -Match "2016") {
-  if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
-    Write-Error "Docker is not installed"
-    Exit 1
-  } else {
-    write-host "Docker is installed"
-    docker.exe history microsoft/windowsservercore
-    if ($? -eq $False) {
-      Write-Error "microsoft/windowsservercore image is not downloaded"
-      Exit 1
-    } else {
-      Write-Host "microsoft/windowsservercore image is downloaded"
-    }
-  }
-}
-
 #Ensure provisioner user is deleted
 $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
 $user = "Provisioner"
