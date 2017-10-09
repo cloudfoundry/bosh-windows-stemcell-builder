@@ -301,7 +301,11 @@ function Invoke-Sysprep() {
       Stop-Computer
     }
 
-    Disable-WinRM
+    Write-Log "Ensure the Windows firewall stops allowing WinRM traffic through"
+    Disable-NetFirewallRule -DisplayName "Windows Remote Management (HTTP-In)"
+
+    Write-Log "Close Win RM port"
+    runCmd 'netsh firewall delete portopening TCP 5985'
 
     switch ($IaaS) {
         "aws" {
