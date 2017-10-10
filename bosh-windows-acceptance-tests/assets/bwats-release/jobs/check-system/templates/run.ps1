@@ -79,6 +79,13 @@ if ($errCount -ne 0) {
 
 # Check Services
 
+# Check WinRM
+If ( (Get-Service WinRM).Status -ne "Stopped") {
+  $msg = "WinRM is not Stopped. It is {0}" -f $(Get-Service WinRM).Status
+  Write-Error $msg
+  Exit 1
+}
+
 # Check sshd startup type
 If ( (Get-Service sshd).StartType -ne "Disabled") {
   $msg = "sshd is not disabled. It is {0}" -f $(Get-Service sshd).StartType
