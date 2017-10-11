@@ -27,6 +27,11 @@ namespace :run do
     )
     ENV["CONFIG_JSON"] = args.extras[0] || File.join(build_dir,"config.json")
     ENV["GOPATH"] = root_dir
-    exec_command("#{ginkgo} -r -v #{test_path}")
+    ginkgo_command = "#{ginkgo}"
+    if ENV["USE_RETRIES"].to_s == 'true'
+      ginkgo_command += " --flakeAttempts=3"
+    end
+    ginkgo_command += " -r -v #{test_path}"
+    exec_command(ginkgo_command)
   end
 end
