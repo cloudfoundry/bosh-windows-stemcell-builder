@@ -32,8 +32,8 @@ module Packer
           provisioners += Provisioners.sysprep_shutdown(iaas)
         else
           provisioners = [
-            # Provisioners::OPTIMIZE_DISK,
-            # Provisioners::COMPRESS_DISK
+            Provisioners::OPTIMIZE_DISK,
+            Provisioners::COMPRESS_DISK
           ] + provisioners
         end
 
