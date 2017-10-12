@@ -123,17 +123,6 @@ check-firewall "public"
 check-firewall "private"
 check-firewall "domain"
 
-# Ensure WinRM port is closed
-$WinRMRules = Get-NetFirewallRule | Where { $_.DisplayName -Eq "Windows Remote Management (HTTP-In)" }
-If ($WinRMRules) {
-  ForEach ($WinRMRule in $WinRMRules) {
-    If ($WinRMRule.Enabled -Eq "True") {
-      Write-Error "WinRM rule enabled: $WinRMRule"
-      Exit 1
-    }
-  }
-}
-
 $windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
 
 if ($windowsVersion -Match "2012") {
