@@ -2,11 +2,15 @@ require 'stemcell/builder'
 
 describe Stemcell::Builder do
   output_directory = ''
+  ami_output_directory = ''
 
   around(:each) do |example|
     Dir.mktmpdir do |dir|
-      output_directory = dir
-      example.run
+      Dir.mktmpdir do |ami_dir|
+        ami_output_directory = ami_dir
+        output_directory = dir
+        example.run
+      end
     end
   end
 
@@ -61,7 +65,7 @@ describe Stemcell::Builder do
           agent_commit: agent_commit,
           packer_vars: packer_vars,
           region: region
-        ).build
+        ).build_from_packer(ami_output_directory)
         expect(stemcell_path).to eq('path-to-stemcell')
       end
 
@@ -91,7 +95,7 @@ describe Stemcell::Builder do
               aws_secret_key: aws_secret_key,
               agent_commit: '',
               packer_vars: packer_vars
-            ).build
+            ).build_from_packer(ami_output_directory)
           }.to raise_error(Stemcell::Builder::PackerFailure)
         end
       end

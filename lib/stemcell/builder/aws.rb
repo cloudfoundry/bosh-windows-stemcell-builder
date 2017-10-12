@@ -8,8 +8,7 @@ module Stemcell
         super(args)
       end
 
-      def build
-        amis = run_packer
+      def build(amis)
         manifest = Manifest::Aws.new(@version, @os, amis).dump
         super(iaas: 'aws-xen-hvm',
               is_light: true,
@@ -17,6 +16,14 @@ module Stemcell
               manifest: manifest,
               update_list: update_list_path
              )
+      end
+
+      def build_from_packer(ami_output_directory)
+        amis = run_packer
+        File.open(File.join(ami_output_directory, 'packer-output-ami.txt'), 'w') do |f|
+          f.write(amis[0].to_json)
+        end
+        build(amis)
       end
 
       private

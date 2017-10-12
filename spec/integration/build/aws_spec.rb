@@ -35,6 +35,7 @@ describe 'Aws' do
       version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
 
+      ENV['AMIS_DIR'] = tmpdir
       ENV['AWS_ACCESS_KEY'] = aws_access_key = 'some-aws_access_key'
       ENV['AWS_SECRET_KEY'] = aws_secret_key = 'some-aws_secret_key'
       ENV['OS_VERSION'] = os_version
@@ -43,7 +44,7 @@ describe 'Aws' do
       ENV['BASE_AMIS_DIR'] = @base_amis_dir
       ENV['REGION'] = region = 'us-east-1'
       ENV['OUTPUT_BUCKET_REGION'] = output_bucket_region = 'some-output-bucket-region'
-      ENV['OUTPUT_BUCKET_NAME'] = output_bucket_name = 'some-output-bucket-name'
+      ENV['OUTPUT_BUCKET_NAME'] = 'some-output-bucket-name'
 
       File.write(
         File.join(@version_dir, 'number'),
@@ -98,6 +99,11 @@ describe 'Aws' do
 
       expect(read_from_tgz(stemcell, 'image')).to be_nil
       expect(File.read(stemcell_sha)).to eq(Digest::SHA1.hexdigest(File.read(stemcell)))
+
+      # running task should create packer-output-ami.txt in AMIS_DIR
+      packer_output_ami = JSON.parse(File.read(File.join(tmpdir, 'packer-output-ami.txt')))
+      expect(packer_output_ami['region']).to eq('us-east-1')
+      expect(packer_output_ami['ami_id']).to eq('ami-east1id')
     end
   end
 end
