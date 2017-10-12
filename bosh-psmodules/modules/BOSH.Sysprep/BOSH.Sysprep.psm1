@@ -301,12 +301,6 @@ function Invoke-Sysprep() {
       Stop-Computer
     }
 
-    Write-Log "Ensure the Windows firewall stops allowing WinRM traffic through"
-    Disable-NetFirewallRule -DisplayName "Windows Remote Management (HTTP-In)"
-
-    Write-Log "Close Win RM port"
-    runCmd 'netsh firewall delete portopening TCP 5985'
-
     switch ($IaaS) {
         "aws" {
             $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
