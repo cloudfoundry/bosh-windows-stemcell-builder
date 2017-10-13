@@ -366,11 +366,12 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	AfterSuite(func() {
-		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
-
-		if !config.SkipCleanup {
-			bosh.Run("clean-up --all")
+		if config.SkipCleanup {
+			return
 		}
+
+		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
+		bosh.Run("clean-up --all")
 		if bosh.CertPath != "" {
 			os.RemoveAll(bosh.CertPath)
 		}
