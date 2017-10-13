@@ -30,11 +30,28 @@ namespace :build do
     FileUtils.mkdir_p(output_directory)
 
     ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR')
-    # read the ami id
-    # new ami = invoke aws cli
-    # amis = [new ami]
+    packer_output_data = JSON.parse(File.read(File.join(ami_output_directory, 'packer-output-ami.txt')))
+    packer_output_ami = packer_output_data['ami_id']
+    packer_output_region = packer_output_data['region']
+
+    # Get packer image data
+    ec2_describe_command = "aws ec2 describe-images --image-ids #{packer_output_ami} --region #{packer_output_region}"
+    packer_image_data = JSON.parse(exec_command(ec2_describe_command))
+    packer_image_name = packer_image_data['Images'][0]['Name']
+
+    destination_region = Stemcell::Builder::validate_env('REGION')
+    new_image_name = packer_image_name.gsub(packer_output_region, destination_region)
+
+    # Copy image
+    ec2_copy_command = "aws ec2 copy-image --source-image-id #{packer_output_ami} " \
+      "--source-region #{packer_output_region} --region #{destination_region} --name #{new_image_name}"
+    copy_data = JSON.parse(exec_command(ec2_copy_command))
+
+    new_ami = {'region' => destination_region, 'ami_id' => copy_data['ImageId']}
+
+    # Create stemcell tgz
     aws_builder = get_aws_builder(output_directory)
-    aws_builder.build(amis)
+    aws_builder.build([new_ami])
   end
 end
 
