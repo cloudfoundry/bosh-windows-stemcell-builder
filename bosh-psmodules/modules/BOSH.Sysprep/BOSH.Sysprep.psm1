@@ -287,6 +287,7 @@ function Invoke-Sysprep() {
         [string]$ProductKey="",
         [string]$Organization="",
         [string]$Owner="",
+        [string]$OsVersion="windows2012R2",
         [switch]$SkipLGPO,
         [switch]$EnableRDP
     )
@@ -303,20 +304,41 @@ function Invoke-Sysprep() {
 
     switch ($IaaS) {
         "aws" {
-            $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
+            switch ($OsVersion) {
+                "windows2012R2" {
+                    $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
 
-            # Enable password generation and retrieval
-            ($ec2config.ec2configurationsettings.plugins.plugin | where { $_.Name -eq "Ec2SetPassword" }).State = 'Enabled'
+                    # Enable password generation and retrieval
+                    ($ec2config.ec2configurationsettings.plugins.plugin | where { $_.Name -eq "Ec2SetPassword" }).State = 'Enabled'
 
-            # Disable SetDnsSuffixList setting
-            $ec2config.ec2configurationsettings.GlobalSettings.SetDnsSuffixList = "false"
+                    # Disable SetDnsSuffixList setting
+                    $ec2config.ec2configurationsettings.GlobalSettings.SetDnsSuffixList = "false"
 
-            $ec2config.Save("C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml")
+                    $ec2config.Save("C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml")
 
-            # Enable sysprep
-            $ec2settings = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
-            ($ec2settings.BundleConfig.Property | where { $_.Name -eq "AutoSysprep" }).Value = 'Yes'
-            $ec2settings.Save('C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+                    # Enable sysprep
+                    $ec2settings = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+                    ($ec2settings.BundleConfig.Property | where { $_.Name -eq "AutoSysprep" }).Value = 'Yes'
+                    $ec2settings.Save('C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+                }
+                "windows2016" {
+                    # Enable password generation and retrieval
+                    # LaunchConfig.json adminPasswordType defaults to "Random"
+                    # TODO: should we set this value to "DoNothing"? Since the BOSH Agent will always randomize the password.
+                    # We can use the BOSH Agent to set the password to a specific value.
+
+                    # Disable SetDnsSuffixList setting
+                    $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
+                    $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
+                    $LaunchConfig.addDnsSuffixList = $False
+                    $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
+
+                    # Enable sysprep
+                    cd 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
+                    ./InitializeInstance.ps1 -Schedule
+                    ./SysprepInstance.ps1
+                }
+            }
         }
         "gcp" {
             Create-Unattend-GCP

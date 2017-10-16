@@ -23,13 +23,13 @@ module Packer
         pre + install_windows_updates + [Provisioners::PROTECT_CF_CELL, Provisioners::INSTALL_SSHD]
       end
 
-      def self.post_provisioners(iaas)
+      def self.post_provisioners(iaas, os='windows2012R2')
         provisioners = [
           Provisioners::CLEAR_PROVISIONER
         ]
 
         if iaas.downcase != 'vsphere'
-          provisioners += Provisioners.sysprep_shutdown(iaas)
+          provisioners += Provisioners.sysprep_shutdown(iaas, os)
         else
           provisioners = [
             Provisioners::OPTIMIZE_DISK,

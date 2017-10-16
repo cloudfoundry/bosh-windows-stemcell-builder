@@ -112,8 +112,8 @@ module Packer
         }
       end
 
-      def self.sysprep_shutdown(iaas)
-        return [powershell_provisioner("Invoke-Sysprep -IaaS #{iaas}")]
+      def self.sysprep_shutdown(iaas, os)
+        return [powershell_provisioner("Invoke-Sysprep -IaaS #{iaas} -OsVersion #{os}")]
       end
     end
   end
