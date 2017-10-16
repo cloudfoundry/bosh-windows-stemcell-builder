@@ -44,7 +44,7 @@ module Packer
           Base.pre_provisioners(@os),
           Provisioners.install_agent('aws').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
-          Base.post_provisioners('aws')
+          Base.post_provisioners('aws', @os)
         ].flatten
       end
     end
