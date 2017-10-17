@@ -36,7 +36,7 @@ namespace :build do
 
     # Get packer image data
     ec2_describe_command = "aws ec2 describe-images --image-ids #{packer_output_ami} --region #{packer_output_region}"
-    packer_image_data = JSON.parse(`#{ec2_describe_command}`) # exec_command doesn't return its output to the caller
+    packer_image_data = JSON.parse(exec_command(ec2_describe_command))
     packer_image_name = packer_image_data['Images'][0]['Name']
 
     destination_region = Stemcell::Builder::validate_env('REGION')
@@ -45,7 +45,7 @@ namespace :build do
     # Copy image
     ec2_copy_command = "aws ec2 copy-image --source-image-id #{packer_output_ami} " \
       "--source-region #{packer_output_region} --region #{destination_region} --name #{new_image_name}"
-    copy_data = JSON.parse(`#{ec2_copy_command}`) # exec_command doesn't return its output to the caller
+    copy_data = JSON.parse(exec_command(ec2_copy_command))
 
     new_ami = {'region' => destination_region, 'ami_id' => copy_data['ImageId']}
 
