@@ -20,7 +20,7 @@ module Stemcell
 
       def build_from_packer(ami_output_directory)
         amis = run_packer
-        File.open(File.join(ami_output_directory, 'packer-output-ami.txt'), 'w') do |f|
+        File.open(File.join(ami_output_directory, "packer-output-ami-#{@version}.txt"), 'w') do |f|
           f.write(amis[0].to_json)
         end
         build(amis)

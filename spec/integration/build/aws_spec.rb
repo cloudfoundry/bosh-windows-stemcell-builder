@@ -106,7 +106,7 @@ describe 'Aws' do
       expect(File.read(stemcell_sha)).to eq(Digest::SHA1.hexdigest(File.read(stemcell)))
 
       # running task should create packer-output-ami.txt in AMIS_DIR
-      packer_output_ami = JSON.parse(File.read(File.join(@amis_dir, 'packer-output-ami.txt')))
+      packer_output_ami = JSON.parse(File.read(File.join(@amis_dir, "packer-output-ami-#{@version}.txt")))
       expect(packer_output_ami['region']).to eq('us-east-1')
       expect(packer_output_ami['ami_id']).to eq('ami-east1id')
     end
