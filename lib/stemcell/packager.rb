@@ -25,10 +25,13 @@ module Stemcell
     def self.aggregate_the_amis(amis_path, output_directory)
       tar_files = get_tar_files_from(amis_path)
 
-      # extract first tgz to output directory
-      exec_command("tar xzvf #{File.join(amis_path, tar_files.first)} -C #{output_directory}")
+      # Extract tgz from us-east-1 as this contains updates.txt (created with packer)
+      us_east_tgz = tar_files.select { |f| f.include?('us-east-1') }
 
-      master_manifest_contents = read_from_tgz(File.join(amis_path, tar_files.first), 'stemcell.MF')
+      # extract first tgz to output directory
+      exec_command("tar xzvf #{File.join(amis_path, us_east_tgz)} -C #{output_directory}")
+
+      master_manifest_contents = read_from_tgz(File.join(amis_path, us_east_tgz), 'stemcell.MF')
       master_manifest = YAML.load(master_manifest_contents)
 
       tar_files.each do |tgz|
