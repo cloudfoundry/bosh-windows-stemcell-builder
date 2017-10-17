@@ -7,10 +7,19 @@ namespace :build do
     output_directory = File.absolute_path("bosh-windows-stemcell")
     FileUtils.mkdir_p(output_directory)
 
+    # Input amis from Amazon
+    base_amis_dir = Stemcell::Builder::validate_env_dir('BASE_AMIS_DIR')
+    base_amis = JSON.parse(
+      File.read(
+        Dir.glob(File.join(base_amis_dir, 'base-amis-*.json'))[0]
+      ).chomp
+    ).select { |ami| ami['name'] == Stemcell::Builder::validate_env('REGION') }
+    puts "base_amis.count: #{base_amis.count}"
+
     # Where we will save the packer output ami
     ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR')
 
-    aws_builder = get_aws_builder(output_directory)
+    aws_builder = get_aws_builder(output_directory, base_amis)
 
     aws_builder.build_from_packer(ami_output_directory)
 
@@ -58,21 +67,13 @@ namespace :build do
   end
 end
 
-def get_aws_builder(output_directory)
+def get_aws_builder(output_directory, base_amis=[])
   version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
-  base_amis_dir = Stemcell::Builder::validate_env_dir('BASE_AMIS_DIR')
-  region = Stemcell::Builder::validate_env('REGION')
 
   build_dir = File.expand_path('../../../../build', __FILE__)
   agent_dir = File.join(build_dir,'compiled-agent')
   version = File.read(File.join(version_dir, 'number')).chomp
   agent_commit = File.read(File.join(agent_dir, 'sha')).chomp
-  base_amis = JSON.parse(
-    File.read(
-      Dir.glob(File.join(base_amis_dir, 'base-amis-*.json'))[0]
-    ).chomp
-  ).select { |ami| ami['name'] == region }
-  puts "base_amis.count: #{base_amis.count}"
 
   Stemcell::Builder::Aws.new(
     agent_commit: agent_commit,
@@ -83,7 +84,7 @@ def get_aws_builder(output_directory)
     output_directory: output_directory,
     packer_vars: {},
     version: version,
-    region: region
+    region: Stemcell::Builder::validate_env('REGION')
   )
 
 end
