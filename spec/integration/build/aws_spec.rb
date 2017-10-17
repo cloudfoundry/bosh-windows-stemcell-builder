@@ -118,7 +118,7 @@ describe 'Aws' do
         File.join(@amis_dir, "packer-output-ami-#{@version}.txt"),
         {'region' => 'us-east-1', 'ami_id' => 'ami-east1id'}.to_json
       )
-      ENV['REGION'] = @region = 'us-east-2'
+      ENV['REGIONS'] = @region = 'us-east-2'
     end
 
     it 'should copy an aws stemcell' do
