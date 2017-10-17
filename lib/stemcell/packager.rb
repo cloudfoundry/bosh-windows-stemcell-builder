@@ -26,7 +26,7 @@ module Stemcell
       tar_files = get_tar_files_from(amis_path)
 
       # Extract tgz from packer region (e.g., us-east-1) as this contains updates.txt since it was created with packer
-      packer_tgz = tar_files.select { |f| f.include?(packer_region) }
+      packer_tgz = tar_files.detect { |f| f.include?(packer_region) }
 
       # extract first tgz to output directory
       exec_command("tar xzvf #{File.join(amis_path, packer_tgz)} -C #{output_directory}")
