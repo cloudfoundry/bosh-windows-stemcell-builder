@@ -29,8 +29,11 @@ namespace :build do
     output_directory = File.absolute_path("bosh-windows-stemcell")
     FileUtils.mkdir_p(output_directory)
 
+    version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
+    version = File.read(File.join(version_dir, 'number')).chomp
+
     ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR')
-    packer_output_data = JSON.parse(File.read(File.join(ami_output_directory, 'packer-output-ami.txt')))
+    packer_output_data = JSON.parse(File.read(File.join(ami_output_directory, "packer-output-ami-#{version}.txt")))
     packer_output_ami = packer_output_data['ami_id']
     packer_output_region = packer_output_data['region']
 

@@ -115,7 +115,7 @@ describe 'Aws' do
   describe 'Copy an aws stemcell' do
     before(:each) do
       File.write(
-        File.join(@amis_dir, 'packer-output-ami.txt'),
+        File.join(@amis_dir, "packer-output-ami-#{@version}.txt"),
         {'region' => 'us-east-1', 'ami_id' => 'ami-east1id'}.to_json
       )
       ENV['REGION'] = @region = 'us-east-2'
