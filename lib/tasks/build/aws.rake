@@ -83,7 +83,9 @@ namespace :build do
       aws_builder.build([new_ami])
 
       # Upload the final tgz to S3
-      artifact_name = Stemcell::Packager::get_tar_files_from(output_directory).first
+      artifact_name = Stemcell::Packager::get_tar_files_from(output_directory).select do |filename|
+        filename.include?(destination_region)
+      end
 
       client = S3::Client.new(
         aws_access_key_id: aws_access_key_id,
