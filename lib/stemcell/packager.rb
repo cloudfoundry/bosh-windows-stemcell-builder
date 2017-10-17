@@ -22,16 +22,16 @@ module Stemcell
       packaged_image
     end
 
-    def self.aggregate_the_amis(amis_path, output_directory)
+    def self.aggregate_the_amis(amis_path, output_directory, packer_region)
       tar_files = get_tar_files_from(amis_path)
 
-      # Extract tgz from us-east-1 as this contains updates.txt (created with packer)
-      us_east_tgz = tar_files.select { |f| f.include?('us-east-1') }
+      # Extract tgz from packer region (e.g., us-east-1) as this contains updates.txt since it was created with packer
+      packer_tgz = tar_files.select { |f| f.include?(packer_region) }
 
       # extract first tgz to output directory
-      exec_command("tar xzvf #{File.join(amis_path, us_east_tgz)} -C #{output_directory}")
+      exec_command("tar xzvf #{File.join(amis_path, packer_tgz)} -C #{output_directory}")
 
-      master_manifest_contents = read_from_tgz(File.join(amis_path, us_east_tgz), 'stemcell.MF')
+      master_manifest_contents = read_from_tgz(File.join(amis_path, packer_tgz), 'stemcell.MF')
       master_manifest = YAML.load(master_manifest_contents)
 
       tar_files.each do |tgz|

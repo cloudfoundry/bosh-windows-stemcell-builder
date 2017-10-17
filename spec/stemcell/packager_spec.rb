@@ -81,7 +81,7 @@ describe Stemcell::Packager do
     it 'creates a single tar file' do
       amis_path = File.join(File.expand_path('../../..', __FILE__), 'spec', 'fixtures', 'aws', 'amis')
       output_dir = Dir.mktmpdir
-      Stemcell::Packager.aggregate_the_amis(amis_path, output_dir)
+      Stemcell::Packager.aggregate_the_amis(amis_path, output_dir, 'some-region-1')
 
       stemcell_path = File.join(output_dir, 'light-bosh-stemcell-1089.0-aws-xen-hvm-windows2012R2-go_agent.tgz')
       expect(File.exist?(stemcell_path)).to eq(true)
@@ -91,7 +91,7 @@ describe Stemcell::Packager do
       amis_path = File.join(File.expand_path('../../..', __FILE__), 'spec', 'fixtures', 'aws', 'amis')
       output_dir = Dir.mktmpdir
 
-      Stemcell::Packager.aggregate_the_amis(amis_path, output_dir)
+      Stemcell::Packager.aggregate_the_amis(amis_path, output_dir, 'some-region-1')
 
       stemcell_path = File.join(output_dir, 'light-bosh-stemcell-1089.0-aws-xen-hvm-windows2012R2-go_agent.tgz')
 
