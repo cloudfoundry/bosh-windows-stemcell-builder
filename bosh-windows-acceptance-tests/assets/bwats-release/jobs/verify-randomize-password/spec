@@ -1,0 +1,10 @@
+---
+name: verify-randomize-password
+
+description: "This errand tests that the password has been randomized."
+
+templates:
+  run.ps1: bin/run.ps1
+  security.inf: inf/security.inf
+
+packages: []

@@ -96,7 +96,6 @@ instance_groups:
   networks:
   - name: {{.Network}}
   jobs:
-  jobs:
   - name: check-system
     release: {{.ReleaseName}}
 - name: verify-updated
@@ -110,6 +109,18 @@ instance_groups:
   - name: {{.Network}}
   jobs:
   - name: verify-updated
+    release: {{.ReleaseName}}
+- name: verify-randomize-password
+  instances: 1
+  stemcell: windows
+  lifecycle: errand
+  azs: [{{.AZ}}]
+  vm_type: {{.VmType}}
+  vm_extensions: [{{.VmExtensions}}]
+  networks:
+  - name: {{.Network}}
+  jobs:
+  - name: verify-randomize-password
     release: {{.ReleaseName}}
 `
 
@@ -431,6 +442,11 @@ var _ = Describe("BOSH Windows", func() {
 
 	It("checks system dependencies and security", func() {
 		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-system --tty", deploymentName))
+		Expect(err).To(Succeed())
+	})
+
+	It("randomizes admin password", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs verify-randomize-password --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
