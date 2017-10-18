@@ -123,6 +123,14 @@ check-firewall "public"
 check-firewall "private"
 check-firewall "domain"
 
+# Ensure port 5985 is closed.
+$WinRMPorts = Get-NetFirewallRule | Get-NetFirewallPortFilter | where { $_.LocalPort -eq 5985 }
+if ($WinRMPorts -ne $null) {
+  Write-Error "Port 5985 is open: $WinRMPorts"
+  Exit 1
+}
+
+
 $windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
 
 if ($windowsVersion -Match "2012") {
