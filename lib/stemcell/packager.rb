@@ -122,8 +122,12 @@ module Stemcell
         end
       end
 
-      sha = Digest::SHA1.file(File.join(output_directory, stemcell_tarball_file)).hexdigest
-      filename = File.join(output_directory, stemcell_tarball_file + ".sha")
+      generate_sha(File.join(output_directory, stemcell_tarball_file), output_directory)
+    end
+
+    def self.generate_sha(filename_to_sha, output_directory)
+      sha = Digest::SHA1.file(filename_to_sha).hexdigest
+      filename = File.join(output_directory, File.basename(filename_to_sha) + ".sha")
       File.write(filename, sha)
     end
 

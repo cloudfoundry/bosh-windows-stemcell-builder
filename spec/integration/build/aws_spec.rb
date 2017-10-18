@@ -119,6 +119,17 @@ describe 'Aws' do
         {'region' => 'us-east-1', 'ami_id' => 'ami-east1id'}.to_json
       )
       ENV['REGIONS'] = @region = 'us-east-2'
+      @copied_stemcells_dir = 'copied-regional-stemcells'
+
+      # Simulate concourse input
+      ENV['DEFAULT_STEMCELL_DIR'] = @default_stemcell_dir = Dir.mktmpdir
+      fixtures_dir = File.join('spec', 'fixtures', 'aws', 'amis')
+      FileUtils.cp(Dir[File.join(fixtures_dir, "*-us-east-1.tgz")].first, @default_stemcell_dir)
+    end
+
+    after(:each) do
+      FileUtils.rm_rf(@default_stemcell_dir)
+      FileUtils.rm_rf(@copied_stemcells_dir)
     end
 
     it 'should copy an aws stemcell' do
@@ -141,8 +152,8 @@ describe 'Aws' do
 
       Rake::Task['build:aws_ami'].invoke
 
-      stemcell = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent-#{@region}.tgz")
-      stemcell_sha = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent-#{@region}.tgz.sha")
+      stemcell = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent.tgz")
+      stemcell_sha = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent.tgz.sha")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq('1200.3')
@@ -151,6 +162,8 @@ describe 'Aws' do
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('aws')
       expect(stemcell_manifest['cloud_properties']['ami']['us-east-1']).to be_nil
       expect(stemcell_manifest['cloud_properties']['ami']['us-east-2']).to eq('ami-east2id')
+
+      expect(read_from_tgz(stemcell, 'updates.txt')).not_to be_nil
 
       apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
       expect(apply_spec['agent_commit']).to eq(@agent_commit)

@@ -44,14 +44,15 @@ namespace :build do
   task :aws_ami do
     # Check required environment variables
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
-    ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR')
+    ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR') # contains the ami of the image created by packer
+    default_stemcell_directory = Stemcell::Builder::validate_env_dir('DEFAULT_STEMCELL_DIR') # contains the stemcell tgz created with packer
     destination_regions = Stemcell::Builder::validate_env('REGIONS').split(',')
-    aws_access_key_id = Stemcell::Builder::validate_env('AWS_ACCESS_KEY')
-    aws_secret_access_key = Stemcell::Builder::validate_env('AWS_SECRET_KEY')
-    aws_region = Stemcell::Builder::validate_env('OUTPUT_BUCKET_REGION')
-    output_bucket = Stemcell::Builder::validate_env('OUTPUT_BUCKET_NAME')
 
-    # Setup dir where we will save the stemcell tgz
+    # Setup dir where we will save the individual regional stemcell tgz
+    copied_stemcells_directory = File.absolute_path("copied-regional-stemcells")
+    FileUtils.mkdir_p(copied_stemcells_directory)
+
+    # Directory where the final aggregate light stemcell will be saved
     output_directory = File.absolute_path("bosh-windows-stemcell")
     FileUtils.mkdir_p(output_directory)
 
@@ -79,21 +80,20 @@ namespace :build do
       new_ami = {'region' => destination_region, 'ami_id' => copy_data['ImageId']}
 
       # Create stemcell tgz
-      aws_builder = get_aws_builder(output_directory, destination_region)
+      aws_builder = get_aws_builder(copied_stemcells_directory, destination_region)
       aws_builder.build([new_ami])
-
-      # Upload the final tgz to S3
-      artifact_name = Stemcell::Packager::get_tar_files_from(output_directory).detect do |filename|
-        filename.include?(destination_region)
-      end
-
-      client = S3::Client.new(
-        aws_access_key_id: aws_access_key_id,
-        aws_secret_access_key: aws_secret_access_key,
-        aws_region: aws_region
-      )
-      client.put(output_bucket, artifact_name, File.join(output_directory, artifact_name))
     end
+
+    # Move the default stemcell into the copied stemcells directory so that it will be aggregated
+    FileUtils.cp(Dir[File.join(default_stemcell_directory, "*.tgz")].first, copied_stemcells_directory)
+
+    # Aggregate amis
+    Stemcell::Packager.aggregate_the_amis(copied_stemcells_directory, output_directory, packer_output_region)
+
+    # Create stemcell sha file
+    stemcell_tarball_file = Dir[File.join(output_directory, "*.tgz")].first
+    Stemcell::Packager.generate_sha(stemcell_tarball_file, output_directory)
+
   end
 end
 
