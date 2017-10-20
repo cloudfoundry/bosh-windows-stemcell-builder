@@ -150,6 +150,11 @@ describe 'Aws' do
              '--source-region us-east-1 --region us-east-2 --name some-image-name-us-east-2').
              and_return({'ImageId' => 'ami-east2id'}.to_json)
 
+      allow(Executor).to receive(:exec_command).
+        with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
+          '--launch-permission "{"Add":[{"Group":"all"}]}" --region us-east-2').
+          and_return(nil)
+
       Rake::Task['build:aws_ami'].invoke
 
       stemcell = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent.tgz")

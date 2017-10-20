@@ -79,6 +79,11 @@ namespace :build do
 
       new_ami = {'region' => destination_region, 'ami_id' => copy_data['ImageId']}
 
+      # Make image public
+      ec2_public_command = "aws ec2 modify-image-attribute --image-id #{new_ami['ami_id']} " \
+        "--launch-permission \"{\"Add\":[{\"Group\":\"all\"}]}\" --region #{new_ami['region']}"
+      exec_command(ec2_public_command)
+
       # Create stemcell tgz
       aws_builder = get_aws_builder(copied_stemcells_directory, destination_region)
       aws_builder.build([new_ami])
