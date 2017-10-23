@@ -2,6 +2,9 @@ require 'rspec/core/rake_task'
 require 'json'
 
 namespace :build do
+  class FailedAMICopyError < RuntimeError
+  end
+
   desc 'Build AWS Stemcell'
   task :aws do
     # Check required environment variables
@@ -41,12 +44,14 @@ namespace :build do
     client.put(output_bucket, artifact_name, File.join(output_directory, artifact_name))
   end
 
+  desc 'Copy AMI from source to remaining regions'
   task :aws_ami do
     # Check required environment variables
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR') # contains the ami of the image created by packer
     default_stemcell_directory = Stemcell::Builder::validate_env_dir('DEFAULT_STEMCELL_DIR') # contains the stemcell tgz created with packer
     destination_regions = Stemcell::Builder::validate_env('REGIONS').split(',')
+    copied_amis = Array.new
 
     # Setup dir where we will save the individual regional stemcell tgz
     copied_stemcells_directory = File.absolute_path("copied-regional-stemcells")
@@ -78,11 +83,7 @@ namespace :build do
       copy_data = JSON.parse(exec_command(ec2_copy_command))
 
       new_ami = {'region' => destination_region, 'ami_id' => copy_data['ImageId']}
-
-      # Make image public
-      ec2_public_command = "aws ec2 modify-image-attribute --image-id #{new_ami['ami_id']} " \
-        "--launch-permission \"{\"Add\":[{\"Group\":\"all\"}]}\" --region #{new_ami['region']}"
-      exec_command(ec2_public_command)
+      copied_amis.push new_ami
 
       # Create stemcell tgz
       aws_builder = get_aws_builder(copied_stemcells_directory, destination_region)
@@ -98,6 +99,31 @@ namespace :build do
     # Create stemcell sha file
     stemcell_tarball_file = Dir[File.join(output_directory, "*.tgz")].first
     Stemcell::Packager.generate_sha(stemcell_tarball_file, output_directory)
+
+    #Copy region is asynchronous and takes time. Need to poll each ami and make them public once they are available
+    while copied_amis.count > 0 do
+      copied_amis.delete_if do |copied_ami|
+
+        #Check to see if ami is available or failed
+        ec2_describe_command = "aws ec2 describe-images --image-ids #{copied_ami['ami_id']} " \
+          "--region #{copied_ami['region']} --filters Name=state,Values=available,failed"
+        ami_description = JSON.parse(exec_command(ec2_describe_command))
+
+        if ami_description['Images'].count == 1
+          if ami_description['Images'][0]['State'] == "available"
+            #Make available ami public
+            puts "Making #{copied_ami['ami_id']} public"
+            ec2_public_command = "aws ec2 modify-image-attribute --image-id #{copied_ami['ami_id']} " \
+                "--launch-permission \"{\"Add\":[{\"Group\":\"all\"}]}\" --region #{copied_ami['region']}"
+            exec_command(ec2_public_command)
+          else
+            puts "AMI #{copied_ami['ami_id']} has failed to be copied to region #{copied_ami['region']}"
+            raise FailedAMICopyError.new("Failed to copy AMI #{copied_ami['ami_id']}")
+          end
+          true
+        end
+      end
+    end
 
   end
 end
