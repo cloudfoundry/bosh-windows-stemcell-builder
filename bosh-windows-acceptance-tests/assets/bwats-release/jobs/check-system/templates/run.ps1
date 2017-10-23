@@ -210,4 +210,9 @@ $nbtstat | foreach {
     $DisabledNetBIOS = $DisabledNetBIOS -or $_ -like '*No names in cache*'
 }
 
+if (-Not $DisabledNetBIOS) {
+    Write-Error "NetBIOS over TCP is not disabled: $nbtstat"
+    Exit 1
+}
+
 Exit 0
