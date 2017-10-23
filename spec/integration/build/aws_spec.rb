@@ -146,7 +146,7 @@ describe 'Aws' do
 
       allow(Executor).to receive(:exec_command).
           with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
-          '--launch-permission "{"Add":[{"Group":"all"}]}" --region us-east-2').
+          '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2').
           and_return(nil)
 
     end
@@ -165,7 +165,7 @@ describe 'Aws' do
 
       expect(Executor).to receive(:exec_command).
           with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
-          '--launch-permission "{"Add":[{"Group":"all"}]}" --region us-east-2')
+          '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2')
 
       Rake::Task['build:aws_ami'].reenable
       Rake::Task['build:aws_ami'].invoke
@@ -197,7 +197,7 @@ describe 'Aws' do
 
       expect(Executor).not_to receive(:exec_command).
         with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
-        '--launch-permission "{"Add":[{"Group":"all"}]}" --region us-east-2')
+        '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2')
 
       expect do
         Rake::Task['build:aws_ami'].reenable
@@ -217,7 +217,7 @@ describe 'Aws' do
 
       expect(Executor).to receive(:exec_command).
           with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
-          '--launch-permission "{"Add":[{"Group":"all"}]}" --region us-east-2').once
+          '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2').once
 
       Rake::Task['build:aws_ami'].reenable
       Rake::Task['build:aws_ami'].invoke

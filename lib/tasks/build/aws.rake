@@ -114,7 +114,7 @@ namespace :build do
             #Make available ami public
             puts "Making #{copied_ami['ami_id']} public"
             ec2_public_command = "aws ec2 modify-image-attribute --image-id #{copied_ami['ami_id']} " \
-                "--launch-permission \"{\"Add\":[{\"Group\":\"all\"}]}\" --region #{copied_ami['region']}"
+                "--launch-permission '{\"Add\":[{\"Group\":\"all\"}]}' --region #{copied_ami['region']}"
             exec_command(ec2_public_command)
           else
             puts "AMI #{copied_ami['ami_id']} has failed to be copied to region #{copied_ami['region']}"
