@@ -54,7 +54,7 @@ module Packer
         [
           Base.pre_provisioners(@os),
           Provisioners.install_agent('azure').freeze,
-          Base.post_provisioners('azure')
+          Base.post_provisioners('azure', @os)
         ].flatten
       end
     end
