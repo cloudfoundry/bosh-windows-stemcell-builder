@@ -19,6 +19,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
+	"gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -41,7 +42,7 @@ releases:
 stemcells:
 - alias: windows
   os: {{.StemcellOs}}
-  version: latest
+  version: {{.StemcellVersion}}
 
 update:
   canaries: 0
@@ -125,13 +126,26 @@ instance_groups:
 `
 
 type ManifestProperties struct {
-	DeploymentName string
-	ReleaseName    string
-	AZ             string
-	VmType         string
-	VmExtensions   string
-	Network        string
-	StemcellOs     string
+	DeploymentName  string
+	ReleaseName     string
+	AZ              string
+	VmType          string
+	VmExtensions    string
+	Network         string
+	StemcellOs      string
+	StemcellVersion string
+}
+
+type StemcellVersion struct {
+	Version string `yaml:"version"`
+}
+
+type BoshStemcell struct {
+	Tables []struct {
+		Rows []struct {
+			Version string `json:"version"`
+		} `json:"Rows"`
+	} `json:"Tables"`
 }
 
 type Config struct {
@@ -170,15 +184,16 @@ func NewConfig() (*Config, error) {
 	return &config, nil
 }
 
-func (c *Config) generateManifest(deploymentName string) ([]byte, error) {
+func (c *Config) generateManifest(deploymentName string, stemcellVersion string) ([]byte, error) {
 	manifestProperties := ManifestProperties{
-		DeploymentName: deploymentName,
-		ReleaseName:    "bwats-release",
-		AZ:             c.Az,
-		VmType:         c.VmType,
-		VmExtensions:   c.VmExtensions,
-		Network:        c.Network,
-		StemcellOs:     c.StemcellOs,
+		DeploymentName:  deploymentName,
+		ReleaseName:     "bwats-release",
+		AZ:              c.Az,
+		VmType:          c.VmType,
+		VmExtensions:    c.VmExtensions,
+		Network:         c.Network,
+		StemcellOs:      c.StemcellOs,
+		StemcellVersion: stemcellVersion,
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
 	if err != nil {
@@ -218,6 +233,34 @@ func (c *BoshCommand) args(command string) []string {
 
 func (c *BoshCommand) Run(command string) error {
 	return c.RunIn(command, "")
+}
+
+func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
+	cmd := exec.Command("bosh", c.args(command)...)
+	if dir != "" {
+		cmd.Dir = dir
+		log.Printf("\nRUNNING %q IN %q\n", strings.Join(cmd.Args, " "), dir)
+	} else {
+		log.Printf("\nRUNNING %q\n", strings.Join(cmd.Args, " "))
+	}
+
+	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+	if err != nil {
+		return nil, err
+	}
+	session.Wait(c.Timeout)
+
+	exitCode := session.ExitCode()
+	stdout := session.Out.Contents()
+	if exitCode != 0 {
+		var stderr []byte
+		if session.Err != nil {
+			stderr = session.Err.Contents()
+		}
+		return stdout, fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n",
+			strings.Join(cmd.Args, " "), exitCode, stderr, stdout)
+	}
+	return stdout, nil
 }
 
 func (c *BoshCommand) RunIn(command, dir string) error {
@@ -292,6 +335,39 @@ func downloadLogs(jobName string, index int) *gbytes.Buffer {
 	return session.Wait().Out
 }
 
+func fetchStemcellVersion(stemcellPath string) (version string, err error) {
+	tempDir, err := ioutil.TempDir("", "")
+	Expect(err).To(Succeed())
+	defer os.RemoveAll(tempDir)
+
+	cmd := exec.Command("tar", "xf", stemcellPath, "-C", tempDir, "stemcell.MF")
+	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
+	Expect(err).To(Succeed())
+	session.Wait()
+
+	exitCode := session.ExitCode()
+	if exitCode != 0 {
+		var stderr []byte
+		if session.Err != nil {
+			stderr = session.Err.Contents()
+		}
+		stdout := session.Out.Contents()
+		return "", fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n",
+			strings.Join(cmd.Args, " "), exitCode, stderr, stdout)
+	}
+
+	stemcellMF, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", tempDir, "stemcell.MF"))
+	Expect(err).To(Succeed())
+
+	var stemcellInfo StemcellVersion
+	err = yaml.Unmarshal(stemcellMF, &stemcellInfo)
+	Expect(err).To(Succeed())
+	Expect(stemcellInfo.Version).ToNot(BeNil())
+	Expect(stemcellInfo.Version).ToNot(BeEmpty())
+
+	return stemcellInfo.Version, nil
+}
+
 var (
 	bosh           *BoshCommand
 	deploymentName string
@@ -340,7 +416,22 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(Succeed())
 		releaseDir := filepath.Join(pwd, "assets", "bwats-release")
 
-		manifest, err := config.generateManifest(deploymentName)
+		stemcellVersion := ""
+		stemcellVersion, err = fetchStemcellVersion(config.Stemcellpath)
+		Expect(err).To(Succeed())
+
+		// get the output of bosh stemcells
+		var stdout []byte
+		stdout, err = bosh.RunInStdOut("stemcells --json", "")
+		Expect(err).To(Succeed())
+
+		var stdoutInfo BoshStemcell
+		json.Unmarshal(stdout, &stdoutInfo)
+		for _, row := range stdoutInfo.Tables[0].Rows {
+			Expect(row.Version).NotTo(ContainSubstring(stemcellVersion))
+		}
+
+		manifest, err := config.generateManifest(deploymentName, stemcellVersion)
 		Expect(err).To(Succeed())
 
 		manifestFile, err := ioutil.TempFile("", "")
