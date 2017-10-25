@@ -36,7 +36,7 @@ module Packer
             'capture_name_prefix' => 'bosh-stemcell',
             'image_publisher' => 'MicrosoftWindowsServer',
             'image_offer' => 'WindowsServer',
-            'image_sku' => '2012-R2-Datacenter',
+            'image_sku' => image_sku,
             'location' => @location,
             'vm_size' => @vm_size,
             'os_type' => 'Windows',
@@ -57,6 +57,16 @@ module Packer
           Base.post_provisioners('azure', @os)
         ].flatten
       end
+
+      private
+        def image_sku
+          case @os
+          when 'windows2012R2'
+            '2012-R2-Datacenter'
+          when 'windows2016'
+            '2016-Datacenter-Server-Core-smalldisk'
+          end
+        end
     end
   end
 end
