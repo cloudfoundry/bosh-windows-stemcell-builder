@@ -342,7 +342,7 @@ func fetchStemcellVersion(stemcellPath string) (version string, err error) {
 
 	cmd := exec.Command("tar", "xf", stemcellPath, "-C", tempDir, "stemcell.MF")
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-	Expect(err).To(Succeed())
+	Eventually(err).Should(Succeed())
 	session.Wait()
 
 	exitCode := session.ExitCode()
