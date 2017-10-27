@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"log"
@@ -13,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"text/template"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -30,6 +30,7 @@ func init() {
 const BOSH_TIMEOUT = 45 * time.Minute
 const GoZipFile = "go1.7.1.windows-amd64.zip"
 const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
+const redeployRetries = 10
 
 var manifestTemplate = `
 ---
@@ -37,12 +38,12 @@ name: {{.DeploymentName}}
 
 releases:
 - name: {{.ReleaseName}}
-  version: latest
+  version: '{{.ReleaseVersion}}'
 
 stemcells:
 - alias: windows
   os: {{.StemcellOs}}
-  version: {{.StemcellVersion}}
+  version: '{{.StemcellVersion}}'
 
 update:
   canaries: 0
@@ -134,10 +135,12 @@ type ManifestProperties struct {
 	Network         string
 	StemcellOs      string
 	StemcellVersion string
+	ReleaseVersion  string
 }
 
-type StemcellVersion struct {
+type StemcellInfo struct {
 	Version string `yaml:"version"`
+	Name    string `yaml:"name"`
 }
 
 type BoshStemcell struct {
@@ -179,12 +182,12 @@ func NewConfig() (*Config, error) {
 		return nil, fmt.Errorf("unable to parse config file: %v", body)
 	}
 	if config.StemcellOs == "" {
-		return nil, fmt.Errorf("missing required field: ", "stemcell_os")
+		return nil, fmt.Errorf("missing required field: %v", "stemcell_os")
 	}
 	return &config, nil
 }
 
-func (c *Config) generateManifest(deploymentName string, stemcellVersion string) ([]byte, error) {
+func (c *Config) generateManifest(deploymentName string, stemcellVersion string, bwatsVersion string) ([]byte, error) {
 	manifestProperties := ManifestProperties{
 		DeploymentName:  deploymentName,
 		ReleaseName:     "bwats-release",
@@ -194,6 +197,7 @@ func (c *Config) generateManifest(deploymentName string, stemcellVersion string)
 		Network:         c.Network,
 		StemcellOs:      c.StemcellOs,
 		StemcellVersion: stemcellVersion,
+		ReleaseVersion:  bwatsVersion,
 	}
 	templ, err := template.New("").Parse(manifestTemplate)
 	if err != nil {
@@ -264,31 +268,8 @@ func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
 }
 
 func (c *BoshCommand) RunIn(command, dir string) error {
-	cmd := exec.Command("bosh", c.args(command)...)
-	if dir != "" {
-		cmd.Dir = dir
-		log.Printf("\nRUNNING %q IN %q\n", strings.Join(cmd.Args, " "), dir)
-	} else {
-		log.Printf("\nRUNNING %q\n", strings.Join(cmd.Args, " "))
-	}
-
-	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
-	if err != nil {
-		return err
-	}
-	session.Wait(c.Timeout)
-
-	exitCode := session.ExitCode()
-	if exitCode != 0 {
-		var stderr []byte
-		if session.Err != nil {
-			stderr = session.Err.Contents()
-		}
-		stdout := session.Out.Contents()
-		return fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n",
-			strings.Join(cmd.Args, " "), exitCode, stderr, stdout)
-	}
-	return nil
+	_, err := c.RunInStdOut(command, dir)
+	return err
 }
 
 func downloadGo() (string, error) {
@@ -335,7 +316,8 @@ func downloadLogs(jobName string, index int) *gbytes.Buffer {
 	return session.Wait().Out
 }
 
-func fetchStemcellVersion(stemcellPath string) (version string, err error) {
+func fetchStemcellInfo(stemcellPath string) (StemcellInfo, error) {
+	var stemcellInfo StemcellInfo
 	tempDir, err := ioutil.TempDir("", "")
 	Expect(err).To(Succeed())
 	defer os.RemoveAll(tempDir)
@@ -352,27 +334,34 @@ func fetchStemcellVersion(stemcellPath string) (version string, err error) {
 			stderr = session.Err.Contents()
 		}
 		stdout := session.Out.Contents()
-		return "", fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n",
+		return stemcellInfo, fmt.Errorf("Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n",
 			strings.Join(cmd.Args, " "), exitCode, stderr, stdout)
 	}
 
 	stemcellMF, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", tempDir, "stemcell.MF"))
 	Expect(err).To(Succeed())
 
-	var stemcellInfo StemcellVersion
 	err = yaml.Unmarshal(stemcellMF, &stemcellInfo)
 	Expect(err).To(Succeed())
 	Expect(stemcellInfo.Version).ToNot(BeNil())
 	Expect(stemcellInfo.Version).ToNot(BeEmpty())
 
-	return stemcellInfo.Version, nil
+	return stemcellInfo, nil
+}
+
+func getTimestampInMs() int64 {
+	return time.Now().UTC().UnixNano() / int64(time.Millisecond)
 }
 
 var (
-	bosh           *BoshCommand
-	deploymentName string
-	manifestPath   string
-	boshCertPath   string
+	bosh                      *BoshCommand
+	deploymentName            string
+	manifestPath              string
+	boshCertPath              string
+	stemcellName              string
+	stemcellVersion           string
+	releaseVersion            string
+	tightLoopStemcellVersions [redeployRetries]string
 )
 
 var _ = Describe("BOSH Windows", func() {
@@ -410,28 +399,35 @@ var _ = Describe("BOSH Windows", func() {
 		bosh = NewBoshCommand(config, boshCertPath, timeout)
 
 		bosh.Run("login")
-		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", time.Now().UTC().Unix())
+		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", getTimestampInMs())
 
 		pwd, err := os.Getwd()
 		Expect(err).To(Succeed())
 		releaseDir := filepath.Join(pwd, "assets", "bwats-release")
 
-		stemcellVersion := ""
-		stemcellVersion, err = fetchStemcellVersion(config.Stemcellpath)
+		var stemcellInfo StemcellInfo
+		stemcellInfo, err = fetchStemcellInfo(config.Stemcellpath)
 		Expect(err).To(Succeed())
+
+		stemcellVersion = stemcellInfo.Version
+		stemcellName = stemcellInfo.Name
 
 		// get the output of bosh stemcells
 		var stdout []byte
 		stdout, err = bosh.RunInStdOut("stemcells --json", "")
 		Expect(err).To(Succeed())
 
+		// Ensure stemcell version has not already been uploaded to bosh director
 		var stdoutInfo BoshStemcell
 		json.Unmarshal(stdout, &stdoutInfo)
 		for _, row := range stdoutInfo.Tables[0].Rows {
 			Expect(row.Version).NotTo(ContainSubstring(stemcellVersion))
 		}
 
-		manifest, err := config.generateManifest(deploymentName, stemcellVersion)
+		// Generate BWATS release version
+		releaseVersion = fmt.Sprintf("0.dev+%d", getTimestampInMs())
+
+		manifest, err := config.generateManifest(deploymentName, stemcellVersion, releaseVersion)
 		Expect(err).To(Succeed())
 
 		manifestFile, err := ioutil.TempFile("", "")
@@ -448,7 +444,7 @@ var _ = Describe("BOSH Windows", func() {
 
 		Expect(bosh.RunIn("add-blob "+goZipPath+" golang-windows/"+GoZipFile, releaseDir)).To(Succeed())
 
-		Expect(bosh.RunIn("create-release --force --timestamp-version", releaseDir)).To(Succeed())
+		Expect(bosh.RunIn("create-release --force --version "+releaseVersion, releaseDir)).To(Succeed())
 
 		Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
 
@@ -473,7 +469,14 @@ var _ = Describe("BOSH Windows", func() {
 		}
 
 		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
-		bosh.Run("clean-up --all")
+		bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellName, stemcellVersion))
+		bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
+
+		// Delete the releases created by the tight loop test
+		for _, version := range tightLoopStemcellVersions {
+			bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", version))
+		}
+
 		if bosh.CertPath != "" {
 			os.RemoveAll(bosh.CertPath)
 		}
@@ -488,7 +491,6 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("successfully runs redeploy in a tight loop", func() {
-		const redeployRetries = 10
 
 		pwd, err := os.Getwd()
 		Expect(err).To(BeNil())
@@ -502,7 +504,9 @@ var _ = Describe("BOSH Windows", func() {
 		for i := 0; i < redeployRetries; i++ {
 			log.Printf("Redeploy attempt: #%d\n", i)
 
-			Expect(bosh.RunIn("create-release --force --timestamp-version", releaseDir)).To(Succeed())
+			version := fmt.Sprintf("0.dev+%d", getTimestampInMs())
+			tightLoopStemcellVersions[i] = version
+			Expect(bosh.RunIn("create-release --force --version "+version, releaseDir)).To(Succeed())
 
 			Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
 
