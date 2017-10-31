@@ -50,58 +50,6 @@ function Install-CFFeatures2016 {
   net stop winrm
 }
 
-<#
-.Synopsis
-    Install Docker and cloudfoundry/windows2016fs for Windows 2016 CloudFoundry Cell
-.Description
-    This cmdlet installs docker and the cloudfoundry windows rootfs for a Cell on Windows 2016
-#>
-function Install-Docker2016 {
-  param ([switch]$ReduceMTU)
-
-  Write-Log "Installing Docker and cloudfoundry/windows2016fs image for Windows 2016"
-  $ErrorActionPreference = "Stop";
-  trap { $host.SetShouldExit(1) }
-
-  if ((Get-Command "docker.exe" -ErrorAction SilentlyContinue) -eq $null) {
-    Write-Host "Installing Docker"
-
-    $ifaces = (Get-NetIPInterface -AddressFamily IPv4).InterfaceAlias
-
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-    $version = (Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/docker/docker/master/VERSION).Content.Trim()
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Invoke-WebRequest "https://master.dockerproject.org/windows/x86_64/docker-$($version).zip" -OutFile "$env:TEMP\docker.zip" -UseBasicParsing
-    Expand-Archive -Path "$env:TEMP\docker.zip" -DestinationPath $env:ProgramFiles
-    $env:path += ";$env:ProgramFiles\Docker"
-    $existingMachinePath = [Environment]::GetEnvironmentVariable("Path",[System.EnvironmentVariableTarget]::Machine)
-    [Environment]::SetEnvironmentVariable("Path", $existingMachinePath + ";$env:ProgramFiles\Docker", [EnvironmentVariableTarget]::Machine)
-    dockerd --register-service
-    Start-Service Docker
-    Write-Host "Installed Docker"
-
-    if ($ReduceMTU) {
-      # Get a list of network interfaces created by installing Docker.
-      $newIfaces=Wait-ForNewIfaces $ifaces
-
-      foreach ($name in $newIfaces) {
-        Write-Host "Setting the MTU of network interface to 1460: $name"
-
-        netsh.exe interface ipv4 set subinterface "$name" mtu=1460 store=persistent
-        if ($LASTEXITCODE -ne 0) {
-          Write-Error "Error setting MTU for network interface: '$name': exit code: $LASTEXITCODE"
-        }
-      }
-    }
-  }
-
-  docker.exe pull cloudfoundry/windows2016fs
-  if ($LASTEXITCODE -ne 0) {
-    Write-Error "Non-zero exit code ($LASTEXITCODE): docker.exe pull cloudfoundry/windows2016fs"
-  }
-  Write-Host "installed cloudfoundry/windows2016fs image!"
-}
-
 function Wait-ForNewIfaces() {
     param([string]$ifaces)
     $max = 20
