@@ -487,7 +487,7 @@ var _ = Describe("BOSH Windows", func() {
 
 	It("can run a job that relies on a package", func() {
 		Eventually(downloadLogs("simple-job", 0),
-			time.Second*60).Should(gbytes.Say("60 seconds passed"))
+			time.Second*65).Should(gbytes.Say("60 seconds passed"))
 	})
 
 	It("successfully runs redeploy in a tight loop", func() {
