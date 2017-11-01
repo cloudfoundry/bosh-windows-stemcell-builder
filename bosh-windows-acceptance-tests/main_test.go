@@ -486,6 +486,7 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("can run a job that relies on a package", func() {
+		time.Sleep(60 * time.Second)
 		Eventually(downloadLogs("simple-job", 0),
 			time.Second*65).Should(gbytes.Say("60 seconds passed"))
 	})
