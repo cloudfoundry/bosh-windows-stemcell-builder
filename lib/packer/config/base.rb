@@ -19,6 +19,10 @@ module Packer
           ]
         end
         install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
+        #temporarily disable 'test-installed-updates' for gcp 2016/1709
+        if os == 'windows2016' && iaas == 'gcp'
+          install_windows_updates.first.pop
+        end
         pre + install_windows_updates + [Provisioners::PROTECT_CF_CELL, Provisioners::INSTALL_SSHD]
       end
 
