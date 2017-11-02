@@ -21,7 +21,7 @@ module Packer
             'secret_key' => @aws_secret_key,
             'region' => region['name'],
             'source_ami' => region['base_ami'],
-            'instance_type' => 'm4.xlarge',
+            'instance_type' => instance_type,
             'ami_name' => "BOSH-#{SecureRandom.uuid}-#{region['name']}",
             'vpc_id' => region['vpc_id'],
             'subnet_id' => region['subnet_id'],
@@ -41,12 +41,21 @@ module Packer
 
       def provisioners
         [
-          Base.pre_provisioners(@os),
+          Base.pre_provisioners(@os, iaas: 'aws'),
           Provisioners.install_agent('aws').freeze,
-          Provisioners.download_windows_updates(@output_directory).freeze,
+          (@os == 'windows2012R2' ? Provisioners.download_windows_updates(@output_directory).freeze : []),
           Base.post_provisioners('aws', @os)
         ].flatten
       end
+
+      private
+        def instance_type
+          if @os == 'windows2016'
+            return 't2.large'
+          end
+
+          return 'm4.xlarge'
+        end
     end
   end
 end
