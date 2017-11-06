@@ -47,6 +47,8 @@ describe 'Azure' do
       ENV['OS_VERSION'] = os_version
       ENV['VERSION_DIR'] = @version_dir
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'azure')}:#{ENV['PATH']}"
+      ENV['BASE_IMAGE'] = 'some-base-image'
+      ENV['BASE_IMAGE_OFFER'] = 'some-base-image-offer'
 
       File.write(
         File.join(@version_dir, 'number'),

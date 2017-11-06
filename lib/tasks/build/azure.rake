@@ -13,6 +13,10 @@ namespace :build do
     output_directory = File.absolute_path('bosh-windows-stemcell')
     FileUtils.mkdir_p(output_directory)
 
+    # Check required variables
+    Stemcell::Builder::validate_env('BASE_IMAGE')
+    Stemcell::Builder::validate_env('BASE_IMAGE_OFFER')
+
     azure_builder = Stemcell::Builder::Azure.new(
       packer_vars: {},
       version: version,

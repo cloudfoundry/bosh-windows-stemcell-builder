@@ -4,6 +4,8 @@ describe Packer::Config::Azure do
   describe 'builders' do
     context 'windows 2016' do
       it 'returns the expected builders' do
+        allow(ENV).to receive(:[]).with("BASE_IMAGE_OFFER").and_return("WindowsServer")
+        allow(ENV).to receive(:[]).with("BASE_IMAGE").and_return("2016-Datacenter-Server-Core-smalldisk")
         builders = Packer::Config::Azure.new(
           client_id: 'some-client-id',
           client_secret: 'some-client-secret',
@@ -47,6 +49,8 @@ describe Packer::Config::Azure do
     end
     context 'windows 2012' do
       it 'returns the expected builders' do
+        allow(ENV).to receive(:[]).with("BASE_IMAGE_OFFER").and_return("WindowsServer")
+        allow(ENV).to receive(:[]).with("BASE_IMAGE").and_return("2012-R2-Datacenter")
         builders = Packer::Config::Azure.new(
           client_id: 'some-client-id',
           client_secret: 'some-client-secret',
