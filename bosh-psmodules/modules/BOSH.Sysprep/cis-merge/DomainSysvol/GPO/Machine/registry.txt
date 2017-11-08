@@ -866,7 +866,7 @@ DWORD:1
 Computer
 Software\Policies\Microsoft\WindowsFirewall\PublicProfile
 AllowLocalIPsecPolicyMerge
-DWORD:0
+DWORD:1
 
 Computer
 Software\Policies\Microsoft\WindowsFirewall\PublicProfile
