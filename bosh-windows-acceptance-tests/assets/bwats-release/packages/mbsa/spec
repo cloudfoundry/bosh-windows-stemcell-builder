@@ -1,0 +1,7 @@
+---
+name: mbsa
+
+dependencies: []
+
+files:
+- mbsa/MBSASetup-x64-EN.msi

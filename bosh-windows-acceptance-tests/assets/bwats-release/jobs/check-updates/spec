@@ -1,0 +1,10 @@
+---
+name: check-updates
+
+templates:
+  run.ps1: bin/run.ps1
+
+packages:
+- mbsa
+
+properties: {}

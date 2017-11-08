@@ -1,0 +1,1 @@
+Copy-Item -Path mbsa/MBSA*.msi -Destination $Env:BOSH_INSTALL_TARGET

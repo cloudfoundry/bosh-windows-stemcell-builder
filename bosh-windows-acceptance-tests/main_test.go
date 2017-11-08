@@ -28,8 +28,14 @@ func init() {
 }
 
 const BOSH_TIMEOUT = 45 * time.Minute
+
 const GoZipFile = "go1.7.1.windows-amd64.zip"
 const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
+
+// If this URL becomes invalid then we will need to configure an external blobstore for bwats-release
+const MbsaFile = "MBSASetup-x64-EN.msi"
+const MbsaURL = "https://download.microsoft.com/download/8/E/1/8E16A4C7-DD28-4368-A83A-282C82FC212A/MBSASetup-x64-EN.msi"
+
 const redeployRetries = 10
 
 var manifestTemplate = `
@@ -110,7 +116,7 @@ instance_groups:
   networks:
   - name: {{.Network}}
   jobs:
-  - name: verify-updated
+  - name: check-updates
     release: {{.ReleaseName}}
 - name: verify-randomize-password
   instances: 1
@@ -272,20 +278,20 @@ func (c *BoshCommand) RunIn(command, dir string) error {
 	return err
 }
 
-func downloadGo() (string, error) {
-	dirname, err := ioutil.TempDir("", "")
+func downloadFile(prefix, sourceUrl string) (string, error) {
+	tempfile, err := ioutil.TempFile("", prefix)
 	if err != nil {
 		return "", err
 	}
 
-	path := filepath.Join(dirname, GoZipFile)
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	filename := tempfile.Name()
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
 		return "", err
 	}
 	defer f.Close()
 
-	res, err := http.Get(GolangURL)
+	res, err := http.Get(sourceUrl)
 	if err != nil {
 		return "", err
 	}
@@ -294,7 +300,7 @@ func downloadGo() (string, error) {
 		return "", err
 	}
 
-	return path, nil
+	return filename, nil
 }
 
 func downloadLogs(jobName string, index int) *gbytes.Buffer {
@@ -439,12 +445,17 @@ var _ = Describe("BOSH Windows", func() {
 		manifestPath, err = filepath.Abs(manifestFile.Name())
 		Expect(err).To(Succeed())
 
-		goZipPath, err := downloadGo()
+		goZipPath, err := downloadFile("golang-", GolangURL)
 		Expect(err).To(Succeed())
 
-		Expect(bosh.RunIn("add-blob "+goZipPath+" golang-windows/"+GoZipFile, releaseDir)).To(Succeed())
+		Expect(bosh.RunIn(fmt.Sprintf("add-blob %s golang-windows/%s", goZipPath, GoZipFile), releaseDir)).To(Succeed())
 
-		Expect(bosh.RunIn("create-release --force --version "+releaseVersion, releaseDir)).To(Succeed())
+		mbsaMsiPath, err := downloadFile("mbsa-", MbsaURL)
+		Expect(err).To(Succeed())
+
+		Expect(bosh.RunIn(fmt.Sprintf("add-blob %s mbsa/%s", mbsaMsiPath, MbsaFile), releaseDir)).To(Succeed())
+
+		Expect(bosh.RunIn(fmt.Sprintf("create-release --force --version %s", releaseVersion), releaseDir)).To(Succeed())
 
 		Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
 
@@ -546,9 +557,8 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(Succeed())
 	})
 
-	PIt("Is fully updated", func() {
+	It("is fully updated", func() {
 		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs verify-updated --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
-
 })
