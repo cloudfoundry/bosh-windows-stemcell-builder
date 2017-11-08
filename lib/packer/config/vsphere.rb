@@ -117,7 +117,7 @@ module Packer
           Provisioners::lgpo_exe,
           Provisioners.install_agent('vsphere').freeze,
         ]
-        download_windows_updates = @skip_windows_update?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
+        download_windows_updates = (@skip_windows_update || @os != 'windows2012R2')?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
 
         setup_kms_server = []
         if @enable_kms && !@kms_host.nil? && !@kms_host.empty?
