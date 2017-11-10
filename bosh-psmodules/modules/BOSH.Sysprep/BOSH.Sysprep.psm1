@@ -274,6 +274,20 @@ function Create-Unattend-GCP() {
   Out-File -FilePath $UnattendPath -InputObject $UnattendXML -Encoding utf8 -Force
 }
 
+function Enable-OSPartition-Resize {
+    $answerFilePath = "C:\Program Files\Amazon\Ec2ConfigService\sysprep2008.xml"
+    $content = [xml](Get-Content $answerFilePath)
+    $extendOSPartition = $content.CreateElement("ExtendOSPartition", $content.DocumentElement.NamespaceURI)
+    $extend = $content.CreateElement("Extend", $content.DocumentElement.NamespaceURI)
+    $extend.InnerText = "true"
+    $extendOSPartition.AppendChild($extend)
+
+    $deploymentComponent = (($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"})
+    $deploymentComponent.AppendChild($extendOSPartition)
+
+    $content.Save($answerFilePath)
+}
+
 <#
 .Synopsis
     Sysprep Utilities
@@ -306,6 +320,8 @@ function Invoke-Sysprep() {
         "aws" {
             switch ($OsVersion) {
                 "windows2012R2" {
+                    Enable-OSPartition-Resize
+
                     $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
 
                     # Enable password generation and retrieval
@@ -319,7 +335,12 @@ function Invoke-Sysprep() {
                     # Enable sysprep
                     $ec2settings = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
                     ($ec2settings.BundleConfig.Property | where { $_.Name -eq "AutoSysprep" }).Value = 'Yes'
+
+                    # Don't shutdown when running sysprep, let packer do it
+                    ($ec2settings.BundleConfig.GeneralSettings.Sysprep | where { $_.AnswerFilePath -eq "sysprep2008.xml" }).Switches = "/oobe /quit /generalize"
+
                     $ec2settings.Save('C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+                    Start-Process "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -ArgumentList "-sysprep" -Wait
                 }
                 "windows2016" {
                     # Enable password generation and retrieval
