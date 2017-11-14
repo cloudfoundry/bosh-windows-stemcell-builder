@@ -69,9 +69,15 @@ describe 'Azure' do
       stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-hyperv-#{os_version}-go_agent.tgz.sha")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
+
       expect(stemcell_manifest['version']).to eq('1200.0')
+
       expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
+
       expect(stemcell_manifest['operating_system']).to eq(os_version)
+
+      expect(stemcell_manifest['stemcell_formats']).to eq('azure-light')
+
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('azure')
       expect(stemcell_manifest['cloud_properties']['image']['offer']).to eq('some-offer')
       expect(stemcell_manifest['cloud_properties']['image']['publisher']).to eq('some-publisher')
