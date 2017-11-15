@@ -1,7 +1,16 @@
 #!/usr/bin/env ruby
 require 'fileutils'
 
-output_dir =
+puts <<-HEREDOC
+\e[91m
+╔╦╗┌─┐┌─┐┬┌─╔═╗┌┬┐┌─┐┌┬┐╔╗ ┬ ┬┬┬  ┌┬┐
+║║║│ ││  ├┴┐╚═╗ │ ├┤ │││╠╩╗│ │││   ││
+╩ ╩└─┘└─┘┴ ┴╚═╝ ┴ └─┘┴ ┴╚═╝└─┘┴┴─┘─┴┘
+This is not the real stembuild
+\e[0m
+HEREDOC
+
+    output_dir =
   if ARGV[0] == "-vmdk" # stembuild used to package packer output vmdk into tgz
     ARGV[5]
   elsif ARGV[0] == "-vhd" # stembuild used to apply patchfile and package output into tgz

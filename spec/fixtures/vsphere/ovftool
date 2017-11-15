@@ -1,4 +1,15 @@
 #!/usr/bin/env ruby
+
+puts <<-HEREDOC
+\e[91m
+╔╦╗┌─┐┌─┐┬┌─╔═╗┬  ┬┌─┐╔╦╗┌─┐┌─┐┬
+║║║│ ││  ├┴┐║ ║└┐┌┘├┤  ║ │ ││ ││
+╩ ╩└─┘└─┘┴ ┴╚═╝ └┘ └   ╩ └─┘└─┘┴─┘
+this is not the real ovf tool
+\e[0m
+HEREDOC
+
+
 require 'fileutils'
 
 OUTPUT_DIR = ARGV[1]

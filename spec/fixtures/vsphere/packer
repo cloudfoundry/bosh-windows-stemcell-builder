@@ -1,4 +1,12 @@
 #!/usr/bin/env ruby
+puts <<-HEREDOC
+\e[91m
+╔╦╗┌─┐┌─┐┬┌─╔═╗┌─┐┌─┐┬┌─┌─┐┬─┐
+║║║│ ││  ├┴┐╠═╝├─┤│  ├┴┐├┤ ├┬┘
+╩ ╩└─┘└─┘┴ ┴╩  ┴ ┴└─┘┴ ┴└─┘┴└─
+this is not the real packer
+\e[0m
+HEREDOC
 
 require 'fileutils'
 require 'json'
