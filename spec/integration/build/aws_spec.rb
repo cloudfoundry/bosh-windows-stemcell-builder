@@ -93,7 +93,7 @@ describe 'Aws' do
       expect(stemcell_manifest['version']).to eq('1200.3')
       expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
       expect(stemcell_manifest['operating_system']).to eq(@os_version)
-      expect(stemcell_manifest['stemcell_formats']).to eq('aws-light')
+      expect(stemcell_manifest['stemcell_formats']).to eq(['aws-light'])
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('aws')
       expect(stemcell_manifest['cloud_properties']['ami']['us-east-1']).to eq('ami-east1id')
       expect(stemcell_manifest['cloud_properties']['ami']['us-east-2']).to be_nil

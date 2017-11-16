@@ -40,7 +40,7 @@ module Stemcell
           cloud_properties['ami'][ami['region']] = ami['ami_id']
         end
         @contents['cloud_properties'] = cloud_properties
-        @contents['stemcell_formats'] = 'aws-light'
+        @contents['stemcell_formats'] = ['aws-light']
       end
     end
 
@@ -51,7 +51,7 @@ module Stemcell
           'infrastructure' => 'google',
           'image_url' => image_url
         }
-        @contents['stemcell_formats'] = 'google-light'
+        @contents['stemcell_formats'] = ['google-light']
       end
     end
 
@@ -78,7 +78,7 @@ module Stemcell
             'version' => self.class.format_version(version)
           }
         }
-        @contents['stemcell_formats'] = 'azure-light'
+        @contents['stemcell_formats'] = ['azure-light']
       end
 
       def self.format_version(version)

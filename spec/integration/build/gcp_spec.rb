@@ -62,7 +62,7 @@ describe 'Gcp' do
       expect(stemcell_manifest['version']).to eq('1200.3')
       expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
       expect(stemcell_manifest['operating_system']).to eq(os_version)
-      expect(stemcell_manifest['stemcell_formats']).to eq('google-light')
+      expect(stemcell_manifest['stemcell_formats']).to eq(['google-light'])
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('google')
       expect(stemcell_manifest['cloud_properties']['image_url']).to eq('https://www.googleapis.com/compute/v1/projects/some-project-id/global/images/packer-1234')
 

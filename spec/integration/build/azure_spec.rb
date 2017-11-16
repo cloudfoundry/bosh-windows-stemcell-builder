@@ -76,7 +76,7 @@ describe 'Azure' do
 
       expect(stemcell_manifest['operating_system']).to eq(os_version)
 
-      expect(stemcell_manifest['stemcell_formats']).to eq('azure-light')
+      expect(stemcell_manifest['stemcell_formats']).to eq(['azure-light'])
 
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('azure')
       expect(stemcell_manifest['cloud_properties']['image']['offer']).to eq('some-offer')
