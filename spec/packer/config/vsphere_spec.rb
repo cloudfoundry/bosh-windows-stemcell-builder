@@ -19,7 +19,10 @@ describe Packer::Config do
           mem_size: 1000,
           administrator_password: 'password',
           source_path: 'source_path',
-          os: 'windows2012R2'
+          os: 'windows2012R2',
+          http_proxy: '',
+          https_proxy: '',
+          bypass_list: ''
         ).builders
         expect(builders[0]).to eq(
           'type' => 'vmware-vmx',
@@ -54,13 +57,19 @@ describe Packer::Config do
           mem_size: 1000,
           administrator_password: 'password',
           source_path: 'source_path',
-          os: 'windows2012R2'
+          os: 'windows2012R2',
+          http_proxy: 'foo',
+          https_proxy: 'bar',
+          bypass_list: 'bee'
         ).provisioners
         expect(provisioners).to eq(
           [
             {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
             {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
+            {'type'=>'powershell', 'inline'=>['$ErrorActionPreference = "Stop";',
+                                              'trap { $host.SetShouldExit(1) }',
+                                              'Set-ProxySettings foo bar bee']},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
             {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Wait-WindowsUpdates -Password some-password! -User Provisioner", "restart_timeout"=>"12h"},
@@ -68,6 +77,9 @@ describe Packer::Config do
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Test-InstalledUpdates"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-Log"]},
+            {'type'=>'powershell', 'inline'=> ['$ErrorActionPreference = "Stop";',
+                                               'trap { $host.SetShouldExit(1) }',
+                                               'Clear-ProxySettings']},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
             {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force", "restart_timeout"=>"1h"},
             {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force", "restart_timeout"=>"1h"}
@@ -93,7 +105,10 @@ describe Packer::Config do
           enable_rdp: false,
           enable_kms: false,
           kms_host: '',
-          new_password: 'new-password'
+          new_password: 'new-password',
+          http_proxy: '',
+          https_proxy: '',
+          bypass_list: ''
         ).builders
         expect(builders[0]).to eq(
           'type' => 'vmware-vmx',
@@ -133,7 +148,10 @@ describe Packer::Config do
           enable_rdp: true,
           enable_kms: false,
           kms_host: '',
-          new_password: 'new-password'
+          new_password: 'new-password',
+          http_proxy: '',
+          https_proxy: '',
+          bypass_list: ''
         ).builders
         expect(builders[0]['shutdown_command']).to eq 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword new-password -ProductKey key -Owner me -Organization me -EnableRdp'
       end
@@ -152,7 +170,10 @@ describe Packer::Config do
           enable_rdp: true,
           enable_kms: false,
           kms_host: '',
-          new_password: 'new-password'
+          new_password: 'new-password',
+          http_proxy: '',
+          https_proxy: '',
+          bypass_list: ''
         ).builders
         expect(builders[0]['shutdown_command']).to eq 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword new-password -Owner me -Organization me -EnableRdp'
       end
@@ -179,12 +200,18 @@ describe Packer::Config do
             enable_rdp: false,
             enable_kms: false,
             kms_host: '',
-            new_password: 'new-password'
+            new_password: 'new-password',
+            http_proxy: 'foo',
+            https_proxy: 'bar',
+            bypass_list: 'bee'
           ).provisioners
           expected_provisioners_except_lgpo =
             [
               {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
               {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
+              {'type'=>'powershell', 'inline'=>['$ErrorActionPreference = "Stop";',
+                                                'trap { $host.SetShouldExit(1) }',
+                                                'Set-ProxySettings foo bar bee']},
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
               {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Install-CFFeatures2016", "restart_timeout"=>"1h"},
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
@@ -193,16 +220,21 @@ describe Packer::Config do
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell"]},
+              ## omitting LGPO provisioner because random string in it
               {"type"=>"file", "source"=>"../sshd/OpenSSH-Win64.zip", "destination"=>"C:\\provision\\OpenSSH-Win64.zip"},
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
               {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS vsphere -agentZipPath 'C:\\provision\\agent.zip'"]},
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Optimize-Disk"]},
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Compress-Disk"]},
+              {'type'=>'powershell', 'inline'=> ['$ErrorActionPreference = "Stop";',
+                                                 'trap { $host.SetShouldExit(1) }',
+                                                 'Clear-ProxySettings']},
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
             ].flatten
-          expect(provisioners).to include(*expected_provisioners_except_lgpo)
-          expect(provisioners.size).to eq (expected_provisioners_except_lgpo.size + 1)
+          expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
+          provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
+          expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
         end
       end
 
@@ -226,11 +258,17 @@ describe Packer::Config do
             enable_rdp: false,
             enable_kms: false,
             kms_host: '',
-            new_password: 'new-password'
+            new_password: 'new-password',
+            http_proxy: 'foo',
+            https_proxy: 'bar',
+            bypass_list: 'bee'
           ).provisioners
           expected_provisioners_except_lgpo = [
             {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
             {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
+            {'type'=>'powershell', 'inline'=>['$ErrorActionPreference = "Stop";',
+                                              'trap { $host.SetShouldExit(1) }',
+                                              'Set-ProxySettings foo bar bee']},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures2012"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
@@ -240,8 +278,8 @@ describe Packer::Config do
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Test-InstalledUpdates"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell"]},
-            # {"type"=>"file", "source"=>"/var/folders/44/zr3txl1n45b23kd2kgx1xqq00000gn/T/vsphere20170526-23301-1fv8m07/lgpo/LGPO.exe", "destination"=>"C:\\windows\\LGPO.exe"},
             {"type"=>"file", "source"=>"../sshd/OpenSSH-Win64.zip", "destination"=>"C:\\provision\\OpenSSH-Win64.zip"},
+            # {"type"=>"file", "source"=>"/var/folders/44/zr3txl1n45b23kd2kgx1xqq00000gn/T/vsphere20170526-23301-1fv8m07/lgpo/LGPO.exe", "destination"=>"C:\\windows\\LGPO.exe"},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
             {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS vsphere -agentZipPath 'C:\\provision\\agent.zip'"]},
@@ -249,10 +287,15 @@ describe Packer::Config do
             {"type"=>"file", "source"=>"C:\\updates.txt", "destination"=>"output_directory/updates.txt", "direction"=>"download"},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Optimize-Disk"]},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Compress-Disk"]},
+            {'type'=>'powershell', 'inline'=> ['$ErrorActionPreference = "Stop";',
+                                               'trap { $host.SetShouldExit(1) }',
+                                               'Clear-ProxySettings']},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
           ]
-          expect(provisioners).to include(*expected_provisioners_except_lgpo)
-          expect(provisioners.size).to eq (expected_provisioners_except_lgpo.size + 1)
+          expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
+          provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
+          expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
+
 
           FileUtils.rm_rf(stemcell_deps_dir)
           ENV.delete('STEMCELL_DEPS_DIR')
@@ -278,7 +321,10 @@ describe Packer::Config do
           enable_rdp: false,
           enable_kms: true,
           kms_host: "myhost.com",
-          new_password: 'new-password'
+          new_password: 'new-password',
+          http_proxy: '',
+          https_proxy: '',
+          bypass_list: ''
         ).provisioners
         expect(provisioners).to include(
           {

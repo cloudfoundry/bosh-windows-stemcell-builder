@@ -112,3 +112,38 @@ function Protect-Dir {
         Set-Acl -Path $path -AclObject $acl
     }
 }
+
+function Set-ProxySettings {
+    Param([string]$HTTPProxy,[string]$HTTPSProxy,[string]$BypassList)
+
+    $ProxyServerString = ""
+    if ($HTTPProxy) {
+        $ProxyServerString = "http=$HTTPProxy"
+    }
+    if ($HTTPSProxy) {
+        $ProxyServerString = "$ProxyServerString;https=$HTTPSProxy"
+    }
+
+    if ($ProxyServerString) {
+        $set_proxy = ""
+        if ($BypassList) {
+            $set_proxy = & cmd.exe /c "netsh winhttp set proxy proxy-server=`"$ProxyServerString`" bypass-list=`"$BypassList`""
+        } else {
+            $set_proxy = & cmd.exe /c "netsh winhttp set proxy proxy-server=`"$ProxyServerString`""
+        }
+        Write-Log "$set_proxy"
+
+        if ($LASTEXITCODE -ne 0) {
+            exit(1)
+        }
+    }
+}
+
+function Clear-ProxySettings {
+    $reset_proxy = & cmd.exe /c "netsh winhttp reset proxy"
+    Write-Log "$reset_proxy"
+
+    if ($LASTEXITCODE -ne 0) {
+        exit(1)
+    }
+}

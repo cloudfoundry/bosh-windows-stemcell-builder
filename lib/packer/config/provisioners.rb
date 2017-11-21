@@ -42,6 +42,11 @@ module Packer
       COMPRESS_DISK = powershell_provisioner('Compress-Disk')
       CLEAR_PROVISIONER = powershell_provisioner('Clear-Provisioner')
       GET_LOG = powershell_provisioner('Get-Log')
+      CLEAR_PROXY_SETTINGS = powershell_provisioner('Clear-ProxySettings')
+
+      def self.setup_proxy_settings(http_proxy, https_proxy, bypass_list)
+        return powershell_provisioner("Set-ProxySettings #{http_proxy} #{https_proxy} #{bypass_list}")
+      end
 
       def self.install_windows_updates
         password = SecureRandom.hex(10)+"!"

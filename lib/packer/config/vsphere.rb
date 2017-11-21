@@ -9,7 +9,10 @@ module Packer
                      mem_size:,
                      num_vcpus:,
                      os:,
-                     skip_windows_update:false)
+                     skip_windows_update:false,
+                     http_proxy:,
+                     https_proxy:,
+                     bypass_list:)
         @administrator_password = administrator_password
         @source_path = source_path
         @output_directory = output_directory
@@ -18,6 +21,9 @@ module Packer
         @timestamp = Time.now.getutc.to_i
         @os = os
         @skip_windows_update = skip_windows_update
+        @http_proxy = http_proxy
+        @https_proxy = https_proxy
+        @bypass_list = bypass_list
       end
     end
 
@@ -49,19 +55,17 @@ module Packer
       end
 
       def provisioners
-        pre = [
+        [
           Provisioners::BOSH_PSMODULES,
-          Provisioners::NEW_PROVISIONER
-        ]
-        windows_updates = @skip_windows_update?[]:[Provisioners.install_windows_updates]
-        post = [
+          Provisioners::NEW_PROVISIONER,
+          Provisioners.setup_proxy_settings(@http_proxy, @https_proxy, @bypass_list),
+          @skip_windows_update?[]:[Provisioners.install_windows_updates],
           Provisioners::GET_LOG,
+          Provisioners::CLEAR_PROXY_SETTINGS,
           Provisioners::CLEAR_PROVISIONER,
           Provisioners::WAIT_AND_RESTART,
           Provisioners::WAIT_AND_RESTART
-        ]
-
-        (pre + windows_updates + post).flatten
+        ].flatten
       end
     end
 
@@ -113,9 +117,9 @@ module Packer
 
       def provisioners
         pre = [
-          Base.pre_provisioners(@os, skip_windows_update: @skip_windows_update),
-          Provisioners::lgpo_exe,
-          Provisioners.install_agent('vsphere').freeze,
+            Base.pre_provisioners(@os, skip_windows_update: @skip_windows_update, http_proxy: @http_proxy, https_proxy: @https_proxy, bypass_list: @bypass_list),
+            Provisioners::lgpo_exe,
+            Provisioners.install_agent('vsphere').freeze,
         ]
         download_windows_updates = (@skip_windows_update || @os != 'windows2012R2')?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
 
@@ -126,7 +130,10 @@ module Packer
 
         post = [Base.post_provisioners('vsphere')]
 
-        (pre + download_windows_updates + post + setup_kms_server).flatten
+        [pre,
+         download_windows_updates,
+         post,
+         setup_kms_server].flatten
       end
     end
   end

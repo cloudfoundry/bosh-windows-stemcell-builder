@@ -3,17 +3,19 @@ require 'securerandom'
 module Packer
   module Config
     class Base
-      def self.pre_provisioners(os, skip_windows_update: false, reduce_mtu: false, iaas: '')
+      def self.pre_provisioners(os, skip_windows_update: false, reduce_mtu: false, iaas: '', http_proxy: '', https_proxy: '', bypass_list: '')
         pre = []
         if os == 'windows2012R2'
           pre = [
             Provisioners::BOSH_PSMODULES,
+            Provisioners.setup_proxy_settings(http_proxy, https_proxy, bypass_list),
             Provisioners::NEW_PROVISIONER,
             Provisioners::INSTALL_CF_FEATURES_2012
           ]
         elsif os == 'windows2016'
           pre = [
             Provisioners::BOSH_PSMODULES,
+            Provisioners.setup_proxy_settings(http_proxy, https_proxy, bypass_list),
             Provisioners::NEW_PROVISIONER,
             Provisioners::INSTALL_CF_FEATURES_2016,
           ]
@@ -28,6 +30,7 @@ module Packer
 
       def self.post_provisioners(iaas, os='windows2012R2')
         provisioners = [
+          Provisioners::CLEAR_PROXY_SETTINGS,
           Provisioners::CLEAR_PROVISIONER
         ]
 

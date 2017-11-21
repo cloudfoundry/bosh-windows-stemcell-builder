@@ -37,7 +37,10 @@ namespace :build do
       num_vcpus: ENV.fetch('NUM_VCPUS', '8'),
       output_directory: output_directory,
       packer_vars: {},
-      os: Stemcell::Builder::validate_env('OS_VERSION')
+      os: Stemcell::Builder::validate_env('OS_VERSION'),
+      http_proxy: ENV.fetch('UPDATES_HTTP_PROXY', ''),
+      https_proxy: ENV.fetch('UPDATES_HTTPS_PROXY', ''),
+      bypass_list: ENV.fetch('UPDATES_PROXY_BYPASS_LIST', '')
     )
 
     vsphere.build
@@ -109,7 +112,10 @@ namespace :build do
       packer_vars: {},
       version: version,
       skip_windows_update: false,
-      new_password: Stemcell::Builder::validate_env('ADMINISTRATOR_PASSWORD')
+      new_password: Stemcell::Builder::validate_env('ADMINISTRATOR_PASSWORD'),
+      http_proxy: ENV.fetch('UPDATES_HTTP_PROXY', ''),
+      https_proxy: ENV.fetch('UPDATES_HTTPS_PROXY', ''),
+      bypass_list: ENV.fetch('UPDATES_PROXY_BYPASS_LIST', '')
     )
 
     vsphere.run_packer
@@ -194,7 +200,10 @@ namespace :build do
       enable_rdp: ENV.fetch('ENABLE_RDP', 'false').downcase == 'true',
       enable_kms: ENV.fetch('ENABLE_KMS', 'false').downcase == 'true',
       kms_host: ENV.fetch('KMS_HOST', ''),
-      skip_windows_update: skip_windows_update
+      skip_windows_update: skip_windows_update,
+      http_proxy: ENV.fetch('UPDATES_HTTP_PROXY', ''),
+      https_proxy: ENV.fetch('UPDATES_HTTPS_PROXY', ''),
+      bypass_list: ENV.fetch('UPDATES_PROXY_BYPASS_LIST', '')
     )
 
     vsphere.build

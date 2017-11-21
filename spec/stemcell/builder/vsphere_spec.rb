@@ -23,6 +23,9 @@ describe Stemcell::Builder do
         version = 'stemcell-version'
         agent_commit = 'some-agent-commit'
         os = 'windows2012R2'
+        http_proxy =  'some-http-proxy'
+        https_proxy = 'some-https-proxy'
+        bypass_list = 'some-bypass-list'
 
         packer_runner = double(:packer_runner)
         allow(packer_runner).to receive(:run).with(command, packer_vars).and_return(0)
@@ -37,7 +40,10 @@ describe Stemcell::Builder do
           output_directory: output_directory,
           mem_size: mem_size,
           num_vcpus: num_vcpus,
-          os: os).and_return(packer_config)
+          os: os,
+          http_proxy: http_proxy,
+          https_proxy: https_proxy,
+          bypass_list: bypass_list).and_return(packer_config)
 
         Stemcell::Builder::VSphereAddUpdates.new(
           os: os,
@@ -48,7 +54,10 @@ describe Stemcell::Builder do
           mem_size: mem_size,
           num_vcpus: num_vcpus,
           output_directory: output_directory,
-          packer_vars: packer_vars
+          packer_vars: packer_vars,
+          http_proxy: http_proxy,
+          https_proxy: https_proxy,
+          bypass_list: bypass_list
         ).build
         expect(packer_runner).to have_received(:run).with(command, packer_vars)
       end
@@ -65,6 +74,9 @@ describe Stemcell::Builder do
           version = 'stemcell-version'
           agent_commit = 'some-agent-commit'
           os = 'windows2012R2'
+          http_proxy =  'some-http-proxy'
+          https_proxy = 'some-https-proxy'
+          bypass_list = 'some-bypass-list'
 
           packer_runner = double(:packer_runner)
           allow(packer_runner).to receive(:run).with(command, packer_vars).and_return(1)
@@ -79,7 +91,10 @@ describe Stemcell::Builder do
             output_directory: output_directory,
             mem_size: mem_size,
             num_vcpus: num_vcpus,
-            os: os).and_return(packer_config)
+            os: os,
+            http_proxy: http_proxy,
+            https_proxy: https_proxy,
+            bypass_list: bypass_list).and_return(packer_config)
 
           expect {
             Stemcell::Builder::VSphereAddUpdates.new(
@@ -91,7 +106,10 @@ describe Stemcell::Builder do
               mem_size: mem_size,
               num_vcpus: num_vcpus,
               output_directory: output_directory,
-              packer_vars: packer_vars
+              packer_vars: packer_vars,
+              http_proxy: http_proxy,
+              https_proxy: https_proxy,
+              bypass_list: bypass_list
             ).build }.to raise_error(Stemcell::Builder::PackerFailure)
         end
 
@@ -113,15 +131,14 @@ describe Stemcell::Builder do
         num_vcpus = '8'
         config = 'some-packer-config'
         version = 'stemcell-version'
-        manifest_contents = 'manifest_contents'
-        apply_spec_contents = 'apply_spec_contents'
         agent_commit = 'some-agent-commit'
-        sha = 'sha'
         os = 'windows2012R2'
-        image = 'some-image'
         command = 'build'
         packer_vars = {some_var: 'some-value'}
         packer_output = ''
+        http_proxy =  'some-http-proxy'
+        https_proxy = 'some-https-proxy'
+        bypass_list = 'some-bypass-list'
 
         packer_runner = double(:packer_runner)
         allow(packer_runner).to receive(:run).with(command, packer_vars).
@@ -145,7 +162,10 @@ describe Stemcell::Builder do
           enable_kms: false,
           kms_host: '',
           new_password: '',
-          skip_windows_update: false
+          skip_windows_update: false,
+          http_proxy: http_proxy,
+          https_proxy: https_proxy,
+          bypass_list: bypass_list
         ).and_return(packer_config)
 
         builder = Stemcell::Builder::VSphere.new(
@@ -161,7 +181,10 @@ describe Stemcell::Builder do
           product_key: product_key,
           owner: owner,
           organization: organization,
-          new_password: ''
+          new_password: '',
+          http_proxy: http_proxy,
+          https_proxy: https_proxy,
+          bypass_list: bypass_list
         )
         allow(builder).to receive(:run_packer)
         allow(builder).to receive(:run_stembuild)
@@ -182,6 +205,9 @@ describe Stemcell::Builder do
           os = 'windows2012R2'
           command = 'build'
           packer_vars = {some_var: 'some-value'}
+          http_proxy =  'some-http-proxy'
+          https_proxy = 'some-https-proxy'
+          bypass_list = 'some-bypass-list'
 
           packer_runner = double(:packer_runner)
           allow(packer_runner).to receive(:run).with(command, packer_vars).and_return(1)
@@ -204,7 +230,10 @@ describe Stemcell::Builder do
             enable_kms: false,
             kms_host: '',
             new_password: '',
-            skip_windows_update: false
+            skip_windows_update: false,
+            http_proxy: http_proxy,
+            https_proxy: https_proxy,
+            bypass_list: bypass_list
           ).and_return(packer_config)
 
           expect {
@@ -221,7 +250,10 @@ describe Stemcell::Builder do
               product_key: product_key,
               owner: owner,
               organization: organization,
-              new_password: ''
+              new_password: '',
+              http_proxy: http_proxy,
+              https_proxy: https_proxy,
+              bypass_list: bypass_list
             ).build }.to raise_error(Stemcell::Builder::PackerFailure)
         end
       end
