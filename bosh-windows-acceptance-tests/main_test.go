@@ -130,6 +130,18 @@ instance_groups:
   jobs:
   - name: verify-randomize-password
     release: {{.ReleaseName}}
+- name: verify-winrm-ports-closed
+  instances: 1
+  stemcell: windows
+  lifecycle: errand
+  azs: [{{.AZ}}]
+  vm_type: {{.VmType}}
+  vm_extensions: [{{.VmExtensions}}]
+  networks:
+  - name: {{.Network}}
+  jobs:
+  - name: verify-winrm-ports-closed
+    release: {{.ReleaseName}}
 `
 
 type ManifestProperties struct {
@@ -559,6 +571,11 @@ var _ = Describe("BOSH Windows", func() {
 
 	It("is fully updated", func() {
 		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs verify-updated --tty", deploymentName))
+		Expect(err).To(Succeed())
+	})
+
+	It("has WinRM ports (inbound ports 5985 and 5986) closed", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs verify-winrm-ports-closed --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
 })
