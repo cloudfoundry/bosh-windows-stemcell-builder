@@ -27,7 +27,7 @@ func init() {
 	log.SetOutput(GinkgoWriter)
 }
 
-const BOSH_TIMEOUT = 45 * time.Minute
+const BOSH_TIMEOUT = 90 * time.Minute
 
 const GoZipFile = "go1.7.1.windows-amd64.zip"
 const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
