@@ -275,17 +275,35 @@ function Create-Unattend-GCP() {
 }
 
 function Enable-OSPartition-Resize {
-    $answerFilePath = "C:\Program Files\Amazon\Ec2ConfigService\sysprep2008.xml"
-    $content = [xml](Get-Content $answerFilePath)
-    $extendOSPartition = $content.CreateElement("ExtendOSPartition", $content.DocumentElement.NamespaceURI)
-    $extend = $content.CreateElement("Extend", $content.DocumentElement.NamespaceURI)
-    $extend.InnerText = "true"
-    $extendOSPartition.AppendChild($extend)
+    Param (
+        [string]$AnswerFilePath
+    )
+
+    If (!$(Test-Path $AnswerFilePath)) {
+      Throw "Answer file $AnswerFilePath does not exist"
+    }
+
+    $content = [xml](Get-Content $AnswerFilePath)
 
     $deploymentComponent = (($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"})
-    $deploymentComponent.AppendChild($extendOSPartition)
+    If ($deploymentComponent.Count -eq 0) {
+      Throw "Answer file does not contain a 'Microsoft-Windows-Deployment' specialize block."
+    }
 
-    $content.Save($answerFilePath)
+    $existingExtendOSPartitionBlock = ((($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"}).ExtendOSPartition)
+    $extend = $content.CreateElement("Extend", $content.DocumentElement.NamespaceURI)
+    $extend.InnerText = "true"
+
+    If ($existingExtendOSPartitionBlock.Extend.Count -eq 0) {
+      $extendOSPartition = $content.CreateElement("ExtendOSPartition", $content.DocumentElement.NamespaceURI)
+      $extendOSPartition.AppendChild($extend)
+
+      $deploymentComponent.AppendChild($extendOSPartition)
+    } Else {
+      $existingExtendOSPartitionBlock.ReplaceChild($extend, $existingExtendOSPartitionBlock.SelectSingleNode("//Extend"))
+    }
+
+    $content.Save($AnswerFilePath)
 }
 
 <#
@@ -320,7 +338,7 @@ function Invoke-Sysprep() {
         "aws" {
             switch ($OsVersion) {
                 "windows2012R2" {
-                    Enable-OSPartition-Resize
+                    Enable-OSPartition-Resize -AnswerFilePath "C:\Program Files\Amazon\Ec2ConfigService\sysprep2008.xml"
 
                     $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
 
