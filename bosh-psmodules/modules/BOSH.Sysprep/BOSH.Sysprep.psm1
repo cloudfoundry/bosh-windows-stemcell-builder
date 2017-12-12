@@ -280,14 +280,16 @@ function Enable-OSPartition-Resize {
     )
 
     If (!$(Test-Path $AnswerFilePath)) {
-      Throw "Answer file $AnswerFilePath does not exist"
+        Throw "Answer file $AnswerFilePath does not exist"
     }
+
+    Write-Log "Enabling Partition Resizing"
 
     $content = [xml](Get-Content $AnswerFilePath)
 
     $deploymentComponent = (($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"})
     If ($deploymentComponent.Count -eq 0) {
-      Throw "Answer file does not contain a 'Microsoft-Windows-Deployment' specialize block."
+        Throw "Answer file does not contain a 'Microsoft-Windows-Deployment' specialize block."
     }
 
     $existingExtendOSPartitionBlock = ((($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"}).ExtendOSPartition)
@@ -295,13 +297,62 @@ function Enable-OSPartition-Resize {
     $extend.InnerText = "true"
 
     If ($existingExtendOSPartitionBlock.Extend.Count -eq 0) {
-      $extendOSPartition = $content.CreateElement("ExtendOSPartition", $content.DocumentElement.NamespaceURI)
-      $extendOSPartition.AppendChild($extend)
+        $extendOSPartition = $content.CreateElement("ExtendOSPartition", $content.DocumentElement.NamespaceURI)
+        $extendOSPartition.AppendChild($extend)
 
-      $deploymentComponent.AppendChild($extendOSPartition)
+        $deploymentComponent.AppendChild($extendOSPartition)
     } Else {
-      $existingExtendOSPartitionBlock.ReplaceChild($extend, $existingExtendOSPartitionBlock.SelectSingleNode("//Extend"))
+        $existingExtendOSPartitionBlock.ReplaceChild($extend, $existingExtendOSPartitionBlock.SelectSingleNode("//Extend"))
     }
+
+    $content.Save($AnswerFilePath)
+}
+
+function Remove-WasPassProcessed {
+    Param (
+        [string]$AnswerFilePath
+    )
+
+    If (!$(Test-Path $AnswerFilePath)) {
+        Throw "Answer file $AnswerFilePath does not exist"
+    }
+
+    Write-Log "Removing wasPassProcessed"
+
+    $content = [xml](Get-Content $AnswerFilePath)
+
+    foreach ($specializeBlock in $content.unattend.settings) {
+        $specializeBlock.RemoveAttribute("wasPassProcessed")
+    }
+
+    $content.Save($AnswerFilePath)
+}
+
+function Remove-UserAccounts {
+    Param (
+        [string]$AnswerFilePath
+    )
+
+    If (!$(Test-Path $AnswerFilePath)) {
+        Throw "Answer file $AnswerFilePath does not exist"
+    }
+
+    Write-Log "Removing UserAccounts block from Answer File"
+
+    $content = [xml](Get-Content $AnswerFilePath)
+    $mswShellSetup =  (($content.unattend.settings|where {$_.pass -eq 'oobeSystem'}).component|where {$_.name -eq "Microsoft-Windows-Shell-Setup"})
+
+    if ($mswShellSetup -eq $Null) {
+        Throw "Could not locate oobeSystem XML block. You may not be running this function on an answer file."
+    }
+
+    $userAccountsBlock = $mswShellSetup.UserAccounts
+
+    if ($userAccountsBlock.Count -eq 0) {
+        Return
+    }
+
+    $mswShellSetup.RemoveChild($userAccountsBlock)
 
     $content.Save($AnswerFilePath)
 }
@@ -384,7 +435,12 @@ function Invoke-Sysprep() {
             GCESysprep
         }
         "azure" {
-            C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
+            $AnswerFilePath = "C:\Windows\Panther\unattend.xml"
+            Enable-OSPartition-Resize -AnswerFilePath $AnswerFilePath
+            Remove-WasPassProcessed -AnswerfilePath $AnswerFilePath
+            Remove-UserAccounts -AnswerFilePath $AnswerFilePath
+
+            C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit /unattend:$AnswerFilePath
         }
         "vsphere" {
             if (-Not $SkipLGPO) {

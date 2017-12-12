@@ -40,7 +40,7 @@ Describe "Enable-OSPartition-Resize" {
         }
     }
 
-    Context "when provided an answer file containing XML but without a 'specialize block'" {
+    Context "when provided an answer file containing XML but without a 'specialize block' containing 'Microsoft-Windows-Deployment'" {
         BeforeEach {
             $BadAnswerXmlDirectory = (New-TempDir)
             $BadAnswerXmlPath = Join-Path $BadAnswerXmlDirectory "invalidanswer.xml"
@@ -68,7 +68,7 @@ Describe "Enable-OSPartition-Resize" {
         }
     }
 
-    Context "when provided an answer file which contains valid XML and a 'specialize' block and it does not already contain an ExtendOSPartition block" {
+    Context "when provided an answer file which contains valid XML and a 'specialize' block containing 'Microsoft-Windows-Deployment' and it does not already contain an ExtendOSPartition block" {
         BeforeEach {
             $GoodAnswerFileDirectory = (New-TempDir)
             $GoodAnswerFilePath = Join-Path $GoodAnswerFileDirectory "validanswer.xml"
@@ -120,6 +120,210 @@ Describe "Enable-OSPartition-Resize" {
             $extendBlock = ((($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"}).ExtendOSPartition.Extend)
             $extendBlock.Count | Should Be 1
             $extendBlock | Should Be 'true'
+        }
+    }
+}
+
+Describe "Remove-WasPassProcessed" {
+    Context "when no answer file path is provided" {
+        It "throws" {
+            { Remove-WasPassProcessed } | Should Throw "Cannot bind argument to parameter 'Path' because it is an empty string."
+        }
+    }
+
+    Context "when provided a nonexistent answer file" {
+        It "throws" {
+            { Remove-WasPassProcessed -AnswerFilePath "C:\IDoNotExist.xml" } | Should Throw "Answer file C:\IDoNotExist.xml does not exist"
+        }
+    }
+
+    Context "when provided an answer file with invalid XML" {
+        BeforeEach {
+            $BadAnswerXmlDirectory = (New-TempDir)
+            $BadAnswerXmlPath = Join-Path $BadAnswerXmlDirectory "bad.xml"
+
+            "bad xml" | Out-File $BadAnswerXmlPath
+        }
+
+        AfterEach {
+            Remove-Item -Recurse -Force $BadAnswerXmlDirectory
+        }
+
+        It "throws" {
+            { Remove-WasPassProcessed -AnswerFilePath $BadAnswerXmlPath } | Should Throw "Cannot convert value `"bad xml`" to type `"System.Xml.XmlDocument`". Error: `"The specified node cannot be inserted as the valid child of this node, because the specified node is the wrong type.`""
+        }
+    }
+
+    Context "when provided an answer file which contains valid XML and a 'specialize' block containing 'Microsoft-Windows-Deployment' which has the attribute 'wasPassProcessed'" {
+        BeforeEach {
+            $answerFileDirectory = (New-TempDir)
+            $answerFilePath = Join-Path $answerFileDirectory "validanswer.xml"
+
+            "<unattend>
+                <settings pass=`"specialize`" wasPassProcessed=`"true`">
+                    <component name=`"Microsoft-Windows-Deployment`">
+                    </component>
+                </settings>
+                <settings pass=`"oobeSystem`" wasPassProcessed=`"false`">
+                    <component name=`"Microsoft-Windows-OOBE`">
+                    </component>
+                </settings>
+                <settings pass=`"foo`">
+                    <component name=`"Microsoft-Windows-Foo`">
+                    </component>
+                </settings>
+                <settings pass=`"bar`" wasPassProcessed=`"true`">
+                    <component name=`"Microsoft-Windows-Deployment`">
+                    </component>
+                </settings>
+            </unattend>" | Out-File $answerFilePath
+        }
+
+        AfterEach {
+            Remove-Item -Recurse -Force $answerFileDirectory
+        }
+
+        It "removes the attribute regardless of its value" {
+            Remove-WasPassProcessed $answerFilePath
+            $content = [xml](Get-Content $answerFilePath)
+
+            foreach ($specializeBlock in $content.unattend.settings) {
+               $specializeBlock.HasAttribute("wasPassProcessed") | Should Be False
+            }
+        }
+    }
+
+    Context "when processing several 'specialize' blocks which have the attribute 'wasProcessed = true'" {
+        BeforeEach {
+            $GoodAnswerFileDirectory = (New-TempDir)
+            $GoodAnswerFilePath = Join-Path $GoodAnswerFileDirectory "validanswer.xml"
+
+            "<unattend>
+                <settings pass=`"specialize`">
+                    <component name=`"Microsoft-Windows-Deployment`" processorArchitecture=`"x86`" publicKeyToken=`"31bf3856ad364e35`" language=`"neutral`" versionScope=`"nonSxS`" xmlns:wcm=`"http://schemas.microsoft.com/WMIConfig/2002/State`" xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`">
+                    </component>
+                </settings>
+            </unattend>" | Out-File $GoodAnswerFilePath
+        }
+
+        AfterEach {
+            Remove-Item -Recurse -Force $GoodAnswerFileDirectory
+        }
+
+        It "does nothing" {
+            Remove-WasPassProcessed $GoodAnswerFilePath
+            $content = [xml](Get-Content $GoodAnswerFilePath)
+            $mwdBlock = ((($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"}))
+            $specializeBlock = $mwdBlock.ParentNode
+            $specializeBlock.hasAttribute("wasPassProcessed") | Should Be False
+        }
+    }
+}
+
+Describe "Remove-UserAccounts" {
+    Context "when no answer file path is provided" {
+        It "throws" {
+            { Remove-UserAccounts } | Should Throw "Cannot bind argument to parameter 'Path' because it is an empty string."
+        }
+    }
+
+    Context "when provided a nonexistent answer file" {
+        It "throws" {
+            { Remove-UserAccounts -AnswerFilePath "C:\IDoNotExist.xml" } | Should Throw "Answer file C:\IDoNotExist.xml does not exist"
+        }
+    }
+
+    Context "when provided an answer file with invalid XML" {
+        BeforeEach {
+            $BadAnswerXmlDirectory = (New-TempDir)
+            $BadAnswerXmlPath = Join-Path $BadAnswerXmlDirectory "bad.xml"
+
+            "bad xml" | Out-File $BadAnswerXmlPath
+        }
+
+        AfterEach {
+            Remove-Item -Recurse -Force $BadAnswerXmlDirectory
+        }
+
+        It "throws" {
+            { Remove-UserAccounts -AnswerFilePath $BadAnswerXmlPath } | Should Throw "Cannot convert value `"bad xml`" to type `"System.Xml.XmlDocument`". Error: `"The specified node cannot be inserted as the valid child of this node, because the specified node is the wrong type.`""
+        }
+    }
+
+    Context "when provided an answer file containing XML but without an 'oobeSystem' block containing 'Microsoft-Windows-Shell-Setup'" {
+        BeforeEach {
+            $noOOBEXmlDirectory = (New-TempDir)
+            $noOOBEXmlPath = Join-Path $noOOBEXmlDirectory "invalidanswer.xml"
+
+            "<unattend>
+                <settings pass=`"Not-oobeSystem`">
+                    <component name=`"Microsoft-Windows-Shell-Setup`">
+                    </component>
+                </settings>
+            </unattend>" | Out-File $noOOBEXmlPath
+        }
+
+        AfterEach {
+            Remove-Item -Recurse -Force $noOOBEXmlDirectory
+        }
+
+        It "does nothing" {
+            { Remove-UserAccounts -AnswerFilePath $noOOBEXmlPath } | Should Throw "Could not locate oobeSystem XML block. You may not be running this function on an answer file."
+        }
+    }
+
+    Context "when provided a valid XML answer file containing an 'oobeSystem' block which contains a 'Microsoft-Windows-Shell-Setup' block which DOES NOT contain a 'UserAccounts' block" {
+        BeforeEach {
+            $GoodAnswerFileDirectory = (New-TempDir)
+            $GoodAnswerFilePath = Join-Path $GoodAnswerFileDirectory "validanswer.xml"
+
+            "<unattend>
+                <settings pass=`"oobeSystem`">
+                    <component name=`"Microsoft-Windows-Shell-Setup`">
+                    </component>
+                </settings>
+            </unattend>" | Out-File $GoodAnswerFilePath
+        }
+
+        AfterEach {
+            Remove-Item -Recurse -Force $GoodAnswerFileDirectory
+        }
+
+        It "does nothing" {
+            Remove-UserAccounts -AnswerFilePath $GoodAnswerFilePath
+            $content = [xml](Get-Content $GoodAnswerFilePath)
+            $userAccountsBlock = (($content.unattend.settings|where {$_.pass -eq 'oobeSystem'}).component|where {$_.name -eq "Microsoft-Windows-Shell-Setup"}).UserAccounts
+            $userAccountsBlock | Should Be $Null
+        }
+    }
+
+    Context "when provided a valid XML answer file containing an 'oobeSystem' block which contains a 'Microsoft-Windows-Shell-Setup' block which contains a 'UserAccounts' block" {
+        BeforeEach {
+            $GoodAnswerFileDirectory = (New-TempDir)
+            $GoodAnswerFilePath = Join-Path $GoodAnswerFileDirectory "validanswer.xml"
+
+            "<unattend>
+                <settings pass=`"oobeSystem`">
+                    <component name=`"Microsoft-Windows-Shell-Setup`">
+                        <UserAccounts>
+                            <AdministratorPassword>
+                                foo
+                            </AdministratorPassword>
+                        </UserAccounts>
+                    </component>
+                </settings>
+            </unattend>" | Out-File $GoodAnswerFilePath
+        }
+
+        AfterEach {
+            Remove-Item -Recurse -Force $GoodAnswerFileDirectory
+        }
+
+        It "Removes the UserAccounts xml block" {
+            Remove-UserAccounts -AnswerFilePath $GoodAnswerFilePath
+            $content = [xml](Get-Content $GoodAnswerFilePath)
+            $userAccountsBlock = (($content.unattend.settings|where {$_.pass -eq 'oobeSystem'}).component|where {$_.name -eq "Microsoft-Windows-Shell-Setup"}).UserAccounts
+            $userAccountsBlock | Should Be $Null
         }
     }
 }
