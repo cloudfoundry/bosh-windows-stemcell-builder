@@ -1,0 +1,10 @@
+---
+name: verify-root-disk-size
+description: "This errand verifies that the VM uses the entire root disk size that is greater than 190GB"
+
+templates:
+    run.ps1: bin/run.ps1
+
+packages: []
+
+properties: {}
