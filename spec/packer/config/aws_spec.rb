@@ -138,6 +138,8 @@ describe Packer::Config::Aws do
             {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
             {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
             {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS aws -agentZipPath 'C:\\provision\\agent.zip'"]},
+            {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-Hotfix | Out-File -FilePath \"C:\\updates.txt\" -Encoding ASCII"]},
+            {"type"=>"file", "source"=>"C:\\updates.txt", "destination"=>"some-output-directory/updates.txt", "direction"=>"download"},
             {'type'=>'powershell', 'inline'=> ['$ErrorActionPreference = "Stop";',
                                                'trap { $host.SetShouldExit(1) }',
                                                'Clear-ProxySettings']},
