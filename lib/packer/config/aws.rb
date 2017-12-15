@@ -43,7 +43,7 @@ module Packer
         [
           Base.pre_provisioners(@os, iaas: 'aws'),
           Provisioners.install_agent('aws').freeze,
-          (@os == 'windows2012R2' ? Provisioners.download_windows_updates(@output_directory).freeze : []),
+          Provisioners.download_windows_updates(@output_directory).freeze,
           Base.post_provisioners('aws', @os)
         ].flatten
       end

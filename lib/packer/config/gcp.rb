@@ -41,7 +41,7 @@ module Packer
         [
           Base.pre_provisioners(@os, reduce_mtu: true, iaas: 'gcp'),
           Provisioners.install_agent('gcp').freeze,
-          (@os == 'windows2012R2' ? Provisioners.download_windows_updates(@output_directory).freeze : []),
+          Provisioners.download_windows_updates(@output_directory).freeze,
           Base.post_provisioners('gcp')
         ].flatten
       end

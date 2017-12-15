@@ -300,30 +300,6 @@ function Test-InstalledUpdates() {
     }
 }
 
-function List-InstalledUpdates() {
-    $successful = $FALSE
-    $attempts = 0
-    $maxAttempts = 5
-    $result = @()
-    while(-not $successful -and $attempts -lt $maxAttempts) {
-        try {
-            $result = Search-InstalledUpdates
-            $successful = $TRUE
-        } catch {
-            Write-Log $_.Exception | Format-List -force
-            Write-Log "Search call to UpdateSearcher was unsuccessful. Retrying in 5s."
-            $attempts = $attempts + 1
-            Start-Sleep -s 5
-        }
-    }
-
-    if (-not $successful) {
-        Throw "Could not find any installed updates"
-    }
-
-    $result
-}
-
 <#
 .Synopsis
     Disable Automatic Updates

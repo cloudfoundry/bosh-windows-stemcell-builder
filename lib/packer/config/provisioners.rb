@@ -66,7 +66,7 @@ module Packer
 
       def self.download_windows_updates(dest)
         return [
-          powershell_provisioner('List-InstalledUpdates | Out-File -FilePath "C:\\updates.txt" -Encoding ASCII'),
+          powershell_provisioner('Get-Hotfix | Out-File -FilePath "C:\\updates.txt" -Encoding ASCII'),
           {
             'type' => 'file',
             'source' => 'C:\\updates.txt',
