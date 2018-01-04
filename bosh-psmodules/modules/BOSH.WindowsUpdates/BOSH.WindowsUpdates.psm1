@@ -314,3 +314,12 @@ function Disable-AutomaticUpdates() {
     Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'EnableFeaturedSoftware'
     Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'IncludeRecommendedUpdates'
 }
+
+function Install-KB4056898() {
+    # Required for wusa.exe
+    Set-Service -Name wuauserv -StartupType Manual
+    Start-Service -Name wuauserv
+
+    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/d/msdownload/update/software/secu/2018/01/windows8.1-kb4056898-x64_ad6c91c5ec12608e4ac179b2d15586d244f0d2f3.msu' -Outfile C:\provision\patch.msu
+    wusa.exe C:\provision\patch.msu /quiet
+}

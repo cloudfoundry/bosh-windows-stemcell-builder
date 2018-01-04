@@ -26,6 +26,11 @@ module Packer
         }
       ].freeze
       NEW_PROVISIONER = powershell_provisioner('New-Provisioner')
+      INSTALL_KB4056898 = {
+        'type' => 'windows-restart',
+        'restart_command' => "powershell.exe -Command Install-KB4056898",
+        'restart_timeout' => '1h'
+      }
       INSTALL_CF_FEATURES_2016  = {
         'type' => 'windows-restart',
         'restart_command' => "powershell.exe -Command Install-CFFeatures2016",
@@ -60,6 +65,7 @@ module Packer
           },
           powershell_provisioner("Unregister-WindowsUpdatesTask"),
           powershell_provisioner("Remove-Account -User Provisioner"),
+          INSTALL_KB4056898,
           powershell_provisioner("Test-InstalledUpdates")
         ]
       end
