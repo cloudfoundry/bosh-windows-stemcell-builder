@@ -65,7 +65,6 @@ module Packer
           },
           powershell_provisioner("Unregister-WindowsUpdatesTask"),
           powershell_provisioner("Remove-Account -User Provisioner"),
-          INSTALL_KB4056898,
           powershell_provisioner("Test-InstalledUpdates")
         ]
       end

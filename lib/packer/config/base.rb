@@ -24,7 +24,6 @@ module Packer
         #temporarily disable 'test-installed-updates'
         if os == 'windows2016' && !skip_windows_update
           install_windows_updates.first.pop
-          install_windows_updates.first.pop
         end
         pre + install_windows_updates + [Provisioners::PROTECT_CF_CELL, Provisioners::INSTALL_SSHD]
       end
