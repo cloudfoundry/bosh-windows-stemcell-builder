@@ -40,6 +40,14 @@ function Wait-WindowsUpdates {
 
 function Install-WindowsUpdates {
 
+    # Set registry key so that we will receive the Jan 2018 patches (KB4056895)
+    REG ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\QualityCompat /f /v cadca5fe-87d3-4b96-b7fb-a231484277cc /t REG_DWORD /d 0
+
+    # Set registry keys so that KB4056898 will be enabled
+    reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v FeatureSettingsOverride /t REG_DWORD /d 0 /f
+    reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v FeatureSettingsOverrideMask /t REG_DWORD /d 3 /f
+    reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization" /v MinVmVersionForCpuBasedMitigations /t REG_SZ /d "1.0" /f
+
     if (test-path "C:\provision\patch.msu") {
         Write-Log "Already installed out-of-band patch"
     } else {
