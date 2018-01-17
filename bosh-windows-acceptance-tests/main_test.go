@@ -62,10 +62,9 @@ update:
   max_in_flight: 2
 
 instance_groups:
-- name: simple-job
+- name: check-multiple
   instances: 1
   stemcell: windows
-  lifecycle: service
   azs: [{{.AZ}}]
   vm_type: {{.VmType}}
   vm_extensions: [{{.VmExtensions}}]
@@ -74,43 +73,9 @@ instance_groups:
   jobs:
   - name: simple-job
     release: {{.ReleaseName}}
-- name: verify-autoupdates
-  instances: 1
-  stemcell: windows
-  lifecycle: errand
-  azs: [{{.AZ}}]
-  vm_type: {{.VmType}}
-  vm_extensions: [{{.VmExtensions}}]
-  networks:
-  - name: {{.Network}}
-  jobs:
-  - name: verify-autoupdates
-    release: {{.ReleaseName}}
-- name: verify-agent-start-type
-  instances: 1
-  stemcell: windows
-  lifecycle: errand
-  azs: [{{.AZ}}]
-  vm_type: {{.VmType}}
-  vm_extensions: [{{.VmExtensions}}]
-  networks:
-  - name: {{.Network}}
-  jobs:
-  - name: verify-agent-start-type
-    release: {{.ReleaseName}}
-- name: check-system
-  instances: 1
-  stemcell: windows
-  lifecycle: errand
-  azs: [{{.AZ}}]
-  vm_type: {{.VmType}}
-  vm_extensions: [{{.VmExtensions}}]
-  networks:
-  - name: {{.Network}}
-  jobs:
   - name: check-system
     release: {{.ReleaseName}}
-- name: verify-updated
+- name: check-updates
   instances: 1
   stemcell: windows
   lifecycle: errand
@@ -121,18 +86,6 @@ instance_groups:
   - name: {{.Network}}
   jobs:
   - name: check-updates
-    release: {{.ReleaseName}}
-- name: verify-randomize-password
-  instances: 1
-  stemcell: windows
-  lifecycle: errand
-  azs: [{{.AZ}}]
-  vm_type: {{.VmType}}
-  vm_extensions: [{{.VmExtensions}}]
-  networks:
-  - name: {{.Network}}
-  jobs:
-  - name: verify-randomize-password
     release: {{.ReleaseName}}
 `
 var rootDiskInstanceGroup = fmt.Sprintf(`
@@ -203,7 +156,7 @@ func NewConfig() (*Config, error) {
 	var config Config
 	err = json.Unmarshal(body, &config)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse config file: %v", body)
+		return nil, fmt.Errorf("unable to parse config file: %s: %s", err.Error(), string(body))
 	}
 	if config.StemcellOs == "" {
 		return nil, fmt.Errorf("missing required field: %v", "stemcell_os")
@@ -343,15 +296,15 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 	return filename, nil
 }
 
-func downloadLogs(jobName string, index int) *gbytes.Buffer {
+func downloadLogs(instanceName string, jobName string, index int) *gbytes.Buffer {
 	tempDir, err := ioutil.TempDir("", "")
 	Expect(err).To(Succeed())
 	defer os.RemoveAll(tempDir)
 
-	err = bosh.Run(fmt.Sprintf("-d %s logs %s/%d --dir %s", deploymentName, jobName, index, tempDir))
+	err = bosh.Run(fmt.Sprintf("-d %s logs %s/%d --dir %s", deploymentName, instanceName, index, tempDir))
 	Expect(err).To(Succeed())
 
-	matches, err := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("%s.%s.%d-*.tgz", deploymentName, jobName, index)))
+	matches, err := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("%s.%s.%d-*.tgz", deploymentName, instanceName, index)))
 	Expect(err).To(Succeed())
 	Expect(matches).To(HaveLen(1))
 
@@ -403,7 +356,6 @@ var (
 	bosh                      *BoshCommand
 	deploymentName            string
 	manifestPath              string
-	boshCertPath              string
 	stemcellName              string
 	stemcellVersion           string
 	releaseVersion            string
@@ -418,6 +370,7 @@ var _ = Describe("BOSH Windows", func() {
 		config, err = NewConfig()
 		Expect(err).To(Succeed())
 
+		var boshCertPath string
 		cert := config.Bosh.CaCert
 		if cert != "" {
 			certFile, err := ioutil.TempFile("", "")
@@ -473,18 +426,6 @@ var _ = Describe("BOSH Windows", func() {
 		// Generate BWATS release version
 		releaseVersion = fmt.Sprintf("0.dev+%d", getTimestampInMs())
 
-		manifest, err := config.generateManifest(deploymentName, stemcellVersion, releaseVersion)
-		Expect(err).To(Succeed())
-
-		manifestFile, err := ioutil.TempFile("", "")
-		Expect(err).To(Succeed())
-
-		_, err = manifestFile.Write(manifest)
-		Expect(err).To(Succeed())
-
-		manifestPath, err = filepath.Abs(manifestFile.Name())
-		Expect(err).To(Succeed())
-
 		goZipPath, err := downloadFile("golang-", GolangURL)
 		Expect(err).To(Succeed())
 
@@ -510,11 +451,29 @@ var _ = Describe("BOSH Windows", func() {
 		}
 		Expect(err).To(Succeed())
 
+		manifest, err := config.generateManifest(deploymentName, stemcellVersion, releaseVersion)
+		Expect(err).To(Succeed())
+
+		manifestFile, err := ioutil.TempFile("", "")
+		Expect(err).To(Succeed())
+
+		_, err = manifestFile.Write(manifest)
+		Expect(err).To(Succeed())
+
+		manifestPath, err = filepath.Abs(manifestFile.Name())
+		Expect(err).To(Succeed())
+
 		err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentName, manifestPath))
 		Expect(err).To(Succeed())
+		bosh = NewBoshCommand(config, boshCertPath, timeout)
+
 	})
 
 	AfterSuite(func() {
+		// Delete the releases created by the tight loop test
+		for _, version := range tightLoopStemcellVersions {
+			bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", version))
+		}
 		if config.SkipCleanup {
 			return
 		}
@@ -522,11 +481,6 @@ var _ = Describe("BOSH Windows", func() {
 		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
 		bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellName, stemcellVersion))
 		bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
-
-		// Delete the releases created by the tight loop test
-		for _, version := range tightLoopStemcellVersions {
-			bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", version))
-		}
 
 		if bosh.CertPath != "" {
 			os.RemoveAll(bosh.CertPath)
@@ -538,7 +492,7 @@ var _ = Describe("BOSH Windows", func() {
 
 	It("can run a job that relies on a package", func() {
 		time.Sleep(60 * time.Second)
-		Eventually(downloadLogs("simple-job", 0),
+		Eventually(downloadLogs("check-multiple", "simple-job", 0),
 			time.Second*65).Should(gbytes.Say("60 seconds passed"))
 	})
 
@@ -564,15 +518,10 @@ var _ = Describe("BOSH Windows", func() {
 
 			err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentName, manifestPath))
 			if err != nil {
-				downloadLogs("simple-job", 0)
+				downloadLogs("check-multiple", "simple-job", 0)
 				Fail(err.Error())
 			}
 		}
-	})
-
-	It("has Auto Update turned off", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand verify-autoupdates --tty", deploymentName))
-		Expect(err).To(Succeed())
 	})
 
 	// The Agent changes the start type of it's service wrapper to 'Manual' immediately
@@ -582,23 +531,14 @@ var _ = Describe("BOSH Windows", func() {
 	// Since the Agent will have changed it's start type by the time that this errand
 	// runs we check for the presence of a registry key that is an artifact of the
 	// original 'Automatic (Delayed Start)' configuration.
-	It("currently has a Service StartType of 'Manual' and initially had a StartType of 'Delayed'", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand verify-agent-start-type --tty", deploymentName))
-		Expect(err).To(Succeed())
-	})
 
-	It("checks system dependencies and security", func() {
+	It("checks system dependencies and security, auto update has turned off, currently has a Service StartType of 'Manual' and initially had a StartType of 'Delayed', password is randomized and uses entire 200 GB root disk", func() {
 		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-system --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
 
-	It("randomizes admin password", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs verify-randomize-password --tty", deploymentName))
-		Expect(err).To(Succeed())
-	})
-
-	It("is fully updated", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs verify-updated --tty", deploymentName))
+	It("is fully updated", func() { // 860s
+		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-updates --tty", deploymentName))
 		Expect(err).To(Succeed())
 	})
 

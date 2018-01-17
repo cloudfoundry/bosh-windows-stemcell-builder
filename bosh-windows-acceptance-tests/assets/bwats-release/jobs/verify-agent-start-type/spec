@@ -1,9 +1,0 @@
----
-name: verify-agent-start-type
-
-description: "This errand verifies that the bosh-agent service start type is now manual, but initially had a delayed start"
-
-templates:
-  run.ps1: bin/run.ps1
-
-packages: []

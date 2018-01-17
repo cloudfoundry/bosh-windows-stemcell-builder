@@ -1,9 +1,0 @@
----
-name: verify-autoupdates
-
-description: "This errand verifies that Microsoft Auto Updates are disabled on the target machine"
-
-templates:
-  run.ps1: bin/run.ps1
-
-packages: []

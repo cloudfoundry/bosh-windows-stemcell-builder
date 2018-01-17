@@ -1,9 +1,0 @@
----
-name: verify-updated
-
-description: "This errand verifies that there are no outstanding Microsoft Updates on this stemcell"
-
-templates:
-  run.ps1: bin/run.ps1
-
-packages: []

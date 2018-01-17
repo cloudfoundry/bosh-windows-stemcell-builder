@@ -4,4 +4,5 @@ description: "This errand verifies that Microsoft Auto Updates are disabled on t
 templates:
   run.ps1: bin/run.ps1
   HWCServer.exe: bin/HWCServer.exe
+  security.inf: inf/security.inf
 packages: []

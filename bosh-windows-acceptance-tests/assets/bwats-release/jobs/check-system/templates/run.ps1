@@ -210,4 +210,52 @@ $nbtstat | foreach {
     $DisabledNetBIOS = $DisabledNetBIOS -or $_ -like '*No names in cache*'
 }
 
+# Verify the Agent's start type is 'Manual'.
+#
+$agent = Get-Service | Where { $_.Name -eq 'bosh-agent' }
+if ($agent -eq $null) {
+    Write-Error "Missing service: bosh-agent"
+    Exit 1
+}
+if ($agent.StartType -ne "Manual") {
+    Write-Error "verify-agent-start-type: bosh-agent start type is not 'Manual' got: '$($agent.StartType.ToString())'"
+    Exit 1
+}
+
+# The Agent's start type will no longer be 'Automatic (Delayed)',
+# it will instead be 'Manual', so we check for the presence of
+# the below registry key, which is an artifact of the original
+# delayed setting.
+#
+$RegPath="HKLM:\SYSTEM\CurrentControlSet\Services\bosh-agent"
+
+if ((Get-ItemProperty  $RegPath).DelayedAutostart -ne 1) {
+    Write-Error "verify-agent-start-type: Expected DelayedAutostart to equal 1"
+    Exit 1
+}
+
+# Verify-autoupdates have been stopped
+if ((Get-Service wuauserv).Status -ne "Stopped") {
+    Write-Error "Error: expected wuauserv service to be Stopped"
+    Exit 1
+}
+
+# Verify agent start type is not Disabled
+$StartType = (Get-Service wuauserv).StartType
+if ($StartType -ne "Disabled") {
+    Write-Host "Warning: wuauserv service StartType is not disabled: ${StartType}"
+}
+
+# Verify randomize password has run
+secedit /configure /db secedit.sdb /cfg c:\var\vcap\jobs\check-system\inf\security.inf
+
+Add-Type -AssemblyName System.DirectoryServices.AccountManagement
+$ComputerName=hostname
+$DS = New-Object System.DirectoryServices.AccountManagement.PrincipalContext('machine',$ComputerName)
+
+if ($DS.ValidateCredentials('Administrator', 'Password123!')) {
+    Write-Error "Administrator password was not randomized"
+    Exit 1
+}
+
 Exit 0
