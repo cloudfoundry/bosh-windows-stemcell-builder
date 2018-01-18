@@ -33,7 +33,7 @@ module Packer
       }
       INSTALL_CF_FEATURES_2016  = {
         'type' => 'windows-restart',
-        'restart_command' => "powershell.exe -Command Install-CFFeatures2016",
+        'restart_command' => "powershell.exe -Command Install-CFFeatures",
         'restart_timeout' => '1h'
       }
       WAIT_AND_RESTART = {
@@ -41,7 +41,7 @@ module Packer
         'restart_command' => 'powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force',
         'restart_timeout' => '1h'
       }
-      INSTALL_CF_FEATURES_2012 = powershell_provisioner('Install-CFFeatures2012')
+      INSTALL_CF_FEATURES_2012 = powershell_provisioner('Install-CFFeatures')
       PROTECT_CF_CELL = powershell_provisioner('Protect-CFCell')
       OPTIMIZE_DISK = powershell_provisioner('Optimize-Disk')
       COMPRESS_DISK = powershell_provisioner('Compress-Disk')
