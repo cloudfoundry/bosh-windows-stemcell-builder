@@ -1,5 +1,6 @@
 require 'rspec/core/rake_task'
 require 'json'
+require 'tempfile'
 
 namespace :build do
   class FailedAMICopyError < RuntimeError
@@ -10,10 +11,9 @@ namespace :build do
     # Check required environment variables
     base_amis_dir = Stemcell::Builder::validate_env_dir('BASE_AMIS_DIR')
     region = Stemcell::Builder::validate_env('REGION')
-    aws_access_key_id = Stemcell::Builder::validate_env('AWS_ACCESS_KEY')
-    aws_secret_access_key = Stemcell::Builder::validate_env('AWS_SECRET_KEY')
-    aws_region = Stemcell::Builder::validate_env('OUTPUT_BUCKET_REGION')
     output_bucket = Stemcell::Builder::validate_env('OUTPUT_BUCKET_NAME')
+
+    S3.test_upload_permissions(output_bucket)
 
     # Setup dir where we will save the stemcell tgz
     output_directory = File.absolute_path("bosh-windows-stemcell")
@@ -36,12 +36,8 @@ namespace :build do
     # Upload the final tgz to S3
     artifact_name = Stemcell::Packager::get_tar_files_from(output_directory).first
 
-    client = S3::Client.new(
-      aws_access_key_id: aws_access_key_id,
-      aws_secret_access_key: aws_secret_access_key,
-      aws_region: aws_region
-    )
-    client.put(output_bucket, artifact_name, File.join(output_directory, artifact_name))
+    s3_client = S3::Client.new()
+    s3_client.put(output_bucket, artifact_name, File.join(output_directory, artifact_name))
   end
 
   desc 'Copy AMI from source to remaining regions'

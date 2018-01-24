@@ -15,7 +15,7 @@ namespace :package do
     FileUtils.mkdir_p(input_directory)
 
     # Download amis
-    client = S3::Client.new(aws_access_key_id: aws_access_key_id, aws_secret_access_key: aws_secret_access_key, aws_region: aws_region)
+    client = S3::Client.new()
 
     files = client.list(bucket_name)
     raise "Invalid contents: AMIs directory #{bucket_name} has wrong number of items: #{files.count}" unless files.count == 14
