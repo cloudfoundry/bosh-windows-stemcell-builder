@@ -16,10 +16,7 @@ namespace :build do
     vmx_version = File.read(File.join(version_dir, 'number')).chomp
     output_bucket = Stemcell::Builder::validate_env("OUTPUT_BUCKET")
 
-    puts "Testing upload permissions for #{output_bucket}"
-    tempfile = Tempfile.new("vsphere-stemcell-permissions-tempfile")
-    s3_client = S3::Client.new()
-    s3_client.put(output_bucket, 'test-upload-permissions', tempfile.path)
+    S3.test_upload_permissions(output_bucket)
 
     output_directory = File.absolute_path("bosh-windows-stemcell")
     FileUtils.rm_rf(output_directory)
@@ -56,10 +53,7 @@ namespace :build do
     version = File.read(File.join(version_dir, 'number')).chomp
     stemcell_output_bucket = Stemcell::Builder::validate_env('STEMCELL_OUTPUT_BUCKET')
 
-    puts "Testing upload permissions for #{stemcell_output_bucket}"
-    tempfile = Tempfile.new("vsphere-stemcell-permissions-tempfile")
-    s3_client = S3::Client.new(endpoint: ENV["S3_ENDPOINT"])
-    s3_client.put(stemcell_output_bucket, 'test-upload-permissions', tempfile.path)
+    S3.test_upload_permissions(stemcell_output_bucket, ENV["S3_ENDPOINT"])
 
     output_directory = Stemcell::Builder::validate_env('OUTPUT_DIR') # packer-output must not exist before packer is run!
     signature_path = File.join(output_directory, 'signature')
@@ -67,6 +61,8 @@ namespace :build do
     image_bucket = Stemcell::Builder::validate_env('VHD_VMDK_BUCKET')
     diff_output_bucket = Stemcell::Builder::validate_env('DIFF_OUTPUT_BUCKET')
     cache_dir = Stemcell::Builder::validate_env('CACHE_DIR')
+
+    s3_client = S3::Client.new(endpoint: ENV["S3_ENDPOINT"])
 
     # Get the most recent vhd
     last_file = s3_client.list(image_bucket).select{|file| /.vhd$/.match(file)}.sort.last
@@ -153,10 +149,7 @@ namespace :build do
     vmx_version_dir = Stemcell::Builder::validate_env_dir('VMX_VERSION_DIR')
     output_bucket = Stemcell::Builder::validate_env('OUTPUT_BUCKET')
 
-    puts "Testing upload permissions for #{output_bucket}"
-    tempfile = Tempfile.new("vsphere-stemcell-permissions-tempfile")
-    s3_client = S3::Client.new(endpoint: ENV["S3_ENDPOINT"])
-    s3_client.put(output_bucket, 'test-upload-permissions', tempfile.path)
+    S3.test_upload_permissions(output_bucket, ENV["S3_ENDPOINT"])
 
     skip_windows_update = ENV.fetch('SKIP_WINDOWS_UPDATE', 'false').downcase == 'true'
 
@@ -204,6 +197,7 @@ namespace :build do
 
     pattern = File.join(output_directory, "*.tgz").gsub('\\', '/')
     stemcell = Dir.glob(pattern)[0]
+    s3_client = S3::Client.new(endpoint: ENV["S3_ENDPOINT"])
     s3_client.put(Stemcell::Builder::validate_env("OUTPUT_BUCKET"),File.basename(stemcell),stemcell)
   end
 end

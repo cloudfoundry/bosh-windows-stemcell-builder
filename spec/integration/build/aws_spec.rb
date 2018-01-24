@@ -77,6 +77,8 @@ describe 'Aws' do
     end
 
     it 'should build an aws stemcell' do
+      allow(S3).to receive(:test_upload_permissions)
+
       s3_client = double(:s3_client)
       allow(s3_client).to receive(:put)
       allow(S3::Client).to receive(:new).and_return(s3_client)
@@ -111,11 +113,7 @@ describe 'Aws' do
 
     context 'when we are not authorized to upload to the S3 bucket' do
       before(:each) do
-        s3_client = double(:s3_client)
-        allow(s3_client).to receive(:put)
-          .with('some-output-bucket-name', 'test-upload-permissions', /aws-stemcell-permissions-tempfile/)
-          .and_raise(Aws::S3::Errors::Forbidden.new('', ''))
-        allow(S3::Client).to receive(:new).and_return(s3_client)
+        allow(S3).to receive(:test_upload_permissions).and_raise(Aws::S3::Errors::Forbidden.new('', ''))
       end
 
       it 'should fail before attempting to build stemcell' do

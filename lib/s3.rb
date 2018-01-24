@@ -107,4 +107,12 @@ module S3
       return files[0]
     end
   end
+
+  def self.test_upload_permissions(bucket, endpoint="")
+    puts "Testing upload permissions for #{bucket}"
+    tempfile = Tempfile.new("stemcell-permissions-tempfile")
+    s3_client = Client.new(endpoint: endpoint)
+    s3_client.put(bucket, 'test-upload-permissions', tempfile.path)
+    tempfile.unlink
+  end
 end

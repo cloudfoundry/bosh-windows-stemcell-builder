@@ -66,9 +66,7 @@ describe 'VSphere' do
         endpoint: nil)
         .and_return(s3_vmx)
 
-      @s3_client = double(:s3_client)
-      allow(@s3_client).to receive(:put)
-      allow(S3::Client).to receive(:new).and_return(@s3_client)
+      allow(S3).to receive(:test_upload_permissions)
     end
 
     it 'should build a vsphere_add_updates vmx' do
@@ -82,9 +80,7 @@ describe 'VSphere' do
 
     context 'when we are not authorized to upload to the S3 bucket' do
       before(:each) do
-        allow(@s3_client).to receive(:put)
-          .with('stemcell-output-bucket', 'test-upload-permissions', /vsphere-stemcell-permissions-tempfile/)
-          .and_raise(Aws::S3::Errors::Forbidden.new('', ''))
+        allow(S3).to receive(:test_upload_permissions).and_raise(Aws::S3::Errors::Forbidden.new('', ''))
       end
 
       it 'should fail before building the vmx' do
@@ -154,14 +150,16 @@ describe 'VSphere' do
         endpoint: nil)
         .and_return(s3_vmx)
 
-      @s3_client= double(:s3_client)
-      allow(@s3_client).to receive(:put)
-      allow(@s3_client).to receive(:list).and_return(['some-last-file.patched-0-0.vhd'])
-      allow(@s3_client).to receive(:get)
+      allow(S3).to receive(:test_upload_permissions)
+
+      s3_client= double(:s3_client)
+      allow(s3_client).to receive(:put)
+      allow(s3_client).to receive(:list).and_return(['some-last-file.patched-0-0.vhd'])
+      allow(s3_client).to receive(:get)
 
       allow(S3::Client).to receive(:new).with(
         endpoint: nil
-      ).and_return(@s3_client)
+      ).and_return(s3_client)
 
       allow(Stemcell::Builder::VSphere).to receive(:find_file_by_extn).and_return('some-stemcell-path.tgz')
     end
@@ -183,9 +181,7 @@ describe 'VSphere' do
 
     context 'when we are not authorized to upload to the S3 bucket' do
       before(:each) do
-        allow(@s3_client).to receive(:put)
-          .with('some-stemcell-output-bucket', 'test-upload-permissions', /vsphere-stemcell-permissions-tempfile/)
-          .and_raise(Aws::S3::Errors::Forbidden.new('', ''))
+        allow(S3).to receive(:test_upload_permissions).and_raise(Aws::S3::Errors::Forbidden.new('', ''))
       end
 
       it 'should fail before building the stemcell' do
@@ -249,12 +245,12 @@ describe 'VSphere' do
         endpoint: nil)
         .and_return(s3_vmx)
 
-      @s3_client= double(:s3_client)
-      allow(@s3_client).to receive(:put)
+      s3_client= double(:s3_client)
+      allow(s3_client).to receive(:put)
 
       allow(S3::Client).to receive(:new).with(
         endpoint: nil
-      ).and_return(@s3_client)
+      ).and_return(s3_client)
     end
 
     it 'should build a vsphere stemcell' do
@@ -268,9 +264,7 @@ describe 'VSphere' do
 
     context 'when we are not authorized to upload to the S3 bucket' do
       before(:each) do
-        allow(@s3_client).to receive(:put)
-          .with('stemcell-output-bucket', 'test-upload-permissions', /vsphere-stemcell-permissions-tempfile/)
-          .and_raise(Aws::S3::Errors::Forbidden.new('', ''))
+        allow(S3).to receive(:test_upload_permissions).and_raise(Aws::S3::Errors::Forbidden.new('', ''))
       end
 
       it 'should fail before building the stemcell' do

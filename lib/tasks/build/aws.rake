@@ -13,10 +13,7 @@ namespace :build do
     region = Stemcell::Builder::validate_env('REGION')
     output_bucket = Stemcell::Builder::validate_env('OUTPUT_BUCKET_NAME')
 
-    puts "Testing upload permissions for #{output_bucket}"
-    tempfile = Tempfile.new("aws-stemcell-permissions-tempfile")
-    s3_client = S3::Client.new()
-    s3_client.put(output_bucket, 'test-upload-permissions', tempfile.path)
+    S3.test_upload_permissions(output_bucket)
 
     # Setup dir where we will save the stemcell tgz
     output_directory = File.absolute_path("bosh-windows-stemcell")
@@ -39,6 +36,7 @@ namespace :build do
     # Upload the final tgz to S3
     artifact_name = Stemcell::Packager::get_tar_files_from(output_directory).first
 
+    s3_client = S3::Client.new()
     s3_client.put(output_bucket, artifact_name, File.join(output_directory, artifact_name))
   end
 
