@@ -3,17 +3,15 @@ require_relative 'exec_command'
 
 module S3
   class Client
-    def initialize(aws_access_key_id:, aws_secret_access_key:, aws_region:, endpoint: "")
+    def initialize(endpoint: "")
       Aws.use_bundled_cert!
       Aws.config.update(force_path_style: true)
-      credentials =  Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
       if (endpoint.to_s.empty?)
-        @s3 = Aws::S3::Client.new(region: aws_region, credentials: credentials)
-        @s3_resource = Aws::S3::Resource.new(region: aws_region, credentials: credentials)
+        @s3 = Aws::S3::Client.new()
       else
-        @s3 = Aws::S3::Client.new(region: aws_region, credentials: credentials, endpoint: endpoint)
-        @s3_resource = Aws::S3::Resource.new(region: aws_region, credentials: credentials, endpoint: endpoint)
+        @s3 = Aws::S3::Client.new(endpoint: endpoint)
       end
+      @s3_resource = Aws::S3::Resource.new(client: @s3)
     end
     def get(bucket,key,file_name)
       bucket, key = rationalize(bucket, key)
@@ -56,12 +54,8 @@ module S3
 
   class Vmx
     def initialize(
-      aws_access_key_id:,aws_secret_access_key:,aws_region:,
       input_bucket:, output_bucket:,vmx_cache_dir:, endpoint: "")
-      @client = S3::Client.new(aws_access_key_id: aws_access_key_id,
-                               aws_secret_access_key: aws_secret_access_key,
-                               aws_region: aws_region,
-                               endpoint: endpoint)
+      @client = S3::Client.new(endpoint: endpoint)
       @input_bucket = input_bucket
       @output_bucket = output_bucket
       @vmx_cache_dir = vmx_cache_dir

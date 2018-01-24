@@ -20,6 +20,7 @@ describe 'Aws' do
     @amis_dir = Dir.mktmpdir('aws-stemcell-test')
     FileUtils.rm_rf(@output_dir)
     Rake::Task['build:aws'].reenable
+    Rake::Task['build:aws_ami'].reenable
 
     @os_version = 'windows2012R2'
     @version = '1200.3.1-build.2'
@@ -78,11 +79,7 @@ describe 'Aws' do
     it 'should build an aws stemcell' do
       s3_client = double(:s3_client)
       allow(s3_client).to receive(:put)
-      allow(S3::Client).to receive(:new).with(
-        aws_access_key_id: @aws_access_key,
-        aws_secret_access_key: @aws_secret_key,
-        aws_region: @output_bucket_region
-      ).and_return(s3_client)
+      allow(S3::Client).to receive(:new).and_return(s3_client)
 
       Rake::Task['build:aws'].invoke
 
@@ -111,6 +108,25 @@ describe 'Aws' do
       expect(packer_output_ami['region']).to eq('us-east-1')
       expect(packer_output_ami['ami_id']).to eq('ami-east1id')
     end
+
+    context 'when we are not authorized to upload to the S3 bucket' do
+      before(:each) do
+        s3_client = double(:s3_client)
+        allow(s3_client).to receive(:put)
+          .with('some-output-bucket-name', 'test-upload-permissions', /aws-stemcell-permissions-tempfile/)
+          .and_raise(Aws::S3::Errors::Forbidden.new('', ''))
+        allow(S3::Client).to receive(:new).and_return(s3_client)
+      end
+
+      it 'should fail before attempting to build stemcell' do
+        expect do
+          Rake::Task['build:aws'].invoke
+        end.to raise_exception(Aws::S3::Errors::Forbidden)
+
+        stemcell = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent-#{@region}.tgz")
+        expect(File.exist?(stemcell)).to be_falsey
+      end
+    end
   end
 
   describe 'Copy an aws stemcell' do
@@ -130,11 +146,7 @@ describe 'Aws' do
 
       s3_client = double(:s3_client)
       allow(s3_client).to receive(:put)
-      allow(S3::Client).to receive(:new).with(
-        aws_access_key_id: @aws_access_key,
-        aws_secret_access_key: @aws_secret_key,
-        aws_region: @output_bucket_region
-      ).and_return(s3_client)
+      allow(S3::Client).to receive(:new).and_return(s3_client)
 
       allow(Executor).to receive(:exec_command)
         .with('aws ec2 describe-images --image-ids ami-east1id --region us-east-1')
@@ -169,7 +181,6 @@ describe 'Aws' do
         .with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
               '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2')
 
-      Rake::Task['build:aws_ami'].reenable
       Rake::Task['build:aws_ami'].invoke
 
       stemcell = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent.tgz")
@@ -203,7 +214,6 @@ describe 'Aws' do
               '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2')
 
       expect do
-        Rake::Task['build:aws_ami'].reenable
         Rake::Task['build:aws_ami'].invoke
       end.to raise_exception
     end
@@ -226,7 +236,6 @@ describe 'Aws' do
               '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2')
         .once
 
-      Rake::Task['build:aws_ami'].reenable
       Rake::Task['build:aws_ami'].invoke
     end
   end

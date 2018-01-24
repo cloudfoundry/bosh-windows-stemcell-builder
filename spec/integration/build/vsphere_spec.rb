@@ -18,6 +18,10 @@ describe 'VSphere' do
     @stemcell_deps_dir = Dir.mktmpdir('vsphere')
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
+
+    Rake::Task['build:vsphere'].reenable
+    Rake::Task['build:vsphere_add_updates'].reenable
+    Rake::Task['build:vsphere_diff'].reenable
   end
 
   after(:each) do
@@ -29,57 +33,76 @@ describe 'VSphere' do
     FileUtils.rm_rf(@stemcell_deps_dir)
   end
 
-  it 'should build a vsphere_add_updates vmx' do
-    os_version = 'windows2012R2'
+  describe 'add updates' do
+    before(:each) do
+      os_version = 'windows2012R2'
 
-    ENV['AWS_ACCESS_KEY_ID']= 'some-key'
-    ENV['AWS_SECRET_ACCESS_KEY'] = 'secret-key'
-    ENV['AWS_REGION'] = 'some-region'
-    ENV['INPUT_BUCKET'] = 'input-vmx-bucket'
-    ENV['VMX_CACHE_DIR'] = '/tmp'
-    ENV['OUTPUT_BUCKET'] = 'stemcell-output-bucket'
-    ENV['VERSION_DIR'] = @version_dir
+      ENV['AWS_ACCESS_KEY_ID']= 'some-key'
+      ENV['AWS_SECRET_ACCESS_KEY'] = 'secret-key'
+      ENV['AWS_REGION'] = 'some-region'
+      ENV['INPUT_BUCKET'] = 'input-vmx-bucket'
+      ENV['VMX_CACHE_DIR'] = '/tmp'
+      ENV['OUTPUT_BUCKET'] = 'stemcell-output-bucket'
+      ENV['VERSION_DIR'] = @version_dir
 
-    ENV['ADMINISTRATOR_PASSWORD'] = 'pass'
+      ENV['ADMINISTRATOR_PASSWORD'] = 'pass'
 
-    ENV['OS_VERSION'] = os_version
-    ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'vsphere')}:#{ENV['PATH']}"
+      ENV['OS_VERSION'] = os_version
+      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'vsphere')}:#{ENV['PATH']}"
 
-    File.write(
-      File.join(@version_dir, 'number'),
-      'some-version'
-    )
+      File.write(
+        File.join(@version_dir, 'number'),
+        'some-version'
+      )
 
-    s3_vmx= double(:s3_vmx)
-    allow(s3_vmx).to receive(:fetch).and_return("1234")
-    allow(s3_vmx).to receive(:put)
+      s3_vmx= double(:s3_vmx)
+      allow(s3_vmx).to receive(:fetch).and_return("1234")
+      allow(s3_vmx).to receive(:put)
 
-    allow(S3::Vmx).to receive(:new).with(
-      aws_access_key_id: 'some-key',
-      aws_secret_access_key: 'secret-key',
-      aws_region: 'some-region',
-      input_bucket: 'input-vmx-bucket',
-      output_bucket: 'stemcell-output-bucket',
-      vmx_cache_dir: '/tmp',
-      endpoint: nil)
-      .and_return(s3_vmx)
+      allow(S3::Vmx).to receive(:new).with(
+        input_bucket: 'input-vmx-bucket',
+        output_bucket: 'stemcell-output-bucket',
+        vmx_cache_dir: '/tmp',
+        endpoint: nil)
+        .and_return(s3_vmx)
 
-    Rake::Task['build:vsphere_add_updates'].invoke
-    pattern = File.join(@output_directory, "*.vmx").gsub('\\', '/')
-    files = Dir.glob(pattern)
-    expect(files.length).to eq(1)
-    expect(files[0]).to eq(File.join(@output_directory,"file.vmx"))
+      @s3_client = double(:s3_client)
+      allow(@s3_client).to receive(:put)
+      allow(S3::Client).to receive(:new).and_return(@s3_client)
+    end
+
+    it 'should build a vsphere_add_updates vmx' do
+      Rake::Task['build:vsphere_add_updates'].invoke
+
+      pattern = File.join(@output_directory, "*.vmx").gsub('\\', '/')
+      files = Dir.glob(pattern)
+      expect(files.length).to eq(1)
+      expect(files[0]).to eq(File.join(@output_directory,"file.vmx"))
+    end
+
+    context 'when we are not authorized to upload to the S3 bucket' do
+      before(:each) do
+        allow(@s3_client).to receive(:put)
+          .with('stemcell-output-bucket', 'test-upload-permissions', /vsphere-stemcell-permissions-tempfile/)
+          .and_raise(Aws::S3::Errors::Forbidden.new('', ''))
+      end
+
+      it 'should fail before building the vmx' do
+        expect do
+          Rake::Task['build:vsphere_add_updates'].invoke
+        end.to raise_exception(Aws::S3::Errors::Forbidden)
+
+        files = Dir.glob(File.join(@output_directory, '*').gsub('\\', '/'))
+        expect(files).to be_empty
+      end
+    end
   end
 
   describe "with diff" do
-    before :each do
+    before(:each) do
       FileUtils.mkdir_p("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff")
       File.write("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff/old-base-vmx.vmx", "some-vmx-template")
-    end
-    after :each do
-      FileUtils.rm_rf("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff")
-    end
-    it 'should build a vsphere stemcell from diff' do
+
       os_version = 'windows2012R2'
       version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
@@ -120,37 +143,36 @@ describe 'VSphere' do
         'some-vmx-version'
       )
 
-
       s3_vmx= double(:s3_vmx)
       allow(s3_vmx).to receive(:fetch).and_return("1234")
       allow(s3_vmx).to receive(:put)
 
       allow(S3::Vmx).to receive(:new).with(
-        aws_access_key_id: 'some-key',
-        aws_secret_access_key: 'secret-key',
-        aws_region: 'some-region',
         input_bucket: 'input-vmx-bucket',
         output_bucket: 'stemcell-output-bucket',
         vmx_cache_dir: '/tmp',
         endpoint: nil)
         .and_return(s3_vmx)
 
-      s3_client= double(:s3_client)
-      allow(s3_client).to receive(:put)
+      @s3_client= double(:s3_client)
+      allow(@s3_client).to receive(:put)
+      allow(@s3_client).to receive(:list).and_return(['some-last-file.patched-0-0.vhd'])
+      allow(@s3_client).to receive(:get)
 
       allow(S3::Client).to receive(:new).with(
-        aws_access_key_id: 'some-key',
-        aws_secret_access_key: 'secret-key',
-        aws_region: 'some-region',
         endpoint: nil
-      ).and_return(s3_client)
-
-      allow(s3_client).to receive(:list).and_return(['some-last-file.patched-0-0.vhd'])
-      allow(s3_client).to receive(:get)
+      ).and_return(@s3_client)
 
       allow(Stemcell::Builder::VSphere).to receive(:find_file_by_extn).and_return('some-stemcell-path.tgz')
+    end
 
+    after(:each) do
+      FileUtils.rm_rf("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff")
+    end
+
+    it 'should build a vsphere stemcell from diff' do
       Rake::Task['build:vsphere_diff'].invoke
+
       packer_output_vmdk = File.join(@output_directory, 'fake.vmdk')
       expect(packer_output_vmdk).not_to be_nil
       stembuild_version_arg = JSON.parse(File.read("#{@output_directory}/myargs"))[5]
@@ -158,76 +180,107 @@ describe 'VSphere' do
       stemcell_filename = File.basename(Dir["#{@output_directory}/*.tgz"].first)
       expect(stemcell_filename).to eq "bosh-stemcell-1200.3.1-build.2-vsphere-esxi-windows2012R2-go_agent.tgz"
     end
+
+    context 'when we are not authorized to upload to the S3 bucket' do
+      before(:each) do
+        allow(@s3_client).to receive(:put)
+          .with('some-stemcell-output-bucket', 'test-upload-permissions', /vsphere-stemcell-permissions-tempfile/)
+          .and_raise(Aws::S3::Errors::Forbidden.new('', ''))
+      end
+
+      it 'should fail before building the stemcell' do
+        expect do
+          Rake::Task['build:vsphere_diff'].invoke
+        end.to raise_exception(Aws::S3::Errors::Forbidden)
+
+        files = Dir.glob(File.join(@output_directory, '*').gsub('\\', '/'))
+        expect(files).to be_empty
+      end
+    end
   end
 
-  it 'should build a vsphere stemcell' do
-    os_version = 'windows2012R2'
-    version = '1200.3.1-build.2'
-    agent_commit = 'some-agent-commit'
+  describe 'stemcell' do
+    before(:each) do
+      os_version = 'windows2012R2'
+      version = '1200.3.1-build.2'
+      agent_commit = 'some-agent-commit'
 
-    ENV['AWS_ACCESS_KEY_ID']= 'some-key'
-    ENV['AWS_SECRET_ACCESS_KEY'] = 'secret-key'
-    ENV['AWS_REGION'] = 'some-region'
-    ENV['INPUT_BUCKET'] = 'input-vmx-bucket'
-    ENV['VMX_CACHE_DIR'] = '/tmp'
-    ENV['OUTPUT_BUCKET'] = 'stemcell-output-bucket'
+      ENV['AWS_ACCESS_KEY_ID']= 'some-key'
+      ENV['AWS_SECRET_ACCESS_KEY'] = 'secret-key'
+      ENV['AWS_REGION'] = 'some-region'
+      ENV['INPUT_BUCKET'] = 'input-vmx-bucket'
+      ENV['VMX_CACHE_DIR'] = '/tmp'
+      ENV['OUTPUT_BUCKET'] = 'stemcell-output-bucket'
 
-    ENV['ADMINISTRATOR_PASSWORD'] = 'pass'
-    ENV['PRODUCT_KEY'] = 'product-key'
-    ENV['OWNER'] = 'owner'
-    ENV['ORGANIZATION'] = 'organization'
+      ENV['ADMINISTRATOR_PASSWORD'] = 'pass'
+      ENV['PRODUCT_KEY'] = 'product-key'
+      ENV['OWNER'] = 'owner'
+      ENV['ORGANIZATION'] = 'organization'
 
-    ENV['OS_VERSION'] = os_version
-    ENV['VERSION_DIR'] = @version_dir
-    ENV['VMX_VERSION_DIR'] = @vmx_version_dir
-    ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
-    ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'vsphere')}:#{ENV['PATH']}"
+      ENV['OS_VERSION'] = os_version
+      ENV['VERSION_DIR'] = @version_dir
+      ENV['VMX_VERSION_DIR'] = @vmx_version_dir
+      ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
+      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'vsphere')}:#{ENV['PATH']}"
 
-    FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
-    File.write(
-      File.join(@build_dir, 'compiled-agent', 'sha'),
-      agent_commit
-    )
+      FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
+      File.write(
+        File.join(@build_dir, 'compiled-agent', 'sha'),
+        agent_commit
+      )
 
-    File.write(
-      File.join(@version_dir, 'number'),
-      version
-    )
-    File.write(
-      File.join(@vmx_version_dir, 'number'),
-      'some-vmx-version'
-    )
+      File.write(
+        File.join(@version_dir, 'number'),
+        version
+      )
+      File.write(
+        File.join(@vmx_version_dir, 'number'),
+        'some-vmx-version'
+      )
 
+      s3_vmx= double(:s3_vmx)
+      allow(s3_vmx).to receive(:fetch).and_return("1234")
+      allow(s3_vmx).to receive(:put)
 
-    s3_vmx= double(:s3_vmx)
-    allow(s3_vmx).to receive(:fetch).and_return("1234")
-    allow(s3_vmx).to receive(:put)
+      allow(S3::Vmx).to receive(:new).with(
+        input_bucket: 'input-vmx-bucket',
+        output_bucket: 'stemcell-output-bucket',
+        vmx_cache_dir: '/tmp',
+        endpoint: nil)
+        .and_return(s3_vmx)
 
-    allow(S3::Vmx).to receive(:new).with(
-      aws_access_key_id: 'some-key',
-      aws_secret_access_key: 'secret-key',
-      aws_region: 'some-region',
-      input_bucket: 'input-vmx-bucket',
-      output_bucket: 'stemcell-output-bucket',
-      vmx_cache_dir: '/tmp',
-      endpoint: nil)
-      .and_return(s3_vmx)
+      @s3_client= double(:s3_client)
+      allow(@s3_client).to receive(:put)
 
-    s3_client= double(:s3_client)
-    allow(s3_client).to receive(:put)
+      allow(S3::Client).to receive(:new).with(
+        endpoint: nil
+      ).and_return(@s3_client)
+    end
 
-    allow(S3::Client).to receive(:new).with(
-      aws_access_key_id: 'some-key',
-      aws_secret_access_key: 'secret-key',
-      aws_region: 'some-region',
-      endpoint: nil
-    ).and_return(s3_client)
+    it 'should build a vsphere stemcell' do
+      Rake::Task['build:vsphere'].invoke
 
-    Rake::Task['build:vsphere'].invoke
+      stembuild_version_arg = JSON.parse(File.read("#{@output_directory}/myargs"))[3]
+      expect(stembuild_version_arg).to eq('1200.3')
+      stemcell_filename = File.basename(Dir["#{@output_directory}/*.tgz"].first)
+      expect(stemcell_filename).to eq "bosh-stemcell-1200.3.1-build.2-vsphere-esxi-windows2012R2-go_agent.tgz"
+    end
 
-    stembuild_version_arg = JSON.parse(File.read("#{@output_directory}/myargs"))[3]
-    expect(stembuild_version_arg).to eq('1200.3')
-    stemcell_filename = File.basename(Dir["#{@output_directory}/*.tgz"].first)
-    expect(stemcell_filename).to eq "bosh-stemcell-1200.3.1-build.2-vsphere-esxi-windows2012R2-go_agent.tgz"
+    context 'when we are not authorized to upload to the S3 bucket' do
+      before(:each) do
+        allow(@s3_client).to receive(:put)
+          .with('stemcell-output-bucket', 'test-upload-permissions', /vsphere-stemcell-permissions-tempfile/)
+          .and_raise(Aws::S3::Errors::Forbidden.new('', ''))
+      end
+
+      it 'should fail before building the stemcell' do
+        expect do
+          Rake::Task['build:vsphere'].invoke
+        end.to raise_exception(Aws::S3::Errors::Forbidden)
+
+        files = Dir.glob(File.join(@output_directory, '*').gsub('\\', '/'))
+        expect(files).to be_empty
+      end
+    end
   end
 end
