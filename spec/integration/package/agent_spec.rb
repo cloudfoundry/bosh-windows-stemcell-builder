@@ -13,12 +13,16 @@ describe 'Package::Agent' do
     @original_env = ENV.to_hash
     @build_dir = File.expand_path('../../../../build', __FILE__)
     FileUtils.mkdir_p(@build_dir)
+    @version_file = File.join('src', 'github.com', 'cloudfoundry', 'bosh-agent', 'main', 'version.go')
+    @original_version_file_contents = File.read(@version_file)
   end
 
   after(:each) do
     ENV.replace(@original_env)
     FileUtils.rm_rf(@build_dir)
+    File.open(@version_file, 'w') { |file| file.write(@original_version_file_contents) }
   end
+
   it 'should bundle bosh agent + deps into zip files' do
     Rake::Task['package:agent'].invoke
     pattern = File.join(@build_dir, "agent.zip").gsub('\\', '/')
