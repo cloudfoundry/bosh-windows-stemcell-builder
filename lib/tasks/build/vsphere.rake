@@ -1,6 +1,7 @@
 require 'rspec/core/rake_task'
 require 'json'
 require 'fileutils'
+require 'tempfile'
 require_relative '../../s3'
 require_relative '../../file_helper'
 require_relative '../../stemcell/builder/vsphere'
@@ -88,8 +89,9 @@ namespace :build do
     # Setup base vmx file for packer to use
     vmx_template_txt = File.read("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff/old-base-vmx.vmx")
     new_vmx_txt = vmx_template_txt.gsub("INIT_VMDK",vmdk_path)
-    File.write("config.vmx", new_vmx_txt)
-    vmx_path = File.absolute_path("config.vmx").gsub("/", "\\")
+    config_vmx = Tempfile.new(["config", ".vmx"])
+    File.write(config_vmx.path, new_vmx_txt)
+    vmx_path = config_vmx.path.gsub("/", "\\")
 
     vsphere = Stemcell::Builder::VSphere.new(
       mem_size: '4096',
