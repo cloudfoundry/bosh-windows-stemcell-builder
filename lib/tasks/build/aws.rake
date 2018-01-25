@@ -10,7 +10,7 @@ namespace :build do
   task :aws do
     # Check required environment variables
     base_amis_dir = Stemcell::Builder::validate_env_dir('BASE_AMIS_DIR')
-    region = Stemcell::Builder::validate_env('REGION')
+    region = Stemcell::Builder::validate_env('PACKER_REGION')
     output_bucket = Stemcell::Builder::validate_env('OUTPUT_BUCKET_NAME')
 
     S3.test_upload_permissions(output_bucket)

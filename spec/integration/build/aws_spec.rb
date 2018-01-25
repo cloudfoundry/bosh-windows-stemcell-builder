@@ -73,7 +73,7 @@ describe 'Aws' do
 
   describe 'Create an aws stemcell' do
     before(:each) do
-      ENV['REGION'] = @region = 'us-east-1'
+      ENV['PACKER_REGION'] = @region = 'us-east-1'
     end
 
     it 'should build an aws stemcell' do
