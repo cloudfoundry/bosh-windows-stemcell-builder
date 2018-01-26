@@ -123,6 +123,8 @@ describe Packer::Config::Aws do
           [
             {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
             {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
+            {"type"=>"file", "source"=>"../private-patch/private-patch1.exe", "destination"=>"C:\\provision\\private-patch1.exe"},
+            {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command bcdedit -set testsigning on; C:\\provision\\private-patch1.exe /q ; start-sleep 300; restart-computer", "restart_timeout"=>"1h"},
             {'type'=>'powershell', 'inline'=>['$ErrorActionPreference = "Stop";',
                                               'trap { $host.SetShouldExit(1) }',
                                               'Set-ProxySettings   ']},
