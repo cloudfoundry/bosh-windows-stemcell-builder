@@ -19,9 +19,6 @@ module Packer
             Provisioners::NEW_PROVISIONER,
             Provisioners::INSTALL_CF_FEATURES_2016,
           ]
-          if iaas == 'aws'
-            pre.insert(1, Provisioners::ADD_TEMP_PATCH, Provisioners::INSTALL_TEMP_PATCH)
-          end
         end
         install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
         #temporarily disable 'test-installed-updates'

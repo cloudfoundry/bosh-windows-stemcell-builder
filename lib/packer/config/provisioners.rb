@@ -25,13 +25,6 @@ module Packer
           'scripts' => ['scripts/install-bosh-psmodules.ps1']
         }
       ].freeze
-      ADD_TEMP_PATCH = [
-        {
-          'type' => 'file',
-          'source' => '../private-patch/private-patch1.exe',
-          'destination' => 'C:\\provision\\private-patch1.exe'
-        }
-      ].freeze
       NEW_PROVISIONER = powershell_provisioner('New-Provisioner')
       INSTALL_KB4056898 = {
         'type' => 'windows-restart',
@@ -41,11 +34,6 @@ module Packer
       INSTALL_CF_FEATURES_2016  = {
         'type' => 'windows-restart',
         'restart_command' => "powershell.exe -Command Install-CFFeatures",
-        'restart_timeout' => '1h'
-      }
-      INSTALL_TEMP_PATCH  = {
-        'type' => 'windows-restart',
-        'restart_command' => "powershell.exe -Command bcdedit -set testsigning on; C:\\provision\\private-patch1.exe /q ; start-sleep 300; restart-computer",
         'restart_timeout' => '1h'
       }
       WAIT_AND_RESTART = {
