@@ -63,7 +63,7 @@ describe Packer::Config::Aws do
           'secret_key' => 'secretkey',
           'region' => 'region1',
           'source_ami' => 'baseami1',
-          'instance_type' => 't2.large',
+          'instance_type' => 'm5.large',
           'vpc_id' => 'vpc1',
           'subnet_id' => 'subnet1',
           'associate_public_ip_address' => true,

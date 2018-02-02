@@ -51,7 +51,7 @@ module Packer
       private
         def instance_type
           if @os == 'windows2016'
-            return 't2.large'
+            return 'm5.large'
           end
 
           return 'm4.xlarge'
