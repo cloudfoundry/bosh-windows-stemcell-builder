@@ -217,6 +217,8 @@ function Set-Path {
 }
 
 function Install-AgentService {
+    Write-Log "Updating services timeout from 30s to 60s"
+    reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control" /v ServicesPipeTimeout /t REG_DWORD /d 60000 /f
     Write-Log "Install-AgentService: Installing BOSH Agent"
     Start-Process -FilePath "C:\bosh\service_wrapper.exe" -ArgumentList "install" -NoNewWindow -Wait
 }
