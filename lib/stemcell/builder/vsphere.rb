@@ -12,8 +12,6 @@ module Stemcell
                      mem_size:,
                      num_vcpus:,
                      enable_rdp: false,
-                     enable_kms: false,
-                     kms_host: '',
                      http_proxy:,
                      https_proxy:,
                      bypass_list:,
@@ -23,8 +21,6 @@ module Stemcell
         @mem_size = mem_size
         @num_vcpus = num_vcpus
         @enable_rdp = enable_rdp
-        @enable_kms = enable_kms
-        @kms_host = kms_host
         @http_proxy = http_proxy
         @https_proxy = https_proxy
         @bypass_list = bypass_list
@@ -93,8 +89,6 @@ module Stemcell
           owner: @owner,
           organization: @organization,
           os: @os,
-          kms_host: @kms_host,
-          enable_kms: @enable_kms,
           enable_rdp: @enable_rdp,
           skip_windows_update: @skip_windows_update,
           http_proxy: @http_proxy,

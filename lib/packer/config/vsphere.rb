@@ -74,16 +74,12 @@ module Packer
                      owner:,
                      organization:,
                      enable_rdp:,
-                     enable_kms:,
-                     kms_host:,
                      new_password:,
                      **args)
         @product_key = product_key
         @owner = owner
         @organization = organization
         @enable_rdp = enable_rdp
-        @enable_kms = enable_kms
-        @kms_host = kms_host
         @new_password = new_password
         super(args)
       end
@@ -123,17 +119,11 @@ module Packer
         ]
         download_windows_updates = @skip_windows_update?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
 
-        setup_kms_server = []
-        if @enable_kms && !@kms_host.nil? && !@kms_host.empty?
-          setup_kms_server << Provisioners.setup_kms_server(@kms_host)
-        end
-
         post = [Base.post_provisioners('vsphere')]
 
         [pre,
          download_windows_updates,
-         post,
-         setup_kms_server].flatten
+         post].flatten
       end
     end
   end

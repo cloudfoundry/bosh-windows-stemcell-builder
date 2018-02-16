@@ -103,8 +103,6 @@ describe Packer::Config do
           source_path: 'source_path',
           os: 'windows2012R2',
           enable_rdp: false,
-          enable_kms: false,
-          kms_host: '',
           new_password: 'new-password',
           http_proxy: '',
           https_proxy: '',
@@ -146,8 +144,6 @@ describe Packer::Config do
           source_path: 'source_path',
           os: 'windows2012R2',
           enable_rdp: true,
-          enable_kms: false,
-          kms_host: '',
           new_password: 'new-password',
           http_proxy: '',
           https_proxy: '',
@@ -168,8 +164,6 @@ describe Packer::Config do
           source_path: 'source_path',
           os: 'windows2012R2',
           enable_rdp: true,
-          enable_kms: false,
-          kms_host: '',
           new_password: 'new-password',
           http_proxy: '',
           https_proxy: '',
@@ -198,8 +192,6 @@ describe Packer::Config do
             source_path: 'source_path',
             os: 'windows2016',
             enable_rdp: false,
-            enable_kms: false,
-            kms_host: '',
             new_password: 'new-password',
             http_proxy: 'foo',
             https_proxy: 'bar',
@@ -258,8 +250,6 @@ describe Packer::Config do
             source_path: 'source_path',
             os: 'windows2012R2',
             enable_rdp: false,
-            enable_kms: false,
-            kms_host: '',
             new_password: 'new-password',
             http_proxy: 'foo',
             https_proxy: 'bar',
@@ -302,47 +292,6 @@ describe Packer::Config do
           FileUtils.rm_rf(stemcell_deps_dir)
           ENV.delete('STEMCELL_DEPS_DIR')
         end
-      end
-
-      it 'adds the kms host provisioner' do
-        stemcell_deps_dir = Dir.mktmpdir('vsphere')
-        ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
-
-        allow(SecureRandom).to receive(:hex).and_return('some-password')
-
-        provisioners = Packer::Config::VSphere.new(
-          output_directory: 'output_directory',
-          num_vcpus: 1,
-          mem_size: 1000,
-          product_key: 'key',
-          organization: 'me',
-          owner: 'me',
-          administrator_password: 'password',
-          source_path: 'source_path',
-          os: 'windows2012R2',
-          enable_rdp: false,
-          enable_kms: true,
-          kms_host: "myhost.com",
-          new_password: 'new-password',
-          http_proxy: '',
-          https_proxy: '',
-          bypass_list: ''
-        ).provisioners
-        expect(provisioners).to include(
-          {
-            "type"=>"powershell",
-            "inline"=>
-            [
-              "$ErrorActionPreference = \"Stop\";",
-              "netsh advfirewall firewall add rule name=\"Open inbound 1688 for KMS Server\" dir=in action=allow protocol=TCP localport=1688",
-              "netsh advfirewall firewall add rule name=\"Open outbound 1688 for KMS Server\" dir=out action=allow protocol=TCP localport=1688",
-              "cscript //B 'C:\\Windows\\System32\\slmgr.vbs' /skms myhost.com:1688"
-            ]
-          }
-        )
-
-        FileUtils.rm_rf(stemcell_deps_dir)
-        ENV.delete('STEMCELL_DEPS_DIR')
       end
     end
   end
