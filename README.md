@@ -55,7 +55,7 @@ bundle exec rspec
 ##### Requirements
 
 * Latest stable [bosh-cli](https://bosh.io/docs/cli-v2.html)
-* [Golang](https://golang.org/dl/) Latest 1.8.x compiler
+* [Golang](https://golang.org/dl/) Latest 1.10.x compiler
 
 Set the following environment variables:
 
