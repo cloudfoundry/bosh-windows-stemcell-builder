@@ -94,6 +94,7 @@ describe S3 do
       end
     end
   end
+
   describe 'Vmx' do
     it 'picks the correct version' do
       input_bucket = 'some-input-bucket'
@@ -120,6 +121,55 @@ describe S3 do
       ).fetch(version)
 
       expect(file).to eq(File.join(vmx_cache_dir, '2', 'image.vmx'))
+    end
+
+    context 'when there are multiple cached vmx versions' do
+      before :each do
+        @vmx_cache_dir = Dir.mktmpdir('stemcell-builder-vmx-cache')
+        FileUtils.mkdir_p(File.join(@vmx_cache_dir,"1"))
+        FileUtils.mkdir_p(File.join(@vmx_cache_dir,"2"))
+        FileUtils.mkdir_p(File.join(@vmx_cache_dir,"4"))
+        FileUtils.touch(File.join(@vmx_cache_dir,"vmx-v1.tgz"))
+        FileUtils.touch(File.join(@vmx_cache_dir,"vmx-v2.tgz"))
+        FileUtils.touch(File.join(@vmx_cache_dir,"vmx-v4.tgz"))
+      end
+
+      after :each do
+        FileUtils.rm_rf(@vmx_cache_dir)
+      end
+
+      it 'deletes older versions' do
+        input_bucket = 'some-input-bucket'
+        output_bucket = 'some-output-bucket'
+        version = '3.0.0'
+
+        s3_client= double(:s3_client)
+        allow(S3::Client).to receive(:new)
+          .with(endpoint: '')
+          .and_return(s3_client)
+
+        vmx_version = "vmx-v3.tgz"
+        allow(s3_client).to receive(:get)
+          .with(input_bucket, vmx_version, File.join(@vmx_cache_dir, vmx_version)) do
+          tarball_path = File.expand_path('../fixtures/vsphere/dummy-vmx-tarball.tgz', __FILE__)
+          FileUtils.cp(tarball_path, File.join(@vmx_cache_dir, vmx_version))
+        end
+
+        S3::Vmx.new(
+          input_bucket: input_bucket,
+          output_bucket: output_bucket,
+          vmx_cache_dir: @vmx_cache_dir
+        ).fetch(version)
+
+        expect(File.directory?(File.join(@vmx_cache_dir,"1"))).to be_falsey
+        expect(File.directory?(File.join(@vmx_cache_dir,"2"))).to be_falsey
+        expect(File.directory?(File.join(@vmx_cache_dir,"3"))).to be_truthy
+        expect(File.directory?(File.join(@vmx_cache_dir,"4"))).to be_truthy
+        expect(File.exist?(File.join(@vmx_cache_dir,"vmx-v1.tgz"))).to be_falsey
+        expect(File.exist?(File.join(@vmx_cache_dir,"vmx-v2.tgz"))).to be_falsey
+        expect(File.exist?(File.join(@vmx_cache_dir,"vmx-v3.tgz"))).to be_truthy
+        expect(File.exist?(File.join(@vmx_cache_dir,"vmx-v4.tgz"))).to be_truthy
+      end
     end
   end
 

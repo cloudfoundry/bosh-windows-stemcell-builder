@@ -65,6 +65,21 @@ module S3
 
     def fetch(version)
       version = version.scan(/(\d+)\./).flatten.first
+
+      Dir.foreach(@vmx_cache_dir) do |path|
+        if /^\d+$/.match(path)
+          if path < version
+            puts "Deleting old cache dir #{File.join(@vmx_cache_dir, path)}"
+            FileUtils.rm_rf(File.join(@vmx_cache_dir, path))
+          end
+        elsif vmx_version = /vmx-v([\d]+).tgz/.match(path)
+          if vmx_version[1] < version
+            puts "Deleting old cache file #{File.join(@vmx_cache_dir, path)}"
+            FileUtils.rm(File.join(@vmx_cache_dir, path))
+          end
+        end
+      end
+
       vmx_tarball = File.join(@vmx_cache_dir,"vmx-v#{version}.tgz")
       puts "Checking for #{vmx_tarball}"
       if !File.exist?(vmx_tarball)
@@ -82,6 +97,7 @@ module S3
       else
         puts "VMX dir #{vmx_dir} found in cache."
       end
+
       find_vmx_file(vmx_dir)
     end
 
