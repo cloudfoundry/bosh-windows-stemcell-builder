@@ -96,10 +96,17 @@ describe S3 do
   end
 
   describe 'Vmx' do
+    before :each do
+      @vmx_cache_dir = Dir.mktmpdir('stemcell-builder-vmx-cache')
+    end
+
+    after :each do
+      FileUtils.rm_rf(@vmx_cache_dir)
+    end
+
     it 'picks the correct version' do
       input_bucket = 'some-input-bucket'
       output_bucket = 'some-output-bucket'
-      vmx_cache_dir = Dir.mktmpdir('')
       version = '2.0.0'
 
       s3_client= double(:s3_client)
@@ -109,33 +116,28 @@ describe S3 do
 
       vmx_version = "vmx-v2.tgz"
       allow(s3_client).to receive(:get)
-        .with(input_bucket, vmx_version, File.join(vmx_cache_dir, vmx_version)) do
+        .with(input_bucket, vmx_version, File.join(@vmx_cache_dir, vmx_version)) do
         tarball_path = File.expand_path('../fixtures/vsphere/dummy-vmx-tarball.tgz', __FILE__)
-        FileUtils.cp(tarball_path, File.join(vmx_cache_dir, vmx_version))
+        FileUtils.cp(tarball_path, File.join(@vmx_cache_dir, vmx_version))
       end
 
       file = S3::Vmx.new(
         input_bucket: input_bucket,
         output_bucket: output_bucket,
-        vmx_cache_dir: vmx_cache_dir
+        vmx_cache_dir: @vmx_cache_dir
       ).fetch(version)
 
-      expect(file).to eq(File.join(vmx_cache_dir, '2', 'image.vmx'))
+      expect(file).to eq(File.join(@vmx_cache_dir, '2', 'image.vmx'))
     end
 
     context 'when there are multiple cached vmx versions' do
       before :each do
-        @vmx_cache_dir = Dir.mktmpdir('stemcell-builder-vmx-cache')
         FileUtils.mkdir_p(File.join(@vmx_cache_dir,"1"))
         FileUtils.mkdir_p(File.join(@vmx_cache_dir,"2"))
         FileUtils.mkdir_p(File.join(@vmx_cache_dir,"4"))
         FileUtils.touch(File.join(@vmx_cache_dir,"vmx-v1.tgz"))
         FileUtils.touch(File.join(@vmx_cache_dir,"vmx-v2.tgz"))
         FileUtils.touch(File.join(@vmx_cache_dir,"vmx-v4.tgz"))
-      end
-
-      after :each do
-        FileUtils.rm_rf(@vmx_cache_dir)
       end
 
       it 'deletes older versions' do
