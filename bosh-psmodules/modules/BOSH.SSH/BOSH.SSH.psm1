@@ -16,7 +16,8 @@
 
 # Grant NT SERVICE\SSHD user access to .EXEs and the .DLL in OpenSSH
     $FileNames=@(
-        "libcrypto-41.dll"
+        "libcrypto-41.dll",
+        "libcrypto.dll",
         "scp.exe",
         "sftp-server.exe",
         "sftp.exe",
