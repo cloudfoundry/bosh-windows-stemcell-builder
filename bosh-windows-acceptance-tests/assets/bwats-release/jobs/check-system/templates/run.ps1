@@ -254,6 +254,12 @@ if ((Get-ItemProperty  $RegPath).DelayedAutostart -ne 1) {
     Exit 1
 }
 
+$ServicesPipeTimeoutPath = "HKLM:\SYSTEM\CurrentControlSet\Control"
+if ((Get-ItemProperty  $ServicesPipeTimeoutPath).ServicesPipeTimeout -ne 60000) {
+    Write-Error "Error: expected ServicesPipeTimeout to equal 60s"
+    Exit 1
+}
+
 # Verify-autoupdates have been stopped
 if ((Get-Service wuauserv).Status -ne "Stopped") {
     Write-Error "Error: expected wuauserv service to be Stopped"
