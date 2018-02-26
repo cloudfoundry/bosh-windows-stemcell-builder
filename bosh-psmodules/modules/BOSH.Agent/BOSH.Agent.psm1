@@ -218,8 +218,8 @@ function Set-Path {
 
 function Install-AgentService {
     Write-Log "Updating services timeout from 30s to 60s"
-    $parentRegistryPath = "HKLM:\SYSTEM\CurrentControlSetup"
-    $registryPath = "HKLM:\SYSTEM\CurrentControlSetup\Control"
+    $parentRegistryPath = "HKLM:\SYSTEM\CurrentControlSet"
+    $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control"
     $name = "ServicesPipeTimeout"
     $value = 60000
 
