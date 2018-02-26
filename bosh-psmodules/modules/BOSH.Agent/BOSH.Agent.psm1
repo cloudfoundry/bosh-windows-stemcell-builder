@@ -218,7 +218,20 @@ function Set-Path {
 
 function Install-AgentService {
     Write-Log "Updating services timeout from 30s to 60s"
-    reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control" /v ServicesPipeTimeout /t REG_DWORD /d 60000 /f
+    $parentRegistryPath = "HKLM:\SYSTEM\CurrentControlSetup"
+    $registryPath = "HKLM:\SYSTEM\CurrentControlSetup\Control"
+    $name = "ServicesPipeTimeout"
+    $value = 60000
+
+    If (-NOT (Test-Path $parentRegistryPath)) {
+      New-Item $parentRegistryPath | Out-Null
+    }
+
+    If (-NOT (Test-Path $registryPath)) {
+      New-Item $registryPath | Out-Null
+    }
+
+    New-ItemProperty -Path $registryPath -Name $name -Value $value -PropertyType DWORD -Force | Out-Null
     Write-Log "Install-AgentService: Installing BOSH Agent"
     Start-Process -FilePath "C:\bosh\service_wrapper.exe" -ArgumentList "install" -NoNewWindow -Wait
 }
