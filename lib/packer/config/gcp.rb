@@ -3,13 +3,14 @@ require 'securerandom'
 module Packer
   module Config
     class Gcp < Base
-      def initialize(account_json, project_id, source_image, output_directory, image_family, os)
+      def initialize(account_json, project_id, source_image, output_directory, image_family, os, vm_prefix)
         @account_json = account_json
         @project_id = project_id
         @source_image = source_image
         @output_directory = output_directory
         @image_family = image_family
         @os = os
+        @vm_prefix = vm_prefix
       end
 
       def builders
@@ -31,7 +32,8 @@ module Packer
             'winrm_use_ssl' => false,
             'winrm_timeout' => '1h',
             'metadata' => {
-              'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1'
+              'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1',
+              'name' => "#{@vm_prefix}-#{Time.now.to_i}",
             }
           }
         ]

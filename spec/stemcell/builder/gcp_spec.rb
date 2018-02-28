@@ -27,11 +27,12 @@ describe Stemcell::Builder do
         packer_output = ",artifact,0,id,#{image_name}"
         source_image = "some-source-image"
         image_family= "some-family"
+        vm_prefix = "some-vm-prefix"
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
         allow(Packer::Config::Gcp).to receive(:new).with(
-          account_json, 'some-project-id', source_image, output_directory, image_family, os
+          account_json, 'some-project-id', source_image, output_directory, image_family, os, vm_prefix
         ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
@@ -66,7 +67,8 @@ describe Stemcell::Builder do
           packer_vars: packer_vars,
           account_json: account_json,
           source_image: source_image,
-          image_family: image_family
+          image_family: image_family,
+          vm_prefix: vm_prefix
         ).build
         expect(stemcell_path).to eq('path-to-stemcell')
       end
@@ -79,11 +81,12 @@ describe Stemcell::Builder do
           image_family = "some-family"
           packer_vars = 'some-packer-vars'
           os = 'windows2012R2'
+          vm_prefix = 'some-vm-prefix'
 
           packer_config = double(:packer_config)
           allow(packer_config).to receive(:dump).and_return('some-packer-config')
           allow(Packer::Config::Gcp).to receive(:new).with(
-            account_json, project_id, source_image, output_directory, image_family, os
+            account_json, project_id, source_image, output_directory, image_family, os, vm_prefix
           ).and_return(packer_config)
 
           packer_runner = double(:packer_runner)
@@ -99,7 +102,8 @@ describe Stemcell::Builder do
               packer_vars: packer_vars,
               account_json: account_json,
               source_image: source_image,
-              image_family: image_family
+              image_family: image_family,
+              vm_prefix: vm_prefix
             ).build
           }.to raise_error(Stemcell::Builder::PackerFailure)
         end

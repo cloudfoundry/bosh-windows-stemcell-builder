@@ -2,6 +2,14 @@ require 'packer/config'
 
 describe Packer::Config::Gcp do
   describe 'builders' do
+    before :each do
+      Timecop.freeze
+    end
+
+    after :each do
+      Timecop.return
+    end
+
     it 'returns the expected builders' do
       account_json = 'some-account-json'
       project_id = 'some-project-id'
@@ -14,7 +22,8 @@ describe Packer::Config::Gcp do
         source_image,
         output_dir,
         image_family,
-        'windows2012R'
+        'windows2012R',
+        'some-vm-prefix'
       ).builders
       expect(builders[0]).to include(
         'type' => 'googlecompute',
@@ -32,7 +41,8 @@ describe Packer::Config::Gcp do
         'winrm_use_ssl' => false,
         'winrm_timeout' => '1h',
         'metadata' => {
-          'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1'
+          'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1',
+          'name' => "some-vm-prefix-#{Time.now.to_i}"
         }
       )
       expect(builders[0]['image_name']).to match(/packer-\d+/)
@@ -46,7 +56,7 @@ describe Packer::Config::Gcp do
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2', 'windows2012R2').provisioners
+        provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2', 'windows2012R2', '').provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
@@ -88,7 +98,7 @@ describe Packer::Config::Gcp do
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2', 'windows2016').provisioners
+        provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2', 'windows2016', '').provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},

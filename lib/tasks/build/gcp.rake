@@ -30,7 +30,8 @@ namespace :build do
       packer_vars: {},
       source_image: source_image,
       image_family: image_family,
-      version: version
+      version: version,
+      vm_prefix: ENV.fetch('VM_PREFIX', '').empty? ? 'packer' : ENV['VM_PREFIX']
     )
 
     gcp_builder.build
