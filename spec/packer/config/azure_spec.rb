@@ -23,7 +23,6 @@ describe Packer::Config::Azure do
         storage_account: 'some-storage-account',
         location: 'some-location',
         vm_size: 'some-vm-size',
-        admin_password: 'some-admin-password',
         output_directory: '',
         os: '',
         vm_prefix: 'some-vm-prefix'
@@ -68,7 +67,6 @@ describe Packer::Config::Azure do
           storage_account: '',
           location: '',
           vm_size: '',
-          admin_password: '',
           output_directory: '',
           os: '',
           vm_prefix: ''
@@ -97,7 +95,6 @@ describe Packer::Config::Azure do
           storage_account: '',
           location: '',
           vm_size: '',
-          admin_password: '',
           output_directory: 'some-output-directory',
           os: 'windows2012R2',
           vm_prefix: ''
@@ -151,7 +148,6 @@ describe Packer::Config::Azure do
           storage_account: '',
           location: '',
           vm_size: '',
-          admin_password: '',
           output_directory: 'some-output-directory',
           os: 'windows2016',
           vm_prefix: ''

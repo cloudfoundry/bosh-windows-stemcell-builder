@@ -35,7 +35,6 @@ namespace :build do
       publisher: Stemcell::Builder::validate_env('PUBLISHER'),
       offer: Stemcell::Builder::validate_env('OFFER'),
       sku: Stemcell::Builder::validate_env('SKU'),
-      admin_password: Stemcell::Builder::validate_env('ADMIN_PASSWORD'),
       vm_prefix: ENV.fetch('VM_PREFIX', '')
     )
 

@@ -45,7 +45,6 @@ describe 'Azure' do
       ENV['PUBLISHER'] = 'some-publisher'
       ENV['OFFER'] = 'some-offer'
       ENV['SKU'] = 'some-sku'
-      ENV["ADMIN_PASSWORD"] = 'some-admin-password'
       ENV['OS_VERSION'] = os_version
       ENV['VERSION_DIR'] = @version_dir
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'azure')}:#{ENV['PATH']}"

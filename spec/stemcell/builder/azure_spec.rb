@@ -32,7 +32,6 @@ describe Stemcell::Builder do
         storage_account = 'some-storage-account'
         location = 'some-location'
         vm_size = 'some-vm-size'
-        admin_password = 'some-admin-password'
         publisher = 'some-publisher'
         offer = 'some-offer'
         sku = 'some-sku'
@@ -51,7 +50,6 @@ describe Stemcell::Builder do
           storage_account: storage_account,
           location: location,
           vm_size: vm_size,
-          admin_password: admin_password,
           output_directory: output_directory,
           os: os,
           vm_prefix: vm_prefix
@@ -103,7 +101,6 @@ describe Stemcell::Builder do
           publisher: publisher,
           offer: offer,
           sku: sku,
-          admin_password: admin_password,
           vm_prefix: vm_prefix
         ).build
         expect(stemcell_path).to eq('path-to-stemcell')
