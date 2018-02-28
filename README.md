@@ -47,7 +47,7 @@ Instructions for building a manual stemcell for vSphere can be found in the [wik
 
 #### Running the tests
 ```
-bundle exec rspec
+bundler exec rspec
 ```
 
 ### Testing stemcell with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests)

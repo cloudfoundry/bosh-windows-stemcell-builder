@@ -382,6 +382,13 @@ function Invoke-Sysprep() {
       Stop-Computer
     }
 
+    if (-Not $SkipLGPO) {
+      if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
+        Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
+      }
+      Enable-LocalSecurityPolicy
+    }
+
     switch ($IaaS) {
         "aws" {
             switch ($OsVersion) {
@@ -440,13 +447,6 @@ function Invoke-Sysprep() {
             C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit /unattend:$AnswerFilePath
         }
         "vsphere" {
-            if (-Not $SkipLGPO) {
-                if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
-                    Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
-                }
-                Enable-LocalSecurityPolicy
-            }
-
             Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
                 -Organization $Organization -Owner $Owner
 

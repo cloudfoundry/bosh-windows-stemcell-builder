@@ -229,6 +229,9 @@ describe Packer::Config do
           expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
           provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
           expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
+
+          FileUtils.rm_rf(stemcell_deps_dir)
+          ENV.delete('STEMCELL_DEPS_DIR')
         end
       end
 
@@ -283,11 +286,10 @@ describe Packer::Config do
                                                'trap { $host.SetShouldExit(1) }',
                                                'Clear-ProxySettings']},
             {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
-          ]
+          ].flatten
           expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
           provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
           expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
-
 
           FileUtils.rm_rf(stemcell_deps_dir)
           ENV.delete('STEMCELL_DEPS_DIR')
