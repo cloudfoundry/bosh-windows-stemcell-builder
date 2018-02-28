@@ -25,8 +25,13 @@ module Stemcell
       private
         def packer_config
           Packer::Config::Gcp.new(
-            @account_json, @project_id,
-            @source_image, @output_directory, @image_family, @os, @vm_prefix
+            account_json: @account_json,
+            project_id: @project_id,
+            source_image: @source_image,
+            output_directory: @output_directory,
+            image_family: @image_family,
+            os: @os,
+            vm_prefix: @vm_prefix
           ).dump
         end
 

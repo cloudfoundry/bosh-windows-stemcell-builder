@@ -5,25 +5,23 @@ module Packer
     class VSphereBase < Base
       def initialize(administrator_password:,
                      source_path:,
-                     output_directory:,
                      mem_size:,
                      num_vcpus:,
-                     os:,
                      skip_windows_update:false,
                      http_proxy:,
                      https_proxy:,
-                     bypass_list:)
+                     bypass_list:,
+                    **args)
         @administrator_password = administrator_password
         @source_path = source_path
-        @output_directory = output_directory
         @mem_size = mem_size
         @num_vcpus = num_vcpus
         @timestamp = Time.now.getutc.to_i
-        @os = os
         @skip_windows_update = skip_windows_update
         @http_proxy = http_proxy
         @https_proxy = https_proxy
         @bypass_list = bypass_list
+        super(args)
       end
     end
 

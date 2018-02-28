@@ -3,14 +3,12 @@ require 'securerandom'
 module Packer
   module Config
     class Gcp < Base
-      def initialize(account_json, project_id, source_image, output_directory, image_family, os, vm_prefix)
+      def initialize(account_json:, project_id:, source_image:, image_family:, **args)
         @account_json = account_json
         @project_id = project_id
         @source_image = source_image
-        @output_directory = output_directory
         @image_family = image_family
-        @os = os
-        @vm_prefix = vm_prefix
+        super(args)
       end
 
       def builders

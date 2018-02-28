@@ -3,6 +3,12 @@ require 'securerandom'
 module Packer
   module Config
     class Base
+      def initialize(os:, output_directory:, vm_prefix: '')
+        @os = os
+        @output_directory = output_directory
+        @vm_prefix = vm_prefix.empty? ? 'packer' : vm_prefix
+      end
+
       def self.pre_provisioners(os, skip_windows_update: false, reduce_mtu: false, iaas: '', http_proxy: '', https_proxy: '', bypass_list: '')
         pre = []
         if os == 'windows2012R2'

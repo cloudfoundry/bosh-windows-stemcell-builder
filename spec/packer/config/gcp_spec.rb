@@ -11,27 +11,22 @@ describe Packer::Config::Gcp do
     end
 
     it 'returns the expected builders' do
-      account_json = 'some-account-json'
-      project_id = 'some-project-id'
-      source_image = 'some-base-image'
-      image_family = 'some-image-family'
-      output_dir = 'some-output-directory'
       builders = Packer::Config::Gcp.new(
-        account_json,
-        project_id,
-        source_image,
-        output_dir,
-        image_family,
-        'windows2012R',
-        'some-vm-prefix'
+        account_json: 'some-account-json',
+        project_id: 'some-project-id',
+        source_image: 'some-source-image',
+        output_directory: '',
+        image_family: 'some-image-family',
+        os: '',
+        vm_prefix: 'some-vm-prefix',
       ).builders
       expect(builders[0]).to include(
         'type' => 'googlecompute',
-        'account_file' => account_json,
-        'project_id' => project_id,
+        'account_file' => 'some-account-json',
+        'project_id' => 'some-project-id',
         'tags' => ['winrm'],
-        'source_image' => source_image,
-        'image_family' => image_family,
+        'source_image' => 'some-source-image',
+        'image_family' => 'some-image-family',
         'zone' => 'us-east1-c',
         'disk_size' => 50,
         'machine_type' => 'n1-standard-4',
@@ -47,6 +42,23 @@ describe Packer::Config::Gcp do
       )
       expect(builders[0]['image_name']).to match(/packer-\d+/)
     end
+
+    context 'when vm_prefix is empty' do
+      it 'defaults to packer' do
+        builders = Packer::Config::Gcp.new(
+          account_json: '',
+          project_id: '',
+          source_image: '',
+          output_directory: '',
+          image_family: '',
+          os: '',
+          vm_prefix: '',
+        ).builders
+        expect(builders[0]['metadata']).to include(
+          'name' => "packer-#{Time.now.to_i}"
+        )
+      end
+    end
   end
 
   describe 'provisioners' do
@@ -56,7 +68,15 @@ describe Packer::Config::Gcp do
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2', 'windows2012R2', '').provisioners
+        provisioners = Packer::Config::Gcp.new(
+          account_json: '{}',
+          project_id: '',
+          source_image: '{}',
+          output_directory: 'some-output-directory',
+          image_family: '',
+          os: 'windows2012R2',
+          vm_prefix: ''
+        ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
@@ -98,7 +118,15 @@ describe Packer::Config::Gcp do
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        provisioners = Packer::Config::Gcp.new({}.to_json, '', {}.to_json, 'some-output-directory','windows-2012-r2', 'windows2016', '').provisioners
+        provisioners = Packer::Config::Gcp.new(
+          account_json: '{}',
+          project_id: '',
+          source_image: '{}',
+          output_directory: 'some-output-directory',
+          image_family: '',
+          os: 'windows2016',
+          vm_prefix: ''
+        ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},

@@ -142,6 +142,6 @@ def get_aws_builder(output_directory, region, base_amis=[])
     packer_vars: {},
     version: version,
     region: region,
-    vm_prefix: ENV.fetch('VM_PREFIX', '').empty? ? 'packer' : ENV['VM_PREFIX']
+    vm_prefix: ENV.fetch('VM_PREFIX', '')
   )
 end

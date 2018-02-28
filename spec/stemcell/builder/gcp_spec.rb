@@ -22,8 +22,9 @@ describe Stemcell::Builder do
         apply_spec_contents = 'apply_spec_contents'
         packer_vars = {some_var: 'some-value'}
         image_name = 'some-image-name'
-        image_url = "https://www.googleapis.com/compute/v1/projects/some-project-id/global/images/#{image_name}"
-        account_json = {'project_id' => 'some-project-id'}.to_json
+        project_id = 'some-project-id'
+        image_url = "https://www.googleapis.com/compute/v1/projects/#{project_id}/global/images/#{image_name}"
+        account_json = {'project_id' => project_id}.to_json
         packer_output = ",artifact,0,id,#{image_name}"
         source_image = "some-source-image"
         image_family= "some-family"
@@ -32,7 +33,13 @@ describe Stemcell::Builder do
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
         allow(Packer::Config::Gcp).to receive(:new).with(
-          account_json, 'some-project-id', source_image, output_directory, image_family, os, vm_prefix
+          account_json: account_json,
+          project_id: project_id,
+          source_image: source_image,
+          output_directory: output_directory,
+          image_family: image_family,
+          os: os,
+          vm_prefix: vm_prefix
         ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
@@ -86,7 +93,13 @@ describe Stemcell::Builder do
           packer_config = double(:packer_config)
           allow(packer_config).to receive(:dump).and_return('some-packer-config')
           allow(Packer::Config::Gcp).to receive(:new).with(
-            account_json, project_id, source_image, output_directory, image_family, os, vm_prefix
+            account_json: account_json,
+            project_id: project_id,
+            source_image: source_image,
+            output_directory: output_directory,
+            image_family: image_family,
+            os: os,
+            vm_prefix: vm_prefix
           ).and_return(packer_config)
 
           packer_runner = double(:packer_runner)

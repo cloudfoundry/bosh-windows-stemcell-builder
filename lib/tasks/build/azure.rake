@@ -36,7 +36,7 @@ namespace :build do
       offer: Stemcell::Builder::validate_env('OFFER'),
       sku: Stemcell::Builder::validate_env('SKU'),
       admin_password: Stemcell::Builder::validate_env('ADMIN_PASSWORD'),
-      vm_prefix: ENV.fetch('VM_PREFIX', '').empty? ? 'packer' : ENV['VM_PREFIX']
+      vm_prefix: ENV.fetch('VM_PREFIX', '')
     )
 
     azure_builder.build

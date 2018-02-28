@@ -10,97 +10,71 @@ describe Packer::Config::Azure do
       Timecop.return
     end
 
-    context 'windows 2016' do
-      it 'returns the expected builders' do
-        allow(ENV).to receive(:[]).with("BASE_IMAGE_OFFER").and_return("WindowsServer")
-        allow(ENV).to receive(:[]).with("BASE_IMAGE").and_return("2016-Datacenter-Server-Core-smalldisk")
-        builders = Packer::Config::Azure.new(
-          client_id: 'some-client-id',
-          client_secret: 'some-client-secret',
-          tenant_id: 'some-tenant-id',
-          subscription_id: 'some-subscription-id',
-          object_id: 'some-object-id',
-          resource_group_name: 'some-resource-group-name',
-          storage_account: 'some-storage-account',
-          location: 'some-location',
-          vm_size: 'some-vm-size',
-          admin_password: 'some-admin-password',
-          output_directory: 'some-output-directory',
-          os: 'windows2016',
-          vm_prefix: 'some-vm-prefix'
-        ).builders
-        expect(builders[0]).to eq(
-          'type' => 'azure-arm',
-          'client_id' => 'some-client-id',
-          'client_secret' => 'some-client-secret',
-          'tenant_id' => 'some-tenant-id',
-          'subscription_id' => 'some-subscription-id',
-          'object_id' => 'some-object-id',
+    it 'returns the expected builders' do
+      allow(ENV).to receive(:[]).with("BASE_IMAGE_OFFER").and_return("some-base-image-offer")
+      allow(ENV).to receive(:[]).with("BASE_IMAGE").and_return("some-base-image")
+      builders = Packer::Config::Azure.new(
+        client_id: 'some-client-id',
+        client_secret: 'some-client-secret',
+        tenant_id: 'some-tenant-id',
+        subscription_id: 'some-subscription-id',
+        object_id: 'some-object-id',
+        resource_group_name: 'some-resource-group-name',
+        storage_account: 'some-storage-account',
+        location: 'some-location',
+        vm_size: 'some-vm-size',
+        admin_password: 'some-admin-password',
+        output_directory: '',
+        os: '',
+        vm_prefix: 'some-vm-prefix'
+      ).builders
+      expect(builders[0]).to eq(
+        'type' => 'azure-arm',
+        'client_id' => 'some-client-id',
+        'client_secret' => 'some-client-secret',
+        'tenant_id' => 'some-tenant-id',
+        'subscription_id' => 'some-subscription-id',
+        'object_id' => 'some-object-id',
 
-          'resource_group_name' => 'some-resource-group-name',
-          'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
-          'storage_account' => 'some-storage-account',
-          'capture_container_name' => 'packer-stemcells',
-          'capture_name_prefix' => 'bosh-stemcell',
-          'image_publisher' => 'MicrosoftWindowsServer',
-          'image_offer' => 'WindowsServer',
-          'image_sku' => '2016-Datacenter-Server-Core-smalldisk',
-          'location' => 'some-location',
-          'vm_size' => 'some-vm-size',
-          'os_type' => 'Windows',
+        'resource_group_name' => 'some-resource-group-name',
+        'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
+        'storage_account' => 'some-storage-account',
+        'capture_container_name' => 'packer-stemcells',
+        'capture_name_prefix' => 'bosh-stemcell',
+        'image_publisher' => 'MicrosoftWindowsServer',
+        'image_offer' => 'some-base-image-offer',
+        'image_sku' => 'some-base-image',
+        'location' => 'some-location',
+        'vm_size' => 'some-vm-size',
+        'os_type' => 'Windows',
 
-          'communicator' => 'winrm',
-          'winrm_use_ssl' => 'true',
-          'winrm_insecure' => 'true',
-          'winrm_timeout' => '1h',
-          'winrm_username' => 'packer'
-        )
-      end
+        'communicator' => 'winrm',
+        'winrm_use_ssl' => 'true',
+        'winrm_insecure' => 'true',
+        'winrm_timeout' => '1h',
+        'winrm_username' => 'packer'
+      )
     end
-    context 'windows 2012' do
-      it 'returns the expected builders' do
-        allow(ENV).to receive(:[]).with("BASE_IMAGE_OFFER").and_return("WindowsServer")
-        allow(ENV).to receive(:[]).with("BASE_IMAGE").and_return("2012-R2-Datacenter")
+
+    context 'when vm_prefix is empty' do
+      it 'defaults to packer' do
         builders = Packer::Config::Azure.new(
-          client_id: 'some-client-id',
-          client_secret: 'some-client-secret',
-          tenant_id: 'some-tenant-id',
-          subscription_id: 'some-subscription-id',
-          object_id: 'some-object-id',
-          resource_group_name: 'some-resource-group-name',
-          storage_account: 'some-storage-account',
-          location: 'some-location',
-          vm_size: 'some-vm-size',
-          admin_password: 'some-admin-password',
-          output_directory: 'some-output-directory',
-          os: 'windows2012R2',
-          vm_prefix: 'some-vm-prefix'
+          client_id: '',
+          client_secret: '',
+          tenant_id: '',
+          subscription_id: '',
+          object_id: '',
+          resource_group_name: '',
+          storage_account: '',
+          location: '',
+          vm_size: '',
+          admin_password: '',
+          output_directory: '',
+          os: '',
+          vm_prefix: ''
         ).builders
-        expect(builders[0]).to eq(
-          'type' => 'azure-arm',
-          'client_id' => 'some-client-id',
-          'client_secret' => 'some-client-secret',
-          'tenant_id' => 'some-tenant-id',
-          'subscription_id' => 'some-subscription-id',
-          'object_id' => 'some-object-id',
-
-          'resource_group_name' => 'some-resource-group-name',
-          'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
-          'storage_account' => 'some-storage-account',
-          'capture_container_name' => 'packer-stemcells',
-          'capture_name_prefix' => 'bosh-stemcell',
-          'image_publisher' => 'MicrosoftWindowsServer',
-          'image_offer' => 'WindowsServer',
-          'image_sku' => '2012-R2-Datacenter',
-          'location' => 'some-location',
-          'vm_size' => 'some-vm-size',
-          'os_type' => 'Windows',
-
-          'communicator' => 'winrm',
-          'winrm_use_ssl' => 'true',
-          'winrm_insecure' => 'true',
-          'winrm_timeout' => '1h',
-          'winrm_username' => 'packer'
+        expect(builders[0]).to include(
+          'temp_resource_group_name' => "packer-#{Time.now.to_i}"
         )
       end
     end
@@ -114,16 +88,16 @@ describe Packer::Config::Azure do
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
         provisioners = Packer::Config::Azure.new(
-          client_id: 'some-client-id',
-          client_secret: 'some-client-secret',
-          tenant_id: 'some-tenant-id',
-          subscription_id: 'some-subscription-id',
-          object_id: 'some-object-id',
-          resource_group_name: 'some-resource-group-name',
-          storage_account: 'some-storage-account',
-          location: 'some-location',
-          vm_size: 'some-vm-size',
-          admin_password: 'some-admin-password',
+          client_id: '',
+          client_secret: '',
+          tenant_id: '',
+          subscription_id: '',
+          object_id: '',
+          resource_group_name: '',
+          storage_account: '',
+          location: '',
+          vm_size: '',
+          admin_password: '',
           output_directory: 'some-output-directory',
           os: 'windows2012R2',
           vm_prefix: ''
@@ -168,16 +142,16 @@ describe Packer::Config::Azure do
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
         provisioners = Packer::Config::Azure.new(
-          client_id: 'some-client-id',
-          client_secret: 'some-client-secret',
-          tenant_id: 'some-tenant-id',
-          subscription_id: 'some-subscription-id',
-          object_id: 'some-object-id',
-          resource_group_name: 'some-resource-group-name',
-          storage_account: 'some-storage-account',
-          location: 'some-location',
-          vm_size: 'some-vm-size',
-          admin_password: 'some-admin-password',
+          client_id: '',
+          client_secret: '',
+          tenant_id: '',
+          subscription_id: '',
+          object_id: '',
+          resource_group_name: '',
+          storage_account: '',
+          location: '',
+          vm_size: '',
+          admin_password: '',
           output_directory: 'some-output-directory',
           os: 'windows2016',
           vm_prefix: ''

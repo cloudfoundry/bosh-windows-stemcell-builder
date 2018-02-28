@@ -31,12 +31,12 @@ module Stemcell
 
         def packer_config
           Packer::Config::Aws.new(
-            @aws_access_key,
-            @aws_secret_key,
-            @amis,
-            @output_directory,
-            @os,
-            @vm_prefix
+            aws_access_key: @aws_access_key,
+            aws_secret_key: @aws_secret_key,
+            regions: @amis,
+            output_directory: @output_directory,
+            os: @os,
+            vm_prefix: @vm_prefix
           ).dump
         end
 

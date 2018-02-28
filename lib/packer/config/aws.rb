@@ -3,13 +3,11 @@ require 'securerandom'
 module Packer
   module Config
     class Aws < Base
-      def initialize(aws_access_key, aws_secret_key, regions, output_directory, os, vm_prefix)
+      def initialize(aws_access_key:, aws_secret_key:, regions:, **args)
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
         @regions = regions
-        @output_directory = output_directory
-        @os = os
-        @vm_prefix = vm_prefix
+        super(args)
       end
 
       def builders

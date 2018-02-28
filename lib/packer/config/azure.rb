@@ -5,7 +5,7 @@ module Packer
     class Azure < Base
       def initialize(client_id:, client_secret:, tenant_id:, subscription_id:,
                      object_id:, resource_group_name:, storage_account:, location:,
-                     vm_size:, admin_password:, output_directory:, os:, vm_prefix:)
+                     vm_size:, admin_password:, **args)
         @client_id = client_id
         @client_secret = client_secret
         @tenant_id = tenant_id
@@ -16,9 +16,7 @@ module Packer
         @storage_account = storage_account
         @location = location
         @vm_size = vm_size
-        @output_directory = output_directory
-        @os = os
-        @vm_prefix = vm_prefix
+        super(args)
       end
 
       def builders

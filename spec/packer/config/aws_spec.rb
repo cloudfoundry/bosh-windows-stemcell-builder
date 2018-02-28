@@ -14,24 +14,25 @@ describe Packer::Config::Aws do
       regions = [
         {
           'name' => 'region1',
-          'ami_name' => 'ami1',
           'base_ami' => 'baseami1',
           'vpc_id' => 'vpc1',
           'subnet_id' => 'subnet1',
           'security_group' => 'sg1'
         }
       ]
-      builders = Packer::Config::Aws.new('accesskey',
-                                         'secretkey',
-                                         regions,
-                                         'some-output-directory',
-                                         'windows2012R2',
-                                         'some-vm-prefix').builders
+      builders = Packer::Config::Aws.new(
+        aws_access_key: 'some-aws-access-key',
+        aws_secret_key: 'some-aws-secret-key',
+        regions: regions,
+        output_directory: '',
+        os: '',
+        vm_prefix: 'some-vm-prefix'
+      ).builders
       expect(builders[0]).to include(
         'name' => 'amazon-ebs-region1',
         'type' => 'amazon-ebs',
-        'access_key' => 'accesskey',
-        'secret_key' => 'secretkey',
+        'access_key' => 'some-aws-access-key',
+        'secret_key' => 'some-aws-secret-key',
         'region' => 'region1',
         'source_ami' => 'baseami1',
         'instance_type' => 'm4.xlarge',
@@ -50,28 +51,29 @@ describe Packer::Config::Aws do
     end
 
     context 'windows 2016' do
-      it 'returns the expected builders' do
+      it 'returns the expected builders using an m5.large' do
         regions = [
           {
             'name' => 'region1',
-            'ami_name' => 'ami1',
             'base_ami' => 'baseami1',
             'vpc_id' => 'vpc1',
             'subnet_id' => 'subnet1',
             'security_group' => 'sg1'
           }
         ]
-        builders = Packer::Config::Aws.new('accesskey',
-                                           'secretkey',
-                                           regions,
-                                           'some-output-directory',
-                                           'windows2016',
-                                           'some-vm-prefix').builders
+        builders = Packer::Config::Aws.new(
+          aws_access_key: 'some-aws-access-key',
+          aws_secret_key: 'some-aws-secret-key',
+          regions: regions,
+          output_directory: 'some-output-directory',
+          os: 'windows2016',
+          vm_prefix: 'some-vm-prefix'
+        ).builders
         expect(builders[0]).to include(
           'name' => 'amazon-ebs-region1',
           'type' => 'amazon-ebs',
-          'access_key' => 'accesskey',
-          'secret_key' => 'secretkey',
+          'access_key' => 'some-aws-access-key',
+          'secret_key' => 'some-aws-secret-key',
           'region' => 'region1',
           'source_ami' => 'baseami1',
           'instance_type' => 'm5.large',
@@ -89,6 +91,22 @@ describe Packer::Config::Aws do
         expect(builders[0]['ami_name']).to match(/BOSH-.*-region1/)
       end
     end
+
+    context 'when vm_prefix is empty' do
+      it 'defaults to packer' do
+        builders = Packer::Config::Aws.new(
+          aws_access_key: '',
+          aws_secret_key: '',
+          regions: [{}],
+          output_directory: '',
+          os: '',
+          vm_prefix: ''
+        ).builders
+        expect(builders[0]).to include(
+          'run_tags' => {'Name' => "packer-#{Time.now.to_i}"}
+        )
+      end
+    end
   end
 
   describe 'provisioners' do
@@ -98,7 +116,14 @@ describe Packer::Config::Aws do
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        provisioners = Packer::Config::Aws.new('', '', [], 'some-output-directory', 'windows2012R2', '').provisioners
+        provisioners = Packer::Config::Aws.new(
+          aws_access_key: '',
+          aws_secret_key: '',
+          regions: [],
+          output_directory: 'some-output-directory',
+          os: 'windows2012R2',
+          vm_prefix: ''
+        ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
@@ -141,7 +166,14 @@ describe Packer::Config::Aws do
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        provisioners = Packer::Config::Aws.new('', '', [], 'some-output-directory', 'windows2016', '').provisioners
+        provisioners = Packer::Config::Aws.new(
+          aws_access_key: '',
+          aws_secret_key: '',
+          regions: [],
+          output_directory: 'some-output-directory',
+          os: 'windows2016',
+          vm_prefix: ''
+        ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
