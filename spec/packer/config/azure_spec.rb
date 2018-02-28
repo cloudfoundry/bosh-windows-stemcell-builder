@@ -2,6 +2,14 @@ require 'packer/config'
 
 describe Packer::Config::Azure do
   describe 'builders' do
+    before :each do
+      Timecop.freeze
+    end
+
+    after :each do
+      Timecop.return
+    end
+
     context 'windows 2016' do
       it 'returns the expected builders' do
         allow(ENV).to receive(:[]).with("BASE_IMAGE_OFFER").and_return("WindowsServer")
@@ -18,7 +26,8 @@ describe Packer::Config::Azure do
           vm_size: 'some-vm-size',
           admin_password: 'some-admin-password',
           output_directory: 'some-output-directory',
-          os: 'windows2016'
+          os: 'windows2016',
+          vm_prefix: 'some-vm-prefix'
         ).builders
         expect(builders[0]).to eq(
           'type' => 'azure-arm',
@@ -29,6 +38,7 @@ describe Packer::Config::Azure do
           'object_id' => 'some-object-id',
 
           'resource_group_name' => 'some-resource-group-name',
+          'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
           'storage_account' => 'some-storage-account',
           'capture_container_name' => 'packer-stemcells',
           'capture_name_prefix' => 'bosh-stemcell',
@@ -63,7 +73,8 @@ describe Packer::Config::Azure do
           vm_size: 'some-vm-size',
           admin_password: 'some-admin-password',
           output_directory: 'some-output-directory',
-          os: 'windows2012R2'
+          os: 'windows2012R2',
+          vm_prefix: 'some-vm-prefix'
         ).builders
         expect(builders[0]).to eq(
           'type' => 'azure-arm',
@@ -74,6 +85,7 @@ describe Packer::Config::Azure do
           'object_id' => 'some-object-id',
 
           'resource_group_name' => 'some-resource-group-name',
+          'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
           'storage_account' => 'some-storage-account',
           'capture_container_name' => 'packer-stemcells',
           'capture_name_prefix' => 'bosh-stemcell',
@@ -113,7 +125,8 @@ describe Packer::Config::Azure do
           vm_size: 'some-vm-size',
           admin_password: 'some-admin-password',
           output_directory: 'some-output-directory',
-          os: 'windows2012R2'
+          os: 'windows2012R2',
+          vm_prefix: ''
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
@@ -166,7 +179,8 @@ describe Packer::Config::Azure do
           vm_size: 'some-vm-size',
           admin_password: 'some-admin-password',
           output_directory: 'some-output-directory',
-          os: 'windows2016'
+          os: 'windows2016',
+          vm_prefix: ''
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},

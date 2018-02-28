@@ -36,11 +36,26 @@ describe Stemcell::Builder do
         publisher = 'some-publisher'
         offer = 'some-offer'
         sku = 'some-sku'
+        vm_prefix = 'some-vm-prefix'
         packer_output = "azure-arm,artifact,0\\nOSDiskUriReadOnlySas: #{disk_image_url}"
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
-        allow(Packer::Config::Azure).to receive(:new).and_return(packer_config)
+        allow(Packer::Config::Azure).to receive(:new).with(
+          client_id: client_id,
+          client_secret: client_secret,
+          tenant_id: tenant_id,
+          subscription_id: subscription_id,
+          object_id: object_id,
+          resource_group_name: resource_group_name,
+          storage_account: storage_account,
+          location: location,
+          vm_size: vm_size,
+          admin_password: admin_password,
+          output_directory: output_directory,
+          os: os,
+          vm_prefix: vm_prefix
+        ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
         allow(packer_runner).to receive(:run).with(command, packer_vars).
@@ -88,7 +103,8 @@ describe Stemcell::Builder do
           publisher: publisher,
           offer: offer,
           sku: sku,
-          admin_password: admin_password
+          admin_password: admin_password,
+          vm_prefix: vm_prefix
         ).build
         expect(stemcell_path).to eq('path-to-stemcell')
       end

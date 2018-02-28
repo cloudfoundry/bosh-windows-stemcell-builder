@@ -4,7 +4,7 @@ module Stemcell
   class Builder
     class Azure < Base
       def initialize(client_id:, client_secret:, tenant_id:, subscription_id:, object_id:, resource_group_name:,
-                     storage_account:, location:, vm_size:, admin_password:, publisher:, offer:, sku:, **args)
+                     storage_account:, location:, vm_size:, admin_password:, publisher:, offer:, sku:, vm_prefix:, **args)
         @client_id = client_id
         @client_secret = client_secret
         @tenant_id = tenant_id
@@ -18,6 +18,7 @@ module Stemcell
         @publisher = publisher
         @offer = offer
         @sku = sku
+        @vm_prefix = vm_prefix
         super(args)
       end
 
@@ -55,7 +56,8 @@ module Stemcell
             vm_size: @vm_size,
             admin_password: @admin_password,
             output_directory: @output_directory,
-            os: @os
+            os: @os,
+            vm_prefix: @vm_prefix
           ).dump
         end
 
