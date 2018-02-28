@@ -3,12 +3,13 @@ require 'securerandom'
 module Packer
   module Config
     class Aws < Base
-      def initialize(aws_access_key, aws_secret_key, regions, output_directory, os)
+      def initialize(aws_access_key, aws_secret_key, regions, output_directory, os, vm_prefix)
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
         @regions = regions
         @output_directory = output_directory
         @os = os
+        @vm_prefix = vm_prefix
       end
 
       def builders
@@ -33,7 +34,8 @@ module Packer
             'security_group_id' => region['security_group'],
             'ami_groups' => 'all',
             'ssh_keypair_name' => 'packer_ci',
-            'ssh_private_key_file' => '../packer-ci-private-key/key'
+            'ssh_private_key_file' => '../packer-ci-private-key/key',
+            'run_tags' => {'Name' => "#{@vm_prefix}-#{Time.now.to_i}"}
           )
         end
         builders

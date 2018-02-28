@@ -27,11 +27,13 @@ describe Stemcell::Builder do
         aws_secret_key = 'some-aws-secret-key'
         packer_vars = 'some-packer-vars'
         region = 'some-region'
+        vm_prefix = 'some-vm-prefix'
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return('some-packer-config')
-        allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis, output_directory, os
-                                                        ).and_return(packer_config)
+        allow(Packer::Config::Aws).to receive(:new)
+          .with(aws_access_key, aws_secret_key, amis, output_directory, os, vm_prefix)
+          .and_return(packer_config)
 
         packer_runner = double(:packer_runner)
         allow(packer_runner).to receive(:run).with('build', packer_vars).and_yield(packer_output).and_return(0)
@@ -64,7 +66,8 @@ describe Stemcell::Builder do
           aws_secret_key: aws_secret_key,
           agent_commit: agent_commit,
           packer_vars: packer_vars,
-          region: region
+          region: region,
+          vm_prefix: vm_prefix
         ).build_from_packer(ami_output_directory)
         expect(stemcell_path).to eq('path-to-stemcell')
       end
@@ -76,10 +79,13 @@ describe Stemcell::Builder do
           aws_secret_key = 'some-aws-secret-key'
           packer_vars = 'some-packer-vars'
           os = 'windows2012R2'
+          vm_prefix = 'some-vm-prefix'
 
           packer_config = double(:packer_config)
           allow(packer_config).to receive(:dump).and_return('some-packer-config')
-          allow(Packer::Config::Aws).to receive(:new).with(aws_access_key, aws_secret_key, amis, output_directory, os).and_return(packer_config)
+          allow(Packer::Config::Aws).to receive(:new)
+            .with(aws_access_key, aws_secret_key, amis, output_directory, os, vm_prefix)
+            .and_return(packer_config)
 
           packer_runner = double(:packer_runner)
           allow(packer_runner).to receive(:run).with('build', packer_vars).and_return(1)
@@ -94,7 +100,8 @@ describe Stemcell::Builder do
               aws_access_key: aws_access_key,
               aws_secret_key: aws_secret_key,
               agent_commit: '',
-              packer_vars: packer_vars
+              packer_vars: packer_vars,
+              vm_prefix: vm_prefix
             ).build_from_packer(ami_output_directory)
           }.to raise_error(Stemcell::Builder::PackerFailure)
         end

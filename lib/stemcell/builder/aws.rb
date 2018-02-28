@@ -1,10 +1,11 @@
 module Stemcell
   class Builder
     class Aws < Base
-      def initialize(amis:, aws_access_key:, aws_secret_key:, **args)
+      def initialize(amis:, aws_access_key:, aws_secret_key:, vm_prefix:, **args)
         @amis = amis
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
+        @vm_prefix = vm_prefix
         super(args)
       end
 
@@ -34,7 +35,8 @@ module Stemcell
             @aws_secret_key,
             @amis,
             @output_directory,
-            @os
+            @os,
+            @vm_prefix
           ).dump
         end
 

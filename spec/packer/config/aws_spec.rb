@@ -2,6 +2,14 @@ require 'packer/config'
 
 describe Packer::Config::Aws do
   describe 'builders' do
+    before :each do
+      Timecop.freeze
+    end
+
+    after :each do
+      Timecop.return
+    end
+
     it 'returns the expected builders' do
       regions = [
         {
@@ -17,7 +25,8 @@ describe Packer::Config::Aws do
                                          'secretkey',
                                          regions,
                                          'some-output-directory',
-                                         'windows2012R2').builders
+                                         'windows2012R2',
+                                         'some-vm-prefix').builders
       expect(builders[0]).to include(
         'name' => 'amazon-ebs-region1',
         'type' => 'amazon-ebs',
@@ -34,7 +43,8 @@ describe Packer::Config::Aws do
         'winrm_timeout' => '1h',
         'user_data_file' => 'scripts/aws/setup_winrm.txt',
         'security_group_id' => 'sg1',
-        'ami_groups' => 'all'
+        'ami_groups' => 'all',
+        'run_tags' => {'Name' => "some-vm-prefix-#{Time.now.to_i}"}
       )
       expect(builders[0]['ami_name']).to match(/BOSH-.*-region1/)
     end
@@ -55,7 +65,8 @@ describe Packer::Config::Aws do
                                            'secretkey',
                                            regions,
                                            'some-output-directory',
-                                           'windows2016').builders
+                                           'windows2016',
+                                           'some-vm-prefix').builders
         expect(builders[0]).to include(
           'name' => 'amazon-ebs-region1',
           'type' => 'amazon-ebs',
@@ -72,7 +83,8 @@ describe Packer::Config::Aws do
           'winrm_timeout' => '1h',
           'user_data_file' => 'scripts/aws/setup_winrm.txt',
           'security_group_id' => 'sg1',
-          'ami_groups' => 'all'
+          'ami_groups' => 'all',
+          'run_tags' => {'Name' => "some-vm-prefix-#{Time.now.to_i}"}
         )
         expect(builders[0]['ami_name']).to match(/BOSH-.*-region1/)
       end
@@ -86,7 +98,7 @@ describe Packer::Config::Aws do
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        provisioners = Packer::Config::Aws.new('', '', [], 'some-output-directory', 'windows2012R2').provisioners
+        provisioners = Packer::Config::Aws.new('', '', [], 'some-output-directory', 'windows2012R2', '').provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
@@ -129,7 +141,7 @@ describe Packer::Config::Aws do
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        provisioners = Packer::Config::Aws.new('', '', [], 'some-output-directory', 'windows2016').provisioners
+        provisioners = Packer::Config::Aws.new('', '', [], 'some-output-directory', 'windows2016', '').provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
