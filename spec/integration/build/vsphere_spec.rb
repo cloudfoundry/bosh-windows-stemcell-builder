@@ -21,7 +21,7 @@ describe 'VSphere' do
 
     Rake::Task['build:vsphere'].reenable
     Rake::Task['build:vsphere_add_updates'].reenable
-    Rake::Task['build:vsphere_diff'].reenable
+    Rake::Task['build:vsphere_patchfile'].reenable
   end
 
   after(:each) do
@@ -94,13 +94,13 @@ describe 'VSphere' do
     end
   end
 
-  describe "with diff" do
+  describe "with patchfile" do
     before(:each) do
-      FileUtils.mkdir_p("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff")
-      File.write("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff/old-base-vmx.vmx", "some-vmx-template")
+      FileUtils.mkdir_p("../ci/bosh-windows-stemcell-builder/create-vsphere-patchfile")
+      File.write("../ci/bosh-windows-stemcell-builder/create-vsphere-patchfile/old-base-vmx.vmx", "some-vmx-template")
 
       os_version = 'windows2012R2'
-      version = '1200.3.1-build.2'
+      @version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
 
       ENV['AWS_ACCESS_KEY_ID']= 'some-key'
@@ -110,7 +110,7 @@ describe 'VSphere' do
       ENV['STEMCELL_OUTPUT_BUCKET'] = 'some-stemcell-output-bucket'
       ENV['OUTPUT_BUCKET'] = 'some-output-bucket'
       ENV['VHD_VMDK_BUCKET'] = 'some-vhd-vmdk-bucket'
-      ENV['DIFF_OUTPUT_BUCKET'] = 'some-diff-output-bucket'
+      ENV['PATCH_OUTPUT_BUCKET'] = 'some-patch-output-bucket'
 
       ENV['ADMINISTRATOR_PASSWORD'] = 'pass'
       ENV['PRODUCT_KEY'] = 'product-key'
@@ -132,7 +132,7 @@ describe 'VSphere' do
 
       File.write(
         File.join(@version_dir, 'number'),
-        version
+        @version
       )
       File.write(
         File.join(@vmx_version_dir, 'number'),
@@ -152,31 +152,30 @@ describe 'VSphere' do
 
       allow(S3).to receive(:test_upload_permissions)
 
+      @vhd_version = '0-0'
+      @vhd_filename = "some-last-file.patched-#{@vhd_version}.vhd"
       s3_client= double(:s3_client)
       allow(s3_client).to receive(:put)
-      allow(s3_client).to receive(:list).and_return(['some-last-file.patched-0-0.vhd'])
+      allow(s3_client).to receive(:list).and_return([@vhd_filename])
       allow(s3_client).to receive(:get)
 
       allow(S3::Client).to receive(:new).with(
         endpoint: nil
       ).and_return(s3_client)
 
-      allow(Stemcell::Builder::VSphere).to receive(:find_file_by_extn).and_return('some-stemcell-path.tgz')
+      @fake_stemcell_path = 'some-stemcell-path.tgz'
+      allow(Stemcell::Builder::VSphere).to receive(:find_file_by_extn).and_return(@fake_stemcell_path)
     end
 
     after(:each) do
-      FileUtils.rm_rf("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff")
+      FileUtils.rm_rf("../ci/bosh-windows-stemcell-builder/create-vsphere-patchfile")
     end
 
-    it 'should build a vsphere stemcell from diff' do
-      Rake::Task['build:vsphere_diff'].invoke
+    it 'should build a vsphere stemcell from patchfile' do
+      Rake::Task['build:vsphere_patchfile'].invoke
 
       packer_output_vmdk = File.join(@output_directory, 'fake.vmdk')
       expect(packer_output_vmdk).not_to be_nil
-      stembuild_version_arg = JSON.parse(File.read("#{@output_directory}/myargs"))[5]
-      expect(stembuild_version_arg).to eq('1200.3')
-      stemcell_filename = File.basename(Dir["#{@output_directory}/*.tgz"].first)
-      expect(stemcell_filename).to eq "bosh-stemcell-1200.3.1-build.2-vsphere-esxi-windows2012R2-go_agent.tgz"
     end
 
     context 'when we are not authorized to upload to the S3 bucket' do
@@ -186,7 +185,7 @@ describe 'VSphere' do
 
       it 'should fail before building the stemcell' do
         expect do
-          Rake::Task['build:vsphere_diff'].invoke
+          Rake::Task['build:vsphere_patchfile'].invoke
         end.to raise_exception(Aws::S3::Errors::Forbidden)
 
         files = Dir.glob(File.join(@output_directory, '*').gsub('\\', '/'))

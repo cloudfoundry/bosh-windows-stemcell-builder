@@ -16,6 +16,8 @@ module S3
     def get(bucket,key,file_name)
       bucket, key = rationalize(bucket, key)
       puts "Downloading the #{key} from #{bucket} to #{file_name}"
+      path = File.dirname(file_name)
+      FileUtils.mkdir_p(path)
       File.open(file_name, 'wb') do |file|
         @s3.get_object({ bucket:bucket , key:key, response_target: file })
       end

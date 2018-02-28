@@ -15,8 +15,8 @@ describe S3 do
 
       s3 = double(:s3)
       allow(s3).to receive(:list_objects).and_return({contents: [{key: "some-contents"}]})
+      allow(s3).to receive(:get_object).and_return(nil)
       allow(Aws::S3::Client).to receive(:new).and_return(s3)
-      allow(File).to receive(:open) # WARN
 
       @s3_client = S3::Client.new(endpoint: '')
     end
@@ -47,6 +47,7 @@ describe S3 do
           expect{ @s3_client.get(bucket, key, file_name) }.to output(
             /Downloading the with\/slashes\/some-file-in-s3 from bucket to some-local-filename*/
           ).to_stdout
+          FileUtils.remove('some-local-filename')
         end
       end
       context 'when bucket does not contain slashes' do
@@ -57,6 +58,16 @@ describe S3 do
           expect{ @s3_client.get(bucket, key, file_name) }.to output(
             /Downloading the some-file-in-s3 from bucket-without-slashes to some-local-filename*/
           ).to_stdout
+          FileUtils.remove('some-local-filename')
+        end
+      end
+      context 'when a directory in the file path does not exist' do
+        it "should create the directory that doesn't exist" do
+          Dir.mktmpdir do |dir|
+            new_path = File.join(dir, 'nested', 'notyetexisting', 'dir', 'filename')
+            @s3_client.get('all-bosh-windows-dev', '13', new_path)
+            expect(File.exist?(new_path)).to eq(true)
+          end
         end
       end
     end

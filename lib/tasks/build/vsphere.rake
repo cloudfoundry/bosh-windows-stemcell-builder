@@ -48,20 +48,19 @@ namespace :build do
     vmx.put(output_directory, vmx_version)
   end
 
-  desc 'Build VSphere Diff and create stemcell with it'
-  task :vsphere_diff do
+  desc 'Build VSphere patchfile and create stemcell with it'
+  task :vsphere_patchfile do
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     version = File.read(File.join(version_dir, 'number')).chomp
-    stemcell_output_bucket = Stemcell::Builder::validate_env('STEMCELL_OUTPUT_BUCKET')
-
-    S3.test_upload_permissions(stemcell_output_bucket, ENV["S3_ENDPOINT"])
 
     output_directory = Stemcell::Builder::validate_env('OUTPUT_DIR') # packer-output must not exist before packer is run!
     signature_path = File.join(output_directory, 'signature')
 
     image_bucket = Stemcell::Builder::validate_env('VHD_VMDK_BUCKET')
-    diff_output_bucket = Stemcell::Builder::validate_env('DIFF_OUTPUT_BUCKET')
+    patch_output_bucket = Stemcell::Builder::validate_env('PATCH_OUTPUT_BUCKET')
     cache_dir = Stemcell::Builder::validate_env('CACHE_DIR')
+
+    S3.test_upload_permissions(patch_output_bucket, ENV["S3_ENDPOINT"])
 
     s3_client = S3::Client.new(endpoint: ENV["S3_ENDPOINT"])
 
@@ -70,9 +69,9 @@ namespace :build do
     image_basename = File.basename(last_file, File.extname(last_file))
 
     vhd_version = FileHelper.parse_vhd_version(image_basename)
-    diff_path = File.join(output_directory, "patchfile-#{version}-#{vhd_version}")
+    patch_path = File.join(File.expand_path(output_directory), "patchfile-#{version}-#{vhd_version}")
 
-    # Look for base vhd and converted vmdk in diffcell worker cache
+    # Look for base vhd and converted vmdk in patchcell worker cache
     vmdk_filename = image_basename + '.vmdk'
     vhd_filename = image_basename + '.vhd'
     vmdk_path = File.join(cache_dir, vmdk_filename)
@@ -87,7 +86,7 @@ namespace :build do
     end
 
     # Setup base vmx file for packer to use
-    vmx_template_txt = File.read("../ci/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-diff/old-base-vmx.vmx")
+    vmx_template_txt = File.read("../ci/bosh-windows-stemcell-builder/create-vsphere-patchfile/old-base-vmx.vmx")
     new_vmx_txt = vmx_template_txt.gsub("INIT_VMDK",vmdk_path)
     config_vmx = Tempfile.new(["config", ".vmx"])
     File.write(config_vmx.path, new_vmx_txt)
@@ -120,27 +119,12 @@ namespace :build do
     puts "generating signature: #{signature_command}"
     `#{signature_command}`
 
-    diff_command = "gordiff delta #{signature_path} #{output_vmdk_path} #{diff_path}"
-    puts "generating diff: #{diff_command}"
+    diff_command = "gordiff delta #{signature_path} #{output_vmdk_path} #{patch_path}"
+    puts "generating patch: #{diff_command}"
     `#{diff_command}`
 
-    diff_filename = File.basename diff_path
-    s3_client.put(diff_output_bucket, "patchfiles/#{diff_filename}", diff_path)
-
-    # Apply patch to create stemcell
-    version_flag = Stemcell::Manifest::Base.strip_version_build_number(version)
-    patch_command = "stembuild -vhd \"#{vhd_path}\" -delta \"#{diff_path}\" -version \"#{version_flag}\" -output \"#{output_directory}\""
-    puts "applying patch: #{patch_command}"
-    `#{patch_command}`
-
-    vsphere.rename_stembuild_output
-
-    # Find stemcell .tgz
-    stemcell_path = Stemcell::Builder::VSphere.find_file_by_extn(output_directory, 'tgz')
-    stemcell_filename = File.basename(stemcell_path)
-
-    upload_keyname = stemcell_filename.gsub('vsphere-esxi', 'diff-vsphere-esxi')
-    s3_client.put(stemcell_output_bucket, upload_keyname, stemcell_path)
+    patch_filename = File.basename patch_path
+    s3_client.put(patch_output_bucket, patch_filename, patch_path)
   end
 
   desc 'Build VSphere Stemcell'
