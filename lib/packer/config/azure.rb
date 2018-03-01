@@ -52,7 +52,6 @@ module Packer
       def provisioners
         [
           Base.pre_provisioners(@os),
-          Provisioners::lgpo_exe,
           Provisioners.install_agent('azure').freeze,
           Base.post_provisioners('azure', @os)
         ].flatten

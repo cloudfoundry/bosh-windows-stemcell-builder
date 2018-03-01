@@ -18,7 +18,6 @@ describe 'Aws' do
     @base_amis_dir = Dir.mktmpdir('aws')
     @output_dir = 'bosh-windows-stemcell'
     @amis_dir = Dir.mktmpdir('aws-stemcell-test')
-    @stemcell_deps_dir = Dir.mktmpdir('aws')
     FileUtils.rm_rf(@output_dir)
     Rake::Task['build:aws'].reenable
     Rake::Task['build:aws_ami'].reenable
@@ -36,7 +35,6 @@ describe 'Aws' do
     ENV['BASE_AMIS_DIR'] = @base_amis_dir
     ENV['OUTPUT_BUCKET_REGION'] = @output_bucket_region = 'some-output-bucket-region'
     ENV['OUTPUT_BUCKET_NAME'] = 'some-output-bucket-name'
-    ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
 
     File.write(
       File.join(@version_dir, 'number'),
@@ -71,7 +69,6 @@ describe 'Aws' do
     FileUtils.rm_rf(@agent_dir)
     FileUtils.rm_rf(@base_amis_dir)
     FileUtils.rm_rf(@amis_dir)
-    FileUtils.rm_rf(@stemcell_deps_dir)
   end
 
   describe 'Create an aws stemcell' do

@@ -14,7 +14,6 @@ describe 'Azure' do
     @build_dir = File.expand_path('../../../../build', __FILE__)
     @output_directory = 'bosh-windows-stemcell'
     @version_dir = Dir.mktmpdir('azure')
-    @stemcell_deps_dir = Dir.mktmpdir('azure')
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
   end
@@ -24,7 +23,6 @@ describe 'Azure' do
     FileUtils.remove_dir(@build_dir)
     FileUtils.remove_dir(@version_dir)
     FileUtils.rm_rf(@output_directory)
-    FileUtils.rm_rf(@stemcell_deps_dir)
   end
 
   it 'should build an azure stemcell' do
@@ -50,7 +48,6 @@ describe 'Azure' do
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'azure')}:#{ENV['PATH']}"
       ENV['BASE_IMAGE'] = 'some-base-image'
       ENV['BASE_IMAGE_OFFER'] = 'some-base-image-offer'
-      ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
 
       File.write(
         File.join(@version_dir, 'number'),

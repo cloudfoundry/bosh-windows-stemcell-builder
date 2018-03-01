@@ -15,7 +15,6 @@ describe 'Gcp' do
     @output_directory = 'bosh-windows-stemcell'
     @version_dir = Dir.mktmpdir('gcp')
     @base_image_dir = Dir.mktmpdir('gcp')
-    @stemcell_deps_dir = Dir.mktmpdir('gcp')
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
   end
@@ -26,7 +25,6 @@ describe 'Gcp' do
     FileUtils.remove_dir(@version_dir)
     FileUtils.remove_dir(@base_image_dir)
     FileUtils.rm_rf(@output_directory)
-    FileUtils.rm_rf(@stemcell_deps_dir)
   end
 
   it 'should build a gcp stemcell' do
@@ -40,7 +38,6 @@ describe 'Gcp' do
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'gcp')}:#{ENV['PATH']}"
       ENV['VERSION_DIR'] = @version_dir
       ENV['BASE_IMAGE_DIR'] = @base_image_dir
-      ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
 
       File.write(
         File.join(@version_dir, 'number'),
