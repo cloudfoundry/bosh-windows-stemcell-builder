@@ -67,7 +67,6 @@ instance_groups:
   stemcell: windows
   azs: [{{.AZ}}]
   vm_type: {{.VmType}}
-  vm_extensions: [{{.VmExtensions}}]
   networks:
   - name: {{.Network}}
   jobs:
@@ -81,7 +80,6 @@ instance_groups:
   lifecycle: errand
   azs: [{{.AZ}}]
   vm_type: {{.VmType}}
-  vm_extensions: [{{.VmExtensions}}]
   networks:
   - name: {{.Network}}
   jobs:
@@ -95,7 +93,6 @@ var rootDiskInstanceGroup = fmt.Sprintf(`
   lifecycle: errand
   azs: [{{.AZ}}]
   vm_type: %s
-  vm_extensions: [{{.VmExtensions}}]
   networks:
   - name: {{.Network}}
   jobs:
