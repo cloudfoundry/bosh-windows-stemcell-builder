@@ -86,7 +86,7 @@ namespace :build do
     end
 
     # Setup base vmx file for packer to use
-    vmx_template_txt = File.read("../ci/bosh-windows-stemcell-builder/create-vsphere-patchfile/old-base-vmx.vmx")
+    vmx_template_txt = File.read("resources/old-base-vmx.vmx")
     new_vmx_txt = vmx_template_txt.gsub("INIT_VMDK",vmdk_path)
     config_vmx = Tempfile.new(["config", ".vmx"])
     File.write(config_vmx.path, new_vmx_txt)

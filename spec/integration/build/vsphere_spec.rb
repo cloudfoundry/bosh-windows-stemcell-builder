@@ -96,9 +96,6 @@ describe 'VSphere' do
 
   describe "with patchfile" do
     before(:each) do
-      FileUtils.mkdir_p("../ci/bosh-windows-stemcell-builder/create-vsphere-patchfile")
-      File.write("../ci/bosh-windows-stemcell-builder/create-vsphere-patchfile/old-base-vmx.vmx", "some-vmx-template")
-
       os_version = 'windows2012R2'
       @version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
@@ -165,10 +162,6 @@ describe 'VSphere' do
 
       @fake_stemcell_path = 'some-stemcell-path.tgz'
       allow(Stemcell::Builder::VSphere).to receive(:find_file_by_extn).and_return(@fake_stemcell_path)
-    end
-
-    after(:each) do
-      FileUtils.rm_rf("../ci/bosh-windows-stemcell-builder/create-vsphere-patchfile")
     end
 
     it 'should build a vsphere stemcell from patchfile' do
