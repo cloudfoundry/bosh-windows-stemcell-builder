@@ -153,11 +153,6 @@ function Check-Default-GCP-Unattend() {
         </component>
     </settings>
     <settings pass="specialize">
-        <component name="Microsoft-Windows-Deployment" processorArchitecture="x86" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <ExtendOSPartition>
-                <Extend>true</Extend>
-            </ExtendOSPartition>
-        </component>
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <!-- Random ComputerName, will be replaced by specialize script -->
             <ComputerName></ComputerName>
@@ -221,11 +216,6 @@ function Create-Unattend-GCP() {
         </component>
     </settings>
     <settings pass="specialize">
-        <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <ExtendOSPartition>
-                <Extend>true</Extend>
-            </ExtendOSPartition>
-        </component>
         <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <!-- Random ComputerName, will be replaced by specialize script -->
             <ComputerName></ComputerName>
@@ -269,40 +259,6 @@ function Create-Unattend-GCP() {
 
   $UnattendPath = "C:\Program Files\Google\Compute Engine\sysprep\unattended.xml"
   Out-File -FilePath $UnattendPath -InputObject $UnattendXML -Encoding utf8 -Force
-}
-
-function Enable-OSPartition-Resize {
-    Param (
-        [string]$AnswerFilePath
-    )
-
-    If (!$(Test-Path $AnswerFilePath)) {
-        Throw "Answer file $AnswerFilePath does not exist"
-    }
-
-    Write-Log "Enabling Partition Resizing"
-
-    $content = [xml](Get-Content $AnswerFilePath)
-
-    $deploymentComponent = (($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"})
-    If ($deploymentComponent.Count -eq 0) {
-        Throw "Answer file does not contain a 'Microsoft-Windows-Deployment' specialize block."
-    }
-
-    $existingExtendOSPartitionBlock = ((($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"}).ExtendOSPartition)
-    $extend = $content.CreateElement("Extend", $content.DocumentElement.NamespaceURI)
-    $extend.InnerText = "true"
-
-    If ($existingExtendOSPartitionBlock.Extend.Count -eq 0) {
-        $extendOSPartition = $content.CreateElement("ExtendOSPartition", $content.DocumentElement.NamespaceURI)
-        $extendOSPartition.AppendChild($extend)
-
-        $deploymentComponent.AppendChild($extendOSPartition)
-    } Else {
-        $existingExtendOSPartitionBlock.ReplaceChild($extend, $existingExtendOSPartitionBlock.SelectSingleNode("//Extend"))
-    }
-
-    $content.Save($AnswerFilePath)
 }
 
 function Remove-WasPassProcessed {
@@ -386,8 +342,6 @@ function Invoke-Sysprep() {
         "aws" {
             switch ($OsVersion) {
                 "windows2012R2" {
-                    Enable-OSPartition-Resize -AnswerFilePath "C:\Program Files\Amazon\Ec2ConfigService\sysprep2008.xml"
-
                     $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
 
                     # Enable password generation and retrieval
@@ -403,7 +357,7 @@ function Invoke-Sysprep() {
                     ($ec2settings.BundleConfig.Property | where { $_.Name -eq "AutoSysprep" }).Value = 'Yes'
 
                     # Don't shutdown when running sysprep, let packer do it
-                    ($ec2settings.BundleConfig.GeneralSettings.Sysprep | where { $_.AnswerFilePath -eq "sysprep2008.xml" }).Switches = "/oobe /quit /generalize"
+                    # ($ec2settings.BundleConfig.GeneralSettings.Sysprep | where { $_.AnswerFilePath -eq "sysprep2008.xml" }).Switches = "/oobe /quit /generalize"
 
                     $ec2settings.Save('C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
                     Start-Process "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -ArgumentList "-sysprep" -Wait
@@ -433,7 +387,6 @@ function Invoke-Sysprep() {
         }
         "azure" {
             $AnswerFilePath = "C:\Windows\Panther\unattend.xml"
-            Enable-OSPartition-Resize -AnswerFilePath $AnswerFilePath
             Remove-WasPassProcessed -AnswerfilePath $AnswerFilePath
             Remove-UserAccounts -AnswerFilePath $AnswerFilePath
 

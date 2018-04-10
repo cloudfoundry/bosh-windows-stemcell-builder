@@ -25,6 +25,14 @@ module Packer
             'vpc_id' => region['vpc_id'],
             'subnet_id' => region['subnet_id'],
             'associate_public_ip_address' => true,
+            'launch_block_device_mappings' => [
+              {
+                'device_name': '/dev/sda1',
+                'volume_size': 128,
+                'volume_type': 'gp2',
+                'delete_on_termination': true
+              }
+            ],
             'communicator' => 'winrm',
             'winrm_username' => 'Administrator',
             'winrm_timeout' => '1h',

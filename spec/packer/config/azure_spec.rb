@@ -34,7 +34,7 @@ describe Packer::Config::Azure do
         'tenant_id' => 'some-tenant-id',
         'subscription_id' => 'some-subscription-id',
         'object_id' => 'some-object-id',
-
+        'os_disk_size_gb' => 128,
         'resource_group_name' => 'some-resource-group-name',
         'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
         'storage_account' => 'some-storage-account',

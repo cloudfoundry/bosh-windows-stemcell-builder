@@ -21,7 +21,7 @@ module Packer
             'source_image' => @source_image,
             'image_family' => @image_family,
             'zone' => 'us-east1-c',
-            'disk_size' => 50,
+            'disk_size' => 128,
             'image_name' =>  "packer-#{Time.now.to_i}",
             'machine_type' => 'n1-standard-4',
             'omit_external_ip' => false,

@@ -50,6 +50,7 @@ module Stemcell
           packer_artifact = parse_packer_output(stdout)
         end
         if exit_status != 0
+          puts "packer_artifact is: #{packer_artifact}"
           raise PackerFailure
         end
         packer_artifact

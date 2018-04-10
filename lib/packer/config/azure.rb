@@ -27,7 +27,6 @@ module Packer
             'tenant_id' => @tenant_id,
             'subscription_id' => @subscription_id,
             'object_id' => @object_id,
-
             'resource_group_name' => @resource_group_name,
             'temp_resource_group_name' => "#{@vm_prefix}-#{Time.now.to_i}",
             'storage_account' => @storage_account,
@@ -39,7 +38,7 @@ module Packer
             'location' => @location,
             'vm_size' => @vm_size,
             'os_type' => 'Windows',
-
+            'os_disk_size_gb' => 128,
             'communicator' => 'winrm',
             'winrm_use_ssl' => 'true',
             'winrm_insecure' => 'true',
