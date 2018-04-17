@@ -57,65 +57,122 @@ Describe "Disable-AutomaticUpdates" {
 
 Describe "Enable-SecurityPatches" {
     It "enables CVE-2015-6161" {
-        $oldIExplore32 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe'
-        $oldIExplore64 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe'
+        $handlerHardeningPath32Exists = $false
+        $oldIExplore32 = ""
+        if (Test-Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING") {
+            $handlerHardeningPathExists32 = $true
+            $oldIExplore32 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe'
+        }
+
+        $handlerHardeningPath64Exists = $false
+        $oldIExplore64 = ""
+        if (Test-Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING") {
+            $handlerHardeningPath64Exists = $true
+            $oldIExplore64 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe'
+        }
 
         { Enable-CVE-2015-6161 } | Should Not Throw
 
         (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe' | Should Be "1"
         (Get-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe' | Should Be "1"
 
-        if ($oldIExplore32 -eq "")
-        {
-            Remove-Item-Property -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" -Name "iexplore.exe"
+        if ($handlerHardeningPath32Exists) {
+            if ($oldIExplore32 -eq "")
+            {
+                Remove-Item-Property -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" -Name "iexplore.exe"
+            } else {
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" -Value $oldIExplore32 -Name "iexplore.exe"
+            }
         } else {
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" -Value $oldIExplore32 -Name "iexplore.exe"
+            Remove-Item "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING"
         }
 
-        if ($oldIExplore64 -eq "")
-        {
-            Remove-Item-Property -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" -Name "iexplore.exe"
+        if ($handlerHardeningPath32Exists) {
+            if ($oldIExplore64 -eq "")
+            {
+                Remove-Item-Property -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" -Name "iexplore.exe"
+            } else {
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" -Value $oldIExplore64 -Name "iexplore.exe"
+            }
         } else {
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" -Value $oldIExplore64 -Name "iexplore.exe"
+            Remove-Item "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING"
         }
     }
 
     It "enables CVE-2017-8529" {
-        $oldIExplore32 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe'
-        $oldIExplore64 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe'
+        $disclosureFixPathExists32 = $false
+        $oldIExplore32 = ""
+        if (Test-Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX") {
+            $disclosureFixPathExists32 = $true
+            $oldIExplore32 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe'
+        }
+
+        $disclosureFixPathExists64 = $false
+        $oldIExplore64 = ""
+        if (Test-Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX") {
+            $disclosureFixPathExists64 = $true
+            $oldIExplore64 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe'
+        }
 
         { Enable-CVE-2017-8529 } | Should Not Throw
 
         (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe' | Should Be "1"
         (Get-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe' | Should Be "1"
 
-        if ($oldIExplore32 -eq "")
-        {
-            Remove-Item-Property -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" -Name "iexplore.exe"
+        if ($disclosureFixPathExists32) {
+            if ($oldIExplore32 -eq "")
+            {
+                Remove-Item-Property -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" -Name "iexplore.exe"
+            } else {
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" -Value $oldIExplore32 -Name "iexplore.exe"
+            }
         } else {
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" -Value $oldIExplore32 -Name "iexplore.exe"
+            Remove-Item "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX"
         }
 
-        if ($oldIExplore64 -eq "")
-        {
-            Remove-Item-Property -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" -Name "iexplore.exe"
+        if ($disclosureFixPathExists64) {
+            if ($oldIExplore64 -eq "")
+            {
+                Remove-Item-Property -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" -Name "iexplore.exe"
+            } else {
+                Set-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" -Value $oldIExplore64 -Name "iexplore.exe"
+            }
         } else {
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" -Value $oldIExplore64 -Name "iexplore.exe"
+            Remove-Item "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX"
         }
     }
 
     It "enables CredSSP" {
-        $oldEcryptOracle = (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters").AllowEncryptionOracle
+        $credSSPPathExists = $false
+        $credSSPParamPathExists = $false
+        $oldEcryptOracle = ""
+        if ( Test-Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP" )
+        {
+            $credSSPPathExists = $true
+            if ( Test-Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters") {
+                $credSSPParamPathExists = $true
+                $oldEcryptOracle = (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters").AllowEncryptionOracle
+            }
+        }
 
-        { Enable-CVE-2017-8529 } | Should Not Throw
+        { Enable-CredSSP } | Should Not Throw
 
         (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters").AllowEncryptionOracle | Should Be "1"
 
-        if ($oldEcryptOracle -eq "")
-        {
-            Remove-Item-Property -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" -Name "AllowEncryptionOracle"
+        if ($credSSPPathExists) {
+            if ( $credSSPParamPathExists ) {
+                if ($oldEcryptOracle -eq "")
+                {
+                    Remove-Item-Property -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" -Name "AllowEncryptionOracle"
+                } else {
+                    Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" -Value $oldEcryptOracle -Name "AllowEncryptionOracle"
+                }
+            } else {
+                Remove-Item "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters"
+            }
         } else {
-            Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" -Value $oldEcryptOracle -Name "AllowEncryptionOracle"
+            Remove-Item "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP" -Recurse
+
         }
     }
 }
