@@ -117,10 +117,12 @@ module Packer
         ]
         download_windows_updates = @skip_windows_update?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
 
+        patches = [Base.enable_security_patches(@os)]
         post = [Base.post_provisioners('vsphere')]
 
         [pre,
          download_windows_updates,
+         patches,
          post].flatten
       end
     end

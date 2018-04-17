@@ -52,6 +52,19 @@ module Packer
         provisioners
       end
 
+      def self.enable_security_patches(os)
+        provisioners = []
+        if os == 'windows2012R2'
+          provisioners = [
+              Provisioners::ENABLE_CVE_2015_6161,
+              Provisioners::ENABLE_CVE_2017_8529,
+              Provisioners::ENABLE_CREDSSP
+          ]
+        end
+
+        provisioners
+      end
+
       def dump
         JSON.dump(
           'builders' => builders,

@@ -48,18 +48,6 @@ function Install-WindowsUpdates {
     reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v FeatureSettingsOverrideMask /t REG_DWORD /d 3 /f
     reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization" /v MinVmVersionForCpuBasedMitigations /t REG_SZ /d "1.0" /f
 
-    #Enable MS15-124 - Internet Explorer ASLR Bypass fix - CVE-2015-6161
-    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
-    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
-
-    #Enable Microsoft Browser Information Disclosure Vulnerability - CVE-2017-8529
-    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" /v iexplore.exe /t REG_DWORD /d 1 /f
-    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" /v iexplore.exe /t REG_DWORD /d 1 /f
-
-    #Enable CredSSP  updates - CVE-2018-0886
-    #Policy set to "mitigated"
-    reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" /v AllowEncryptionOracle /t REG_DWORD /d 1 /f
-
     if (test-path "C:\provision\patch.msu") {
         Write-Log "Already installed out-of-band patch"
     } else {
@@ -354,3 +342,23 @@ function Install-KB4056898() {
     Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/d/msdownload/update/software/secu/2018/01/windows8.1-kb4056898-x64_ad6c91c5ec12608e4ac179b2d15586d244f0d2f3.msu' -Outfile C:\provision\patch.msu
     wusa.exe C:\provision\patch.msu /quiet
 }
+
+function Enable-CVE-2015-6161() {
+    #Enable MS15-124 - Internet Explorer ASLR Bypass fix - CVE-2015-6161
+    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
+    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
+}
+
+function Enable-CVE-2017-8529() {
+    #Enable Microsoft Browser Information Disclosure Vulnerability - CVE-2017-8529
+    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" /v iexplore.exe /t REG_DWORD /d 1 /f
+    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" /v iexplore.exe /t REG_DWORD /d 1 /f
+
+}
+
+function Enable-CredSSP() {
+    #Enable CredSSP  updates - CVE-2018-0886
+    #Policy set to "mitigated"
+    reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" /v AllowEncryptionOracle /t REG_DWORD /d 1 /f
+}
+

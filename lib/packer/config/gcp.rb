@@ -42,6 +42,7 @@ module Packer
           Base.pre_provisioners(@os, reduce_mtu: true, iaas: 'gcp'),
           Provisioners.install_agent('gcp').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
+          Base.enable_security_patches(@os),
           Base.post_provisioners('gcp')
         ].flatten
       end

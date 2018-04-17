@@ -48,6 +48,9 @@ module Packer
       CLEAR_PROVISIONER = powershell_provisioner('Clear-Provisioner')
       GET_LOG = powershell_provisioner('Get-Log')
       CLEAR_PROXY_SETTINGS = powershell_provisioner('Clear-ProxySettings')
+      ENABLE_CVE_2015_6161 = powershell_provisioner('Enable-CVE-2015-6161')
+      ENABLE_CVE_2017_8529 = powershell_provisioner('Enable-CVE-2017-8529')
+      ENABLE_CREDSSP = powershell_provisioner('Enable-CredSSP')
 
       def self.setup_proxy_settings(http_proxy, https_proxy, bypass_list)
         return powershell_provisioner("Set-ProxySettings #{http_proxy} #{https_proxy} #{bypass_list}")
