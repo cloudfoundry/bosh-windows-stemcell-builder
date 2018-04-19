@@ -1147,3 +1147,8 @@ Computer
 Software\Policies\Microsoft\Windows\WindowsUpdate\AU
 NoAutoRebootWithLoggedOnUsers
 DWORD:0
+
+Computer
+Software\Policies\Microsoft\Windows\RemovableStorageDevices
+Deny_All
+DWORD:1
