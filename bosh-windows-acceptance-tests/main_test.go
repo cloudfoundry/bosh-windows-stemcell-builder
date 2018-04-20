@@ -379,7 +379,7 @@ var _ = Describe("BOSH Windows", func() {
 		var stdoutInfo BoshStemcell
 		json.Unmarshal(stdout, &stdoutInfo)
 		for _, row := range stdoutInfo.Tables[0].Rows {
-			Expect(row.Version).NotTo(ContainSubstring(stemcellVersion))
+			Expect(row.Version).NotTo(MatchRegexp(fmt.Sprintf(`^%s\*?$`, stemcellInfo.Version)))
 		}
 
 		// Generate BWATS release version
