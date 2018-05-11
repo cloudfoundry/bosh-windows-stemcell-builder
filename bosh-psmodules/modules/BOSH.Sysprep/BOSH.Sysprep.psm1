@@ -363,11 +363,6 @@ function Invoke-Sysprep() {
                     Start-Process "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -ArgumentList "-sysprep" -Wait
                 }
                 "windows2016" {
-                    # Enable password generation and retrieval
-                    # LaunchConfig.json adminPasswordType defaults to "Random"
-                    # TODO: should we set this value to "DoNothing"? Since the BOSH Agent will always randomize the password.
-                    # We can use the BOSH Agent to set the password to a specific value.
-
                     # Disable SetDnsSuffixList setting
                     $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
                     $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
