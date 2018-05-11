@@ -363,10 +363,10 @@ function Invoke-Sysprep() {
                     Start-Process "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -ArgumentList "-sysprep" -Wait
                 }
                 "windows2016" {
-                    # Disable SetDnsSuffixList setting
                     $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
                     $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
                     $LaunchConfig.addDnsSuffixList = $False
+                    $LaunchConfig.extendBootVolumeSize = $False
                     $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
 
                     # Enable sysprep
