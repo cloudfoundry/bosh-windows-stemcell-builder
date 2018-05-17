@@ -338,6 +338,8 @@ function Invoke-Sysprep() {
       Stop-Computer
     }
 
+    Allow-NTPSync
+
     switch ($IaaS) {
         "aws" {
             switch ($OsVersion) {
@@ -425,4 +427,9 @@ function ModifyInfFile() {
     }
 
     Move-Item -Path $TempFile -Destination $InfFilePath -Force
+}
+
+function Allow-NTPSync() {
+      Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxNegPhaseCorrection' -Value 0xFFFFFFFF -Type dword
+      Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxPosPhaseCorrection' -Value 0xFFFFFFFF -Type dword
 }

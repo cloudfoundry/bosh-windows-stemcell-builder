@@ -454,5 +454,21 @@ Describe "Create-Unattend" {
     }
 }
 
+Describe "Allow-NTPSync" {
+   It "Sets registry keys that allow the clock to be synced when delta is greater than 15 hours" {
+			 $oldMaxNegPhaseCorrection = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection'
+			 $oldMaxPosPhaseCorrection = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxPosPhaseCorrection'
+
+    { Allow-NTPSync } | Should Not Throw
+
+			$maxValue = [uint32]::MaxValue
+      (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection' | Should Be $maxValue
+      (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxPosPhaseCorrection' | Should Be $maxValue
+
+			Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxNegPhaseCorrection' -Value $oldMaxNegPhaseCorrection
+			Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxPosPhaseCorrection' -Value $oldMaxPosPhaseCorrection
+   }
+}
+
 Remove-Module -Name BOSH.Sysprep -ErrorAction Ignore
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
