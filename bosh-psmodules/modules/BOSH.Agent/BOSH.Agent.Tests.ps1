@@ -60,11 +60,11 @@ Describe "Copy-Agent" {
 
 Describe "Write-AgentConfig" {
     BeforeEach {
-	    $boshDir=(New-TempDir)
+        $boshDir=(New-TempDir)
     }
 
     AfterEach {
-	    Remove-Item -Recurse -Force $boshDir
+        Remove-Item -Recurse -Force $boshDir
     }
 
     Context "when IaaS is not provided" {
@@ -72,17 +72,19 @@ Describe "Write-AgentConfig" {
             { Write-AgentConfig -BoshDir $boshDir } | Should Throw "Provide an IaaS for configuration"
         }
     }
+
     Context "when IaaS is not supported" {
-	    It "throws" {
-	        { Write-AgentConfig -BoshDir $boshDir -IaaS idontexist } | Should Throw "IaaS idontexist is not supported"
-	    }
+        It "throws" {
+	   { Write-AgentConfig -BoshDir $boshDir -IaaS idontexist } | Should Throw "IaaS idontexist is not supported"
+        }
     }
 
     Context "when boshDir is not provided" {
-	    It "throws" {
-	        { Write-AgentConfig -IaaS aws } | Should Throw "Provide a directory to install the BOSH agent config"
-	    }
+        It "throws" {
+            { Write-AgentConfig -IaaS aws } | Should Throw "Provide a directory to install the BOSH agent config"
+        }
     }
+
     Context "when provided a nonexistent directory" {
         It "throws" {
             { Write-AgentConfig -BoshDir "nonexistent-dir" -IaaS aws } | Should Throw "Error: nonexistent-dir does not exist"
@@ -94,7 +96,6 @@ Describe "Write-AgentConfig" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS aws } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should Contain ([regex]::Escape('"SSHKeysPath": "/latest/meta-data/public-keys/0/openssh-key/"'))
         }
     }
 
@@ -103,8 +104,8 @@ Describe "Write-AgentConfig" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS openstack } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should Contain ([regex]::Escape('"SSHKeysPath": "/latest/meta-data/public-keys/0/openssh-key/"'))
-            ($configPath) | Should Contain ([regex]::Escape('"UseServerName": true'))
+            ($configPath) | Should -FileContentMatch ([regex]::Escape('"SSHKeysPath": "/latest/meta-data/public-keys/0/openssh-key/"'))
+            ($configPath) | Should -FileContentMatch ([regex]::Escape('"UseServerName": true'))
         }
     }
 
@@ -113,9 +114,9 @@ Describe "Write-AgentConfig" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS azure } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should Contain ([regex]::Escape('"SettingsPath": "C:/AzureData/CustomData.bin"'))
-            ($configPath) | Should Contain ([regex]::Escape('"MetaDataPath": "C:/AzureData/CustomData.bin"'))
-            ($configPath) | Should Contain ([regex]::Escape('"UseServerName": false'))
+            ($configPath) | Should -FileContentMatch ([regex]::Escape('"SettingsPath": "C:/AzureData/CustomData.bin"'))
+            ($configPath) | Should -FileContentMatch ([regex]::Escape('"MetaDataPath": "C:/AzureData/CustomData.bin"'))
+            ($configPath) | Should -FileContentMatch ([regex]::Escape('"UseServerName": false'))
         }
     }
 
@@ -124,7 +125,7 @@ Describe "Write-AgentConfig" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS gcp } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should Contain ([regex]::Escape('"Metadata-Flavor": "Google"'))
+            ($configPath) | Should -FileContentMatch ([regex]::Escape('"Metadata-Flavor": "Google"'))
         }
     }
     Context "when IaaS is 'vsphere'" {
@@ -132,7 +133,7 @@ Describe "Write-AgentConfig" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS vsphere } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should Contain ([regex]::Escape('"Type": "CDROM"'))
+            ($configPath) | Should -FileContentMatch ([regex]::Escape('"Type": "CDROM"'))
         }
     }
 }
@@ -165,7 +166,7 @@ Describe "Install-Agent" {
     It "calls service_wrapper.exe" {
         Mock -Verifiable -ModuleName BOSH.Agent Start-Process {} -ParameterFilter { $FilePath -eq "C:\bosh\service_wrapper.exe" -and $ArgumentList -eq "install" -and $NoNewWindow -and $Wait }
         Install-AgentService
-        Assert-VerifiableMocks
+        Assert-VerifiableMock
     }
 }
 
@@ -189,10 +190,10 @@ Describe "Install-Agent" {
         Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\Windows\Panther" -and $disableInheritance -eq $false }
 
         Mock -Verifiable -ModuleName BOSH.Agent Write-AgentConfig {} -ParameterFilter { $IaaS -eq "aws" -and $BoshDir -eq "C:\bosh" }
-        Mock -Verifiable -ModuleName BOSH.Agent Set-Path -Path "C:\var\vcap\bosh\bin" {}
+        Mock -Verifiable -ModuleName BOSH.Agent Set-Path {} -ParameterFilter { $Path -eq "C:\var\vcap\bosh\bin" }
         Mock -Verifiable -ModuleName BOSH.Agent Install-AgentService {}
         Install-Agent -IaaS aws -agentZipPath "some-agent-zip-path"
-        Assert-VerifiableMocks
+        Assert-VerifiableMock
     }
 }
 

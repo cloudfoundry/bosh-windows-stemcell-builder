@@ -201,10 +201,14 @@ function Disable-NetBIOS {
 
     # Disable NetBIOS over TCP at the network interface level
 
-    $NoInstances=$false
-    WMIC.exe NICCONFIG WHERE '(TcpipNetbiosOptions=0 OR TcpipNetbiosOptions=1)' GET Caption,Index,TcpipNetbiosOptions 2>&1 | foreach {
-        $NoInstances = $NoInstances -or $_ -like '*No Instance(s) Available*'
+    $NoInstances = $false
+    try {
+      WMIC.exe NICCONFIG WHERE '(TcpipNetbiosOptions=0 OR TcpipNetbiosOptions=1)' GET Caption,Index,TcpipNetbiosOptions *>&1
     }
+    catch {
+      $NoInstances = $true
+    }
+
     if ($NoInstances) {
         Write-Log "NetBIOS over TCP is not enabled on any network interfaces"
     } else {

@@ -5,19 +5,26 @@ Remove-Module -Name BOSH.Utils -ErrorAction Ignore
 Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 
 Describe "Protect-CFCell" {
+    BeforeEach {
+        Start-Service winrm
+    }
+
     It "enables the RDP service and firewall rule" {
        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 1
        netstat /p tcp /a | findstr 3389 | Should BeNullOrEmpty
        Protect-CFCell
        netstat /p tcp /a | findstr 3389 | Should Not BeNullOrEmpty
     }
+
     It "disables the services" {
        Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
        Get-Service | Where-Object {$_.Name -eq "W3Svc" } | Set-Service -StartupType Automatic
        Protect-CFCell
        (Get-Service | Where-Object {$_.Name -eq "WinRM" } ).StartType| Should be "Disabled"
-       (Get-Service | Where-Object {$_.Name -eq "W3Svc" } ).StartType | Should be "Disabled"
+       $w3svcStartType = (Get-Service | Where-Object {$_.Name -eq "W3Svc" } ).StartType
+       "Disabled", $null -contains $w3svcStartType | Should Be $true
     }
+
     It "sets firewall rules" {
         Set-NetFirewallProfile -all -DefaultInboundAction Allow -DefaultOutboundAction Allow -AllowUnicastResponseToMulticast False -Enabled True
         get-firewall "public" | Should be "public,Allow,Allow"

@@ -6,7 +6,7 @@ Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 
 Describe "Account" {
 
-    Context "when user is not provided" {
+    Context "when username is not provided" {
         It "throws" {
             { Add-Account } | Should Throw "Provide a user name"
         }
@@ -18,17 +18,27 @@ Describe "Account" {
         }
     }
 
-    It "Add and remove a new user account" {
+    Context "when the username and password are valid" {
         $user = "Provisioner"
         $password = "Password123!"
 
-        Add-Account -User $user -Password $password
-        $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
-        $existing = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
-        $existing | Should Not Be $null
-        Remove-Account -User $user
-        $existing = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
-        $existing | Should Be $null
+         BeforeEach {
+            $userExists = !!(gwmi -class Win32_UserAccount | Where {$_.Name -eq $user})
+            if($userExists) {
+                Remove-Account -User $user -ErrorAction Ignore
+            }
+        }
+
+        It "Adds and removes a new user account" {
+            Add-Account -User $user -Password $password
+            mkdir "C:\Users\$user" -ErrorAction Ignore
+            $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
+            $existing = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
+            $existing | Should Not Be $null
+            Remove-Account -User $user
+            $existing = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
+            $existing | Should Be $null
+        }
     }
 }
 
