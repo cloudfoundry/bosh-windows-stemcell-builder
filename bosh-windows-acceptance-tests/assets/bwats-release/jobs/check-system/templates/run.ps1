@@ -284,4 +284,10 @@ if ($DS.ValidateCredentials('Administrator', 'Password123!')) {
     Exit 1
 }
 
+$dataPartition = Get-Partition | where AccessPaths -Contains "C:\var\vcap\data\"
+if ($dataPartition -ne $null) {
+    Write-Error "Data partition should not be created"
+    Exit 1
+}
+
 Exit 0
