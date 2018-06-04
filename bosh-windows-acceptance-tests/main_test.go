@@ -63,6 +63,7 @@ instance_groups:
   stemcell: windows
   azs: [{{.AZ}}]
   vm_type: {{.VmType}}
+  vm_extensions: [{{.VmExtensions}}]
   networks:
   - name: {{.Network}}
   jobs:
