@@ -39,7 +39,8 @@ describe Stemcell::Builder do
           output_directory: output_directory,
           image_family: image_family,
           os: os,
-          vm_prefix: vm_prefix
+          vm_prefix: vm_prefix,
+          mount_ephemeral_disk: false
         ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
@@ -75,7 +76,8 @@ describe Stemcell::Builder do
           account_json: account_json,
           source_image: source_image,
           image_family: image_family,
-          vm_prefix: vm_prefix
+          vm_prefix: vm_prefix,
+          mount_ephemeral_disk: "false"
         ).build
         expect(stemcell_path).to eq('path-to-stemcell')
       end
@@ -99,7 +101,8 @@ describe Stemcell::Builder do
             output_directory: output_directory,
             image_family: image_family,
             os: os,
-            vm_prefix: vm_prefix
+            vm_prefix: vm_prefix,
+            mount_ephemeral_disk: false
           ).and_return(packer_config)
 
           packer_runner = double(:packer_runner)

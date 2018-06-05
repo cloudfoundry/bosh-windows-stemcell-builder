@@ -114,6 +114,33 @@ describe Packer::Config::Gcp do
         FileUtils.rm_rf(stemcell_deps_dir)
         ENV.delete('STEMCELL_DEPS_DIR')
       end
+
+      context 'when provisioning with emphemeral disk mounting enabled' do
+        it 'calls Install-Agent with -EnableEphemeralDiskMounting' do
+          allow(SecureRandom).to receive(:hex).and_return("some-password")
+          provisioners = Packer::Config::Gcp.new(
+            account_json: '{}',
+            project_id: '',
+            source_image: '{}',
+            output_directory: 'some-output-directory',
+            image_family: '',
+            os: 'windows2012R2',
+            vm_prefix: '',
+            mount_ephemeral_disk: 'true'
+          ).provisioners
+
+          expect(provisioners).to include(
+            {
+              "type"=>"powershell",
+              "inline"=>[
+                "$ErrorActionPreference = \"Stop\";",
+                "trap { $host.SetShouldExit(1) }",
+                "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip' -EnableEphemeralDiskMounting"
+              ]
+            }
+          )
+        end
+      end
     end
     context 'windows 2016' do
       it 'returns the expected provisioners' do

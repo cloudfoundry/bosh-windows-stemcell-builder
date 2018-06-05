@@ -3,10 +3,11 @@ require 'securerandom'
 module Packer
   module Config
     class Base
-      def initialize(os:, output_directory:, vm_prefix: '')
+      def initialize(os:, output_directory:, vm_prefix: '', mount_ephemeral_disk: false)
         @os = os
         @output_directory = output_directory
         @vm_prefix = vm_prefix.empty? ? 'packer' : vm_prefix
+        @mount_ephemeral_disk = mount_ephemeral_disk
       end
 
       def self.pre_provisioners(os, skip_windows_update: false, reduce_mtu: false, iaas: '', http_proxy: '', https_proxy: '', bypass_list: '')

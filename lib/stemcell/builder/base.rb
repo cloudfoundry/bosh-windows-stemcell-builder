@@ -18,13 +18,14 @@ module Stemcell
     end
 
     class Base
-      def initialize(os:, output_directory:, version:, agent_commit:, packer_vars:, region: nil)
+      def initialize(os:, output_directory:, version:, agent_commit:, packer_vars:, region: nil, mount_ephemeral_disk: 'false')
         @os = os
         @output_directory = output_directory
         @version = version
         @agent_commit = agent_commit
         @packer_vars = packer_vars
         @region = region
+        @mount_ephemeral_disk = mount_ephemeral_disk == 'true'
       end
 
       def build(iaas:, is_light:, image_path:, manifest:, update_list:)
