@@ -31,7 +31,8 @@ namespace :build do
       source_image: source_image,
       image_family: image_family,
       version: version,
-      vm_prefix: ENV.fetch('VM_PREFIX', '')
+      vm_prefix: ENV.fetch('VM_PREFIX', ''),
+      mount_ephemeral_disk: ENV.fetch('MOUNT_EPHEMERAL_DISK', 'false')
     )
 
     gcp_builder.build

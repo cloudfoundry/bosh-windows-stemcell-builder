@@ -10,7 +10,8 @@ trap { $host.SetShouldExit(1) }
 function Install-Agent {
     Param(
         [string]$IaaS = $(Throw "Provide the IaaS of your VM"),
-        [string]$agentZipPath = $(Throw "Provide the path of your agent.zip")
+        [string]$agentZipPath = $(Throw "Provide the path of your agent.zip"),
+        [switch]$EnableEphemeralDiskMounting = $false
     )
 
     Write-Log "Install-Agent: Started"
@@ -18,7 +19,7 @@ function Install-Agent {
     Copy-Agent -InstallDir "C:\" -agentZipPath $agentZipPath
     Protect-Dir -Path "C:\bosh"
     Protect-Dir -Path "C:\var"
-    Write-AgentConfig -BoshDir "C:\bosh" -IaaS $IaaS
+    Write-AgentConfig -BoshDir "C:\bosh" -IaaS $IaaS -EnableEphemeralDiskMounting $EnableEphemeralDiskMounting
     Set-Path "C:\var\vcap\bosh\bin"
     Install-AgentService
     Protect-Dir -Path "C:\Windows\Panther" -disableInheritance $False
@@ -64,7 +65,8 @@ function Copy-Agent {
 function Write-AgentConfig {
     Param(
       [string]$boshDir = $(Throw "Provide a directory to install the BOSH agent config"),
-      [string]$IaaS = $(Throw "Provide an IaaS for configuration")
+      [string]$IaaS = $(Throw "Provide an IaaS for configuration"),
+      [bool]$EnableEphemeralDiskMounting = $false
     )
 
     if (-Not (Test-Path $boshDir -PathType Container)) {
@@ -116,33 +118,32 @@ function Write-AgentConfig {
   }
 }
 "@
-    $gcpConfig = @"
-{
-  "Platform": {
-    "Linux": {
-      "CreatePartitionIfNoEphemeralDisk": true,
-      "DevicePathResolutionType": "virtio",
-      "VirtioDevicePrefix": "google"
-    }
-  },
-  "Infrastructure": {
-    "Settings": {
-      "Sources": [
-        {
-          "Type": "InstanceMetadata",
-          "URI": "http://169.254.169.254",
-          "SettingsPath": "/computeMetadata/v1/instance/attributes/bosh_settings",
-          "Headers": {
-            "Metadata-Flavor": "Google"
-          }
+    $gcpConfig = @{
+      "Platform" = @{
+        "Linux" = @{
+          "CreatePartitionIfNoEphemeralDisk" = $true
+          "DevicePathResolutionType" = "virtio"
+          "VirtioDevicePrefix" = "google"
         }
-      ],
-      "UseServerName": true,
-      "UseRegistry": false
+      }
+      "Infrastructure" = @{
+        "Settings" = @{
+          "Sources" = ,@{
+              "Type" = "InstanceMetadata"
+              "URI" = "http://169.254.169.254"
+              "SettingsPath" = "/computeMetadata/v1/instance/attributes/bosh_settings"
+              "Headers" = @{
+                "Metadata-Flavor" = "Google"
+              }
+            }
+          "UseServerName" = $true
+          "UseRegistry" = $false
+        }
+      }
     }
-  }
-}
-"@
+    if ($EnableEphemeralDiskMounting) { $gcpConfig.Platform.Windows = @{ EnableEphemeralDiskMounting = $true } }
+    $gcpConfig = $gcpConfig | ConvertTo-JSON -Depth 100
+
     $openstackConfig = @"
 {
   "Platform": {

@@ -125,9 +125,24 @@ Describe "Write-AgentConfig" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS gcp } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should -FileContentMatch ([regex]::Escape('"Metadata-Flavor": "Google"'))
+            ($configPath) | Should -FileContentMatch ([regex]::New('"Metadata-Flavor":\s*"Google"'))
+        }
+
+        It "disables ephemeral disk mounting by default" {
+            { Write-AgentConfig -BoshDir $boshDir -IaaS gcp } | Should Not Throw
+            $configPath = (Join-Path $boshDir "agent.json")
+            Test-Path $configPath | Should Be $True
+            ($configPath) | Should -Not -FileContentMatch 'EnableEphemeralDiskMounting'
+        }
+
+        It "enables ephemeral disk mounting when the flag is true" {
+            { Write-AgentConfig -BoshDir $boshDir -IaaS gcp -EnableEphemeralDiskMounting $true } | Should Not Throw
+            $configPath = (Join-Path $boshDir "agent.json")
+            Test-Path $configPath | Should Be $True
+            ($configPath) | Should -FileContentMatch ([regex]::New('"EnableEphemeralDiskMounting":\s*true'))
         }
     }
+
     Context "when IaaS is 'vsphere'" {
         It "writes the agent config for vsphere" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS vsphere } | Should Not Throw
@@ -189,7 +204,7 @@ Describe "Install-Agent" {
         Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\var" }
         Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\Windows\Panther" -and $disableInheritance -eq $false }
 
-        Mock -Verifiable -ModuleName BOSH.Agent Write-AgentConfig {} -ParameterFilter { $IaaS -eq "aws" -and $BoshDir -eq "C:\bosh" }
+        Mock -Verifiable -ModuleName BOSH.Agent Write-AgentConfig {} -ParameterFilter { $IaaS -eq "aws" -and $BoshDir -eq "C:\bosh" -and $EnableEphemeralDiskMounting -eq $false}
         Mock -Verifiable -ModuleName BOSH.Agent Set-Path {} -ParameterFilter { $Path -eq "C:\var\vcap\bosh\bin" }
         Mock -Verifiable -ModuleName BOSH.Agent Install-AgentService {}
         Install-Agent -IaaS aws -agentZipPath "some-agent-zip-path"

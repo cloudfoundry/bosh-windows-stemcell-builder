@@ -84,14 +84,18 @@ module Packer
         ]
       end
 
-      def self.install_agent(iaas)
+      def self.install_agent(iaas, mount_ephemeral_disk = false)
+        command = "Install-Agent -IaaS #{iaas} -agentZipPath 'C:\\provision\\agent.zip'"
+        if mount_ephemeral_disk
+          command << " -EnableEphemeralDiskMounting"
+        end
         return [
           {
             'type' => 'file',
             'source' => 'build/agent.zip',
             'destination' => 'C:\\provision\\agent.zip'
           },
-          powershell_provisioner("Install-Agent -IaaS #{iaas} -agentZipPath 'C:\\provision\\agent.zip'")
+          powershell_provisioner(command)
         ]
       end
 

@@ -43,7 +43,8 @@ namespace :package do
 	    'az' => ENV['AZ'],
 	    'vm_type' => ENV['VM_TYPE'],
 	    'vm_extensions' => ENV['VM_EXTENSIONS'],
-	    'network' => ENV['NETWORK']
+	    'network' => ENV['NETWORK'],
+	    'mount_ephemeral_disk' => ENV['TEST_EPHEMERAL_DISK'] == 'true'
 	}
 	FileUtils.mkdir_p build_dir
 	File.open(File.join(build_dir,'config.json'), 'w') { |file| file.write(JSON.pretty_generate(config)) }
