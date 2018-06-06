@@ -1,0 +1,51 @@
+---
+name: ((DeploymentName))
+
+releases:
+- name: ((ReleaseName))
+  version: '((ReleaseVersion))'
+
+stemcells:
+- alias: windows
+  os: ((StemcellOs))
+  version: '((StemcellVersion))'
+
+update:
+  canaries: 0
+  canary_watch_time: 60000
+  update_watch_time: 60000
+  max_in_flight: 2
+
+instance_groups:
+- name: check-multiple
+  instances: 1
+  stemcell: windows
+  azs: [((AZ))]
+  vm_type: ((VmType))
+  vm_extensions: [((VmExtensions))]
+  networks:
+  - name: ((Network))
+  jobs:
+  - name: simple-job
+    release: ((ReleaseName))
+  - name: check-system
+    release: ((ReleaseName))
+    properties:
+      check-system:
+        mount_ephemeral_disk: ((MountEphemeralDisk))
+  - name: ephemeral-disk
+    release: ((ReleaseName))
+    properties:
+      run_test:
+        enabled: ((MountEphemeralDisk))
+- name: check-updates
+  instances: 1
+  stemcell: windows
+  lifecycle: errand
+  azs: [((AZ))]
+  vm_type: ((VmType))
+  networks:
+  - name: ((Network))
+  jobs:
+  - name: check-updates
+    release: ((ReleaseName))

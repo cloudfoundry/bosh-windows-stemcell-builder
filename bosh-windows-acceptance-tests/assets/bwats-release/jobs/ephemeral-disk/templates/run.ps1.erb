@@ -1,0 +1,72 @@
+function New-RandomFile {
+    param (
+        [Parameter(Mandatory = $false)]
+        [int64] $Size = 2gb,
+        [Parameter(Mandatory = $false)]
+        [string] $Path = ('c:/var/vcap/data/{1}' -f $HOME, (New-Guid).Guid),
+        [Parameter(Mandatory = $false)]
+        [int] $BufferSize = 4096
+    )
+    begin {
+        $MyBuffer = [System.Byte[]]::new($BufferSize)
+        $Random = [System.Random]::new()
+        $FileStream = [System.IO.File]::OpenWrite($Path)
+        $TotalSize = $FileStream.Length
+        $FileStream.Position = $FileStream.Length
+        Write-Verbose -Message ('File current size is: {0}' -f $FileStream.Length)
+    }
+
+    process {
+        while ($TotalSize -lt $Size) {
+            $Random.NextBytes($MyBuffer)
+            $FileStream.Write($MyBuffer, 0, $MyBuffer.Length)
+            $TotalSize += $BufferSize
+            Write-Verbose -Message ('Appended {0} bytes to file {1}' -f $BufferSize, $Path)
+        }
+    }
+    end {
+        $FileStream.Close()
+        [PSCustomObject]@{
+            Path = $Path
+        }
+    }
+}
+$RunTest=[bool]$<%= p("run_test.enabled") %>
+
+if ($RunTest) {
+    $dataPartition = Get-Partition | where AccessPaths -Contains "C:\var\vcap\data\"
+    if ($dataPartition -eq $null) {
+        Write-Error "Data partition should be created"
+        Exit 1
+    }
+
+    $EphemeralVolume = Get-Volume -Partition $dataPartition
+    $randFileSize = 2gb
+
+    $EphemeralSpaceBeforeFill = $EphemeralVolume.SizeRemaining
+    $FreeSpaceBeforeFill = (Get-Volume -DriveLetter C).SizeRemaining
+
+    New-RandomFile -Size $randFileSize
+
+    $FreeSpaceAfterFill = (Get-Volume -DriveLetter C).SizeRemaining
+    $EphemeralSpaceBeforeFill = $EphemeralVolume.SizeRemaining
+
+    $delta = $FreeSpaceBeforeFill - $FreeSpaceAfterFill
+    $ephemeralDelta = $EphemeralSpaceBeforeFill - $EphemeralSpaceAfterFill
+
+    Write-Host "Delta: $delta"
+    Write-Host "Ephemeral Delta: $ephemeralDelta"
+
+    if ($delta -ge $randFileSize) {
+      Write-Error "Ephemeral disk was not properly mounted to data path. Delta : $delta"
+      Exit 1
+    }
+
+    if ($ephemeralDelta -lt $randFileSize -and $ephemeralDelta -gt 2 * $randFileSize) {
+      Write-Error "Ephemeral disk was not properly mounted to data path. Ephemeral Delta : $ephemeralDelta"
+      Exit 1
+    }
+} else {
+    Write-Host "Not running tests for ephemeral disk mounting"
+    Exit 0
+}

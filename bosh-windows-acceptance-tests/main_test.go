@@ -1,7 +1,6 @@
 package bosh_windows_acceptance_tests_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,7 +11,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"text/template"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -20,6 +18,7 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 	"gopkg.in/yaml.v2"
+	"bytes"
 )
 
 func init() {
@@ -38,70 +37,25 @@ const MbsaURL = "https://download.microsoft.com/download/8/E/1/8E16A4C7-DD28-436
 
 const redeployRetries = 10
 
-var manifestTemplate = `
----
-name: {{.DeploymentName}}
-
-releases:
-- name: {{.ReleaseName}}
-  version: '{{.ReleaseVersion}}'
-
-stemcells:
-- alias: windows
-  os: {{.StemcellOs}}
-  version: '{{.StemcellVersion}}'
-
-update:
-  canaries: 0
-  canary_watch_time: 60000
-  update_watch_time: 60000
-  max_in_flight: 2
-
-instance_groups:
-- name: check-multiple
-  instances: 1
-  stemcell: windows
-  azs: [{{.AZ}}]
-  vm_type: {{.VmType}}
-  vm_extensions: [{{.VmExtensions}}]
-  networks:
-  - name: {{.Network}}
-  jobs:
-  - name: simple-job
-    release: {{.ReleaseName}}
-  - name: check-system
-    release: {{.ReleaseName}}
-- name: check-updates
-  instances: 1
-  stemcell: windows
-  lifecycle: errand
-  azs: [{{.AZ}}]
-  vm_type: {{.VmType}}
-  networks:
-  - name: {{.Network}}
-  jobs:
-  - name: check-updates
-    release: {{.ReleaseName}}
-`
-
 type ManifestProperties struct {
-	DeploymentName  string
-	ReleaseName     string
-	AZ              string
-	VmType          string
-	VmExtensions    string
-	Network         string
-	StemcellOs      string
-	StemcellVersion string
-	ReleaseVersion  string
+	DeploymentName     string
+	ReleaseName        string
+	AZ                 string
+	VmType             string
+	VmExtensions       string
+	Network            string
+	StemcellOs         string
+	StemcellVersion    string
+	ReleaseVersion     string
+	MountEphemeralDisk bool
 }
 
-type StemcellInfo struct {
+type StemcellYML struct {
 	Version string `yaml:"version"`
 	Name    string `yaml:"name"`
 }
 
-type BoshStemcell struct {
+type StemcellJSON struct {
 	Tables []struct {
 		Rows []struct {
 			Version string `json:"version"`
@@ -116,13 +70,14 @@ type Config struct {
 		ClientSecret string `json:"client_secret"`
 		Target       string `json:"target"`
 	} `json:"bosh"`
-	Stemcellpath string `json:"stemcell_path"`
-	StemcellOs   string `json:"stemcell_os"`
-	Az           string `json:"az"`
-	VmType       string `json:"vm_type"`
-	VmExtensions string `json:"vm_extensions"`
-	Network      string `json:"network"`
-	SkipCleanup  bool   `json:"skip_cleanup"`
+	Stemcellpath       string `json:"stemcell_path"`
+	StemcellOs         string `json:"stemcell_os"`
+	Az                 string `json:"az"`
+	VmType             string `json:"vm_type"`
+	VmExtensions       string `json:"vm_extensions"`
+	Network            string `json:"network"`
+	SkipCleanup        bool   `json:"skip_cleanup"`
+	MountEphemeralDisk bool   `json:"mount_ephemeral_disk"`
 }
 
 func NewConfig() (*Config, error) {
@@ -142,29 +97,12 @@ func NewConfig() (*Config, error) {
 	if config.StemcellOs == "" {
 		return nil, fmt.Errorf("missing required field: %v", "stemcell_os")
 	}
+
+	if config.VmExtensions == "" {
+		config.VmExtensions = "128GB_ephemeral_disk"
+	}
+
 	return &config, nil
-}
-
-func (c *Config) generateManifest(deploymentName string, stemcellVersion string, bwatsVersion string) ([]byte, error) {
-	manifestProperties := ManifestProperties{
-		DeploymentName:  deploymentName,
-		ReleaseName:     "bwats-release",
-		AZ:              c.Az,
-		VmType:          c.VmType,
-		VmExtensions:    c.VmExtensions,
-		Network:         c.Network,
-		StemcellOs:      c.StemcellOs,
-		StemcellVersion: stemcellVersion,
-		ReleaseVersion:  bwatsVersion,
-	}
-
-	templ, err := template.New("").Parse(manifestTemplate)
-	if err != nil {
-		return nil, err
-	}
-	var buf bytes.Buffer
-	err = templ.Execute(&buf, manifestProperties)
-	return buf.Bytes(), err
 }
 
 type BoshCommand struct {
@@ -175,13 +113,37 @@ type BoshCommand struct {
 	Timeout      time.Duration
 }
 
-func NewBoshCommand(config *Config, CertPath string, duration time.Duration) *BoshCommand {
+func setupBosh(config *Config) (*BoshCommand) {
+	var boshCertPath string
+	cert := config.Bosh.CaCert
+	if cert != "" {
+		certFile, err := ioutil.TempFile("", "")
+		Expect(err).To(Succeed())
+
+		_, err = certFile.Write([]byte(cert))
+		Expect(err).To(Succeed())
+
+		boshCertPath, err = filepath.Abs(certFile.Name())
+		Expect(err).To(Succeed())
+	}
+
+	timeout := BOSH_TIMEOUT
+	var err error
+	if s := os.Getenv("BWATS_BOSH_TIMEOUT"); s != "" {
+		timeout, err = time.ParseDuration(s)
+		log.Printf("Using BWATS_BOSH_TIMEOUT (%s) as timeout\n", s)
+
+		if err != nil {
+			log.Printf("Error parsing BWATS_BOSH_TIMEOUT (%s): %s - falling back to default\n", s, err)
+		}
+	}
+
 	return &BoshCommand{
 		DirectorIP:   config.Bosh.Target,
 		Client:       config.Bosh.Client,
 		ClientSecret: config.Bosh.ClientSecret,
-		CertPath:     CertPath,
-		Timeout:      duration,
+		CertPath:     boshCertPath,
+		Timeout:      timeout,
 	}
 }
 
@@ -231,32 +193,196 @@ func (c *BoshCommand) RunIn(command, dir string) error {
 	return err
 }
 
-func downloadFile(prefix, sourceUrl string) (string, error) {
-	tempfile, err := ioutil.TempFile("", prefix)
-	if err != nil {
-		return "", err
-	}
+var (
+	bosh                      *BoshCommand
+	deploymentName            string
+	manifestPath              string
+	stemcellName              string
+	stemcellVersion           string
+	releaseVersion            string
+	tightLoopStemcellVersions []string
+	config                    *Config
+)
 
-	filename := tempfile.Name()
-	f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
+var _ = Describe("BOSH Windows", func() {
+	BeforeSuite(func() {
+		var err error
 
-	res, err := http.Get(sourceUrl)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-	if _, err := io.Copy(f, res.Body); err != nil {
-		return "", err
-	}
+		config, err = NewConfig()
+		bosh = setupBosh(config)
 
-	return filename, nil
+		bosh.Run("login")
+		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", getTimestampInMs())
+
+		stemcellYML := extractStemcellMetadata(config, bosh)
+		stemcellName = stemcellYML.Name
+		stemcellVersion = stemcellYML.Version
+
+		releaseVersion = createBwatsRelease(bosh)
+
+		uploadStemcell(config, bosh)
+
+		err = config.deploy(bosh, deploymentName, stemcellVersion, releaseVersion)
+		Expect(err).To(Succeed())
+	})
+
+	AfterSuite(func() {
+		// Delete the releases created by the tight loop test
+		for _, version := range tightLoopStemcellVersions {
+			bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", version))
+		}
+		if config.SkipCleanup {
+			return
+		}
+
+		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
+		bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellName, stemcellVersion))
+		bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
+
+		if bosh.CertPath != "" {
+			os.RemoveAll(bosh.CertPath)
+		}
+	})
+
+	It("can run a job that relies on a package", func() {
+		time.Sleep(60 * time.Second)
+		Eventually(downloadLogs("check-multiple", "simple-job", 0, bosh),
+			time.Second*65).Should(gbytes.Say("60 seconds passed"))
+	})
+
+	It("successfully runs redeploy in a tight loop", func() {
+		pwd, err := os.Getwd()
+		Expect(err).To(BeNil())
+		releaseDir := filepath.Join(pwd, "assets", "bwats-release")
+
+		f, err := os.OpenFile(filepath.Join(releaseDir, "jobs", "simple-job", "templates", "pre-start.ps1"),
+			os.O_APPEND|os.O_WRONLY, 0600)
+		Expect(err).ToNot(HaveOccurred())
+		defer f.Close()
+
+		for i := 0; i < redeployRetries; i++ {
+			log.Printf("Redeploy attempt: #%d\n", i)
+
+			version := fmt.Sprintf("0.dev+%d", getTimestampInMs())
+			tightLoopStemcellVersions = append(tightLoopStemcellVersions, version)
+			Expect(bosh.RunIn("create-release --force --version "+version, releaseDir)).To(Succeed())
+
+			Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
+
+			err = config.deploy(bosh, deploymentName, stemcellVersion, version)
+
+			if err != nil {
+				downloadLogs("check-multiple", "simple-job", 0, bosh)
+				Fail(err.Error())
+			}
+		}
+	})
+
+	It("checks system dependencies and security, auto update has turned off, currently has a Service StartType of 'Manual' and initially had a StartType of 'Delayed', password is randomized, and ephemeral disk is not mounted unless flag is on", func() {
+		err := runTest("check-system")
+		Expect(err).To(Succeed())
+	})
+
+	It("is fully updated", func() { // 860s
+		err := runTest("check-updates")
+		Expect(err).To(Succeed())
+	})
+
+	It("mounts ephemeral disks when asked to do so", func() {
+		if config.MountEphemeralDisk {
+			err := runTest("ephemeral-disk")
+			Expect(err).To(Succeed())
+		} else {
+			Skip("Not running ephemeral disk test because flag is off")
+		}
+	})
+})
+
+func runTest(testName string) error {
+	return bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs %s --tty", deploymentName, testName))
 }
 
-func downloadLogs(instanceName string, jobName string, index int) *gbytes.Buffer {
+func uploadStemcell(config *Config, bosh *BoshCommand) {
+	matches, err := filepath.Glob(config.Stemcellpath)
+	Expect(err).To(Succeed())
+	Expect(matches).To(HaveLen(1))
+	err = bosh.Run(fmt.Sprintf("upload-stemcell %s", matches[0]))
+	if err != nil {
+		// AWS takes a while to distribute the AMI across accounts
+		time.Sleep(2 * time.Minute)
+	}
+	Expect(err).To(Succeed())
+}
+
+func createBwatsRelease(bosh *BoshCommand) string {
+	pwd, err := os.Getwd()
+	Expect(err).To(Succeed())
+
+	releaseVersion = fmt.Sprintf("0.dev+%d", getTimestampInMs())
+	goZipPath, err := downloadFile("golang-", GolangURL)
+	Expect(err).To(Succeed())
+	releaseDir := filepath.Join(pwd, "assets", "bwats-release")
+	Expect(bosh.RunIn(fmt.Sprintf("add-blob %s golang-windows/%s", goZipPath, GoZipFile), releaseDir)).To(Succeed())
+	mbsaMsiPath, err := downloadFile("mbsa-", MbsaURL)
+	Expect(err).To(Succeed())
+	Expect(bosh.RunIn(fmt.Sprintf("add-blob %s mbsa/%s", mbsaMsiPath, MbsaFile), releaseDir)).To(Succeed())
+	Expect(bosh.RunIn(fmt.Sprintf("create-release --force --version %s", releaseVersion), releaseDir)).To(Succeed())
+	Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
+
+	return releaseVersion
+}
+
+func extractStemcellMetadata(config *Config, bosh *BoshCommand) StemcellYML {
+	stemcellInfo, err := fetchStemcellInfo(config.Stemcellpath)
+	Expect(err).To(Succeed())
+
+	boshStemcellOutput, err := bosh.RunInStdOut("stemcells --json", "")
+	Expect(err).To(Succeed())
+
+	var stemcellJSON StemcellJSON
+	json.Unmarshal(boshStemcellOutput, &stemcellJSON)
+	for _, row := range stemcellJSON.Tables[0].Rows {
+		Expect(row.Version).NotTo(MatchRegexp(fmt.Sprintf(`^%s\*?$`, stemcellInfo.Version)))
+	}
+
+	return stemcellInfo
+}
+
+func (m ManifestProperties) toVarsString() string {
+	manifest := m.toMap()
+
+	fmtString := "-v %s=%s "
+
+	var b bytes.Buffer
+
+	for k, v := range manifest {
+		if v != "" {
+			fmt.Fprintf(&b, fmtString, k, v)
+		}
+	}
+
+	fmt.Fprintf(&b, "-v MountEphemeralDisk=%t", m.MountEphemeralDisk)
+
+	return b.String()
+}
+
+func (m ManifestProperties) toMap() map[string]string {
+	manifest := make(map[string]string)
+
+	manifest["DeploymentName"] = m.DeploymentName
+	manifest["ReleaseName"] = m.ReleaseName
+	manifest["AZ"] = m.AZ
+	manifest["VmType"] = m.VmType
+	manifest["VmExtensions"] = m.VmExtensions
+	manifest["Network"] = m.Network
+	manifest["StemcellOs"] = m.StemcellOs
+	manifest["StemcellVersion"] = m.StemcellVersion
+	manifest["ReleaseVersion"] = m.ReleaseVersion
+
+	return manifest
+}
+
+func downloadLogs(instanceName string, jobName string, index int, bosh *BoshCommand) *gbytes.Buffer {
 	tempDir, err := ioutil.TempDir("", "")
 	Expect(err).To(Succeed())
 	defer os.RemoveAll(tempDir)
@@ -275,8 +401,12 @@ func downloadLogs(instanceName string, jobName string, index int) *gbytes.Buffer
 	return session.Wait().Out
 }
 
-func fetchStemcellInfo(stemcellPath string) (StemcellInfo, error) {
-	var stemcellInfo StemcellInfo
+func getTimestampInMs() int64 {
+	return time.Now().UTC().UnixNano() / int64(time.Millisecond)
+}
+
+func fetchStemcellInfo(stemcellPath string) (StemcellYML, error) {
+	var stemcellInfo StemcellYML
 	tempDir, err := ioutil.TempDir("", "")
 	Expect(err).To(Succeed())
 	defer os.RemoveAll(tempDir)
@@ -308,197 +438,51 @@ func fetchStemcellInfo(stemcellPath string) (StemcellInfo, error) {
 	return stemcellInfo, nil
 }
 
-func getTimestampInMs() int64 {
-	return time.Now().UTC().UnixNano() / int64(time.Millisecond)
+func downloadFile(prefix, sourceUrl string) (string, error) {
+	tempfile, err := ioutil.TempFile("", prefix)
+	if err != nil {
+		return "", err
+	}
+
+	filename := tempfile.Name()
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	res, err := http.Get(sourceUrl)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	if _, err := io.Copy(f, res.Body); err != nil {
+		return "", err
+	}
+
+	return filename, nil
 }
 
-var (
-	bosh                      *BoshCommand
-	deploymentName            string
-	manifestPath              string
-	stemcellName              string
-	stemcellVersion           string
-	releaseVersion            string
-	tightLoopStemcellVersions [redeployRetries]string
-)
+func (c *Config) deploy(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string) (error) {
+	manifestProperties := ManifestProperties{
+		DeploymentName:     deploymentName,
+		ReleaseName:        "bwats-release",
+		AZ:                 c.Az,
+		VmType:             c.VmType,
+		VmExtensions:       c.VmExtensions,
+		Network:            c.Network,
+		StemcellOs:         c.StemcellOs,
+		StemcellVersion:    stemcellVersion,
+		ReleaseVersion:     bwatsVersion,
+		MountEphemeralDisk: c.MountEphemeralDisk,
+	}
 
-var _ = Describe("BOSH Windows", func() {
-	var config *Config
+	pwd, err := os.Getwd()
+	Expect(err).To(Succeed())
+	manifestPath = filepath.Join(pwd, "assets", "manifest.yml")
 
-	BeforeSuite(func() {
-		var err error
-		config, err = NewConfig()
-		Expect(err).To(Succeed())
+	err = bosh.Run(fmt.Sprintf("-d %s deploy %s %s", deploymentName, manifestPath, manifestProperties.toVarsString()))
+	Expect(err).To(Succeed())
 
-		var boshCertPath string
-		cert := config.Bosh.CaCert
-		if cert != "" {
-			certFile, err := ioutil.TempFile("", "")
-			Expect(err).To(Succeed())
-
-			_, err = certFile.Write([]byte(cert))
-			Expect(err).To(Succeed())
-
-			boshCertPath, err = filepath.Abs(certFile.Name())
-			Expect(err).To(Succeed())
-		}
-
-		timeout := BOSH_TIMEOUT
-		if s := os.Getenv("BWATS_BOSH_TIMEOUT"); s != "" {
-			d, err := time.ParseDuration(s)
-			if err != nil {
-				log.Printf("Error parsing BWATS_BOSH_TIMEOUT (%s): %s - falling back to default\n", s, err)
-			} else {
-				log.Printf("Using BWATS_BOSH_TIMEOUT (%s) as timeout\n", s)
-				timeout = d
-			}
-		}
-		log.Printf("Using timeout (%s) for BOSH commands\n", timeout)
-
-		bosh = NewBoshCommand(config, boshCertPath, timeout)
-
-		bosh.Run("login")
-		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", getTimestampInMs())
-
-		pwd, err := os.Getwd()
-		Expect(err).To(Succeed())
-		releaseDir := filepath.Join(pwd, "assets", "bwats-release")
-
-		var stemcellInfo StemcellInfo
-		stemcellInfo, err = fetchStemcellInfo(config.Stemcellpath)
-		Expect(err).To(Succeed())
-
-		stemcellVersion = stemcellInfo.Version
-		stemcellName = stemcellInfo.Name
-
-		// get the output of bosh stemcells
-		var stdout []byte
-		stdout, err = bosh.RunInStdOut("stemcells --json", "")
-		Expect(err).To(Succeed())
-
-		// Ensure stemcell version has not already been uploaded to bosh director
-		var stdoutInfo BoshStemcell
-		json.Unmarshal(stdout, &stdoutInfo)
-		for _, row := range stdoutInfo.Tables[0].Rows {
-			Expect(row.Version).NotTo(MatchRegexp(fmt.Sprintf(`^%s\*?$`, stemcellInfo.Version)))
-		}
-
-		// Generate BWATS release version
-		releaseVersion = fmt.Sprintf("0.dev+%d", getTimestampInMs())
-
-		goZipPath, err := downloadFile("golang-", GolangURL)
-		Expect(err).To(Succeed())
-
-		Expect(bosh.RunIn(fmt.Sprintf("add-blob %s golang-windows/%s", goZipPath, GoZipFile), releaseDir)).To(Succeed())
-
-		mbsaMsiPath, err := downloadFile("mbsa-", MbsaURL)
-		Expect(err).To(Succeed())
-
-		Expect(bosh.RunIn(fmt.Sprintf("add-blob %s mbsa/%s", mbsaMsiPath, MbsaFile), releaseDir)).To(Succeed())
-
-		Expect(bosh.RunIn(fmt.Sprintf("create-release --force --version %s", releaseVersion), releaseDir)).To(Succeed())
-
-		Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
-
-		matches, err := filepath.Glob(config.Stemcellpath)
-		Expect(err).To(Succeed())
-		Expect(matches).To(HaveLen(1))
-
-		err = bosh.Run(fmt.Sprintf("upload-stemcell %s", matches[0]))
-		if err != nil {
-			// AWS takes a while to distribute the AMI across accounts
-			time.Sleep(2 * time.Minute)
-		}
-		Expect(err).To(Succeed())
-
-		manifest, err := config.generateManifest(deploymentName, stemcellVersion, releaseVersion)
-		Expect(err).To(Succeed())
-
-		manifestFile, err := ioutil.TempFile("", "")
-		Expect(err).To(Succeed())
-
-		_, err = manifestFile.Write(manifest)
-		Expect(err).To(Succeed())
-
-		manifestPath, err = filepath.Abs(manifestFile.Name())
-		Expect(err).To(Succeed())
-
-		err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentName, manifestPath))
-		Expect(err).To(Succeed())
-		bosh = NewBoshCommand(config, boshCertPath, timeout)
-
-	})
-
-	AfterSuite(func() {
-		// Delete the releases created by the tight loop test
-		for _, version := range tightLoopStemcellVersions {
-			bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", version))
-		}
-		if config.SkipCleanup {
-			return
-		}
-
-		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
-		bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellName, stemcellVersion))
-		bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
-
-		if bosh.CertPath != "" {
-			os.RemoveAll(bosh.CertPath)
-		}
-		if manifestPath != "" {
-			os.RemoveAll(manifestPath)
-		}
-	})
-
-	It("can run a job that relies on a package", func() {
-		time.Sleep(60 * time.Second)
-		Eventually(downloadLogs("check-multiple", "simple-job", 0),
-			time.Second*65).Should(gbytes.Say("60 seconds passed"))
-	})
-
-	It("successfully runs redeploy in a tight loop", func() {
-
-		pwd, err := os.Getwd()
-		Expect(err).To(BeNil())
-		releaseDir := filepath.Join(pwd, "assets", "bwats-release")
-
-		f, err := os.OpenFile(filepath.Join(releaseDir, "jobs", "simple-job", "templates", "pre-start.ps1"),
-			os.O_APPEND|os.O_WRONLY, 0600)
-		Expect(err).ToNot(HaveOccurred())
-		defer f.Close()
-
-		for i := 0; i < redeployRetries; i++ {
-			log.Printf("Redeploy attempt: #%d\n", i)
-
-			version := fmt.Sprintf("0.dev+%d", getTimestampInMs())
-			tightLoopStemcellVersions[i] = version
-			Expect(bosh.RunIn("create-release --force --version "+version, releaseDir)).To(Succeed())
-
-			Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
-
-			err = bosh.Run(fmt.Sprintf("-d %s deploy %s", deploymentName, manifestPath))
-			if err != nil {
-				downloadLogs("check-multiple", "simple-job", 0)
-				Fail(err.Error())
-			}
-		}
-	})
-
-	// The Agent changes the start type of it's service wrapper to 'Manual' immediately
-	// before the first job is started - this is prevent the Agent from coming back up
-	// after a restart, which we don't support.
-	//
-	// Since the Agent will have changed it's start type by the time that this errand
-	// runs we check for the presence of a registry key that is an artifact of the
-	// original 'Automatic (Delayed Start)' configuration.
-
-	It("checks system dependencies and security, auto update has turned off, currently has a Service StartType of 'Manual' and initially had a StartType of 'Delayed' and password is randomized", func() {
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-system --tty", deploymentName))
-		Expect(err).To(Succeed())
-	})
-
-	It("is fully updated", func() { // 860s
-		err := bosh.Run(fmt.Sprintf("-d %s run-errand --download-logs check-updates --tty", deploymentName))
-		Expect(err).To(Succeed())
-	})
-})
+	return nil
+}
