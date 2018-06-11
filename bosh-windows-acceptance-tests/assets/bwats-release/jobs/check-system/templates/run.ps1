@@ -293,14 +293,11 @@ if ($dataPartition -ne $null) {
 echo "Verifying NTP synch works correctly"
 w32tm /query /configuration
 
-net stop w32time
-
 Set-Date -Date (Get-Date).AddHours(8)
 $NewTimeString = (Get-Date).ToShortTimeString()
 
-net start w32time
-
 w32tm /resync /rediscover
+w32tm /resync
 
 if ((Get-Date).ToShortTimeString() -eq $NewTimeString) {
     Write-Error "Time not reset correctly via NTP"
