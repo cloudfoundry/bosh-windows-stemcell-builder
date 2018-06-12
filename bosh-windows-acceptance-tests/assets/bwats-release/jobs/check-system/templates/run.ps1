@@ -294,13 +294,26 @@ echo "Verifying NTP synch works correctly"
 w32tm /query /configuration
 
 Set-Date -Date (Get-Date).AddHours(8)
-$NewTimeString = (Get-Date).ToShortTimeString()
+$OutOfSyncTime = Get-Date
 
-w32tm /resync /rediscover
-w32tm /resync
+$TimeSetCorrectly = $false
 
-if ((Get-Date).ToShortTimeString() -eq $NewTimeString) {
-    Write-Error "Time not reset correctly via NTP"
+for ($i=0; $i -lt 10; $i++) {
+    Sleep 1
+
+    w32tm /resync /rediscover
+    w32tm /resync
+
+    if ((Get-Date) -ge $OutOfSyncTime) {
+        Write-Error "Time not reset correctly via NTP on attempt $($i+1) of 10"
+    } else {
+        $TimeSetCorrectly = $true
+        break
+    }
+}
+
+if (-not $TimeSetCorrectly) {
+    Write-Error "Time not reset correctly via NTP after 10 attempts"
     Exit 1
 }
 
