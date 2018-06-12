@@ -3,6 +3,10 @@ name: check-system
 description: "This errand verifies that Microsoft Auto Updates are disabled on the target machine"
 templates:
   run.ps1: bin/run.ps1
+  audit.csv: test/audit.csv
+  GptTmpl.inf: test/GptTmpl.inf
+  machine_registry.txt: test/machine_registry.txt
+  user_registry.txt: test/user_registry.txt
   HWCServer.exe: bin/HWCServer.exe
   security.inf: inf/security.inf
 packages: []
