@@ -305,7 +305,7 @@ for ($i=0; $i -lt 10; $i++) {
     w32tm /resync
 
     if ((Get-Date) -ge $OutOfSyncTime) {
-        Write-Error "Time not reset correctly via NTP on attempt $($i+1) of 10"
+        Write-Error "Time not reset correctly via NTP on attempt $($i+1) of 10: $(Get-Date) greater than or equal to $OutOfSyncTime"
     } else {
         $TimeSetCorrectly = $true
         break
