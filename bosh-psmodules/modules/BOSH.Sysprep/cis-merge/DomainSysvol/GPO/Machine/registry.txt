@@ -1126,7 +1126,7 @@ DWORD:1
 Computer
 Software\Policies\Microsoft\Windows\WinRM\Service\WinRS
 AllowRemoteShellAccess
-DWORD:0
+DELETE
 
 Computer
 Software\Policies\Microsoft\Windows\Windows Error Reporting

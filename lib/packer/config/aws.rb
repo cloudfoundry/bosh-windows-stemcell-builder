@@ -50,6 +50,7 @@ module Packer
       def provisioners
         [
           Base.pre_provisioners(@os, iaas: 'aws'),
+          Provisioners::lgpo_exe,
           Provisioners.install_agent('aws').freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Base.enable_security_patches(@os),

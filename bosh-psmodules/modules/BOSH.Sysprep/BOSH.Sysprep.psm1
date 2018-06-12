@@ -340,6 +340,18 @@ function Invoke-Sysprep() {
 
   Allow-NTPSync
 
+  # For now, apply LGPO only on 2012R2
+  switch ($OsVersion) {
+    "windows2012R2" {
+      if (-Not $SkipLGPO) {
+        if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
+          Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
+        }
+        Enable-LocalSecurityPolicy
+      }
+    }
+  }
+
   switch ($IaaS) {
     "aws" {
       switch ($OsVersion) {
@@ -383,18 +395,19 @@ function Invoke-Sysprep() {
       GCESysprep
     }
     "azure" {
-      $AnswerFilePath = "C:\Windows\Panther\unattend.xml"
-      Remove-WasPassProcessed -AnswerfilePath $AnswerFilePath
-      Remove-UserAccounts -AnswerFilePath $AnswerFilePath
-
-      C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit /unattend:$AnswerFilePath
+      C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
     }
     "vsphere" {
-      if (-Not $SkipLGPO) {
-        if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
-          Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
+      # For now, apply LGPO on 1709 only on vSphere
+      switch ($OsVersion) {
+        "windows2016" {
+          if (-Not $SkipLGPO) {
+            if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
+              Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
+            }
+            Enable-LocalSecurityPolicy
+          }
         }
-        Enable-LocalSecurityPolicy
       }
 
       Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
