@@ -107,9 +107,9 @@ function Protect-Dir {
 
     if ($disableInheritance) {
         Write-Log "Protect-Dir: Disable Inheritance"
-        $acl = Get-ACL -Path $path
+        $acl = Get-ACL -LiteralPath $path
         $acl.SetAccessRuleProtection($True, $True)
-        Set-Acl -Path $path -AclObject $acl
+        Set-Acl -LiteralPath $path -AclObject $acl
     }
 }
 
