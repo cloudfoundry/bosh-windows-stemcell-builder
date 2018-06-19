@@ -83,7 +83,7 @@ function Protect-Dir {
         [bool]$disableInheritance=$True
     )
 
-    if (-Not (Test-Path $path)) {
+    if (-Not (Test-Path -LiteralPath $path)) {
         Throw "Error setting ACL for ${path}: does not exist"
     }
 
