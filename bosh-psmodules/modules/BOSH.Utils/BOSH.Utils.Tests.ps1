@@ -71,12 +71,6 @@ Describe  "Protect-Dir" {
         }
     }
 
-    Context "when provided a nonexistent directory" {
-        It "throws" {
-            { Protect-Dir -path "nonexistent-dir" } | Should Throw "Error setting ACL for nonexistent-dir: does not exist"
-        }
-    }
-
     It "sets the correct ACLs on the provided directory" {
         { Protect-Dir -path $aclDir } | Should Not Throw
 
