@@ -62,11 +62,18 @@ describe Packer::Config::Gcp do
   end
 
   describe 'provisioners' do
+    before(:each) do
+      @stemcell_deps_dir = Dir.mktmpdir('gcp')
+      ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
+    end
+
+    after(:each) do
+      FileUtils.rm_rf(@stemcell_deps_dir)
+      ENV.delete('STEMCELL_DEPS_DIR')
+    end
+
     context 'windows 2012' do
       it 'returns the expected provisioners' do
-        stemcell_deps_dir = Dir.mktmpdir('gcp')
-        ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
-
         allow(SecureRandom).to receive(:hex).and_return("some-password")
         provisioners = Packer::Config::Gcp.new(
           account_json: '{}',
@@ -107,12 +114,10 @@ describe Packer::Config::Gcp do
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Invoke-Sysprep -IaaS gcp -OsVersion windows2012R2"]}
         ].flatten
+
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
         provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
         expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
-
-        FileUtils.rm_rf(stemcell_deps_dir)
-        ENV.delete('STEMCELL_DEPS_DIR')
       end
 
       context 'when provisioning with emphemeral disk mounting enabled' do
@@ -144,9 +149,6 @@ describe Packer::Config::Gcp do
     end
     context 'windows 2016' do
       it 'returns the expected provisioners' do
-        stemcell_deps_dir = Dir.mktmpdir('gcp')
-        ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
-
         allow(SecureRandom).to receive(:hex).and_return("some-password")
         provisioners = Packer::Config::Gcp.new(
             account_json: '{}',
@@ -186,9 +188,6 @@ describe Packer::Config::Gcp do
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
         provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
         expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
-
-        FileUtils.rm_rf(stemcell_deps_dir)
-        ENV.delete('STEMCELL_DEPS_DIR')
       end
     end
   end

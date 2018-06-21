@@ -40,6 +40,7 @@ describe 'Package::BWATS' do
 			'az' => 'some-az',
 			'vm_type' => 'some-type',
 			'vm_extensions' => 'some-vm-extensions',
+			'mount_ephemeral_disk' => false,
 			'network' => 'some-network'
 		}
 		ENV['BOSH_CA_CERT'] = config['bosh']['ca_cert']
