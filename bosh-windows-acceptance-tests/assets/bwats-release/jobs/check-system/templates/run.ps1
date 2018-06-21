@@ -23,26 +23,39 @@
 
     copy "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\SecEdit\GptTmpl.inf" "$OutputDir"
 
-    function Assert-NoDiff {
+    function Compare-LGPOPolicies {
       Param (
-        [string] $fileA = (Throw "first filename param required"),
-        [string] $fileB = (Throw "second filename param required")
+        [string] $ActualPoliciesFile = (Throw "ActualPoliciesFile param required"),
+        [string] $ExpectedPoliciesFile = (Throw "ExpectedPoliciesFile param required"),
+        [string] $PolicyDelimiter = (Throw "PolicyDelimiter param required")
       )
-      fc.exe /t "$fileA" "$fileB"
 
-      if ($LastExitCode -ne 0) {
-        Write-Error "Expected no diff between $fileA and $fileB"
-        Exit 1
+      $ActualPolicies = Import-CSV $ActualPoliciesFile
+      $ActualPoliciesArray = $ActualPolicies -split $PolicyDelimiter
+
+      $ExpectedPolicies = Import-CSV $ExpectedPoliciesFile
+      $ExpectedPoliciesArray = $ExpectedPolicies -split $PolicyDelimiter
+
+      $count = 0
+      foreach ($policy in $ExpectedPoliciesArray) {
+        if (-not $ActualPoliciesArray.contains($policy)) {
+          Write-Error "Actual policies do not include policy: $policy"
+          $count += 1
+        }
+      }
+      if (-not $count -eq 0) {
+        Write-Error "There are missing policies"
+        exit 1
       }
     }
 
-    # Diff the files aginst the fixtures
+    $newLineDelimiter = [System.Environment]::NewLine
     $TestDir = "$PSScriptRoot\..\test"
 
-    Assert-NoDiff "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt"
-    Assert-NoDiff "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt"
-    Assert-NoDiff "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf"
-    Assert-NoDiff "$OutputDir\audit.csv" "$TestDir\audit.csv"
+    Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "$newLineDelimiter$newLineDelimiter"
+    Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "$newLineDelimiter$newLineDelimiter"
+    Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "$newLineDelimiter"
+    Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "$newLineDelimiter"
   }
 }
 
@@ -354,7 +367,7 @@ function Verify-NTPSync {
   }
 }
 
-#Verify-LGPO
+Verify-LGPO
 Verify-Dependencies
 Verify-Acls
 Verify-Services
