@@ -88,19 +88,19 @@ function Protect-Dir {
     }
 
     Write-Log "Protect-Dir: Remove BUILTIN\Users"
-    cacls.exe $path /T /E /R "BUILTIN\Users"
+    cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\Users"
     if ($LASTEXITCODE -ne 0) {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
     Write-Log "Protect-Dir: Remove BUILTIN\IIS_IUSRS"
-    cacls.exe $path /T /E /R "BUILTIN\IIS_IUSRS"
+    cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\IIS_IUSRS"
     if ($LASTEXITCODE -ne 0) {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
     Write-Log "Protect-Dir: Grant Administrator"
-    cacls.exe $path /T /E /P Administrators:F
+    cmd.exe /c cacls.exe $path /T /E /P Administrators:F
     if ($LASTEXITCODE -ne 0) {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
