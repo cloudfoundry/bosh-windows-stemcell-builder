@@ -83,10 +83,6 @@ function Protect-Dir {
         [bool]$disableInheritance=$True
     )
 
-    if (-Not (Test-Path -LiteralPath $path)) {
-        Throw "Error setting ACL for ${path}: does not exist"
-    }
-
     Write-Log "Protect-Dir: Remove BUILTIN\Users"
     cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\Users"
     if ($LASTEXITCODE -ne 0) {
