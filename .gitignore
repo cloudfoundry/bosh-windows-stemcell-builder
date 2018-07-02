@@ -38,3 +38,4 @@ vendor/cache/ruby/
 /lib/bundler/man/
 
 /build
+/local-builders
