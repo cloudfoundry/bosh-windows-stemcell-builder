@@ -67,6 +67,9 @@ if ($RunTest) {
       Exit 1
     }
 } else {
-    Write-Host "Not running tests for ephemeral disk mounting"
-    Exit 0
+    $dataPartition = Get-Partition | where AccessPaths -Contains "C:\var\vcap\data\"
+    if ($dataPartition -ne $null) {
+      Write-Error "Data partition should not be created"
+      Exit 1
+    }
 }

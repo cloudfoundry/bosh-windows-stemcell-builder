@@ -13,12 +13,13 @@ import (
 	"strings"
 	"time"
 
+	"bytes"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
 	"gopkg.in/yaml.v2"
-	"bytes"
 )
 
 func init() {
@@ -113,7 +114,7 @@ type BoshCommand struct {
 	Timeout      time.Duration
 }
 
-func setupBosh(config *Config) (*BoshCommand) {
+func setupBosh(config *Config) *BoshCommand {
 	var boshCertPath string
 	cert := config.Bosh.CaCert
 	if cert != "" {
@@ -289,12 +290,8 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("mounts ephemeral disks when asked to do so", func() {
-		if config.MountEphemeralDisk {
-			err := runTest("ephemeral-disk")
-			Expect(err).To(Succeed())
-		} else {
-			Skip("Not running ephemeral disk test because flag is off")
-		}
+		err := runTest("ephemeral-disk")
+		Expect(err).To(Succeed())
 	})
 })
 
@@ -463,7 +460,7 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 	return filename, nil
 }
 
-func (c *Config) deploy(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string) (error) {
+func (c *Config) deploy(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string) error {
 	manifestProperties := ManifestProperties{
 		DeploymentName:     deploymentName,
 		ReleaseName:        "bwats-release",

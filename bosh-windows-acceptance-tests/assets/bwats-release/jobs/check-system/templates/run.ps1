@@ -330,14 +330,6 @@ function Verify-RandomPassword {
   }
 }
 
-function Verify-DataDirNotMounted {
-  $dataPartition = Get-Partition | where AccessPaths -Contains "C:\var\vcap\data\"
-  if ($dataPartition -ne $null) {
-      Write-Error "Data partition should not be created"
-      Exit 1
-  }
-}
-
 function Verify-NTPSync {
   echo "Verifying NTP synch works correctly"
   w32tm /query /configuration
@@ -379,6 +371,5 @@ Verify-ProvisionerDeleted
 Verify-NetBIOSDisabled
 Verify-AgentBehavior
 Verify-RandomPassword
-Verify-DataDirNotMounted
 Verify-NTPSync
 Exit 0
