@@ -100,7 +100,7 @@ func NewConfig() (*Config, error) {
 	}
 
 	if config.VmExtensions == "" {
-		config.VmExtensions = "128GB_ephemeral_disk"
+		config.VmExtensions = "500GB_ephemeral_disk"
 	}
 
 	return &config, nil
