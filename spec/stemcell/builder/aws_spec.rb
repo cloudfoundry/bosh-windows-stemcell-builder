@@ -37,7 +37,9 @@ describe Stemcell::Builder do
                 regions: amis,
                 output_directory: output_directory,
                 os: os,
-                vm_prefix: vm_prefix)
+                vm_prefix: vm_prefix,
+                mount_ephemeral_disk: false,
+              )
           .and_return(packer_config)
 
         packer_runner = double(:packer_runner)
@@ -72,7 +74,8 @@ describe Stemcell::Builder do
           agent_commit: agent_commit,
           packer_vars: packer_vars,
           region: region,
-          vm_prefix: vm_prefix
+          vm_prefix: vm_prefix,
+          mount_ephemeral_disk: 'false'
         ).build_from_packer(ami_output_directory)
         expect(stemcell_path).to eq('path-to-stemcell')
       end
@@ -94,7 +97,9 @@ describe Stemcell::Builder do
                   regions: amis,
                   output_directory: output_directory,
                   os: os,
-                  vm_prefix: vm_prefix)
+                  vm_prefix: vm_prefix,
+                  mount_ephemeral_disk: false,
+                )
             .and_return(packer_config)
 
           packer_runner = double(:packer_runner)

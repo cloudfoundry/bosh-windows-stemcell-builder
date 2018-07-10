@@ -142,6 +142,7 @@ def get_aws_builder(output_directory, region, base_amis=[])
     packer_vars: {},
     version: version,
     region: region,
-    vm_prefix: ENV.fetch('VM_PREFIX', '')
+    vm_prefix: ENV.fetch('VM_PREFIX', ''),
+    mount_ephemeral_disk: ENV.fetch('MOUNT_EPHEMERAL_DISK', 'false')
   )
 end

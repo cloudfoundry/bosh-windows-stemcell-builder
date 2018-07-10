@@ -36,7 +36,8 @@ module Stemcell
             regions: @amis,
             output_directory: @output_directory,
             os: @os,
-            vm_prefix: @vm_prefix
+            vm_prefix: @vm_prefix,
+            mount_ephemeral_disk: @mount_ephemeral_disk
           ).dump
         end
 
