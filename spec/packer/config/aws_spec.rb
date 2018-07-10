@@ -1,4 +1,5 @@
 require 'packer/config'
+require 'timecop'
 
 describe Packer::Config::Aws do
   describe 'builders' do
@@ -110,11 +111,18 @@ describe Packer::Config::Aws do
   end
 
   describe 'provisioners' do
+    before(:each) do
+      @stemcell_deps_dir = Dir.mktmpdir('gcp')
+      ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
+    end
+
+    after(:each) do
+      FileUtils.rm_rf(@stemcell_deps_dir)
+      ENV.delete('STEMCELL_DEPS_DIR')
+    end
+
     context 'windows 2012' do
       it 'returns the expected provisioners' do
-        stemcell_deps_dir = Dir.mktmpdir('aws')
-        ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
-
         allow(SecureRandom).to receive(:hex).and_return("some-password")
         provisioners = Packer::Config::Aws.new(
             aws_access_key: '',
@@ -122,7 +130,8 @@ describe Packer::Config::Aws do
             regions: [],
             output_directory: 'some-output-directory',
             os: 'windows2012R2',
-            vm_prefix: ''
+            vm_prefix: '',
+            mount_ephemeral_disk: false,
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
@@ -157,9 +166,6 @@ describe Packer::Config::Aws do
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
         provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
         expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
-
-        FileUtils.rm_rf(stemcell_deps_dir)
-        ENV.delete('STEMCELL_DEPS_DIR')
       end
     end
 
@@ -175,7 +181,7 @@ describe Packer::Config::Aws do
           regions: [],
           output_directory: 'some-output-directory',
           os: 'windows2016',
-          vm_prefix: ''
+          vm_prefix: '',
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
@@ -209,6 +215,32 @@ describe Packer::Config::Aws do
 
         FileUtils.rm_rf(stemcell_deps_dir)
         ENV.delete('STEMCELL_DEPS_DIR')
+      end
+
+      context 'when provisioning with emphemeral disk mounting enabled' do
+        it 'calls Install-Agent with -EnableEphemeralDiskMounting' do
+          allow(SecureRandom).to receive(:hex).and_return("some-password")
+          provisioners = Packer::Config::Aws.new(
+            aws_access_key: '',
+            aws_secret_key: '',
+            regions: [],
+            output_directory: 'some-output-directory',
+            os: 'windows2016',
+            vm_prefix: '',
+            mount_ephemeral_disk: true,
+          ).provisioners
+
+          expect(provisioners).to include(
+            {
+              "type"=>"powershell",
+              "inline"=>[
+                "$ErrorActionPreference = \"Stop\";",
+                "trap { $host.SetShouldExit(1) }",
+                "Install-Agent -IaaS aws -agentZipPath 'C:\\provision\\agent.zip' -EnableEphemeralDiskMounting"
+              ]
+            }
+          )
+        end
       end
     end
   end

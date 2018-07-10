@@ -82,7 +82,8 @@ describe Packer::Config::Gcp do
           output_directory: 'some-output-directory',
           image_family: '',
           os: 'windows2012R2',
-          vm_prefix: ''
+          vm_prefix: '',
+          mount_ephemeral_disk: false,
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
@@ -131,7 +132,7 @@ describe Packer::Config::Gcp do
             image_family: '',
             os: 'windows2012R2',
             vm_prefix: '',
-            mount_ephemeral_disk: 'true'
+            mount_ephemeral_disk: true,
           ).provisioners
 
           expect(provisioners).to include(
