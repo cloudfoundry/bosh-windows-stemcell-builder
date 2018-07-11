@@ -97,6 +97,20 @@ Describe "Write-AgentConfig" {
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
         }
+
+        It "disables ephemeral disk mounting by default" {
+            { Write-AgentConfig -BoshDir $boshDir -IaaS aws } | Should Not Throw
+            $configPath = (Join-Path $boshDir "agent.json")
+            Test-Path $configPath | Should Be $True
+            ($configPath) | Should -Not -FileContentMatch 'EnableEphemeralDiskMounting'
+        }
+
+        It "enables ephemeral disk mounting when the flag is true" {
+            { Write-AgentConfig -BoshDir $boshDir -IaaS aws -EnableEphemeralDiskMounting $true } | Should Not Throw
+            $configPath = (Join-Path $boshDir "agent.json")
+            Test-Path $configPath | Should Be $True
+            ($configPath) | Should -FileContentMatch ([regex]::New('"EnableEphemeralDiskMounting":\s*true'))
+        }
     }
 
     Context "when IaaS is 'openstack'" {
