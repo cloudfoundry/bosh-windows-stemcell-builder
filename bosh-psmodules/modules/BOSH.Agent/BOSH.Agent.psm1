@@ -73,28 +73,28 @@ function Write-AgentConfig {
         Throw "Error: $($boshDir) does not exist"
     }
 
-    $awsConfig = @"
-{
-  "Platform": {
-    "Linux": {
-      "DevicePathResolutionType": "virtio"
-    }
-  },
-  "Infrastructure": {
-    "Settings": {
-      "Sources": [
-        {
-          "Type": "HTTP",
-          "URI": "http://169.254.169.254",
-          "UserDataPath": "/latest/user-data/",
-          "InstanceIDPath": "/latest/meta-data/instance-id/"
+    $awsConfig = @{
+      "Platform" = @{
+        "Linux" = @{
+          "DevicePathResolutionType" = "virtio"
         }
-      ],
-      "UseRegistry": true
+      }
+      "Infrastructure" = @{
+        "Settings" = @{
+          # Sources is an array of objects, hence the weird PS syntax
+          "Sources" = (,@{
+                "Type" = "HTTP"
+                "URI" = "http://169.254.169.254"
+                "UserDataPath" = "/latest/user-data/"
+                "InstanceIDPath" = "/latest/meta-data/instance-id/"
+            })
+            "UseRegistry" = $true
+          }
+        }
     }
-  }
-}
-"@
+    if ($EnableEphemeralDiskMounting) { $awsConfig.Platform.Windows = @{ EnableEphemeralDiskMounting = $true } }
+    $awsConfig = $awsConfig | ConvertTo-JSON -Depth 100
+
     $azureConfig = @"
 {
   "Platform": {
@@ -128,14 +128,15 @@ function Write-AgentConfig {
       }
       "Infrastructure" = @{
         "Settings" = @{
-          "Sources" = ,@{
+          # Sources is an array of objects, hence the weird PS syntax
+          "Sources" = (,@{
               "Type" = "InstanceMetadata"
               "URI" = "http://169.254.169.254"
               "SettingsPath" = "/computeMetadata/v1/instance/attributes/bosh_settings"
               "Headers" = @{
                 "Metadata-Flavor" = "Google"
               }
-            }
+            })
           "UseServerName" = $true
           "UseRegistry" = $false
         }
