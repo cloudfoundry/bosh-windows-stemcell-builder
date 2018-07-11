@@ -55,7 +55,7 @@ module Stemcell
     end
 
     class VSphere < VSphereBase
-      def initialize(product_key:, owner:, organization:, new_password:, skip_windows_update:false,**args)
+      def initialize(product_key:, owner:, organization:, new_password:, skip_windows_update: false, **args)
         @product_key = product_key
         @owner = owner
         @organization = organization
@@ -93,7 +93,8 @@ module Stemcell
           skip_windows_update: @skip_windows_update,
           http_proxy: @http_proxy,
           https_proxy: @https_proxy,
-          bypass_list: @bypass_list
+          bypass_list: @bypass_list,
+          mount_ephemeral_disk: @mount_ephemeral_disk,
         ).dump
       end
 
