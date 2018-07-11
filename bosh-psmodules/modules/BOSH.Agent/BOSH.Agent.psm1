@@ -169,25 +169,25 @@ function Write-AgentConfig {
   }
 }
 "@
-    $vsphereConfig = @"
-{
-  "Platform": {
-    "Linux": {
-      "DevicePathResolutionType": "scsi"
-    }
-  },
-  "Infrastructure": {
-    "Settings": {
-      "Sources": [
-        {
-          "Type": "CDROM",
-          "FileName": "ENV"
+
+    $vsphereConfig = @{
+      "Platform" = @{
+        "Linux" = @{
+          "DevicePathResolutionType" = "scsi"
         }
-      ]
+        "Infrastructure" = @{
+          "Settings" = @{
+            "Sources" = (,@{
+              "Type" = "CDROM"
+              "FileName" = "ENV"
+              })
+            }
+        }
+      }
     }
-  }
-}
-"@
+
+    if ($EnableEphemeralDiskMounting) { $vsphereConfig.Platform.Windows = @{ EnableEphemeralDiskMounting = $true } }
+    $vsphereConfig = $vsphereConfig | ConvertTo-JSON -Depth 100
 
     if ($IaaS -eq 'aws') {
         Write-Log "Agent Config: ${awsConfig}"
@@ -237,4 +237,3 @@ function Install-AgentService {
     Write-Log "Install-AgentService: Installing BOSH Agent"
     Start-Process -FilePath "C:\bosh\service_wrapper.exe" -ArgumentList "install" -NoNewWindow -Wait
 }
-

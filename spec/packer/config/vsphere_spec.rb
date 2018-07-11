@@ -174,11 +174,18 @@ describe Packer::Config do
     end
 
     describe 'provisioners' do
+      before(:each) do
+        @stemcell_deps_dir = Dir.mktmpdir('gcp')
+        ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
+      end
+
+      after(:each) do
+        FileUtils.rm_rf(@stemcell_deps_dir)
+        ENV.delete('STEMCELL_DEPS_DIR')
+      end
+
       context 'windows 2016' do
         it 'returns the expected provisioners' do
-          stemcell_deps_dir = Dir.mktmpdir('vsphere')
-          ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
-
           allow(SecureRandom).to receive(:hex).and_return('some-password')
 
           provisioners = Packer::Config::VSphere.new(
@@ -229,17 +236,45 @@ describe Packer::Config do
           expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
           provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
           expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
+        end
 
-          FileUtils.rm_rf(stemcell_deps_dir)
-          ENV.delete('STEMCELL_DEPS_DIR')
+        context 'when provisioning with emphemeral disk mounting enabled' do
+          it 'calls Install-Agent with -EnableEphemeralDiskMounting' do
+            allow(SecureRandom).to receive(:hex).and_return("some-password")
+            provisioners = Packer::Config::VSphere.new(
+              output_directory: 'output_directory',
+              num_vcpus: 1,
+              mem_size: 1000,
+              product_key: 'key',
+              organization: 'me',
+              owner: 'me',
+              administrator_password: 'password',
+              source_path: 'source_path',
+              os: 'windows2016',
+              enable_rdp: false,
+              new_password: 'new-password',
+              http_proxy: 'foo',
+              https_proxy: 'bar',
+              bypass_list: 'bee',
+              mount_ephemeral_disk: true,
+            ).provisioners
+
+            expect(provisioners).to include(
+              {
+                "type"=>"powershell",
+                "inline"=>[
+                  "$ErrorActionPreference = \"Stop\";",
+                  "trap { $host.SetShouldExit(1) }",
+                  "Install-Agent -IaaS vsphere -agentZipPath 'C:\\provision\\agent.zip' -EnableEphemeralDiskMounting"
+                ]
+              }
+            )
+          end
         end
       end
 
       context 'windows 2012' do
         it 'returns the expected provisioners' do
-          stemcell_deps_dir = Dir.mktmpdir('vsphere')
-          ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
-
           allow(SecureRandom).to receive(:hex).and_return('some-password')
 
           provisioners = Packer::Config::VSphere.new(
@@ -293,9 +328,6 @@ describe Packer::Config do
           expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
           provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
           expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
-
-          FileUtils.rm_rf(stemcell_deps_dir)
-          ENV.delete('STEMCELL_DEPS_DIR')
         end
       end
     end
