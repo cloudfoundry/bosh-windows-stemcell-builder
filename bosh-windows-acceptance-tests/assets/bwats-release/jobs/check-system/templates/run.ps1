@@ -95,12 +95,16 @@ function Verify-Acls {
       "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow"
   ))
 
-# for 2016, for some reason every file in C:\Program Files\OpenSSH
-# ends up with "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow".
-# adding this to unblock 2016 pipeline
   if ($windowsVersion -ge "10") {
-    "Adding 2016 ACLs"
+    Write-Host "Adding 1709 ACLs"
+    # for 2016, for some reason every file in C:\Program Files\OpenSSH
+    # ends up with "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow".
+    # adding this to unblock 2016 pipeline
     $expectedacls.Add("APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow")
+    $expectedacls.Add("NT AUTHORITY\Authenticated Users,Allow")
+  } elseif ($windowsVersion -ge "6") {
+    Write-Host "Adding 2012R2 ACLs"
+    $expectedacls.Add("NT SERVICE\sshd,Allow")
   }
 
   function Check-Acls {
@@ -114,10 +118,8 @@ function Verify-Acls {
           Get-Acl $name | Select -ExpandProperty Access | ForEach-Object {
             $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
             If (-Not $expectedacls.Contains($ident)) {
-              If (-Not ($ident -match "NT [\w]+\\[\w]+,Allow")) {
-                $errCount += 1
-                  Write-Host "Error ($name): $ident"
-              }
+              $errCount += 1
+              Write-Host "Error ($name): $ident"
             }
           }
         }
