@@ -163,8 +163,7 @@ describe Stemcell::Builder do
           skip_windows_update: false,
           http_proxy: http_proxy,
           https_proxy: https_proxy,
-          bypass_list: bypass_list,
-          mount_ephemeral_disk: true,
+          bypass_list: bypass_list
         ).and_return(packer_config)
 
         builder = Stemcell::Builder::VSphere.new(
@@ -183,8 +182,7 @@ describe Stemcell::Builder do
           new_password: '',
           http_proxy: http_proxy,
           https_proxy: https_proxy,
-          bypass_list: bypass_list,
-          mount_ephemeral_disk: 'true',
+          bypass_list: bypass_list
         )
         allow(builder).to receive(:run_packer)
         allow(builder).to receive(:run_stembuild)
@@ -231,8 +229,7 @@ describe Stemcell::Builder do
             skip_windows_update: false,
             http_proxy: http_proxy,
             https_proxy: https_proxy,
-            bypass_list: bypass_list,
-            mount_ephemeral_disk: false,
+            bypass_list: bypass_list
           ).and_return(packer_config)
 
           expect {
