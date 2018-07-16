@@ -398,18 +398,6 @@ function Invoke-Sysprep() {
       C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
     }
     "vsphere" {
-      # For now, apply LGPO on 1709 only on vSphere
-      switch ($OsVersion) {
-        "windows2016" {
-          if (-Not $SkipLGPO) {
-            if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
-              Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
-            }
-            Enable-LocalSecurityPolicy
-          }
-        }
-      }
-
       Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
         -Organization $Organization -Owner $Owner
 
