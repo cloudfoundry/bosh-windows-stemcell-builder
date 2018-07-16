@@ -339,9 +339,25 @@ function Install-KB4056898() {
     Set-Service -Name wuauserv -StartupType Manual
     Start-Service -Name wuauserv
 
-    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/d/msdownload/update/software/secu/2018/01/windows8.1-kb4056898-x64_ad6c91c5ec12608e4ac179b2d15586d244f0d2f3.msu' -Outfile C:\provision\patch.msu
-    wusa.exe C:\provision\patch.msu /quiet
+    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/d/msdownload/update/software/secu/2018/01/windows8.1-kb4056898-x64_ad6c91c5ec12608e4ac179b2d15586d244f0d2f3.msu' -Outfile C:\provision\kb4056898.msu
+
+    wusa.exe C:\provision\kb4056898.msu /quiet
 }
+
+function Install-KB4338825() {
+    Write-Log "Preparing: KB4338825."
+
+    Set-Service -Name wuauserv -StartupType Manual
+    Start-Service -Name wuauserv
+
+    Write-Log "Downloading: KB4338825."
+
+    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/c/msdownload/update/software/secu/2018/07/windows10.0-kb4338825-x64_631cd7cfc1e4986e37cb727bae1ee1759a87c688.msu' -Outfile C:\provision\KB4338825.msu
+
+    Write-Log "Installing: KB4338825."
+    wusa.exe C:\provision\KB4338825.msu /quiet
+}
+
 
 function Enable-CVE-2015-6161() {
     #Enable MS15-124 - Internet Explorer ASLR Bypass fix - CVE-2015-6161
