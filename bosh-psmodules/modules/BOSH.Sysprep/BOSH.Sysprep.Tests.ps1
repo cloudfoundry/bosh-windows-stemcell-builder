@@ -223,7 +223,7 @@ Describe "Invoke-Sysprep" {
 
     Context "when provided an invalid Iaas" {
         It "throws" {
-            { Invoke-Sysprep -IaaS "OpenShift" } | Should Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
+            { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO } | Should Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
         }
     }
 }
