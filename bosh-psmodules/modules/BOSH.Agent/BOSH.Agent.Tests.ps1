@@ -162,7 +162,8 @@ Describe "Write-AgentConfig" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS vsphere } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should -FileContentMatch ([regex]::New('"Type":\s*"CDROM"'))
+            $configContent = $(Get-Content $configPath | ConvertFrom-JSON)
+            $configContent.Infrastructure.Settings.Sources[0].Type | Should Be "CDROM"
         }
 
         It "disables ephemeral disk mounting by default" {

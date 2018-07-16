@@ -175,13 +175,13 @@ function Write-AgentConfig {
         "Linux" = @{
           "DevicePathResolutionType" = "scsi"
         }
-        "Infrastructure" = @{
-          "Settings" = @{
-            "Sources" = (,@{
-              "Type" = "CDROM"
-              "FileName" = "ENV"
-              })
-            }
+      }
+      "Infrastructure" = @{
+        "Settings" = @{
+          "Sources" = (,@{
+            "Type" = "CDROM"
+            "FileName" = "ENV"
+          })
         }
       }
     }
