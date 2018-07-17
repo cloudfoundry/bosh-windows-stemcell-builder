@@ -43,7 +43,9 @@ describe Stemcell::Builder do
           os: os,
           http_proxy: http_proxy,
           https_proxy: https_proxy,
-          bypass_list: bypass_list).and_return(packer_config)
+          bypass_list: bypass_list,
+          mount_ephemeral_disk: false,
+        ).and_return(packer_config)
 
         Stemcell::Builder::VSphereAddUpdates.new(
           os: os,
@@ -57,7 +59,8 @@ describe Stemcell::Builder do
           packer_vars: packer_vars,
           http_proxy: http_proxy,
           https_proxy: https_proxy,
-          bypass_list: bypass_list
+          bypass_list: bypass_list,
+          mount_ephemeral_disk: "false",
         ).build
         expect(packer_runner).to have_received(:run).with(command, packer_vars)
       end
@@ -94,7 +97,9 @@ describe Stemcell::Builder do
             os: os,
             http_proxy: http_proxy,
             https_proxy: https_proxy,
-            bypass_list: bypass_list).and_return(packer_config)
+            bypass_list: bypass_list,
+            mount_ephemeral_disk: false,
+          ).and_return(packer_config)
 
           expect {
             Stemcell::Builder::VSphereAddUpdates.new(

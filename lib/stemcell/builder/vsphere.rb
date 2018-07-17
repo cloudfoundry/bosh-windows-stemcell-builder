@@ -49,7 +49,8 @@ module Stemcell
           os: @os,
           http_proxy: @http_proxy,
           https_proxy: @https_proxy,
-          bypass_list: @bypass_list
+          bypass_list: @bypass_list,
+          mount_ephemeral_disk: @mount_ephemeral_disk,
         ).dump
       end
     end
