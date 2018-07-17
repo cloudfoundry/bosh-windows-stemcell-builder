@@ -469,7 +469,7 @@ func (c *Config) deploy(bosh *BoshCommand, deploymentName string, stemcellVersio
 		VmExtensions:       c.VmExtensions,
 		Network:            c.Network,
 		StemcellOs:         c.StemcellOs,
-		StemcellVersion:    stemcellVersion,
+		StemcellVersion:    fmt.Sprintf(`"%s"`, stemcellVersion),
 		ReleaseVersion:     bwatsVersion,
 		MountEphemeralDisk: c.MountEphemeralDisk,
 	}
