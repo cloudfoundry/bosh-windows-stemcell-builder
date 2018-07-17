@@ -6,7 +6,21 @@ Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 
 Describe "Protect-CFCell" {
     BeforeEach {
+        $oldWinRMStatus = (Get-Service winrm).Status
+        $oldWinRMStartMode = ( Get-Service winrm ).StartType
+
+        { Set-Service -Name "winrm" -StartupType "Manual" } | Should Not Throw
+
         Start-Service winrm
+    }
+
+    AfterEach {
+        if ($oldWinRMStatus -eq "Stopped") {
+            { Stop-Service winrm } | Should Not Throw
+        } else {
+            { Set-Service -Name "winrm" -Status $oldWinRMStatus } | Should Not Throw
+        }
+        { Set-Service -Name "winrm" -StartupType $oldWinRMStartMode } | Should Not Throw
     }
 
     It "enables the RDP service and firewall rule" {
