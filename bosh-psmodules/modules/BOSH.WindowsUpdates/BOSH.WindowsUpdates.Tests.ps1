@@ -7,10 +7,12 @@ Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 Describe "Disable-AutomaticUpdates" {
 
     BeforeEach {
-        $oldWuauStatus = (Get-Service -Name "wuauserv").Status
+        $oldWuauStatus = (Get-Service wuauserv).Status
+        $oldWuauStartMode = ( Get-Service wuauserv ).StartType
+
+        { Set-Service -Name wuauserv -StartupType "Manual" } | Should Not Throw
         { Set-Service -Name wuauserv -Status "Running" } | Should Not Throw
 
-        $oldWuauStartMode = ( Get-Service wuauserv ).StartType
 
         $oldAUOptions = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update').AUOptions
         $oldEnableFeaturedSoftware = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update').EnableFeaturedSoftware
@@ -42,7 +44,11 @@ Describe "Disable-AutomaticUpdates" {
         }
 
         { Set-Service -Name wuauserv -StartupType $oldWuauStartMode } | Should Not Throw
-        { Set-Service -Name wuauserv -Status $oldWuauStatus } | Should Not Throw
+        if ($oldWuauStatus -eq "Stopped") {
+            Stop-Service wuauserv
+        } else {
+            { Set-Service -Name wuauserv -Status $oldWuauStatus } | Should Not Throw
+        }
     }
 
     It "stops and disables the Windows Updates service" {
