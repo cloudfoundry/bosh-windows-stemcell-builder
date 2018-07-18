@@ -37,6 +37,7 @@ describe Stemcell::Manifest do
           'operating_system' => 'some-os',
           'cloud_properties' => {
             'infrastructure' => 'aws',
+            'encrypted' => false,
             'ami' => {
               'region1' => 'ami1',
               'region2' => 'ami2'
