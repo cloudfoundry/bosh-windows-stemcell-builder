@@ -34,6 +34,7 @@ module Stemcell
         super("bosh-aws-xen-hvm-#{os}-stemcell-go_agent", version, EMPTY_FILE_SHA, os)
         cloud_properties = {
           'infrastructure' => 'aws',
+          'encrypted' => false,
           'ami' => {}
         }
         amis.each do |ami|
