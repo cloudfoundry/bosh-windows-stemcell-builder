@@ -25,6 +25,7 @@ module Packer
             Provisioners.setup_proxy_settings(http_proxy, https_proxy, bypass_list),
             Provisioners::NEW_PROVISIONER,
             Provisioners::INSTALL_CF_FEATURES_2016,
+            Provisioners::INSTALL_KB4338825,
           ]
         end
         install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
