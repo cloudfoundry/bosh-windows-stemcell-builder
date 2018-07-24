@@ -7,7 +7,7 @@
     lgpo /b $PSScriptRoot
     $LgpoDir = "$PSScriptRoot\" + (Get-ChildItem $PSScriptRoot -Directory | ?{ $_.Name -match "{*}" } | select -First 1).Name
 
-    $OutputDir="$PSScriptRoot\lgpo_test"
+    $OutputDir = "$PSScriptRoot\lgpo_test"
     mkdir $OutputDir
 
     lgpo /parse /m "$LgpoDir\DomainSysvol\GPO\Machine\registry.pol" > "$OutputDir\machine_registry.unedited.txt"
@@ -17,7 +17,7 @@
     Get-Content "$OutputDir\user_registry.unedited.txt" | select -Skip 3 > "$OutputDir\user_registry.txt"
 
     copy "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv" "$OutputDir"
-    $Csv     = Import-Csv "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv"
+    $Csv = Import-Csv "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv"
     $Include = $Csv[0].psobject.properties | select -ExpandProperty Name -Skip 1
     $Csv | select $Include | export-csv "$OutputDir\audit.csv" -NoTypeInformation
 
@@ -30,11 +30,13 @@
         [string] $PolicyDelimiter = (Throw "PolicyDelimiter param required")
       )
 
-      $ActualPolicies = Import-CSV $ActualPoliciesFile
-      $ActualPoliciesArray = $ActualPolicies -split $PolicyDelimiter
+      $ActualPolicies = Get-Content $ActualPoliciesFile -Raw
+      $ActualPoliciesMatches = ($ActualPolicies | Select-String "(?sn)\s*(.+?)$PolicyDelimiter" -AllMatches)
+      $ActualPoliciesArray = ($ActualPoliciesMatches | Select -Expand Matches | Select -Expand Value)
 
-      $ExpectedPolicies = Import-CSV $ExpectedPoliciesFile
-      $ExpectedPoliciesArray = $ExpectedPolicies -split $PolicyDelimiter
+      $ExpectedPolicies = Get-Content $ExpectedPoliciesFile -Raw
+      $ExpectedPoliciesMatches = ($ExpectedPolicies | Select-String "(?sn)\s*(.+?)$PolicyDelimiter" -AllMatches)
+      $ExpectedPoliciesArray = ($ExpectedPoliciesMatches | Select -Expand Matches | Select -Expand Value)
 
       $count = 0
       foreach ($policy in $ExpectedPoliciesArray) {
