@@ -174,7 +174,8 @@ namespace :build do
       skip_windows_update: skip_windows_update,
       http_proxy: ENV.fetch('UPDATES_HTTP_PROXY', ''),
       https_proxy: ENV.fetch('UPDATES_HTTPS_PROXY', ''),
-      bypass_list: ENV.fetch('UPDATES_PROXY_BYPASS_LIST', '')
+      bypass_list: ENV.fetch('UPDATES_PROXY_BYPASS_LIST', ''),
+      mount_ephemeral_disk: ENV.fetch('MOUNT_EPHEMERAL_DISK', 'false'),
     )
 
     vsphere.build
