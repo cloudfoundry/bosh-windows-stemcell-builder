@@ -374,6 +374,10 @@ function Install-KB2538243() {
     Write-Log "Installing: KB2538243."
     C:\provision\KB2538243.exe /q
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> Installs KB2538243 for VSphere
 
 function Enable-CVE-2015-6161() {
     #Enable MS15-124 - Internet Explorer ASLR Bypass fix - CVE-2015-6161

@@ -53,11 +53,15 @@ module Packer
       end
 
       def provisioners
+        install_updates = [Provisioners.install_windows_updates]
+        if @os == "windows2016"
+          install_updates <<  Provisioners::INSTALL_KB2538243
+        end
         [
           Provisioners::BOSH_PSMODULES,
           Provisioners::NEW_PROVISIONER,
           Provisioners.setup_proxy_settings(@http_proxy, @https_proxy, @bypass_list),
-          @skip_windows_update?[]:[Provisioners.install_windows_updates],
+          @skip_windows_update ? [] : [install_updates],
           Provisioners::GET_LOG,
           Provisioners::CLEAR_PROXY_SETTINGS,
           Provisioners::CLEAR_PROVISIONER,
@@ -110,8 +114,13 @@ module Packer
       end
 
       def provisioners
+        install_manual_updates = []
+        if @os == "windows2016"
+          install_manual_updates <<  Provisioners::INSTALL_KB2538243
+        end
         pre = [
             Base.pre_provisioners(@os, skip_windows_update: @skip_windows_update, http_proxy: @http_proxy, https_proxy: @https_proxy, bypass_list: @bypass_list),
+            @skip_windows_update ? [] : install_manual_updates,
             Provisioners::lgpo_exe,
             Provisioners.install_agent('vsphere', @mount_ephemeral_disk).freeze,
         ]
