@@ -2,7 +2,8 @@ $ErrorActionPreference = "Stop"
 trap { $host.SetShouldExit(1) }
 
 # Uninstall any existing remnants of MBSA
-MSIExec /uninstall "C:\var\vcap\packages\mbsa\MBSASetup-x64-EN.msi" /qn
+Start-Process -FilePath MSIExec -ArgumentList /uninstall,"C:\var\vcap\packages\mbsa\MBSASetup-x64-EN.msi", /qn -Wait
+
 # Install MBSA
 Start-Process -FilePath "C:\var\vcap\packages\mbsa\MBSASetup-x64-EN.msi" -ArgumentList "/quiet" -Wait
 
