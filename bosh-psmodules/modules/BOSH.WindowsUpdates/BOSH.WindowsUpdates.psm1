@@ -366,7 +366,7 @@ function Install-KB2538243() {
 
     Write-Log "Downloading: KB2538243."
 
-    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/msdownload/update/software/secu/2011/05/vcredist_x64_a7c83077b8a28d409e36316d2d7321fa0ccdb7e8.exe' -Outfile C:\provision\KB2538243.exe
+    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/msdownload/update/software/secu/2011/05/vcredist_x86_470640aa4bb7db8e69196b5edb0010933569e98d.exe' -Outfile C:\provision\KB2538243.exe
 
     Write-Log "Uninstalling: KB2538243."
     C:\provision\KB2538243.exe /qu
