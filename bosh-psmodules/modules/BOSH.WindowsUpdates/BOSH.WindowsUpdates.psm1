@@ -358,6 +358,22 @@ function Install-KB4338825() {
     wusa.exe C:\provision\KB4338825.msu /quiet
 }
 
+function Install-KB2538243() {
+    Write-Log "Preparing: KB2538243."
+
+    Set-Service -Name wuauserv -StartupType Manual
+    Start-Service -Name wuauserv
+
+    Write-Log "Downloading: KB2538243."
+
+    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/msdownload/update/software/secu/2011/05/vcredist_x86_470640aa4bb7db8e69196b5edb0010933569e98d.exe' -Outfile C:\provision\KB2538243.exe
+
+    Write-Log "Uninstalling: KB2538243."
+    C:\provision\KB2538243.exe /qu
+
+    Write-Log "Installing: KB2538243."
+    C:\provision\KB2538243.exe /q
+}
 
 function Enable-CVE-2015-6161() {
     #Enable MS15-124 - Internet Explorer ASLR Bypass fix - CVE-2015-6161
