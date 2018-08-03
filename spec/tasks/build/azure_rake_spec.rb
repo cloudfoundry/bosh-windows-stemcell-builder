@@ -29,8 +29,7 @@ describe 'build:azure' do
     let(:env_var) { 'some_env_var' }
 
     before do
-      # This allows the task to be ran multiple times in the same context.
-      # If it's missing, then the task will only run one by the first test
+      # This allows the task to be ran multiple times in different tests.
       task.reenable
 
       allow(Stemcell::Builder).to receive(:validate_env).with(any_args)

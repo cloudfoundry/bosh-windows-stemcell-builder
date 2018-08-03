@@ -63,6 +63,8 @@ describe 'Azure' do
         agent_commit
       )
 
+      # This allows the task to be ran multiple times by different tests
+      Rake::Task['build:azure'].reenable
       Rake::Task['build:azure'].invoke
 
       expect(File.read(File.join(@output_directory, "bosh-stemcell-#{version}-azure-vhd-uri.txt"))).to eq 'some-disk-image-url'
