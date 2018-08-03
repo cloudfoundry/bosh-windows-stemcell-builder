@@ -95,29 +95,28 @@ function Write-AgentConfig {
     if ($EnableEphemeralDiskMounting) { $awsConfig.Platform.Windows = @{ EnableEphemeralDiskMounting = $true } }
     $awsConfig = $awsConfig | ConvertTo-JSON -Depth 100
 
-    $azureConfig = @"
-{
-  "Platform": {
-    "Linux": {
-      "DevicePathResolutionType": "scsi"
-    }
-  },
-  "Infrastructure": {
-    "Settings": {
-      "Sources": [
-        {
-          "Type": "File",
-          "MetaDataPath": "C:/AzureData/CustomData.bin",
-          "UserDataPath": "C:/AzureData/CustomData.bin",
-          "SettingsPath": "C:/AzureData/CustomData.bin"
+    $azureConfig = @{
+      "Platform" = @{
+        "Linux" = @{
+          "DevicePathResolutionType" = "scsi"
         }
-      ],
-      "UseServerName": false,
-      "UseRegistry": true
+      }
+      "Infrastructure" = @{
+        "Settings" = @{
+          "Sources" = (,@{
+              "Type" = "File"
+              "MetaDataPath" = "C:/AzureData/CustomData.bin"
+              "UserDataPath" = "C:/AzureData/CustomData.bin"
+              "SettingsPath" = "C:/AzureData/CustomData.bin"
+            })
+          "UseServerName" = $false
+          "UseRegistry" = $true
+        }
+      }
     }
-  }
-}
-"@
+    if ($EnableEphemeralDiskMounting) { $azureConfig.Platform.Windows = @{ EnableEphemeralDiskMounting = $true } }
+    $azureConfig = $azureConfig | ConvertTo-JSON -Depth 100
+
     $gcpConfig = @{
       "Platform" = @{
         "Linux" = @{
