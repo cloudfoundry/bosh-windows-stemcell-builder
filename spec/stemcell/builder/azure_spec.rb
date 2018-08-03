@@ -52,7 +52,8 @@ describe Stemcell::Builder do
           vm_size: vm_size,
           output_directory: output_directory,
           os: os,
-          vm_prefix: vm_prefix
+          vm_prefix: vm_prefix,
+          mount_ephemeral_disk: false,
         ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
@@ -101,7 +102,8 @@ describe Stemcell::Builder do
           publisher: publisher,
           offer: offer,
           sku: sku,
-          vm_prefix: vm_prefix
+          vm_prefix: vm_prefix,
+          mount_ephemeral_disk: 'false',
         ).build
         expect(stemcell_path).to eq('path-to-stemcell')
       end

@@ -25,7 +25,8 @@ describe Packer::Config::Azure do
         vm_size: 'some-vm-size',
         output_directory: '',
         os: '',
-        vm_prefix: 'some-vm-prefix'
+        vm_prefix: 'some-vm-prefix',
+        mount_ephemeral_disk: false,
       ).builders
       expect(builders[0]).to eq(
         'type' => 'azure-arm',
@@ -79,11 +80,18 @@ describe Packer::Config::Azure do
   end
 
   describe 'provisioners' do
+    before(:each) do
+      @stemcell_deps_dir = Dir.mktmpdir('gcp')
+      ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
+    end
+
+    after(:each) do
+      FileUtils.rm_rf(@stemcell_deps_dir)
+      ENV.delete('STEMCELL_DEPS_DIR')
+    end
+
     context 'windows 2012' do
       it 'returns the expected provisioners' do
-        stemcell_deps_dir = Dir.mktmpdir('azure')
-        ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
-
         allow(SecureRandom).to receive(:hex).and_return("some-password")
         provisioners = Packer::Config::Azure.new(
           client_id: '',
@@ -97,7 +105,8 @@ describe Packer::Config::Azure do
           vm_size: '',
           output_directory: 'some-output-directory',
           os: 'windows2012R2',
-          vm_prefix: ''
+          vm_prefix: '',
+          mount_ephemeral_disk: false,
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
@@ -130,16 +139,10 @@ describe Packer::Config::Azure do
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
         provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
         expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
-
-        FileUtils.rm_rf(stemcell_deps_dir)
-        ENV.delete('STEMCELL_DEPS_DIR')
       end
     end
     context 'windows 2016' do
       it 'returns the expected provisioners' do
-        stemcell_deps_dir = Dir.mktmpdir('azure')
-        ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
-
         allow(SecureRandom).to receive(:hex).and_return("some-password")
         provisioners = Packer::Config::Azure.new(
           client_id: '',
@@ -153,7 +156,8 @@ describe Packer::Config::Azure do
           vm_size: '',
           output_directory: 'some-output-directory',
           os: 'windows2016',
-          vm_prefix: ''
+          vm_prefix: '',
+          mount_ephemeral_disk: false,
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
@@ -183,9 +187,38 @@ describe Packer::Config::Azure do
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
         provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
         expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
+      end
 
-        FileUtils.rm_rf(stemcell_deps_dir)
-        ENV.delete('STEMCELL_DEPS_DIR')
+      context 'when provisioning with emphemeral disk mounting enabled' do
+        it 'calls Install-Agent with -EnableEphemeralDiskMounting' do
+          allow(SecureRandom).to receive(:hex).and_return("some-password")
+          provisioners = Packer::Config::Azure.new(
+            client_id: '',
+            client_secret: '',
+            tenant_id: '',
+            subscription_id: '',
+            object_id: '',
+            resource_group_name: '',
+            storage_account: '',
+            location: '',
+            vm_size: '',
+            output_directory: 'some-output-directory',
+            os: 'windows2016',
+            vm_prefix: '',
+            mount_ephemeral_disk: true,
+           ).provisioners
+
+          expect(provisioners).to include(
+            {
+              "type"=>"powershell",
+              "inline"=>[
+                "$ErrorActionPreference = \"Stop\";",
+                "trap { $host.SetShouldExit(1) }",
+                "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip' -EnableEphemeralDiskMounting"
+              ]
+            }
+          )
+        end
       end
     end
   end

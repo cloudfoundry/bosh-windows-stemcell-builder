@@ -52,7 +52,7 @@ module Packer
         [
           Base.pre_provisioners(@os),
           Provisioners::lgpo_exe,
-          Provisioners.install_agent('azure').freeze,
+          Provisioners.install_agent('azure', @mount_ephemeral_disk).freeze,
           Base.enable_security_patches(@os),
           Base.post_provisioners('azure', @os)
         ].flatten
