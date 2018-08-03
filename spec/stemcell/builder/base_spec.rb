@@ -42,4 +42,43 @@ describe Stemcell::Builder do
       end
     end
   end
+
+  describe 'Base' do
+    context 'initialize handles mount_ephemeral_disk' do
+      it 'handles true parameter' do
+        actual = Stemcell::Builder::Base.new(
+          os: '',
+          output_directory: '',
+          version: '',
+          agent_commit: '',
+          packer_vars: '',
+          mount_ephemeral_disk: 'true'
+        )
+        expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(true)
+      end
+
+      it 'handles false parameter' do
+        actual = Stemcell::Builder::Base.new(
+          os: '',
+          output_directory: '',
+          version: '',
+          agent_commit: '',
+          packer_vars: '',
+          mount_ephemeral_disk: 'false'
+        )
+        expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(false)
+
+      end
+      it 'handles missing parameter' do
+        actual = Stemcell::Builder::Base.new(
+          os: '',
+          output_directory: '',
+          version: '',
+          agent_commit: '',
+          packer_vars: ''
+        )
+        expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(false)
+      end
+    end
+  end
 end

@@ -109,4 +109,84 @@ describe Stemcell::Builder do
       end
     end
   end
+
+  describe 'handles mount_ephemeral_disk correctly' do
+    it 'when parameter is set to true' do
+      actual = Stemcell::Builder::Azure.new(
+        client_id: '',
+        client_secret: '',
+        tenant_id: '',
+        subscription_id: '',
+        object_id: '',
+        resource_group_name: '',
+        storage_account: '',
+        location: '',
+        vm_size: '',
+        publisher: '',
+        offer: '',
+        sku: '',
+        vm_prefix:'',
+        os: '',
+        output_directory: '',
+        version: '',
+        agent_commit: '',
+        packer_vars: '',
+        mount_ephemeral_disk: 'true'
+      )
+
+      expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(true)
+    end
+
+    it 'when parameter is set to false' do
+      actual = Stemcell::Builder::Azure.new(
+        client_id: '',
+        client_secret: '',
+        tenant_id: '',
+        subscription_id: '',
+        object_id: '',
+        resource_group_name: '',
+        storage_account: '',
+        location: '',
+        vm_size: '',
+        publisher: '',
+        offer: '',
+        sku: '',
+        vm_prefix:'',
+        os: '',
+        output_directory: '',
+        version: '',
+        agent_commit: '',
+        packer_vars: '',
+        mount_ephemeral_disk: 'false'
+      )
+
+      expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(false)
+    end
+
+    it 'when parameter is missing' do
+      actual = Stemcell::Builder::Azure.new(
+        client_id: '',
+        client_secret: '',
+        tenant_id: '',
+        subscription_id: '',
+        object_id: '',
+        resource_group_name: '',
+        storage_account: '',
+        location: '',
+        vm_size: '',
+        publisher: '',
+        offer: '',
+        sku: '',
+        vm_prefix:'',
+        os: '',
+        output_directory: '',
+        version: '',
+        agent_commit: '',
+        packer_vars: ''
+      )
+
+      expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(false)
+    end
+  end
+
 end
