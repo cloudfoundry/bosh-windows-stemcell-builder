@@ -128,10 +128,22 @@ Describe "Write-AgentConfig" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS azure } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should -FileContentMatch ([regex]::Escape('"SettingsPath": "C:/AzureData/CustomData.bin"'))
-            ($configPath) | Should -FileContentMatch ([regex]::Escape('"MetaDataPath": "C:/AzureData/CustomData.bin"'))
-            ($configPath) | Should -FileContentMatch ([regex]::Escape('"UseServerName": false'))
+            $configContent = $(Get-Content $configPath | ConvertFrom-JSON)
+
+            $configContent.Infrastructure.Settings.Sources[0].SettingsPath | Should Be "C:/AzureData/CustomData.bin"
+            $configContent.Infrastructure.Settings.Sources[0].MetaDataPath | Should Be "C:/AzureData/CustomData.bin"
+            $configContent.Infrastructure.Settings.UseServerName | Should Be "false"
         }
+
+        It "enables ephemeral disk mounting when the flag is true" {
+            { Write-AgentConfig -BoshDir $boshDir -IaaS azure -EnableEphemeralDiskMounting $true } | Should Not Throw
+            $configPath = (Join-Path $boshDir "agent.json")
+            Test-Path $configPath | Should Be $True
+            $configContent = $(Get-Content $configPath | ConvertFrom-JSON)
+
+            $configContent.Platform.Windows.EnableEphemeralDiskMounting | Should Be $true
+        }
+
     }
 
     Context "when IaaS is 'gcp'" {

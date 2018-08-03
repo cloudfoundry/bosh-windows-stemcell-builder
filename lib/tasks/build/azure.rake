@@ -35,7 +35,8 @@ namespace :build do
       publisher: Stemcell::Builder::validate_env('PUBLISHER'),
       offer: Stemcell::Builder::validate_env('OFFER'),
       sku: Stemcell::Builder::validate_env('SKU'),
-      vm_prefix: ENV.fetch('VM_PREFIX', '')
+      vm_prefix: ENV.fetch('VM_PREFIX', ''),
+      mount_ephemeral_disk: ENV.fetch('MOUNT_EPHEMERAL_DISK', 'false'),
     )
 
     azure_builder.build
