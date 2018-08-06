@@ -1,0 +1,9 @@
+{
+  "processes": [
+    {
+      "name": "slow-compile",
+      "executable": "powershell",
+      "args": ["/var/vcap/jobs/slow-compile/bin/run.ps1" ]
+    }
+  ]
+}

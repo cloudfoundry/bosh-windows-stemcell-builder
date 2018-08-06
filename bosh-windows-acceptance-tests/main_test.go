@@ -210,6 +210,7 @@ var _ = Describe("BOSH Windows", func() {
 		var err error
 
 		config, err = NewConfig()
+		Expect(err).NotTo(HaveOccurred())
 		bosh = setupBosh(config)
 
 		bosh.Run("login")
@@ -292,6 +293,24 @@ var _ = Describe("BOSH Windows", func() {
 	It("mounts ephemeral disks when asked to do so", func() {
 		err := runTest("ephemeral-disk")
 		Expect(err).To(Succeed())
+	})
+
+	Context("slow compiling go package", func() {
+		var slowCompilingDeploymentName string
+
+		AfterEach(func() {
+			bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", slowCompilingDeploymentName))
+		})
+
+		It("deploys when there is a slow to compile go package", func() {
+			pwd, err := os.Getwd()
+			Expect(err).To(Succeed())
+			manifestPath = filepath.Join(pwd, "assets", "slow-compile-manifest.yml")
+
+			slowCompilingDeploymentName = fmt.Sprintf("windows-acceptance-test-slow-compile-%d", getTimestampInMs())
+
+			config.deployWithManifest(bosh, slowCompilingDeploymentName, stemcellVersion, releaseVersion, manifestPath)
+		})
 	})
 })
 
@@ -460,7 +479,7 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 	return filename, nil
 }
 
-func (c *Config) deploy(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string) error {
+func (c *Config) deployWithManifest(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string, manifestPath string) error {
 	manifestProperties := ManifestProperties{
 		DeploymentName:     deploymentName,
 		ReleaseName:        "bwats-release",
@@ -474,12 +493,16 @@ func (c *Config) deploy(bosh *BoshCommand, deploymentName string, stemcellVersio
 		MountEphemeralDisk: c.MountEphemeralDisk,
 	}
 
+	err := bosh.Run(fmt.Sprintf("-d %s deploy %s %s", deploymentName, manifestPath, manifestProperties.toVarsString()))
+	Expect(err).To(Succeed())
+
+	return nil
+}
+
+func (c *Config) deploy(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string) error {
 	pwd, err := os.Getwd()
 	Expect(err).To(Succeed())
 	manifestPath = filepath.Join(pwd, "assets", "manifest.yml")
 
-	err = bosh.Run(fmt.Sprintf("-d %s deploy %s %s", deploymentName, manifestPath, manifestProperties.toVarsString()))
-	Expect(err).To(Succeed())
-
-	return nil
+	return c.deployWithManifest(bosh, deploymentName, stemcellVersion, bwatsVersion, manifestPath)
 }

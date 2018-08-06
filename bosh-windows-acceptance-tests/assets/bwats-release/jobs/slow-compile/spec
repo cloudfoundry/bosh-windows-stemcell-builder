@@ -1,0 +1,10 @@
+---
+name: slow-compile
+
+description: "This is a simple job that relies on a slow compiling golang package"
+
+templates:
+  run.ps1: bin/run.ps1
+
+packages:
+- slow-compile

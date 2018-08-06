@@ -1,0 +1,20 @@
+trap {
+  write-error $_
+  exit 1
+}
+
+$BOSH_INSTALL_TARGET = Resolve-Path "${env:BOSH_INSTALL_TARGET}"
+
+$env:GOROOT="C:\var\vcap\packages\golang-windows\go"
+$env:GOPATH="${BOSH_INSTALL_TARGET}"
+$env:PATH="${env:GOROOT}\bin;${env:PATH}"
+
+# Create GOPATH
+New-Item -ItemType "directory" -Force "${BOSH_INSTALL_TARGET}\src"
+
+robocopy.exe /E "${PWD}" "${BOSH_INSTALL_TARGET}\src"
+if ($LASTEXITCODE -ge 8) {
+    Write-Error "robocopy.exe /E ${PWD} ${BOSH_INSTALL_TARGET}\src"
+}
+
+Start-Process "C:\var\vcap\packages\golang-windows\go\bin\go.exe" -ArgumentList "build slow-compile/main.go"
