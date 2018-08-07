@@ -105,6 +105,8 @@ function Verify-Acls {
   } elseif ($windowsVersion -ge "6") {
     Write-Host "Adding 2012R2 ACLs"
     $expectedacls.Add("NT SERVICE\sshd,Allow")
+    # For the new OpenSSH v7.7.2.0p1-Beta and later
+    $expectedacls.Add("NT AUTHORITY\Authenticated Users,Allow")
   }
 
   function Check-Acls {
