@@ -7,16 +7,15 @@
     Remove-Item -Force "C:\Program Files\SSHTemp"
 
     # Remove users from 'OpenSSH' before installing.  The install process
-    # will add back permissions for the NT SERVICE\SSHD user for some files
+    # will add back permissions for the NT AUTHORITY\Authenticated Users for some files
     Protect-Dir -path "C:\Program Files\OpenSSH"
 
     Push-Location "C:\Program Files\OpenSSH"
         powershell -ExecutionPolicy Bypass -File install-sshd.ps1
     Pop-Location
 
-# Grant NT SERVICE\SSHD user access to .EXEs and the .DLL in OpenSSH
+    # Grant NT AUTHORITY\Authenticated Users access to .EXEs and the .DLL in OpenSSH
     $FileNames=@(
-        "libcrypto-41.dll",
         "libcrypto.dll",
         "scp.exe",
         "sftp-server.exe",
@@ -29,10 +28,9 @@
         "ssh.exe",
         "sshd.exe"
     )
-    cacls.exe "C:\Program Files\OpenSSH" /E /P "NT SERVICE\SSHD:R"
     foreach ($name in $FileNames) {
         $path = Join-Path "C:\Program Files\OpenSSH" $name
-        cacls.exe $path /E /P "NT SERVICE\SSHD:R"
+        cacls.exe $path /E /P "NT AUTHORITY\Authenticated Users:R"
     }
 
     Set-Service sshd -StartupType Disabled
