@@ -112,13 +112,4 @@ describe Stemcell::Manifest do
       end
     end
   end
-
-  describe 'OpenStack' do
-    describe 'dump' do
-      it 'returns a valid stemcell manifest yaml string' do
-        pending('not yet implemented')
-        fail
-      end
-    end
-  end
 end

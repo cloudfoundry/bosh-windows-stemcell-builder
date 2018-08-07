@@ -89,8 +89,5 @@ module Stemcell
         return md[1] + '.' + patch + build
       end
     end
-
-    class OpenStack < Base
-    end
   end
 end
