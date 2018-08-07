@@ -1,3 +1,6 @@
+$ErrorActionPreference = "Stop"
+trap { $host.SetShouldExit(1) }
+
 function New-RandomFile {
     param (
         [Parameter(Mandatory = $false)]
@@ -40,30 +43,29 @@ if ($RunTest) {
         Exit 1
     }
 
-    $EphemeralVolume = Get-Volume -Partition $dataPartition
     $randFileSize = 2gb
 
-    $EphemeralSpaceBeforeFill = $EphemeralVolume.SizeRemaining
-    $FreeSpaceBeforeFill = (Get-Volume -DriveLetter C).SizeRemaining
+    $ephemeralDiskSpaceBeforeFill = (Get-Volume -Partition $dataPartition).SizeRemaining
+    $rootDiskSpaceBeforeFill = (Get-Volume -DriveLetter C).SizeRemaining
 
     New-RandomFile -Size $randFileSize
 
-    $FreeSpaceAfterFill = (Get-Volume -DriveLetter C).SizeRemaining
-    $EphemeralSpaceBeforeFill = $EphemeralVolume.SizeRemaining
+    $rootDiskSpaceAfterFill = (Get-Volume -DriveLetter C).SizeRemaining
+    $ephemeralDiskSpaceAfterFill = (Get-Volume -Partition $dataPartition).SizeRemaining
 
-    $delta = $FreeSpaceBeforeFill - $FreeSpaceAfterFill
-    $ephemeralDelta = $EphemeralSpaceBeforeFill - $EphemeralSpaceAfterFill
+    $rootDiskDelta = $rootDiskSpaceBeforeFill - $rootDiskSpaceAfterFill
+    $ephemeralDiskDelta = $ephemeralDiskSpaceBeforeFill - $ephemeralDiskSpaceAfterFill
 
-    Write-Host "Delta: $delta"
-    Write-Host "Ephemeral Delta: $ephemeralDelta"
+    Write-Host "Delta: $rootDiskDelta"
+    Write-Host "Ephemeral Delta: $ephemeralDiskDelta"
 
-    if ($delta -ge $randFileSize) {
-      Write-Error "Ephemeral disk was not properly mounted to data path. Delta : $delta"
+    if ($rootDiskDelta -ge $randFileSize) {
+      Write-Error "Ephemeral disk was not properly mounted to data path. Delta : $rootDiskDelta"
       Exit 1
     }
 
-    if ($ephemeralDelta -lt $randFileSize -and $ephemeralDelta -gt 2 * $randFileSize) {
-      Write-Error "Ephemeral disk was not properly mounted to data path. Ephemeral Delta : $ephemeralDelta"
+    if ($ephemeralDiskDelta -lt $randFileSize -or $ephemeralDiskDelta -gt 2 * $randFileSize) {
+      Write-Error "Ephemeral disk was not properly mounted to data path. Ephemeral Delta : $ephemeralDiskDelta"
       Exit 1
     }
 } else {
@@ -73,3 +75,5 @@ if ($RunTest) {
       Exit 1
     }
 }
+
+Exit 0
