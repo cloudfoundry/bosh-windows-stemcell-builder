@@ -31,11 +31,6 @@ module Packer
         'restart_command' => "powershell.exe -Command Install-KB4056898",
         'restart_timeout' => '1h'
       }
-      INSTALL_KB4338825 = {
-          'type' => 'windows-restart',
-          'restart_command' => "powershell.exe -Command Install-KB4338825",
-          'restart_timeout' => '1h'
-      }
       INSTALL_KB2538243 = {
           'type' => 'windows-restart',
           'restart_command' => "powershell.exe -Command Install-KB2538243",
