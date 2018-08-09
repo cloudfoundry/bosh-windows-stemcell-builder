@@ -17,8 +17,24 @@ $Failed = $Output | Select-String "Check failed" | Select-String -NotMatch "non-
 
 If (!!$Failed) {
   $Missing = $Output | Select-String "missing" | Select-String -NotMatch "No security updates are missing"
-  Write-Error "Found missing updates: $Missing"
-  Exit 1
+  Write-Host "########## MBSA found missing updates. Debug purposes only, disregard error. ############ Missing: $Missing"
+}
+
+
+$Session = New-Object -ComObject Microsoft.Update.Session
+Write-Host "Session: $Session"
+$Searcher = $Session.CreateUpdateSearcher()
+Write-Host "Searcher: $Searcher"
+$UninstalledUpdates = $Searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0").Updates
+if ($UninstalledUpdates.Count -ne 0) {
+    Write-Log "The following updates are not currently installed:"
+    foreach ($Update in $UninstalledUpdates) {
+        Write-Log "> $($Update.Title)"
+    }
+    Write-Error 'There are uninstalled updates'
+    Exit 1
+} else {
+  Write-Host "No pending updates found by UpdateSearcher"
 }
 
 Write-Host "Finished checking updates."
