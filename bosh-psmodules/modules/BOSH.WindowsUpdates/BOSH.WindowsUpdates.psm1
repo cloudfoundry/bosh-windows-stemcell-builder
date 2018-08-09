@@ -316,8 +316,6 @@ function Test-InstalledUpdates() {
             Write-Log "> $($Update.Title)"
         }
         Throw 'There are uninstalled updates'
-    } else {
-        Write-Host "No pending updates found"
     }
 }
 
