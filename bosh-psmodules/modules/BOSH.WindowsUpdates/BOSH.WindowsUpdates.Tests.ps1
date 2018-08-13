@@ -4,6 +4,59 @@ Import-Module ./BOSH.WindowsUpdates.psm1
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
 Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 
+#As of now, this function only supports DWords and Strings.
+function Restore-RegistryState {
+    param(
+        [bool]$KeyExists,
+        [String]$KeyPath,
+        [String]$ValueName,
+        [PSObject]$ValueData
+    )
+        if ($KeyExists) {
+            if ($ValueData -eq $null) {
+                Remove-ItemProperty -path $KeyPath -Name $ValueName
+            } else {
+                Set-ItemProperty -path $KeyPath -Name $ValueName -Value $ValueData
+            }
+        } else {
+            Remove-Item -Path $KeyPath
+        }
+}
+
+Describe "Restore-RegistryState" {
+    BeforeEach {
+        Mock Remove-ItemProperty {}
+        Mock Set-ItemProperty {}
+        Mock Remove-Item {}
+    }
+    It "restores the registry by deleting a registry key created by the test" {
+        Restore-RegistryState -KeyExists $false -KeyPath "HKLM:\Some registry key"
+
+        Assert-MockCalled Remove-Item -Times 1 -Scope It -ParameterFilter { $Path -eq "HKLM:\Some registry key" }
+        Assert-MockCalled Remove-ItemProperty -Times 0 -Scope It
+        Assert-MockCalled Set-ItemProperty -Times 0 -Scope It
+    }
+
+    It "restores the registry by deleting a registry value created by the test" {
+        Restore-RegistryState -KeyExist $true -KeyPath "HKLM:\Some registry key" -ValueName "SomeValue"
+
+        Assert-MockCalled Remove-Item -Times 0 -Scope It
+        Assert-MockCalled Remove-ItemProperty -Times 1 -Scope It -ParameterFilter { $Path -eq "HKLM:\Some registry key" -and $Name -eq "SomeValue"}
+        Assert-MockCalled Set-ItemProperty -Times 0 -Scope It
+    }
+
+    It "restores the registry by restoring a registry data modified by the test" {
+        Restore-RegistryState -KeyExist $true -KeyPath "HKLM:\Some registry key" -ValueName "SomeValue" -ValueData "Some Data"
+        Restore-RegistryState -KeyExist $true -KeyPath "HKLM:\Some dword reg key" -ValueName "SomeDwordValye" -ValueData 85432
+
+        Assert-MockCalled Remove-Item -Times 0 -Scope It
+        Assert-MockCalled Remove-ItemProperty -Times 0 -Scope It
+        Assert-MockCalled Set-ItemProperty -Times 1 -Scope It -ParameterFilter { $Path -eq "HKLM:\Some registry key" -and $Name -eq "SomeValue" -and $Value -eq "Some Data" }
+        Assert-MockCalled Set-ItemProperty -Times 1 -Scope It -ParameterFilter { $Path -eq "HKLM:\Some dword reg key" -and $Name -eq "SomeDwordValye" -and $Value -eq 85432 }
+    }
+}
+
+
 Describe "Disable-AutomaticUpdates" {
 
     BeforeEach {
@@ -184,6 +237,7 @@ Describe "Enable-SecurityPatches" {
         }
     }
 }
+
 
 Remove-Module -Name BOSH.WindowsUpdates -ErrorAction Ignore
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore

@@ -55,6 +55,10 @@ module Packer
       CLEAR_PROXY_SETTINGS = powershell_provisioner('Clear-ProxySettings')
       ENABLE_CVE_2015_6161 = powershell_provisioner('Enable-CVE-2015-6161')
       ENABLE_CVE_2017_8529 = powershell_provisioner('Enable-CVE-2017-8529')
+      Disable_RC4 = powershell_provisioner('Disable-RC4')
+      Disable_TLS1 = powershell_provisioner('Disable-TLS1')
+      Disable_3DES = powershell_provisioner('Disable-3DES')
+      Disable_DCOM = powershell_provisioner('Disable-DCOM')
       ENABLE_CREDSSP = powershell_provisioner('Enable-CredSSP')
 
       def self.setup_proxy_settings(http_proxy, https_proxy, bypass_list)
