@@ -226,6 +226,12 @@ Describe "Invoke-Sysprep" {
             { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO } | Should Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
         }
     }
+
+    Context "when not provided an OS version" {
+        It "throws" {
+            { Invoke-Sysprep -IaaS "aws" -SkipLGPO } | Should Throw "Provide OS version of stemcell"
+        }
+    }
 }
 
 Describe "ModifyInfFile" {
