@@ -159,9 +159,6 @@ describe 'VSphere' do
       allow(S3::Client).to receive(:new).with(
         endpoint: nil
       ).and_return(s3_client)
-
-      @fake_stemcell_path = 'some-stemcell-path.tgz'
-      allow(Stemcell::Builder::VSphere).to receive(:find_file_by_extn).and_return(@fake_stemcell_path)
     end
 
     it 'should build a vsphere stemcell from patchfile' do

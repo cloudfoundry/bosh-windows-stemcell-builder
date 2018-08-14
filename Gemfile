@@ -11,3 +11,4 @@ gem 'rspec'
 gem 'timecop'
 gem 'webmock'
 gem 'guard-rspec', require: false
+gem 'simplecov', require: false, group: :test

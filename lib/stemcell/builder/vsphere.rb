@@ -99,7 +99,7 @@ module Stemcell
         ).dump
       end
 
-      def self.find_file_by_extn(dir, extn)
+      def find_file_by_extn(dir, extn)
         pattern = File.join(dir, "*.#{extn}").gsub('\\', '/')
         files = Dir.glob(pattern)
         if files.length == 0
@@ -111,27 +111,21 @@ module Stemcell
         return files[0]
       end
 
-      def find_file_by_extn(dir, extn)
-        self.class.find_file_by_extn(dir, extn)
-      end
-
       def run_stembuild
         vmdk_file = find_file_by_extn(@output_directory, "vmdk")
-        if @os == 'windows2016'
+        case @os
+        when 'windows2016'
           os_flag = '2016'
+        when 'windows1803'
+          os_flag = '1803'
         else
           os_flag = '2012R2'
         end
+
         version_flag = Stemcell::Manifest::Base.strip_version_build_number(@version)
-        cmd = "stembuild -vmdk \"#{vmdk_file}\" -v \"#{version_flag}\" -output \"#{@output_directory}\" -os #{os_flag}"
-        puts "running stembuild command: [[ #{cmd} ]]"
-        `#{cmd}`
+        Stembuild.new(vmdk_file, version_flag, @output_directory, os_flag).run
 
         rename_stembuild_output
-      end
-
-      def find_vmx_file(dir)
-        find_file_by_extn(dir, "vmx")
       end
 
       def gzip_file(name, output)
@@ -153,7 +147,7 @@ module Stemcell
         sha1_sum=''
         image_file = File.join(vmx_dir, 'image')
         Dir.mktmpdir do |tmpdir|
-          vmx_file = find_vmx_file(vmx_dir)
+          vmx_file = find_file_by_extn(vmx_dir, "vmx")
           ova_file = File.join(tmpdir, 'image.ova')
           exec_command("ovftool '#{vmx_file}' '#{ova_file}'")
           removeNIC(ova_file)
@@ -161,6 +155,17 @@ module Stemcell
           sha1_sum = Digest::SHA1.file(image_file).hexdigest
         end
         [image_file,sha1_sum]
+      end
+
+      class Stembuild
+        def initialize(vmdk_file, version_flag, output_directory, os_flag)
+          @cmd = "stembuild -vmdk \"#{vmdk_file}\" -v \"#{version_flag}\" -output \"#{output_directory}\" -os #{os_flag}"
+        end
+
+        def run
+          puts "running stembuild command: [[ #{@cmd} ]]"
+          `#{@cmd}`
+        end
       end
     end
   end

@@ -51,46 +51,84 @@ describe Packer::Config::Aws do
       expect(builders[0]['ami_name']).to match(/BOSH-.*-region1/)
     end
 
-    context 'windows 2016' do
-      it 'returns the expected builders using an m5.large' do
-        regions = [
-          {
-            'name' => 'region1',
-            'base_ami' => 'baseami1',
-            'vpc_id' => 'vpc1',
-            'subnet_id' => 'subnet1',
-            'security_group' => 'sg1'
-          }
-        ]
-        builders = Packer::Config::Aws.new(
-          aws_access_key: 'some-aws-access-key',
-          aws_secret_key: 'some-aws-secret-key',
-          regions: regions,
-          output_directory: 'some-output-directory',
-          os: 'windows2016',
-          vm_prefix: 'some-vm-prefix'
-        ).builders
-        expect(builders[0]).to include(
-          'name' => 'amazon-ebs-region1',
-          'type' => 'amazon-ebs',
-          'access_key' => 'some-aws-access-key',
-          'secret_key' => 'some-aws-secret-key',
-          'region' => 'region1',
-          'source_ami' => 'baseami1',
-          'instance_type' => 'm5.large',
+    it 'returns the expected builders using an m5.large for windows2016' do
+      regions = [
+        {
+          'name' => 'region1',
+          'base_ami' => 'baseami1',
           'vpc_id' => 'vpc1',
           'subnet_id' => 'subnet1',
-          'associate_public_ip_address' => true,
-          'communicator' => 'winrm',
-          'winrm_username' => 'Administrator',
-          'winrm_timeout' => '1h',
-          'user_data_file' => 'scripts/aws/setup_winrm.txt',
-          'security_group_id' => 'sg1',
-          'ami_groups' => 'all',
-          'run_tags' => {'Name' => "some-vm-prefix-#{Time.now.to_i}"}
-        )
-        expect(builders[0]['ami_name']).to match(/BOSH-.*-region1/)
-      end
+          'security_group' => 'sg1'
+        }
+      ]
+      builders = Packer::Config::Aws.new(
+        aws_access_key: 'some-aws-access-key',
+        aws_secret_key: 'some-aws-secret-key',
+        regions: regions,
+        output_directory: 'some-output-directory',
+        os: 'windows2016',
+        vm_prefix: 'some-vm-prefix'
+      ).builders
+      expect(builders[0]).to include(
+        'name' => 'amazon-ebs-region1',
+        'type' => 'amazon-ebs',
+        'access_key' => 'some-aws-access-key',
+        'secret_key' => 'some-aws-secret-key',
+        'region' => 'region1',
+        'source_ami' => 'baseami1',
+        'instance_type' => 'm5.large',
+        'vpc_id' => 'vpc1',
+        'subnet_id' => 'subnet1',
+        'associate_public_ip_address' => true,
+        'communicator' => 'winrm',
+        'winrm_username' => 'Administrator',
+        'winrm_timeout' => '1h',
+        'user_data_file' => 'scripts/aws/setup_winrm.txt',
+        'security_group_id' => 'sg1',
+        'ami_groups' => 'all',
+        'run_tags' => {'Name' => "some-vm-prefix-#{Time.now.to_i}"}
+      )
+      expect(builders[0]['ami_name']).to match(/BOSH-.*-region1/)
+    end
+
+    it 'returns the expected builders using an m5.large for windows1803' do
+      regions = [
+        {
+          'name' => 'region1',
+          'base_ami' => 'baseami1',
+          'vpc_id' => 'vpc1',
+          'subnet_id' => 'subnet1',
+          'security_group' => 'sg1'
+        }
+      ]
+      builders = Packer::Config::Aws.new(
+        aws_access_key: 'some-aws-access-key',
+        aws_secret_key: 'some-aws-secret-key',
+        regions: regions,
+        output_directory: 'some-output-directory',
+        os: 'windows1803',
+        vm_prefix: 'some-vm-prefix'
+      ).builders
+      expect(builders[0]).to include(
+                               'name' => 'amazon-ebs-region1',
+                               'type' => 'amazon-ebs',
+                               'access_key' => 'some-aws-access-key',
+                               'secret_key' => 'some-aws-secret-key',
+                               'region' => 'region1',
+                               'source_ami' => 'baseami1',
+                               'instance_type' => 'm5.large',
+                               'vpc_id' => 'vpc1',
+                               'subnet_id' => 'subnet1',
+                               'associate_public_ip_address' => true,
+                               'communicator' => 'winrm',
+                               'winrm_username' => 'Administrator',
+                               'winrm_timeout' => '1h',
+                               'user_data_file' => 'scripts/aws/setup_winrm.txt',
+                               'security_group_id' => 'sg1',
+                               'ami_groups' => 'all',
+                               'run_tags' => {'Name' => "some-vm-prefix-#{Time.now.to_i}"}
+                             )
+      expect(builders[0]['ami_name']).to match(/BOSH-.*-region1/)
     end
 
     context 'when vm_prefix is empty' do
