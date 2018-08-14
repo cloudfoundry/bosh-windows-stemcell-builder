@@ -393,4 +393,3 @@ function Enable-CredSSP() {
     #Policy set to "mitigated"
     reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" /v AllowEncryptionOracle /t REG_DWORD /d 1 /f
 }
-

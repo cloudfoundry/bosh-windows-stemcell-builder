@@ -6,7 +6,20 @@ Author = 'BOSH'
 Copyright = '(c) 2017 BOSH'
 Description = 'Common Utils on a BOSH deployed vm'
 PowerShellVersion = '4.0'
-FunctionsToExport = @('Write-Log','Get-Log','Open-Zip','New-Provisioner','Clear-Provisioner','Protect-Dir','Protect-MountedDir', 'Set-ProxySettings', 'Clear-ProxySettings')
+FunctionsToExport = @(
+    'Write-Log',
+    'Get-Log',
+    'Open-Zip',
+    'New-Provisioner',
+    'Clear-Provisioner',
+    'Protect-Dir',
+    'Protect-MountedDir',
+    'Set-ProxySettings',
+    'Clear-ProxySettings',
+    'Disable-RC4',
+    'Disable-TLS1',
+    'Disable-3DES',
+    'Disable-DCOM')
 CmdletsToExport = @()
 VariablesToExport = '*'
 AliasesToExport = @()

@@ -59,7 +59,11 @@ module Packer
           provisioners = [
               Provisioners::ENABLE_CVE_2015_6161,
               Provisioners::ENABLE_CVE_2017_8529,
-              Provisioners::ENABLE_CREDSSP
+              Provisioners::ENABLE_CREDSSP,
+              Provisioners::Disable_RC4,
+              Provisioners::Disable_TLS1,
+              Provisioners::Disable_3DES,
+              Provisioners::Disable_DCOM
           ]
         end
 

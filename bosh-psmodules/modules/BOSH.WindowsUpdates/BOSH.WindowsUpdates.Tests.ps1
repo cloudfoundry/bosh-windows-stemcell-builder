@@ -185,5 +185,6 @@ Describe "Enable-SecurityPatches" {
     }
 }
 
+
 Remove-Module -Name BOSH.WindowsUpdates -ErrorAction Ignore
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
