@@ -42,13 +42,11 @@ function Enable-LocalSecurityPolicy {
 function Create-Unattend {
   Param (
     [string]$UnattendDestination = "C:\Windows\Panther\Unattend",
-    [string]$NewPassword = $(Throw "Provide an Administrator Password"),
+    [string]$NewPassword,
     [string]$ProductKey,
     [string]$Organization,
     [string]$Owner
   )
-
-  $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
   Write-Log "Starting Create-Unattend"
 
   New-Item -ItemType directory $UnattendDestination -Force
@@ -69,6 +67,19 @@ function Create-Unattend {
   $OwnerXML="<RegisteredOwner />"
   if ($Owner -ne "" -and $Owner -ne $null) {
     $OwnerXML="<RegisteredOwner>$Owner</RegisteredOwner>"
+  }
+
+  $AdministratorPasswordXML = ""
+  if ($NewPassword -ne "") {
+    $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
+    $AdministratorPasswordXML = @"
+      <UserAccounts>
+        <AdministratorPassword>
+          <Value>$NewPassword</Value>
+          <PlainText>false</PlainText>
+        </AdministratorPassword>
+      </UserAccounts>
+"@
   }
 
   $PostUnattend = @"
@@ -116,12 +127,7 @@ function Create-Unattend {
         <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
       </OOBE>
       <TimeZone>UTC</TimeZone>
-      <UserAccounts>
-        <AdministratorPassword>
-          <Value>$NewPassword</Value>
-          <PlainText>false</PlainText>
-        </AdministratorPassword>
-      </UserAccounts>
+      $AdministratorPasswordXML
     </component>
   </settings>
 </unattend>
@@ -319,7 +325,7 @@ function Remove-UserAccounts {
 function Invoke-Sysprep() {
   Param (
     [string]$IaaS = $(Throw "Provide the IaaS this stemcell will be used for"),
-    [string]$NewPassword="",
+    [string]$NewPassword,
     [string]$ProductKey="",
     [string]$Organization="",
     [string]$Owner="",
