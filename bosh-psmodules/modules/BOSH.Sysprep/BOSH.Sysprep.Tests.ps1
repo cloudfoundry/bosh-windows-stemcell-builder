@@ -293,18 +293,23 @@ Describe "Create-Unattend" {
         [xml]$unattendXML = Get-Content -Path $unattendPath
 
         $encodedPassword = $unattendXML.unattend.settings.component.UserAccounts.AdministratorPassword.Value
-        [system.text.encoding]::Unicode.GetString([system.convert]::Frombase64string($encodedPassword)) | Should Be ($newPassword + "AdministratorPassword")
+        [system.text.encoding]::Unicode.GetString([system.convert]::Frombase64string($encodedPassword)) | Should Be ($NewPassword + "AdministratorPassword")
     }
 
-    Context "failure scenarios" {
-        It "throws when there is no new password provided" {
-            {
-                Create-Unattend -UnattendDestination $UnattendDestination `
-                    -ProductKey $ProductKey `
-                    -Organization $Organization `
-                    -Owner $Owner
-            } | Should Throw "Provide an Administrator Password"
-        }
+    It "handles null for NewPassword" {
+        {
+        Create-Unattend -UnattendDestination $UnattendDestination `
+                -ProductKey $ProductKey `
+                -Organization $Organization `
+                -Owner $Owner
+        } | Should Not Throw
+
+        $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
+        [xml]$unattendXML = Get-Content -Path $unattendPath
+
+        $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
+        $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
+        $unattendXML.SelectSingleNode("//ns:UserAccounts", $ns) | Should Be $Null
     }
 
     Context "the generated Unattend file" {
