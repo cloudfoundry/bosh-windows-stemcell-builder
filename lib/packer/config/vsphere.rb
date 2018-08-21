@@ -53,15 +53,11 @@ module Packer
       end
 
       def provisioners
-        install_updates = [Provisioners.install_windows_updates]
-        if @os == "windows2016"
-          install_updates <<  Provisioners::INSTALL_KB2538243
-        end
         [
           Provisioners::BOSH_PSMODULES,
           Provisioners::NEW_PROVISIONER,
           Provisioners.setup_proxy_settings(@http_proxy, @https_proxy, @bypass_list),
-          @skip_windows_update ? [] : [install_updates],
+          @skip_windows_update ? [] : [Provisioners.install_windows_updates],
           Provisioners::GET_LOG,
           Provisioners::CLEAR_PROXY_SETTINGS,
           Provisioners::CLEAR_PROVISIONER,
@@ -94,7 +90,7 @@ module Packer
           'source_path' => @source_path,
           'headless' => false,
           'boot_wait' => '2m',
-          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword #{@new_password}#{product_key_flag} -Owner #{@owner} -Organization #{@organization}#{enable_rdp}",
+          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -OsVersion #{@os} -NewPassword #{@new_password}#{product_key_flag} -Owner #{@owner} -Organization #{@organization}#{enable_rdp}",
           'shutdown_timeout' => '1h',
           'communicator' => 'winrm',
           'ssh_username' => 'Administrator',
@@ -115,7 +111,7 @@ module Packer
 
       def provisioners
         install_manual_updates = []
-        if @os == "windows2016"
+        if @os == "windows2016" || @os == 'windows1803'
           install_manual_updates <<  Provisioners::INSTALL_KB2538243
         end
         pre = [
@@ -127,7 +123,7 @@ module Packer
         download_windows_updates = @skip_windows_update?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
 
         patches = [Base.enable_security_patches(@os)]
-        post = [Base.post_provisioners('vsphere')]
+        post = [Base.post_provisioners('vsphere', @os)]
 
         [pre,
          download_windows_updates,

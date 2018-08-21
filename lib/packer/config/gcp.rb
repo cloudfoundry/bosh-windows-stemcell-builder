@@ -44,7 +44,7 @@ module Packer
           Provisioners.install_agent('gcp', @mount_ephemeral_disk).freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Base.enable_security_patches(@os),
-          Base.post_provisioners('gcp')
+          Base.post_provisioners('gcp', @os)
         ].flatten
       end
     end

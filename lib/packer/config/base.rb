@@ -19,7 +19,7 @@ module Packer
             Provisioners::NEW_PROVISIONER,
             Provisioners::INSTALL_CF_FEATURES_2012
           ]
-        elsif os == 'windows2016'
+        elsif os == 'windows2016' || os == 'windows1803'
           pre = [
             Provisioners::BOSH_PSMODULES,
             Provisioners.setup_proxy_settings(http_proxy, https_proxy, bypass_list),
@@ -28,14 +28,15 @@ module Packer
           ]
         end
         install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
-        #temporarily disable 'test-installed-updates'
-        if os == 'windows2016' && !skip_windows_update
+
+        #windows1709 and up fails 'test-installed-updates'
+        if os == 'windows2016' || os == 'windows1803' && !skip_windows_update
           install_windows_updates.first.pop
         end
         pre + install_windows_updates + [Provisioners::PROTECT_CF_CELL, Provisioners::INSTALL_SSHD]
       end
 
-      def self.post_provisioners(iaas, os='windows2012R2')
+      def self.post_provisioners(iaas, os)
         provisioners = [
           Provisioners::CLEAR_PROXY_SETTINGS,
           Provisioners::CLEAR_PROVISIONER

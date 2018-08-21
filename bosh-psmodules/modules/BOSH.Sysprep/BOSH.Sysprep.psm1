@@ -323,7 +323,7 @@ function Invoke-Sysprep() {
     [string]$ProductKey="",
     [string]$Organization="",
     [string]$Owner="",
-    [string]$OsVersion="windows2012R2",
+    [string]$OsVersion = $(Throw "Provide OS version of stemcell"),
     [switch]$SkipLGPO,
     [switch]$EnableRDP
   )

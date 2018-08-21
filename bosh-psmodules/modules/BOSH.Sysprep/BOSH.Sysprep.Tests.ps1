@@ -217,13 +217,19 @@ Describe "Remove-UserAccounts" {
 Describe "Invoke-Sysprep" {
     Context "when not provided an IaaS" {
         It "throws" {
-            { Invoke-Sysprep } | Should Throw "Provide the IaaS this stemcell will be used for"
+            { Invoke-Sysprep -OsVersion "windows2012R2" } | Should Throw "Provide the IaaS this stemcell will be used for"
         }
     }
 
     Context "when provided an invalid Iaas" {
         It "throws" {
-            { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO } | Should Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
+            { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO -OsVersion "windows2012R2" } | Should Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
+        }
+    }
+
+    Context "when not provided an OS version" {
+        It "throws" {
+            { Invoke-Sysprep -IaaS "aws" -SkipLGPO } | Should Throw "Provide OS version of stemcell"
         }
     }
 }
