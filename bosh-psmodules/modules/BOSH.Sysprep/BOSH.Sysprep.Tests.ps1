@@ -262,13 +262,6 @@ Describe "Create-Unattend" {
         $ProductKey= "ProductKey"
         $Organization="Organization"
         $Owner="Owner"
-        {
-            Create-Unattend -UnattendDestination $UnattendDestination `
-                -NewPassword $NewPassword `
-                -ProductKey $ProductKey `
-                -Organization $Organization `
-                -Owner $Owner
-        } | Should Not Throw
     }
 
     AfterEach {
@@ -276,6 +269,13 @@ Describe "Create-Unattend" {
     }
 
     It "places the generated Unattend file in the specified directory" {
+        {
+            Create-Unattend -UnattendDestination $UnattendDestination `
+                -NewPassword $NewPassword `
+                -ProductKey $ProductKey `
+                -Organization $Organization `
+                -Owner $Owner
+        } | Should Not Throw
         Test-Path (Join-Path $UnattendDestination "unattend.xml") | Should Be $True
     }
 
@@ -299,6 +299,40 @@ Describe "Create-Unattend" {
     It "handles null for NewPassword" {
         {
         Create-Unattend -UnattendDestination $UnattendDestination `
+                -NewPassword $null `
+                -ProductKey $ProductKey `
+                -Organization $Organization `
+                -Owner $Owner
+        } | Should Not Throw
+
+        $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
+        [xml]$unattendXML = Get-Content -Path $unattendPath
+
+        $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
+        $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
+        $unattendXML.SelectSingleNode("//ns:UserAccounts", $ns) | Should Be $Null
+    }
+
+    It "handles empty string for NewPassword" {
+        {
+        Create-Unattend -UnattendDestination $UnattendDestination `
+                -NewPassword "" `
+                -ProductKey $ProductKey `
+                -Organization $Organization `
+                -Owner $Owner
+        } | Should Not Throw
+
+        $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
+        [xml]$unattendXML = Get-Content -Path $unattendPath
+
+        $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
+        $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
+        $unattendXML.SelectSingleNode("//ns:UserAccounts", $ns) | Should Be $Null
+    }
+
+    It "handles not providing NewPassword" {
+        {
+        Create-Unattend -UnattendDestination $UnattendDestination `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
                 -Owner $Owner
@@ -314,6 +348,13 @@ Describe "Create-Unattend" {
 
     Context "the generated Unattend file" {
         BeforeEach {
+            {
+            Create-Unattend -UnattendDestination $UnattendDestination `
+                     -NewPassword $NewPassword `
+                     -ProductKey $ProductKey `
+                     -Organization $Organization `
+                     -Owner $Owner
+            } | Should Not Throw
             $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
             [xml]$unattendXML = Get-Content -Path $unattendPath
             $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
