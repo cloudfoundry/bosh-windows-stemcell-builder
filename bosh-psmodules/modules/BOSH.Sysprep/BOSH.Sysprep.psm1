@@ -70,7 +70,7 @@ function Create-Unattend {
   }
 
   $AdministratorPasswordXML = ""
-  if ($NewPassword -ne "") {
+  if ($NewPassword -ne "" -and $NewPassword -ne $null) {
     $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
     $AdministratorPasswordXML = @"
       <UserAccounts>
@@ -134,8 +134,6 @@ function Create-Unattend {
 "@
 
   Out-File -FilePath $UnattendPath -InputObject $PostUnattend -Encoding utf8
-
-  Write-Log "Starting Create-Unattend"
 }
 
 <#
