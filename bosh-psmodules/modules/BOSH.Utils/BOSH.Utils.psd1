@@ -13,7 +13,7 @@ FunctionsToExport = @(
     'New-Provisioner',
     'Clear-Provisioner',
     'Protect-Dir',
-    'Protect-MountedDir',
+    'Protect-Path',
     'Set-ProxySettings',
     'Clear-ProxySettings',
     'Disable-RC4',

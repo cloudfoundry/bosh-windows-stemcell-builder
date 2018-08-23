@@ -109,36 +109,36 @@ function Protect-Dir {
     }
 }
 
-function Protect-MountedDir {
-    Param(
-        [string]$path = $(Throw "Provide a directory to set ACL on"),
-        [bool]$disableInheritance=$True
-    )
+function Protect-Path {
+   Param(
+       [string]$path = $(Throw "Provide a directory to set ACL on"),
+       [bool]$disableInheritance=$True
+   )
 
-    Write-Log "Protect-Dir: Grant Administrator"
-    cmd.exe /c cacls.exe $path /E /M /P Administrators:F
-    if ($LASTEXITCODE -ne 0) {
-        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
-    }
+   Write-Log "Protect-Dir: Grant Administrator"
+   cmd.exe /c cacls.exe $path /E /P Administrators:F
+   if ($LASTEXITCODE -ne 0) {
+       Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+   }
 
-    Write-Log "Protect-Dir: Remove BUILTIN\Users"
-    cmd.exe /c cacls.exe $path /E /M /R "BUILTIN\Users"
-    if ($LASTEXITCODE -ne 0) {
-        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
-    }
+   Write-Log "Protect-Dir: Remove BUILTIN\Users"
+   cmd.exe /c cacls.exe $path /E /R "BUILTIN\Users"
+   if ($LASTEXITCODE -ne 0) {
+       Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+   }
 
-    Write-Log "Protect-Dir: Remove BUILTIN\IIS_IUSRS"
-    cmd.exe /c cacls.exe $path /E /M /R "BUILTIN\IIS_IUSRS"
-    if ($LASTEXITCODE -ne 0) {
-        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
-    }
+   Write-Log "Protect-Dir: Remove BUILTIN\IIS_IUSRS"
+   cmd.exe /c cacls.exe $path /E /R "BUILTIN\IIS_IUSRS"
+   if ($LASTEXITCODE -ne 0) {
+       Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+   }
 
-    if ($disableInheritance) {
-        Write-Log "Protect-Dir: Disable Inheritance"
-        $acl = Get-ACL -LiteralPath $path
-        $acl.SetAccessRuleProtection($True, $True)
-        Set-Acl -LiteralPath $path -AclObject $acl
-    }
+   if ($disableInheritance) {
+       Write-Log "Protect-Dir: Disable Inheritance"
+       $acl = Get-ACL -LiteralPath $path
+       $acl.SetAccessRuleProtection($True, $True)
+       Set-Acl -LiteralPath $path -AclObject $acl
+   }
 }
 
 function Set-ProxySettings {
