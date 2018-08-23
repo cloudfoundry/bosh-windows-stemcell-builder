@@ -56,14 +56,6 @@ type StemcellYML struct {
 	Name    string `yaml:"name"`
 }
 
-type StemcellJSON struct {
-	Tables []struct {
-		Rows []struct {
-			Version string `json:"version"`
-		} `json:"Rows"`
-	} `json:"Tables"`
-}
-
 type Config struct {
 	Bosh struct {
 		CaCert       string `json:"ca_cert"`
@@ -216,7 +208,9 @@ var _ = Describe("BOSH Windows", func() {
 		bosh.Run("login")
 		deploymentName = fmt.Sprintf("windows-acceptance-test-%d", getTimestampInMs())
 
-		stemcellYML := extractStemcellMetadata(config, bosh)
+		stemcellYML, err := fetchStemcellInfo(config.Stemcellpath)
+		Expect(err).To(Succeed())
+
 		stemcellName = stemcellYML.Name
 		stemcellVersion = stemcellYML.Version
 
@@ -346,22 +340,6 @@ func createBwatsRelease(bosh *BoshCommand) string {
 	Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
 
 	return releaseVersion
-}
-
-func extractStemcellMetadata(config *Config, bosh *BoshCommand) StemcellYML {
-	stemcellInfo, err := fetchStemcellInfo(config.Stemcellpath)
-	Expect(err).To(Succeed())
-
-	boshStemcellOutput, err := bosh.RunInStdOut("stemcells --json", "")
-	Expect(err).To(Succeed())
-
-	var stemcellJSON StemcellJSON
-	json.Unmarshal(boshStemcellOutput, &stemcellJSON)
-	for _, row := range stemcellJSON.Tables[0].Rows {
-		Expect(row.Version).NotTo(MatchRegexp(fmt.Sprintf(`^%s\*?$`, stemcellInfo.Version)))
-	}
-
-	return stemcellInfo
 }
 
 func (m ManifestProperties) toVarsString() string {
