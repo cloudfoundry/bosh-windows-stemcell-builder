@@ -74,7 +74,7 @@ describe 'Azure' do
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
 
-      expect(stemcell_manifest['version']).to eq('1200.0')
+      expect(stemcell_manifest['version']).to eq('1200.0.1-build.7')
 
       expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
 
