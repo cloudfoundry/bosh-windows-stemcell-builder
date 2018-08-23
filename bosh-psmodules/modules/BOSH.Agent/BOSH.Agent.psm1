@@ -17,12 +17,12 @@ function Install-Agent {
     Write-Log "Install-Agent: Started"
 
     Copy-Agent -InstallDir "C:\" -agentZipPath $agentZipPath
-    Protect-Path -Path "C:\bosh"
-    Protect-Path -Path "C:\var"
+    Protect-Dir -Path "C:\bosh"
+    Protect-Dir -Path "C:\var"
     Write-AgentConfig -BoshDir "C:\bosh" -IaaS $IaaS -EnableEphemeralDiskMounting $EnableEphemeralDiskMounting
     Set-Path "C:\var\vcap\bosh\bin"
     Install-AgentService
-    Protect-Path -Path "C:\Windows\Panther" -disableInheritance $False
+    Protect-Dir -Path "C:\Windows\Panther" -disableInheritance $False
     Write-Log "Install-Agent: Finished"
 }
 
