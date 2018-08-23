@@ -246,7 +246,7 @@ describe 'VSphere' do
       Rake::Task['build:vsphere'].invoke
 
       stembuild_version_arg = JSON.parse(File.read("#{@output_directory}/myargs"))[3]
-      expect(stembuild_version_arg).to eq('1200.3')
+      expect(stembuild_version_arg).to eq('1200.3.1-build.2')
       stemcell_filename = File.basename(Dir["#{@output_directory}/*.tgz"].first)
       expect(stemcell_filename).to eq "bosh-stemcell-1200.3.1-build.2-vsphere-esxi-windows2012R2-go_agent.tgz"
     end

@@ -92,7 +92,7 @@ describe 'Aws' do
       stemcell_sha = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent-#{@region}.tgz.sha")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
-      expect(stemcell_manifest['version']).to eq('1200.3')
+      expect(stemcell_manifest['version']).to eq('1200.3.1-build.2')
       expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
       expect(stemcell_manifest['operating_system']).to eq(@os_version)
       expect(stemcell_manifest['stemcell_formats']).to eq(['aws-light'])

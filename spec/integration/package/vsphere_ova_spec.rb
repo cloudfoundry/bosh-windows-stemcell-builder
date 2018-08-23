@@ -53,7 +53,7 @@ cloud_properties:
 END
     expect(read_from_tgz(tarball, 'stemcell.MF')).to include(
       vsphere_metadata,
-      "version: '1.0'\n")
+      "version: 1.0.0\n")
   end
   context 'when updates path is not provided' do
     it 'should package ova file without updates list' do

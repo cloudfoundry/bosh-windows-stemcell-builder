@@ -122,8 +122,7 @@ module Stemcell
           os_flag = '2012R2'
         end
 
-        version_flag = Stemcell::Manifest::Base.strip_version_build_number(@version)
-        Stembuild.new(vmdk_file, version_flag, @output_directory, os_flag).run
+        Stembuild.new(vmdk_file, @version, @output_directory, os_flag).run
 
         rename_stembuild_output
       end
