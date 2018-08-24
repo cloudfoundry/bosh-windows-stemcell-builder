@@ -274,7 +274,7 @@ var _ = Describe("BOSH Windows", func() {
 		}
 	})
 
-	It("checks system dependencies and security, auto update has turned off, currently has a Service StartType of 'Manual' and initially had a StartType of 'Delayed', password is randomized, and ephemeral disk is not mounted unless flag is on", func() {
+	It("checks system dependencies and security, auto update has turned off, currently has a Service StartType of 'Manual' and initially had a StartType of 'Delayed', and password is randomized", func() {
 		err := runTest("check-system")
 		Expect(err).To(Succeed())
 	})
@@ -284,7 +284,7 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(Succeed())
 	})
 
-	It("mounts ephemeral disks when asked to do so", func() {
+	It("mounts ephemeral disks when asked to do so and does not mount them otherwise", func() {
 		err := runTest("ephemeral-disk")
 		Expect(err).To(Succeed())
 	})
