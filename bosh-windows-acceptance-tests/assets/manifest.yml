@@ -30,9 +30,6 @@ instance_groups:
     release: ((ReleaseName))
   - name: check-system
     release: ((ReleaseName))
-    properties:
-      check-system:
-        mount_ephemeral_disk: ((MountEphemeralDisk))
   - name: ephemeral-disk
     release: ((ReleaseName))
     properties:

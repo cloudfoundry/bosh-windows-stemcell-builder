@@ -37,11 +37,17 @@ function New-RandomFile {
 $RunTest=[bool]$<%= p("run_test.enabled") %>
 
 if ($RunTest) {
-    $dataPartition = Get-Partition | where AccessPaths -Contains "C:\var\vcap\data\"
-    if ($dataPartition -eq $null) {
-        Write-Error "Data partition should be created"
+    # Note no trailing slash. Important! Trailing slashes on non-symlink folders will return their own path as the target
+    # eg (get-item "C:\var\vcap\data\").target -> c:\var\vcap\data
+
+    $dataTarget = (get-item "C:\var\vcap\data").Target
+    if ($dataTarget -eq $null) {
+        Write-Error "Data partition should be created: target is $dataTarget"
         Exit 1
     }
+
+    $targetDriveLetter = $dataTarget.substring(0,1)
+    $dataPartition = get-partition -driveLetter $targetDriveLetter
 
     $randFileSize = 2gb
 
@@ -69,8 +75,8 @@ if ($RunTest) {
       Exit 1
     }
 } else {
-    $dataPartition = Get-Partition | where AccessPaths -Contains "C:\var\vcap\data\"
-    if ($dataPartition -ne $null) {
+    $dataTarget = (get-item "C:\var\vcap\data").target
+    if ($dataTarget -ne $null) {
       Write-Error "Data partition should not be created"
       Exit 1
     }
