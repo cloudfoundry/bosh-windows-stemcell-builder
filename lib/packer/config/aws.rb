@@ -54,15 +54,18 @@ module Packer
       private
 
         def instance_type
-          if @os == 'windows2016' || @os == 'windows1803'
-            return 'm5.large'
+          type = 'm5.large'
+
+          if @os == 'windows2012R2'
+            type = 'm4.xlarge'
           end
 
-          return 'm4.xlarge'
+          type
         end
 
         def launch_block_device_mappings
-          volume_size = @os == 'windows2012R2' ? 128 : 30
+          volume_size = 30
+          volume_size = 128 if @os == 'windows2012R2'
 
           [
               {

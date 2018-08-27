@@ -37,10 +37,18 @@ describe Packer::Config::Aws do
         'secret_key' => 'some-aws-secret-key',
         'region' => 'region1',
         'source_ami' => 'baseami1',
-        'instance_type' => 'm4.xlarge',
+        'instance_type' => 'm5.large',
         'vpc_id' => 'vpc1',
         'subnet_id' => 'subnet1',
         'associate_public_ip_address' => true,
+        'launch_block_device_mappings' => [
+            {
+                'device_name': '/dev/sda1',
+                'volume_size': 30,
+                'volume_type': 'gp2',
+                'delete_on_termination': true,
+            }
+        ],
         'communicator' => 'winrm',
         'winrm_username' => 'Administrator',
         'winrm_timeout' => '1h',
@@ -68,47 +76,12 @@ describe Packer::Config::Aws do
                                                                    'launch_block_device_mappings' => [
                                                                        {
                                                                            'device_name': '/dev/sda1',
-                                                                           'volume_size':128,
+                                                                           'volume_size': 128,
                                                                            'volume_type': 'gp2',
                                                                            'delete_on_termination': true,
                                                                        }
                                                                    ],
                                                                }))
-      end
-    end
-
-    context 'windows2016' do
-      let (:os) { 'windows2016' }
-
-      it 'returns the expected builders using an m5.large for windows2016' do
-        expect(builders[0]).to include(baseline_builders.merge({
-                                                                   'instance_type' => 'm5.large',
-                                                                   'launch_block_device_mappings' => [
-                                                                       {
-                                                                           'device_name': '/dev/sda1',
-                                                                           'volume_size': 30,
-                                                                           'volume_type': 'gp2',
-                                                                           'delete_on_termination': true,
-                                                                       }
-                                                                   ]
-                                                               }))
-      end
-    end
-
-    context 'windows1803' do
-      let (:os) { 'windows1803' }
-      it 'returns the expected builders using an m5.large for windows1803' do
-        expect(builders[0]).to include(baseline_builders.merge({
-                                   'instance_type' => 'm5.large',
-                                   'launch_block_device_mappings' => [
-                                       {
-                                           'device_name': '/dev/sda1',
-                                           'volume_size': 30,
-                                           'volume_type': 'gp2',
-                                           'delete_on_termination': true,
-                                       }
-                                   ],
-                               }))
       end
     end
 
