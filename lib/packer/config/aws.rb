@@ -25,14 +25,7 @@ module Packer
             'vpc_id' => region['vpc_id'],
             'subnet_id' => region['subnet_id'],
             'associate_public_ip_address' => true,
-            'launch_block_device_mappings' => [
-              {
-                'device_name': '/dev/sda1',
-                'volume_size': 128,
-                'volume_type': 'gp2',
-                'delete_on_termination': true
-              }
-            ],
+            'launch_block_device_mappings' => launch_block_device_mappings,
             'communicator' => 'winrm',
             'winrm_username' => 'Administrator',
             'winrm_timeout' => '1h',
@@ -59,12 +52,26 @@ module Packer
       end
 
       private
+
         def instance_type
           if @os == 'windows2016' || @os == 'windows1803'
             return 'm5.large'
           end
 
           return 'm4.xlarge'
+        end
+
+        def launch_block_device_mappings
+          volume_size = @os == 'windows2012R2' ? 128 : 30
+
+          [
+              {
+                  'device_name': '/dev/sda1',
+                  'volume_size': volume_size,
+                  'volume_type': 'gp2',
+                  'delete_on_termination': true,
+              }
+          ]
         end
     end
   end
