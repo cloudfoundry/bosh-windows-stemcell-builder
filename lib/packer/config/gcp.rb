@@ -21,7 +21,7 @@ module Packer
             'source_image' => @source_image,
             'image_family' => @image_family,
             'zone' => 'us-east1-c',
-            'disk_size' => 100,
+            'disk_size' => disk_size,
             'image_name' =>  "packer-#{Time.now.to_i}",
             'machine_type' => 'n1-standard-4',
             'omit_external_ip' => false,
@@ -46,6 +46,16 @@ module Packer
           Base.enable_security_patches(@os),
           Base.post_provisioners('gcp', @os)
         ].flatten
+      end
+
+      private
+
+      def disk_size
+        if @os == 'windows2012R2'
+          100
+        else
+          32
+        end
       end
     end
   end
