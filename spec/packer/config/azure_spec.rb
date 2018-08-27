@@ -1,8 +1,11 @@
 require 'packer/config'
+require 'timecop'
 
 describe Packer::Config::Azure do
   describe 'builders' do
     before :each do
+      allow(ENV).to receive(:[]).with("BASE_IMAGE_OFFER").and_return("some-base-image-offer")
+      allow(ENV).to receive(:[]).with("BASE_IMAGE").and_return("some-base-image")
       Timecop.freeze
     end
 
@@ -10,10 +13,7 @@ describe Packer::Config::Azure do
       Timecop.return
     end
 
-    it 'returns the expected builders' do
-      allow(ENV).to receive(:[]).with("BASE_IMAGE_OFFER").and_return("some-base-image-offer")
-      allow(ENV).to receive(:[]).with("BASE_IMAGE").and_return("some-base-image")
-      builders = Packer::Config::Azure.new(
+    let (:builders) { Packer::Config::Azure.new(
         client_id: 'some-client-id',
         client_secret: 'some-client-secret',
         tenant_id: 'some-tenant-id',
@@ -24,18 +24,19 @@ describe Packer::Config::Azure do
         location: 'some-location',
         vm_size: 'some-vm-size',
         output_directory: '',
-        os: '',
+        os: os,
         vm_prefix: 'some-vm-prefix',
         mount_ephemeral_disk: false,
-      ).builders
-      expect(builders[0]).to eq(
+    ).builders }
+
+    let (:expected_baseline) { {
         'type' => 'azure-arm',
         'client_id' => 'some-client-id',
         'client_secret' => 'some-client-secret',
         'tenant_id' => 'some-tenant-id',
         'subscription_id' => 'some-subscription-id',
         'object_id' => 'some-object-id',
-        'os_disk_size_gb' => 128,
+        'os_disk_size_gb' => 30,
         'resource_group_name' => 'some-resource-group-name',
         'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
         'storage_account' => 'some-storage-account',
@@ -47,13 +48,27 @@ describe Packer::Config::Azure do
         'location' => 'some-location',
         'vm_size' => 'some-vm-size',
         'os_type' => 'Windows',
-
         'communicator' => 'winrm',
         'winrm_use_ssl' => 'true',
         'winrm_insecure' => 'true',
         'winrm_timeout' => '1h',
         'winrm_username' => 'packer'
-      )
+    } }
+
+    context 'all os versions' do
+      let(:os) { '' }
+
+      it 'returns the expected builders' do
+        expect(builders[0]).to include(expected_baseline)
+      end
+    end
+
+    context 'windows2012R2' do
+      let(:os) { 'windows2012R2' }
+
+      it 'returns the expected builders with a 128GB root disk' do
+        expect(builders[0]).to include(expected_baseline.merge({ 'os_disk_size_gb' => 128 }))
+      end
     end
 
     context 'when vm_prefix is empty' do
