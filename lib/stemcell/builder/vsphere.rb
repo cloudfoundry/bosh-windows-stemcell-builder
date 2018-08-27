@@ -2,7 +2,6 @@ require 'digest'
 require 'tmpdir'
 require 'zlib'
 require 'nokogiri'
-require 'fileutils'
 
 module Stemcell
   class Builder
@@ -74,7 +73,7 @@ module Stemcell
         # stembuild will output a tgz file with the trimmed down version, but we want to retain the original version in the filename
         new_filename = "bosh-stemcell-#{@version}-vsphere-esxi-#{@os}-go_agent.tgz"
         puts "renaming stemcell to #{new_filename}"
-        FileUtils.mv Dir[File.join(@output_directory, "*.tgz")].first, File.join(@output_directory, new_filename)
+        File.rename Dir[File.join(@output_directory, "*.tgz")].first, File.join(@output_directory, new_filename)
       end
 
       private
