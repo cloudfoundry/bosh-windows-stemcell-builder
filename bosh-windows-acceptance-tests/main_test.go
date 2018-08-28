@@ -166,7 +166,7 @@ func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	session.Wait(c.Timeout)
+	Eventually(session, c.Timeout).Should(gexec.Exit())
 
 	exitCode := session.ExitCode()
 	stdout := session.Out.Contents()
@@ -224,7 +224,10 @@ var _ = Describe("BOSH Windows", func() {
 
 	AfterSuite(func() {
 		// Delete the releases created by the tight loop test
-		for _, version := range tightLoopStemcellVersions {
+		for index , version := range tightLoopStemcellVersions {
+			if index == len(tightLoopStemcellVersions) - 1 {
+				continue // Last release is still being used by the deployment, so it cannot be deleted yet
+			}
 			bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", version))
 		}
 		if config.SkipCleanup {
@@ -234,6 +237,7 @@ var _ = Describe("BOSH Windows", func() {
 		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
 		bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellName, stemcellVersion))
 		bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
+		bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", tightLoopStemcellVersions[len(tightLoopStemcellVersions) - 1]))
 
 		if bosh.CertPath != "" {
 			os.RemoveAll(bosh.CertPath)
@@ -408,7 +412,7 @@ func fetchStemcellInfo(stemcellPath string) (StemcellYML, error) {
 	cmd := exec.Command("tar", "xf", stemcellPath, "-C", tempDir, "stemcell.MF")
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).To(Succeed())
-	session.Wait(20 * time.Minute)
+	Eventually(session, 20 * time.Minute).Should(gexec.Exit())
 
 	exitCode := session.ExitCode()
 	if exitCode != 0 {
