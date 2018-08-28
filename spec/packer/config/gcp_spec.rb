@@ -10,37 +10,53 @@ describe Packer::Config::Gcp do
       Timecop.return
     end
 
-    it 'returns the expected builders' do
-      builders = Packer::Config::Gcp.new(
+    let (:builders) { Packer::Config::Gcp.new(
         account_json: 'some-account-json',
         project_id: 'some-project-id',
         source_image: 'some-source-image',
         output_directory: '',
         image_family: 'some-image-family',
-        os: '',
+        os: os,
         vm_prefix: 'some-vm-prefix',
-      ).builders
-      expect(builders[0]).to include(
-        'type' => 'googlecompute',
-        'account_file' => 'some-account-json',
-        'project_id' => 'some-project-id',
-        'tags' => ['winrm'],
-        'source_image' => 'some-source-image',
-        'image_family' => 'some-image-family',
-        'zone' => 'us-east1-c',
-        'disk_size' => 100,
-        'machine_type' => 'n1-standard-4',
-        'omit_external_ip' => false,
-        'communicator' => 'winrm',
-        'winrm_username' => 'winrmuser',
-        'winrm_use_ssl' => false,
-        'winrm_timeout' => '1h',
-        'metadata' => {
-          'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1',
-          'name' => "some-vm-prefix-#{Time.now.to_i}"
-        }
-      )
-      expect(builders[0]['image_name']).to match(/packer-\d+/)
+    ).builders }
+
+    let (:baseline_builders) { {
+            'type' => 'googlecompute',
+            'account_file' => 'some-account-json',
+            'project_id' => 'some-project-id',
+            'tags' => ['winrm'],
+            'source_image' => 'some-source-image',
+            'image_family' => 'some-image-family',
+            'zone' => 'us-east1-c',
+            'disk_size' => 32,
+            'machine_type' => 'n1-standard-4',
+            'omit_external_ip' => false,
+            'communicator' => 'winrm',
+            'winrm_username' => 'winrmuser',
+            'winrm_use_ssl' => false,
+            'winrm_timeout' => '1h',
+            'metadata' => {
+                'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1',
+                'name' => "some-vm-prefix-#{Time.now.to_i}"
+            }
+
+    } }
+
+    context 'all os versions' do
+      let(:os) { '' }
+
+      it 'returns the expected builders' do
+        expect(builders[0]).to include(baseline_builders)
+        expect(builders[0]['image_name']).to match(/packer-\d+/)
+      end
+    end
+
+    context 'windows2012R2' do
+      let (:os) { 'windows2012R2' }
+
+      it 'returns the expected builders with a 100GB root disk' do
+        expect(builders[0]).to include(baseline_builders.merge({ 'disk_size' => 100 }))
+      end
     end
 
     context 'when vm_prefix is empty' do
