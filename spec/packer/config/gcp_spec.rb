@@ -106,7 +106,7 @@ describe Packer::Config::Gcp do
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
           {'type'=>'powershell', 'inline'=>['$ErrorActionPreference = "Stop";',
                                             'trap { $host.SetShouldExit(1) }',
-                                            'Set-ProxySettings   ']},
+                                            'Set-ProxySettings ']},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
@@ -120,8 +120,6 @@ describe Packer::Config::Gcp do
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
           {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-Hotfix | Out-File -FilePath \"C:\\updates.txt\" -Encoding ASCII"]},
-          {"type"=>"file", "source"=>"C:\\updates.txt", "destination"=>"some-output-directory/updates.txt", "direction"=>"download"},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-CVE-2015-6161"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-CVE-2017-8529"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-CredSSP"]},
@@ -139,33 +137,6 @@ describe Packer::Config::Gcp do
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
         provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
         expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
-      end
-
-      context 'when provisioning with emphemeral disk mounting enabled' do
-        it 'calls Install-Agent with -EnableEphemeralDiskMounting' do
-          allow(SecureRandom).to receive(:hex).and_return("some-password")
-          provisioners = Packer::Config::Gcp.new(
-            account_json: '{}',
-            project_id: '',
-            source_image: '{}',
-            output_directory: 'some-output-directory',
-            image_family: '',
-            os: 'windows2012R2',
-            vm_prefix: '',
-            mount_ephemeral_disk: true,
-          ).provisioners
-
-          expect(provisioners).to include(
-            {
-              "type"=>"powershell",
-              "inline"=>[
-                "$ErrorActionPreference = \"Stop\";",
-                "trap { $host.SetShouldExit(1) }",
-                "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip' -EnableEphemeralDiskMounting"
-              ]
-            }
-          )
-        end
       end
     end
 
@@ -186,7 +157,7 @@ describe Packer::Config::Gcp do
           {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
           {'type'=>'powershell', 'inline'=>['$ErrorActionPreference = "Stop";',
                                             'trap { $host.SetShouldExit(1) }',
-                                            'Set-ProxySettings   ']},
+                                            'Set-ProxySettings ']},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
           {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Install-CFFeatures", "restart_timeout"=>"1h"},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
@@ -199,8 +170,6 @@ describe Packer::Config::Gcp do
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
           {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-Hotfix | Out-File -FilePath \"C:\\updates.txt\" -Encoding ASCII"]},
-          {"type"=>"file", "source"=>"C:\\updates.txt", "destination"=>"some-output-directory/updates.txt", "direction"=>"download"},
           {'type'=>'powershell', 'inline'=> ['$ErrorActionPreference = "Stop";',
                                              'trap { $host.SetShouldExit(1) }',
                                              'Clear-ProxySettings']},
@@ -230,7 +199,7 @@ describe Packer::Config::Gcp do
           {"type" => "powershell", "scripts" => ["scripts/install-bosh-psmodules.ps1"]},
           {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
             'trap { $host.SetShouldExit(1) }',
-            'Set-ProxySettings   ']},
+            'Set-ProxySettings ']},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
           {"type" => "windows-restart", "restart_command" => "powershell.exe -Command Install-CFFeatures", "restart_timeout" => "1h"},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
@@ -243,8 +212,6 @@ describe Packer::Config::Gcp do
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
           {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-Hotfix | Out-File -FilePath \"C:\\updates.txt\" -Encoding ASCII"]},
-          {"type" => "file", "source" => "C:\\updates.txt", "destination" => "some-output-directory/updates.txt", "direction" => "download"},
           {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
             'trap { $host.SetShouldExit(1) }',
             'Clear-ProxySettings']},

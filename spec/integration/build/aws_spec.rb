@@ -99,8 +99,6 @@ describe 'Aws' do
       apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
       expect(apply_spec['agent_commit']).to eq(@agent_commit)
 
-      expect(read_from_tgz(stemcell, 'updates.txt')).to eq('some-updates')
-
       expect(read_from_tgz(stemcell, 'image')).to be_nil
       expect(File.read(stemcell_sha)).to eq(Digest::SHA1.hexdigest(File.read(stemcell)))
 
