@@ -21,6 +21,7 @@ namespace :publish do
         azure_storage_account: ENV['AZURE_STORAGE_ACCOUNT'],
         azure_published_storage_account: ENV['AZURE_PUBLISHED_STORAGE_ACCOUNT'],
         azure_storage_access_key: ENV['AZURE_STORAGE_ACCESS_KEY'],
+        azure_published_storage_access_key: ENV['AZURE_PUBLISHED_STORAGE_ACCESS_KEY'],
         azure_tenant_id: ENV['AZURE_TENANT_ID'],
         azure_client_id: ENV['AZURE_CLIENT_ID'],
         azure_client_secret: ENV['AZURE_CLIENT_SECRET'],

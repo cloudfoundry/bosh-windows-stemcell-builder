@@ -46,8 +46,8 @@ Please login to https://cloudpartner.azure.com
 END
 
       expect(Executor).to receive(:exec_command_no_output).with(expected_login_command)
-      expect(Executor).to receive(:exec_command).once.with(expected_url_command).and_return('vhd-url')
-      expect(Executor).to receive(:exec_command).once.with(expected_sas_command).and_return('sas-code')
+      expect(Executor).to receive(:exec_command).once.with(expected_url_command).and_return("\"vhd-url\"\n")
+      expect(Executor).to receive(:exec_command).once.with(expected_sas_command).and_return("\"sas-code\"\n")
       expect{@publisher.print_publishing_instructions}.
         to output(expected_instructions).to_stdout
     end

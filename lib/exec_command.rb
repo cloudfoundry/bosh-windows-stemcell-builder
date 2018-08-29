@@ -3,7 +3,6 @@ require 'open3'
 class Executor
   def self.exec_command(cmd)
     STDOUT.sync = true
-    puts "Running: #{cmd}"
 
     ret = ''
 
