@@ -40,7 +40,6 @@ END
           "--account-name \"#{azure_published_storage_account}\" "\
           "--destination-container \"system\" "\
           "--destination-blob \"#{container_path}\""
-        puts azure_copy_command
         puts "running azure copy"
 
         Executor.exec_command_no_output(azure_copy_command)
@@ -59,7 +58,8 @@ END
           "--permissions rl "\
           "--account-name #{azure_published_storage_account} --account-key #{azure_published_storage_access_key} "\
           "--start #{yesterday} --expiry #{next_year}"
-        Executor.exec_command(create_sas_cmd)
+
+        Executor.exec_command(create_sas_cmd).strip.gsub('"','')
       end
 
       def retrieve_blob_url
@@ -68,7 +68,7 @@ END
         "--name #{container_path} "\
         "--account-name #{azure_published_storage_account} --account-key #{azure_published_storage_access_key}"
 
-        Executor.exec_command(blob_url_command)
+        Executor.exec_command(blob_url_command).strip.gsub('"','')
       end
 
       def login_to_azure
