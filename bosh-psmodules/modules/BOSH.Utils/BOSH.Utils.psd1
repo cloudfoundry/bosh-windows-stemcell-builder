@@ -19,7 +19,8 @@ FunctionsToExport = @(
     'Disable-RC4',
     'Disable-TLS1',
     'Disable-3DES',
-    'Disable-DCOM')
+    'Disable-DCOM',
+    'Get-OSVersion')
 CmdletsToExport = @()
 VariablesToExport = '*'
 AliasesToExport = @()
