@@ -51,5 +51,18 @@ Describe "Protect-CFCell" {
     }
 }
 
+Describe "Disable-1803DockerServices" {
+
+    It "disables features installed in 1803 Azure images with containers" {
+        Get-Service | Where-Object {$_.Name -eq "Docker" } | Set-Service -StartupType Automatic
+        Get-Service | Where-Object {$_.Name -eq "HgClientService" } | Set-Service -StartupType Automatic
+        Get-Service | Where-Object {$_.Name -eq "vmms" } | Set-Service -StartupType Automatic
+        Disable-1803DockerServices
+        (Get-Service | Where-Object {$_.Name -eq "Docker" } ).StartType| Should be "Disabled"
+        (Get-Service | Where-Object {$_.Name -eq "HgClientService" } ).StartType| Should be "Disabled"
+        (Get-Service | Where-Object {$_.Name -eq "vmms" } ).StartType| Should be "Disabled"
+    }
+}
+
 Remove-Module -Name BOSH.CFCell -ErrorAction Ignore
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
