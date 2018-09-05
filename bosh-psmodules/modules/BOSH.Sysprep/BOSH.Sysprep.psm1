@@ -314,6 +314,43 @@ function Remove-UserAccounts {
   $content.Save($AnswerFilePath)
 }
 
+function Update-AWS2012R2Config {
+  $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
+
+  # Enable password generation and retrieval
+  ($ec2config.ec2configurationsettings.plugins.plugin | where { $_.Name -eq "Ec2SetPassword" }).State = 'Enabled'
+
+  # Disable SetDnsSuffixList setting
+  $ec2config.ec2configurationsettings.GlobalSettings.SetDnsSuffixList = "false"
+
+  $ec2config.Save("C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml")
+
+  # Enable sysprep
+  $ec2settings = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+  ($ec2settings.BundleConfig.Property | where { $_.Name -eq "AutoSysprep" }).Value = 'Yes'
+
+  # Don't shutdown when running sysprep, let packer do it
+  # ($ec2settings.BundleConfig.GeneralSettings.Sysprep | where { $_.AnswerFilePath -eq "sysprep2008.xml" }).Switches = "/oobe /quit /generalize"
+
+  $ec2settings.Save('C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+}
+
+function Update-AWS2016Config
+{
+  $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
+  $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
+  $LaunchConfig.addDnsSuffixList = $False
+  $LaunchConfig.extendBootVolumeSize = $False
+  $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
+}
+
+function Enable-AWS2016Sysprep {
+  # Enable sysprep
+  cd 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
+  ./InitializeInstance.ps1 -Schedule
+  ./SysprepInstance.ps1
+}
+
 <#
 .Synopsis
   Sysprep Utilities
@@ -327,12 +364,13 @@ function Invoke-Sysprep() {
     [string]$ProductKey="",
     [string]$Organization="",
     [string]$Owner="",
-    [string]$OsVersion = $(Throw "Provide OS version of stemcell"),
     [switch]$SkipLGPO,
     [switch]$EnableRDP
   )
 
   Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
+
+  $OsVersion = Get-OSVersion
 
   # WARN WARN: this should be removed when Microsoft fixes this bug
   # See tracker story https://www.pivotaltracker.com/story/show/150238324
@@ -360,37 +398,12 @@ function Invoke-Sysprep() {
     "aws" {
       switch ($OsVersion) {
         "windows2012R2" {
-          $ec2config = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml')
-
-          # Enable password generation and retrieval
-          ($ec2config.ec2configurationsettings.plugins.plugin | where { $_.Name -eq "Ec2SetPassword" }).State = 'Enabled'
-
-          # Disable SetDnsSuffixList setting
-          $ec2config.ec2configurationsettings.GlobalSettings.SetDnsSuffixList = "false"
-
-          $ec2config.Save("C:\Program Files\Amazon\Ec2ConfigService\Settings\config.xml")
-
-          # Enable sysprep
-          $ec2settings = [xml] (get-content 'C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
-          ($ec2settings.BundleConfig.Property | where { $_.Name -eq "AutoSysprep" }).Value = 'Yes'
-
-          # Don't shutdown when running sysprep, let packer do it
-          # ($ec2settings.BundleConfig.GeneralSettings.Sysprep | where { $_.AnswerFilePath -eq "sysprep2008.xml" }).Switches = "/oobe /quit /generalize"
-
-          $ec2settings.Save('C:\Program Files\Amazon\Ec2ConfigService\Settings\BundleConfig.xml')
+          Update-AWS2012R2Config
           Start-Process "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -ArgumentList "-sysprep" -Wait
         }
         "windows2016" {
-          $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
-          $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
-          $LaunchConfig.addDnsSuffixList = $False
-          $LaunchConfig.extendBootVolumeSize = $False
-          $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
-
-          # Enable sysprep
-          cd 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
-          ./InitializeInstance.ps1 -Schedule
-          ./SysprepInstance.ps1
+          Update-AWS2016Config
+          Enable-AWS2016Sysprep
         }
       }
     }
