@@ -1,8 +1,12 @@
 Remove-Module -Name BOSH.Sysprep -ErrorAction Ignore
 Import-Module ./BOSH.Sysprep.psm1
 
+#We remove WinRM as it imports BOSH.Utils
+Remove-Module -Name BOSH.WinRM -ErrorAction Ignore
+
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
 Import-Module ../BOSH.Utils/BOSH.Utils.psm1
+
 
 function New-TempDir {
     $parent = [System.IO.Path]::GetTempPath()
@@ -227,9 +231,116 @@ Describe "Invoke-Sysprep" {
         }
     }
 
-    Context "when not provided an OS version" {
-        It "throws" {
-            { Invoke-Sysprep -IaaS "aws" -SkipLGPO } | Should Throw "Provide OS version of stemcell"
+    Context "handles OS version differences" {
+        BeforeEach {
+            Mock Get-ItemProperty { } -ModuleName BOSH.Sysprep
+            Mock Stop-Computer { } -ModuleName BOSH.Sysprep
+            Mock Start-Process { } -ModuleName BOSH.Sysprep
+            Mock Test-Path { $True } -ParameterFilter { $Path -cmatch "C:\\Windows\\LGPO.exe" } -ModuleName BOSH.Sysprep
+
+            Mock Write-Log { } -ModuleName BOSH.Sysprep
+
+            Mock Allow-NTPSync { } -ModuleName BOSH.Sysprep
+            Mock Enable-LocalSecurityPolicy { } -ModuleName BOSH.Sysprep
+            Mock Update-AWS2012R2Config { } -ModuleName BOSH.Sysprep
+            Mock Update-AWS2016Config { } -ModuleName BOSH.Sysprep
+            Mock Enable-AWS2016Sysprep { } -ModuleName BOSH.Sysprep
+        }
+
+        Context "for AWS" {
+            It "handles Windows 2012R2" {
+                Mock Get-OSVersion { "windows2012R2" } -ModuleName BOSH.SysPrep
+
+                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
+
+                Assert-MockCalled Update-AWS2012R2Config -Times 1 -Scope It -ModuleName BOSH.Sysprep
+                Assert-MockCalled Start-Process -Times 1 -Scope It -ParameterFilter { $FilePath -eq "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -and $ArgumentList -eq "-sysprep" } -ModuleName BOSH.Sysprep
+
+                Assert-MockCalled Get-OSVersion -Times 1 -Scope It -ModuleName BOSH.Sysprep
+
+                Assert-MockCalled Update-AWS2016Config -Times 0 -Scope It -ModuleName BOSH.Sysprep
+                Assert-MockCalled Enable-AWS2016Sysprep -Times 0 -Scope It -ModuleName BOSH.Sysprep
+            }
+
+            It "handles Windows 1709" {
+                Mock Get-OSVersion { "windows2016" } -ModuleName BOSH.Sysprep
+
+                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
+
+                Assert-MockCalled Update-AWS2016Config -Times 1 -Scope It -ModuleName BOSH.Sysprep
+                Assert-MockCalled Enable-AWS2016Sysprep -Times 1 -Scope It -ModuleName BOSH.Sysprep
+
+                Assert-MockCalled Get-OSVersion -Times 1 -Scope It -ModuleName BOSH.Sysprep
+
+                Assert-MockCalled Update-AWS2012R2Config -Times 0 -Scope It -ModuleName BOSH.Sysprep
+                Assert-MockCalled Start-Process -Times 0 -Scope It -ParameterFilter { $FilePath -eq "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -and $ArgumentList -eq "-sysprep" } -ModuleName BOSH.Sysprep
+            }
+
+            It "handles Windows 1803" {
+                Mock Get-OSVersion { "windows2016" } -ModuleName Bosh.Sysprep
+
+                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
+
+                Assert-MockCalled Update-AWS2016Config -Times 1 -Scope It -ModuleName BOSH.Sysprep
+                Assert-MockCalled Enable-AWS2016Sysprep -Times 1 -Scope It -ModuleName BOSH.Sysprep
+
+                Assert-MockCalled Get-OSVersion -Times 1 -Scope It -ModuleName BOSH.Sysprep
+
+                Assert-MockCalled Update-AWS2012R2Config -Times 0 -Scope It -ModuleName BOSH.Sysprep
+                Assert-MockCalled Start-Process -Times 0 -Scope It -ParameterFilter { $FilePath -eq "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -and $ArgumentList -eq "-sysprep" } -ModuleName BOSH.Sysprep
+            }
+
+            It "handles other OS'" {
+                Mock Get-OSVersion { Throw "invalid OS detected" } -ModuleName Bosh.Sysprep
+
+
+                { Invoke-Sysprep -Iaas "aws" } | Should -Throw "invalid OS detected"
+
+                Assert-MockCalled Get-OSVersion -Times 1 -Scope It -ModuleName BOSH.Sysprep
+
+                Assert-MockCalled Update-AWS2016Config -Times 0 -Scope It -ModuleName BOSH.Sysprep
+                Assert-MockCalled Enable-AWS2016Sysprep -Times 0 -Scope It -ModuleName BOSH.Sysprep
+                Assert-MockCalled Update-AWS2012R2Config -Times 0 -Scope It -ModuleName BOSH.Sysprep
+                Assert-MockCalled Start-Process -Times 0 -Scope It -ParameterFilter { $FilePath -eq "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -and $ArgumentList -eq "-sysprep" } -ModuleName BOSH.Sysprep
+            }
+        }
+
+        Context "for LGPO" {
+            # We use AWS as the IaaS as it is the only IaaS that is fully mocked right now
+            # We don't want to trigger Sysprep during our test
+            It "handles Windows 2012R2" {
+                Mock Get-OSVersion { "windows2012R2" } -ModuleName Bosh.Sysprep
+
+                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
+
+                Assert-MockCalled Enable-LocalSecurityPolicy -Times 1 -Scope It -ModuleName BOSH.Sysprep
+
+            }
+
+            It "handles Windows 1709" {
+                Mock Get-OSVersion { "windows2016" } -ModuleName Bosh.Sysprep
+
+                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
+
+                Assert-MockCalled Enable-LocalSecurityPolicy -Times 0 -Scope It -ModuleName BOSH.Sysprep
+            }
+
+            It "handles Windows 1803" {
+                Mock Get-OSVersion { "windows2016" } -ModuleName Bosh.Sysprep
+
+                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
+
+                Assert-MockCalled Enable-LocalSecurityPolicy -Times 0 -Scope It -ModuleName BOSH.Sysprep
+            }
+
+            It "handles all other OS'" {
+                Mock Get-OSVersion { Throw "invalid OS detected" } -ModuleName Bosh.Sysprep
+
+                { Invoke-Sysprep -Iaas "aws" } | Should -Throw "invalid OS detected"
+
+                Assert-MockCalled Enable-LocalSecurityPolicy -Times 0 -Scope It -ModuleName BOSH.Sysprep
+            }
+
         }
     }
 }

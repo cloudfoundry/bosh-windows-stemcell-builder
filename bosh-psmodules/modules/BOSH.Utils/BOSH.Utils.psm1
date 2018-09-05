@@ -207,3 +207,37 @@ function Disable-3DES() {
 function Disable-DCOM() {
     Set-ItemProperty -Path "HKLM:\Software\Microsoft\OLE" -Value 'N' -Name 'EnableDCOM'
 }
+
+function Get-OSVersionString {
+    return [System.Environment]::OSVersion.Version.ToString()
+}
+
+function Get-OSVersion {
+    try
+    {
+        $osVersion = Get-OSVersionString
+        if ($osVersion -match "6\.3\.9600\..+")
+        {
+            Write-Log "Found OS version: Windows 2012R2"
+            "windows2012R2"
+        }
+        elseif ($osVersion -match "10\.0\.16299\..+")
+        {
+            Write-Log "Found OS version: Windows 1709"
+            "windows2016"
+        }
+        elseif ($osVersion -match "10\.0\.17134\..+")
+        {
+            Write-Log "Found OS version: Windows 1803"
+            "windows2016"
+        }
+        else {
+            throw "invalid OS detected"
+        }
+    }
+    catch [Exception]
+    {
+        Write-Log $_.Exception.Message
+        throw $_.Exception
+    }
+}

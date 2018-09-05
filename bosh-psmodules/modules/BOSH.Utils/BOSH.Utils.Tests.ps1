@@ -1,3 +1,6 @@
+#We remove WinRM as it imports BOSH.Utils
+Remove-Module -Name BOSH.WinRM -ErrorAction Ignore
+
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
 Import-Module ./BOSH.Utils.psm1
 
@@ -226,6 +229,54 @@ Describe "Disable-DCOM" -Tag 'Focused' {
         Set-ItemProperty -Path $DCOMPath -Name 'EnableDCOM' -Value $oldDCOMValue
 
         Restore-RegistryState -KeyExists $true -KeyPath $DCOMPath -ValueName 'EnableDCOM' -ValueData $oldDCOMValue
+    }
+}
+
+Describe "Get-OSVersion" {
+    BeforeEach {
+        Mock Write-Log { } -ModuleName BOSH.Utils
+    }
+
+    It "Correctly detects Windows 2012R2" {
+        Mock Get-OSVersionString { "6.3.9600.68" } -ModuleName BOSH.Utils
+        $actualOSVersion = $null
+
+        { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
+        $actualOsVersion | Should -eq "windows2012R2"
+
+        Assert-MockCalled Write-Log -Times 1 -Scope It -ParameterFilter { $Message -eq "Found OS version: Windows 2012R2" } -ModuleName BOSH.Utils
+        Assert-MockCalled Get-OSVersionString -Times 1 -Scope It -ModuleName BOSH.Utils
+    }
+
+    It "Correctly detects Windows 1709" {
+        Mock Get-OSVersionString { "10.0.16299.233" } -ModuleName BOSH.Utils
+        $actualOSVersion = $null
+
+        { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
+        $actualOsVersion | Should -eq "windows2016"
+
+        Assert-MockCalled Write-Log -Times 1 -Scope It -ParameterFilter { $Message -eq "Found OS version: Windows 1709" } -ModuleName BOSH.Utils
+        Assert-MockCalled Get-OSVersionString -Times 1 -Scope It -ModuleName BOSH.Utils
+    }
+
+    It "Correctly detects Windows 1803" {
+        Mock Get-OSVersionString { "10.0.17134.420" } -ModuleName BOSH.Utils
+        $actualOSVersion = $null
+
+        { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
+        $actualOsVersion | Should -eq "windows2016"
+
+        Assert-MockCalled Write-Log -Times 1 -Scope It -ParameterFilter { $Message -eq "Found OS version: Windows 1803" } -ModuleName BOSH.Utils
+        Assert-MockCalled Get-OSVersionString -Times 1 -Scope It -ModuleName BOSH.Utils
+    }
+
+    It "Throws an exception if a valid OS is not detected" {
+        Mock Get-OSVersionString { "01.23.456.789" } -ModuleName BOSH.Utils
+
+        { Get-OSVersion } | Should -Throw "invalid OS detected"
+
+        Assert-MockCalled Write-Log -Times 1 -Scope It -ParameterFilter { $Message -eq "invalid OS detected" } -ModuleName BOSH.Utils
+        Assert-MockCalled Get-OSVersionString -Times 1 -Scope It -ModuleName BOSH.Utils
     }
 }
 
