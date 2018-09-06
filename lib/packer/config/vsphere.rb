@@ -90,7 +90,7 @@ module Packer
           'source_path' => @source_path,
           'headless' => false,
           'boot_wait' => '2m',
-          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -OsVersion #{@os} -NewPassword #{@new_password}#{product_key_flag} -Owner #{@owner} -Organization #{@organization}#{enable_rdp}",
+          'shutdown_command' => "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword #{@new_password}#{product_key_flag} -Owner #{@owner} -Organization #{@organization}#{enable_rdp}",
           'shutdown_timeout' => '1h',
           'communicator' => 'winrm',
           'ssh_username' => 'Administrator',
@@ -123,7 +123,7 @@ module Packer
         download_windows_updates = @skip_windows_update?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
 
         patches = [Base.enable_security_patches(@os)]
-        post = [Base.post_provisioners('vsphere', @os)]
+        post = [Base.post_provisioners('vsphere')]
 
         [pre,
          download_windows_updates,

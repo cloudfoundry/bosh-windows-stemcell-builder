@@ -113,7 +113,7 @@ describe Packer::Config do
           'source_path' => 'source_path',
           'headless' => false,
           'boot_wait' => '2m',
-          'shutdown_command' => 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -OsVersion windows2012R2 -NewPassword new-password -ProductKey key -Owner me -Organization me',
+          'shutdown_command' => 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword new-password -ProductKey key -Owner me -Organization me',
           'shutdown_timeout' => '1h',
           'communicator' => 'winrm',
           'ssh_username' => 'Administrator',
@@ -149,7 +149,7 @@ describe Packer::Config do
           https_proxy: '',
           bypass_list: ''
         ).builders
-        expect(builders[0]['shutdown_command']).to eq 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -OsVersion windows2012R2 -NewPassword new-password -ProductKey key -Owner me -Organization me -EnableRdp'
+        expect(builders[0]['shutdown_command']).to eq 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword new-password -ProductKey key -Owner me -Organization me -EnableRdp'
       end
 
       it 'does not include -ProductKey if product key is empty string' do
@@ -169,7 +169,7 @@ describe Packer::Config do
           https_proxy: '',
           bypass_list: ''
         ).builders
-        expect(builders[0]['shutdown_command']).to eq 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -OsVersion windows2012R2 -NewPassword new-password -Owner me -Organization me -EnableRdp'
+        expect(builders[0]['shutdown_command']).to eq 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command Invoke-Sysprep -IaaS vsphere -NewPassword new-password -Owner me -Organization me -EnableRdp'
       end
     end
 

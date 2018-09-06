@@ -47,7 +47,7 @@ module Packer
           Provisioners.install_agent('aws', @mount_ephemeral_disk).freeze,
           Provisioners.download_windows_updates(@output_directory).freeze,
           Base.enable_security_patches(@os),
-          Base.post_provisioners('aws', @os)
+          Base.post_provisioners('aws')
         ].flatten
       end
 
