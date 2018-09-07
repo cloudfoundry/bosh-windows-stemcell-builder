@@ -365,6 +365,18 @@ function Verify-NTPSync {
   }
 }
 
+function Verify-NoDocker {
+  try {
+    docker ps
+  } catch {
+    Write-Host "Docker is not installed"
+    Exit 0
+  }
+
+  Write-Error "Docker is installed. It shouldn't be!"
+  Exit 1
+}
+
 Verify-LGPO
 Verify-Dependencies
 Verify-Acls
@@ -378,4 +390,5 @@ Verify-NetBIOSDisabled
 Verify-AgentBehavior
 Verify-RandomPassword
 Verify-NTPSync
+Verify-NoDocker
 Exit 0
