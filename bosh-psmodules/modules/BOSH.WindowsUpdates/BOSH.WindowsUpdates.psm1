@@ -375,6 +375,21 @@ function Install-KB2538243() {
     C:\provision\KB2538243.exe /q
 }
 
+function Install-KB2267602() {
+    Write-Log "Preparing: KB2267602."
+
+    Set-Service -Name wuauserv -StartupType Manual
+    Start-Service -Name wuauserv
+
+    Write-Log "Downloading: KB2267602."
+
+    Invoke-WebRequest -UseBasicParsing -Uri 'https://go.microsoft.com/fwlink/?LinkID=121721&arch=x64' -Outfile C:\provision\KB2267602.exe
+
+    Write-Log "Installing: KB2267602."
+
+    Start-Process -FilePath "C:\provision\KB2267602.exe" -ArgumentList "/quiet" -Wait
+}
+
 function Enable-CVE-2015-6161() {
     #Enable MS15-124 - Internet Explorer ASLR Bypass fix - CVE-2015-6161
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
