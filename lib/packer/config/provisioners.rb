@@ -108,6 +108,13 @@ module Packer
         ]
       end
 
+      def self.remove_docker(os)
+         if os == 'windows1803'
+          return powershell_provisioner('Remove-DockerPackage')
+        end
+        [] # Deal with non-returning case
+        end
+
       INSTALL_SSHD = [
         {
           'type' => 'file',
