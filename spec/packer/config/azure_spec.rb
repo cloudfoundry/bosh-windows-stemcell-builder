@@ -277,7 +277,7 @@ describe Packer::Config::Azure do
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
           {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
+          {"type"=>"windows-restart", "restart_command"=>"powershell.exe -Command Remove-DockerPackage", "restart_check_command"=> "powershell -command \"& {Write-Output 'restarted.'}\""},
           {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
             'trap { $host.SetShouldExit(1) }',
             'Clear-ProxySettings']},
