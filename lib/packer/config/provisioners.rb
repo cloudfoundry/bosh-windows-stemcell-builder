@@ -41,6 +41,12 @@ module Packer
         'restart_command' => "powershell.exe -Command Install-CFFeatures",
         'restart_timeout' => '1h'
       }
+      INSTALL_CF_FEATURES_1803_AZURE = {
+          'type' => 'windows-restart',
+          'restart_command' => "powershell.exe -Command Install-CFFeatures",
+          'restart_timeout' => '1h',
+          'restart_check_command'=> "powershell -command \"& {Write-Output 'restarted.'}\""
+      }
       WAIT_AND_RESTART = {
         'type' => 'windows-restart',
         'restart_command' => 'powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force',
