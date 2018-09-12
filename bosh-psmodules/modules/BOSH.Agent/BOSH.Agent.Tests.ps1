@@ -238,18 +238,47 @@ Describe "Install-Agent" {
         }
     }
 
-    It "calls helper functions with default arguments" {
-        Mock -Verifiable -ModuleName BOSH.Agent Copy-Agent {} -ParameterFilter { $InstallDir -eq "C:\" -and $agentZipPath -eq "some-agent-zip-path" }
+    Context "windows 2012R2" {
+        It "calls helper functions with default arguments" {
+            Mock Get-OSVersion { "windows2012R2" } -ModuleName BOSH.Agent
+            Mock Test-Path { $true } -ModuleName BOSH.Agent
 
-        Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\bosh" }
-        Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\var" }
-        Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\Windows\Panther" -and $disableInheritance -eq $false }
+            Mock -Verifiable -ModuleName BOSH.Agent Copy-Agent {} -ParameterFilter { $InstallDir -eq "C:\" -and $agentZipPath -eq "some-agent-zip-path" }
 
-        Mock -Verifiable -ModuleName BOSH.Agent Write-AgentConfig {} -ParameterFilter { $IaaS -eq "aws" -and $BoshDir -eq "C:\bosh" -and $EnableEphemeralDiskMounting -eq $false}
-        Mock -Verifiable -ModuleName BOSH.Agent Set-Path {} -ParameterFilter { $Path -eq "C:\var\vcap\bosh\bin" }
-        Mock -Verifiable -ModuleName BOSH.Agent Install-AgentService {}
-        Install-Agent -IaaS aws -agentZipPath "some-agent-zip-path"
-        Assert-VerifiableMock
+            Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\bosh" }
+            Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\var" }
+            Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $path -eq "C:\Windows\Panther" -and $disableInheritance -eq $false }
+
+            Mock -Verifiable -ModuleName BOSH.Agent Write-AgentConfig {} -ParameterFilter { $IaaS -eq "aws" -and $BoshDir -eq "C:\bosh" -and $EnableEphemeralDiskMounting -eq $false }
+            Mock -Verifiable -ModuleName BOSH.Agent Set-Path {} -ParameterFilter { $Path -eq "C:\var\vcap\bosh\bin" }
+            Mock -Verifiable -ModuleName BOSH.Agent Install-AgentService {}
+
+            Install-Agent -IaaS aws -agentZipPath "some-agent-zip-path"
+
+            Assert-VerifiableMock
+            Assert-MockCalled Get-OSVersion -Times 1 -Scope It -ModuleName BOSH.Agent
+        }
+    }
+
+    Context "windows 2016" {
+        It "calls helper functions with default arguments" {
+            Mock Get-OSVersion { "window2016" } -ModuleName BOSH.Agent
+            Mock Test-Path { $true } -ModuleName BOSH.Agent
+
+            Mock -Verifiable -ModuleName BOSH.Agent Copy-Agent {} -ParameterFilter { $InstallDir -eq "C:\" -and $agentZipPath -eq "some-agent-zip-path" }
+            Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $Path -eq "C:\bosh" }
+            Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $Path -eq "C:\var" }
+            Mock -Verifiable -ModuleName BOSH.Agent Protect-Dir {} -ParameterFilter { $Path -eq "C:\Windows\Panther" -and $disableInheritance -eq $false }
+
+            Mock -Verifiable -ModuleName BOSH.Agent Write-AgentConfig {} -ParameterFilter { $IaaS -eq "aws" -and $BoshDir -eq "C:\bosh" -and $EnableEphemeralDiskMounting -eq $true }
+            Mock -Verifiable -ModuleName BOSH.Agent Set-Path {} -ParameterFilter { $Path -eq "C:\var\vcap\bosh\bin" }
+            Mock -Verifiable -ModuleName BOSH.Agent Install-AgentService {}
+
+            Install-Agent -IaaS aws -agentZipPath "some-agent-zip-path"
+
+            Assert-VerifiableMock
+            Assert-MockCalled Get-OSVersion -Times 1 -Scope It -ModuleName BOSH.Agent
+        }
     }
 }
 
