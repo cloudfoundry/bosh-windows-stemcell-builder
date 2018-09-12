@@ -317,6 +317,7 @@ describe Packer::Config do
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS vsphere -agentZipPath 'C:\\provision\\agent.zip'"]},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-Hotfix | Out-File -FilePath \"C:\\updates.txt\" -Encoding ASCII"]},
               {"type" => "file", "source" => "C:\\updates.txt", "destination" => "output_directory/updates.txt", "direction" => "download"},
+              {"type" => "windows-restart", "restart_command" => "powershell.exe -Command Install-KB4457128", "restart_timeout" => "1h"},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Optimize-Disk"]},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Compress-Disk"]},
               {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',

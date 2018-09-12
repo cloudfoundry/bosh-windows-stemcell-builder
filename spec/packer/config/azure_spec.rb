@@ -277,6 +277,7 @@ describe Packer::Config::Azure do
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
           {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip'"]},
+          {"type" => "windows-restart", "restart_command" => "powershell.exe -Command Install-KB4457128", "restart_timeout" => "1h"},
           {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
             'trap { $host.SetShouldExit(1) }',
             'Clear-ProxySettings']},
