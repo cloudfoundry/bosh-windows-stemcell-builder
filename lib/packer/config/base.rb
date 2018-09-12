@@ -24,8 +24,13 @@ module Packer
             Provisioners::BOSH_PSMODULES,
             Provisioners.setup_proxy_settings(http_proxy, https_proxy, bypass_list),
             Provisioners::NEW_PROVISIONER,
-            Provisioners::INSTALL_CF_FEATURES_2016,
-          ]
+            ]
+          if iaas.downcase == 'azure' && os == 'windows1803'
+            pre += [Provisioners::remove_docker(os),
+                    Provisioners::INSTALL_CF_FEATURES_1803_AZURE]
+          else
+            pre += [Provisioners::INSTALL_CF_FEATURES_2016]
+          end
         end
         install_windows_updates = if skip_windows_update then [] else [Provisioners.install_windows_updates] end
 

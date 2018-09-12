@@ -330,3 +330,20 @@ function Disable-NetBIOS {
 
     Write-Log "Disable-NetBIOS: Complete"
 }
+
+function Remove-DockerPackage {
+    Write-Log "Uninstalling Docker: Starting"
+    Uninstall-Package -Name docker -ProviderName DockerMsftProvider -ErrorAction Ignore
+    Uninstall-Module -Name DockerMsftProvider -ErrorAction Ignore
+
+    Write-Log "Uninstalling Docker: HNSNetworks"
+    Get-HNSNetwork | Remove-HNSNetwork
+
+    Write-Log "Uninstalling Docker: ProgramData"
+    cmd.exe /c rmdir /s /q "C:\ProgramData\Docker"
+
+    Write-Log "Uninstalling Docker: Removing Hyper-V"
+    Remove-WindowsFeature Hyper-V
+
+    Write-Log "Uninstalling Docker: Complete"
+}
