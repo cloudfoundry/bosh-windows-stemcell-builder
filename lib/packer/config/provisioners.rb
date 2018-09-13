@@ -36,11 +36,6 @@ module Packer
           'restart_command' => "powershell.exe -Command Install-KB2538243",
           'restart_timeout' => '1h'
       }
-      INSTALL_KB4457128 = {
-          'type' => 'windows-restart',
-          'restart_command' => "powershell.exe -Command Install-KB4457128",
-          'restart_timeout' => '1h'
-      }
       INSTALL_CF_FEATURES_2016  = {
         'type' => 'windows-restart',
         'restart_command' => "powershell.exe -Command Install-CFFeatures",
