@@ -357,19 +357,6 @@ function Install-KB4338825() {
     Write-Log "Installing: KB4338825."
     wusa.exe C:\provision\KB4338825.msu /quiet
 }
-function Install-KB4457128() {
-    Write-Log "Preparing: KB4457128."
-
-    Set-Service -Name wuauserv -StartupType Manual
-    Start-Service -Name wuauserv
-
-    Write-Log "Downloading: KB4457128."
-
-    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/c/msdownload/update/software/secu/2018/09/windows10.0-kb4457128-x64_ed9c4b8a5fd2a5d9f55873f8502e4f7495e5a47e.msu' -Outfile C:\provision\KB4457128.msu
-
-    Write-Log "Installing: KB4457128."
-    wusa.exe C:\provision\KB4457128.msu /quiet
-}
 
 function Install-KB2538243() {
     Write-Log "Preparing: KB2538243."

@@ -66,10 +66,6 @@ module Packer
               Provisioners::Disable_3DES,
               Provisioners::Disable_DCOM
           ]
-        elsif os == 'windows1803'
-          provisioners = [
-              Provisioners::INSTALL_KB4457128
-          ]
         end
 
         provisioners
