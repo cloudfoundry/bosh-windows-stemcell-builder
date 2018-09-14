@@ -41,6 +41,12 @@ module Packer
         'restart_command' => "powershell.exe -Command Install-CFFeatures",
         'restart_timeout' => '1h'
       }
+      INSTALL_CF_FEATURES_1803_AZURE = {
+          'type' => 'windows-restart',
+          'restart_command' => "powershell.exe -Command Install-CFFeatures",
+          'restart_timeout' => '1h',
+          'restart_check_command'=> "powershell -command \"& {Write-Output 'restarted.'}\""
+      }
       WAIT_AND_RESTART = {
         'type' => 'windows-restart',
         'restart_command' => 'powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force',
@@ -106,6 +112,17 @@ module Packer
           },
           powershell_provisioner(command)
         ]
+      end
+
+      def self.remove_docker(os)
+        if os == 'windows1803'
+          return {
+            'type' => 'windows-restart',
+            'restart_command' => "powershell.exe -Command Remove-DockerPackage",
+            "restart_check_command" => "powershell -command \"& {Write-Output 'restarted.'}\""
+          }
+        end
+        [] # Deal with non-returning case
       end
 
       INSTALL_SSHD = [

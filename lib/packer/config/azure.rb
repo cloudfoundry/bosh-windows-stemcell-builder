@@ -50,7 +50,7 @@ module Packer
 
       def provisioners
         [
-          Base.pre_provisioners(@os),
+          Base.pre_provisioners(@os, iaas: 'azure'),
           Provisioners::lgpo_exe,
           Provisioners.install_agent('azure', @mount_ephemeral_disk).freeze,
           Base.enable_security_patches(@os),
