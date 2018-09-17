@@ -98,11 +98,11 @@ Describe "Write-AgentConfig" {
             Test-Path $configPath | Should Be $True
         }
 
-        It "disables ephemeral disk mounting by default" {
+        It "enables ephemeral disk mounting by default" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS aws } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should -Not -FileContentMatch 'EnableEphemeralDiskMounting'
+            ($configPath) | Should -FileContentMatch 'EnableEphemeralDiskMounting'
         }
 
         It "enables ephemeral disk mounting when the flag is true" {
@@ -154,11 +154,11 @@ Describe "Write-AgentConfig" {
             ($configPath) | Should -FileContentMatch ([regex]::New('"Metadata-Flavor":\s*"Google"'))
         }
 
-        It "disables ephemeral disk mounting by default" {
+        It "enables ephemeral disk mounting by default" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS gcp } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should -Not -FileContentMatch 'EnableEphemeralDiskMounting'
+            ($configPath) | Should -FileContentMatch 'EnableEphemeralDiskMounting'
         }
 
         It "enables ephemeral disk mounting when the flag is true" {
@@ -178,11 +178,11 @@ Describe "Write-AgentConfig" {
             $configContent.Infrastructure.Settings.Sources[0].Type | Should Be "CDROM"
         }
 
-        It "disables ephemeral disk mounting by default" {
+        It "enables ephemeral disk mounting by default" {
             { Write-AgentConfig -BoshDir $boshDir -IaaS vsphere } | Should Not Throw
             $configPath = (Join-Path $boshDir "agent.json")
             Test-Path $configPath | Should Be $True
-            ($configPath) | Should -Not -FileContentMatch 'EnableEphemeralDiskMounting'
+            ($configPath) | Should -FileContentMatch 'EnableEphemeralDiskMounting'
         }
 
         It "enables ephemeral disk mounting when the flag is true" {

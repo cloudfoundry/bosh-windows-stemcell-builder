@@ -70,7 +70,7 @@ function Write-AgentConfig {
     Param(
       [string]$boshDir = $(Throw "Provide a directory to install the BOSH agent config"),
       [string]$IaaS = $(Throw "Provide an IaaS for configuration"),
-      [bool]$EnableEphemeralDiskMounting = $false
+      [bool]$EnableEphemeralDiskMounting = $true
     )
 
     if (-Not (Test-Path $boshDir -PathType Container)) {
