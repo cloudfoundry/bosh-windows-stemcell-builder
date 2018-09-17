@@ -11,8 +11,12 @@ function Install-Agent {
     Param(
         [string]$IaaS = $(Throw "Provide the IaaS of your VM"),
         [string]$agentZipPath = $(Throw "Provide the path of your agent.zip"),
-        [switch]$EnableEphemeralDiskMounting = $false
+        [switch]$EnableEphemeralDiskMounting = $true
     )
+
+    $OsVersion = Get-OSVersion
+
+    if ($OSVersion -eq "windows2012R2") { $EnableEphemeralDiskMounting = $false }
 
     Write-Log "Install-Agent: Started"
 
@@ -66,7 +70,7 @@ function Write-AgentConfig {
     Param(
       [string]$boshDir = $(Throw "Provide a directory to install the BOSH agent config"),
       [string]$IaaS = $(Throw "Provide an IaaS for configuration"),
-      [bool]$EnableEphemeralDiskMounting = $false
+      [bool]$EnableEphemeralDiskMounting = $true
     )
 
     if (-Not (Test-Path $boshDir -PathType Container)) {
