@@ -150,7 +150,7 @@ describe 'VSphere' do
       allow(S3).to receive(:test_upload_permissions)
 
       @vhd_version = '0-0'
-      @vhd_filename = "some-last-file.patched-#{@vhd_version}.vhd"
+      @vhd_filename = "some-last-file-Containers-#{@vhd_version}-en.us.vhd"
       s3_client= double(:s3_client)
       allow(s3_client).to receive(:put)
       allow(s3_client).to receive(:list).and_return([@vhd_filename])

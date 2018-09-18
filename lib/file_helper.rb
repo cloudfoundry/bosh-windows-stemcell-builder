@@ -1,6 +1,6 @@
 class FileHelper
   def self.parse_vhd_version(vhd_filename)
-    md = vhd_filename.match(/.+\.patched-(\d+-\d+)$/)
+    md = vhd_filename.match(/.+\-Containers\-(\d+).+$/)
     if md[1]
       return md[1]
     else
