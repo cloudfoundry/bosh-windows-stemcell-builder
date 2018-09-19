@@ -237,7 +237,9 @@ var _ = Describe("BOSH Windows", func() {
 		bosh.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
 		bosh.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellName, stemcellVersion))
 		bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
-		bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", tightLoopStemcellVersions[len(tightLoopStemcellVersions) - 1]))
+		if len(tightLoopStemcellVersions) != 0 {
+			bosh.Run(fmt.Sprintf("delete-release bwats-release/%s", tightLoopStemcellVersions[len(tightLoopStemcellVersions) - 1]))
+		}
 
 		if bosh.CertPath != "" {
 			os.RemoveAll(bosh.CertPath)
