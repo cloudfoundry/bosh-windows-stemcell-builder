@@ -98,12 +98,12 @@ function Protect-CFCell {
   Write-Log "Getting WinRM config"
   $winrm_config = & cmd.exe /c 'winrm get winrm/config'
   Write-Log "$winrm_config"
-  enable-rdp
   Write-Log "Getting WinRM config"
   $winrm_config = & cmd.exe /c 'winrm get winrm/config'
   Write-Log "$winrm_config"
   disable-service("WinRM")
   disable-service("W3Svc")
+  disable-rdp
   set-firewall
   Write-Log "Getting WinRM config"
   $winrm_config = & cmd.exe /c 'winrm get winrm/config'
@@ -125,11 +125,12 @@ function WindowsFeatureInstall {
   }
 }
 
-function enable-rdp {
-  Write-Log "Starting to enable RDP"
-  Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
-  Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -enabled true
-  Write-Log "Enabled RDP"
+function disable-rdp {
+  Write-Log "Starting to disable RDP"
+  Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 1
+  Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -enabled false
+  disable-service "Termservice"
+  Write-Log "Disabled RDP"
 }
 
 function disable-service {

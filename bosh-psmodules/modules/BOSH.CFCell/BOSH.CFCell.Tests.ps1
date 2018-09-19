@@ -23,11 +23,18 @@ Describe "Protect-CFCell" {
         { Set-Service -Name "winrm" -StartupType $oldWinRMStartMode } | Should Not Throw
     }
 
-    It "enables the RDP service and firewall rule" {
-       Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 1
-       netstat /p tcp /a | findstr 3389 | Should BeNullOrEmpty
-       Protect-CFCell
+    It "disables the RDP service and firewall rule" {
+       Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+       Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -enabled true
+       Get-Service "Termservice" | Set-Service -StartupType "Automatic"
        netstat /p tcp /a | findstr 3389 | Should Not BeNullOrEmpty
+
+       Protect-CFCell
+
+       Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" | select -exp fDenyTSConnections | Should Be 1
+       netstat /p tcp /a | findstr 3389 | Should BeNullOrEmpty
+       Get-NetFirewallRule -DisplayName "Remote Desktop*" | ForEach { $_.enabled | Should be "False" }
+       Get-Service "Termservice" | Select -exp starttype | Should Be "Disabled"
     }
 
     It "disables the services" {
