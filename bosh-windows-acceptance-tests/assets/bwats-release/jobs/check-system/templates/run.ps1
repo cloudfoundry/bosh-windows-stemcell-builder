@@ -1,5 +1,5 @@
 ﻿function Verify-LGPO {
-  $windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
+  $windowsVersion = Get-OSVersion
   echo "Running this function Verify-LGPO"
   if ($windowsVersion -Match "2012") {
     echo "Verifying that expected policies have been applied"
@@ -85,7 +85,7 @@ function Verify-Dependencies {
 }
 
 function Verify-Acls {
-  $windowsVersion = [environment]::OSVersion.Version.Major
+  $windowsVersion = Get-OSVersion
   $expectedacls = New-Object System.Collections.ArrayList
   [void] $expectedacls.AddRange((
       "${env:COMPUTERNAME}\Administrator,Allow",
@@ -95,14 +95,14 @@ function Verify-Acls {
       "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow"
   ))
 
-  if ($windowsVersion -ge "10") {
+  if ($windowsVersion -match "2016") {
     Write-Host "Adding 1709 ACLs"
     # for 2016, for some reason every file in C:\Program Files\OpenSSH
     # ends up with "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow".
     # adding this to unblock 2016 pipeline
     $expectedacls.Add("APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow")
     $expectedacls.Add("NT AUTHORITY\Authenticated Users,Allow")
-  } elseif ($windowsVersion -ge "6") {
+  } elseif ($windowsVersion -match "2012") {
     Write-Host "Adding 2012R2 ACLs"
     $expectedacls.Add("NT SERVICE\sshd,Allow")
     # For the new OpenSSH v7.7.2.0p1-Beta and later
@@ -251,7 +251,7 @@ function Verify-InstalledFeatures {
       Write-Host "$feature is not installed"
     }
   }
-  $windowsVersion = (Get-WmiObject -class Win32_OperatingSystem).Caption
+  $windowsVersion = Get-OSVersion
 
   if ($windowsVersion -Match "2012") {
     Assert-IsInstalled "Web-Webserver"
