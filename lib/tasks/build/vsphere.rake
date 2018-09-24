@@ -93,7 +93,7 @@ namespace :build do
     vmx_path = config_vmx.path.gsub("/", "\\")
 
     vsphere = Stemcell::Builder::VSphere.new(
-      mem_size: '4096',
+      mem_size: '16384',
       num_vcpus: '4',
       source_path: vmx_path,
       agent_commit: "",
