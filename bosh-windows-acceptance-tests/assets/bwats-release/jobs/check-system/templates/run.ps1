@@ -263,7 +263,9 @@ function Verify-InstalledFeatures {
   } elseif ($windowsVersion -Match "2016") {
     Assert-IsInstalled "Containers"
     Assert-IsNotInstalled "Windows-Defender-Features"
-  }
+  } else {
+   Write-Error "Verify-InstalledFeatures : Invalid OSVersion"
+   Exit 1
 }
 
 function Verify-ProvisionerDeleted {
