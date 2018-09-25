@@ -73,12 +73,14 @@ module Packer
                      organization:,
                      enable_rdp:,
                      new_password:,
+                     build_context: :stemcell,
                      **args)
         @product_key = product_key
         @owner = owner
         @organization = organization
         @enable_rdp = enable_rdp
         @new_password = new_password
+        @build_context = build_context
         super(args)
       end
 
@@ -114,10 +116,18 @@ module Packer
           install_manual_updates <<  Provisioners::INSTALL_KB2538243
         end
         pre = [
-            Base.pre_provisioners(@os, skip_windows_update: @skip_windows_update, http_proxy: @http_proxy, https_proxy: @https_proxy, bypass_list: @bypass_list),
-            @skip_windows_update ? [] : install_manual_updates,
-            Provisioners::lgpo_exe,
-            Provisioners.install_agent('vsphere', @mount_ephemeral_disk).freeze,
+          Base.pre_provisioners(
+            @os,
+            iaas: 'vsphere',
+            skip_windows_update: @skip_windows_update,
+            http_proxy: @http_proxy,
+            https_proxy: @https_proxy,
+            bypass_list: @bypass_list,
+            build_context: @build_context,
+          ),
+          @skip_windows_update ? [] : install_manual_updates,
+          Provisioners::lgpo_exe,
+          Provisioners.install_agent('vsphere', @mount_ephemeral_disk).freeze,
         ]
         download_windows_updates = @skip_windows_update?[]:[Provisioners.download_windows_updates(@output_directory).freeze]
 

@@ -109,7 +109,8 @@ namespace :build do
       new_password: Stemcell::Builder::validate_env('ADMINISTRATOR_PASSWORD'),
       http_proxy: ENV.fetch('UPDATES_HTTP_PROXY', ''),
       https_proxy: ENV.fetch('UPDATES_HTTPS_PROXY', ''),
-      bypass_list: ENV.fetch('UPDATES_PROXY_BYPASS_LIST', '')
+      bypass_list: ENV.fetch('UPDATES_PROXY_BYPASS_LIST', ''),
+      build_context: :patchfile,
     )
 
     vsphere.run_packer
