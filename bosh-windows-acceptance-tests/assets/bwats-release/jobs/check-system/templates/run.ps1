@@ -266,6 +266,7 @@ function Verify-InstalledFeatures {
   } else {
    Write-Error "Verify-InstalledFeatures : Invalid OSVersion"
    Exit 1
+  }
 }
 
 function Verify-ProvisionerDeleted {
