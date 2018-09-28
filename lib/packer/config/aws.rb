@@ -13,27 +13,27 @@ module Packer
       def builders
         [
           {
-            name: "amazon-ebs-#{region['name']}",
+            name: "amazon-ebs-#{@region[:name]}",
             type: 'amazon-ebs',
             access_key: @aws_access_key,
             secret_key: @aws_secret_key,
-            region: region['name'],
-            source_ami: region['base_ami'],
+            region: @region[:name],
+            source_ami: @region[:base_ami],
             instance_type: instance_type,
-            ami_name: "BOSH-#{SecureRandom.uuid}-#{region['name']}",
-            vpc_id: region['vpc_id'],
-            subnet_id: region['subnet_id'],
+            ami_name: "BOSH-#{SecureRandom.uuid}-#{@region[:name]}",
+            vpc_id: @region[:vpc_id],
+            subnet_id: @region[:subnet_id],
             associate_public_ip_address: true,
             launch_block_device_mappings: launch_block_device_mappings,
             communicator: 'winrm',
             winrm_username: 'Administrator',
             winrm_timeout: '1h',
             user_data_file: 'scripts/aws/setup_winrm.txt',
-            security_group_id: region['security_group'],
+            security_group_id: @region[:security_group],
             ami_groups: 'all',
             ssh_keypair_name: 'packer_ci',
             ssh_private_key_file: '../packer-ci-private-key/key',
-            run_tags: {Name: "#{@vm_prefix}-#{Time.now.to_i}"}
+            run_tags: { Name: "#{@vm_prefix}-#{Time.now.to_i}" }
           }
         ]
       end

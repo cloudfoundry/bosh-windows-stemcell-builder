@@ -125,7 +125,7 @@ namespace :build do
   end
 end
 
-def get_aws_builder(output_directory, region, base_ami)
+def get_aws_builder(output_directory, region, base_ami = '')
   version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
 
   build_dir = File.expand_path('../../../../build', __FILE__)

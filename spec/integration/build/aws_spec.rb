@@ -51,16 +51,11 @@ describe 'Aws' do
 
     File.write(
       File.join(@base_amis_dir, 'base-amis-1.json'),
-      [
-        {
-          "name" => "us-east-1",
-          "base_ami" => "base-east-1"
-        },
-        {
-          "name" => "us-east-2",
-          "base_ami" => "base-east-2"
-        }
-      ].to_json
+      {
+        name: 'us-east-1',
+        base_ami: 'base-east-1'
+      }
+    .to_json
     )
   end
 
@@ -144,7 +139,7 @@ describe 'Aws' do
       # Simulate concourse input
       ENV['DEFAULT_STEMCELL_DIR'] = @default_stemcell_dir = Dir.mktmpdir
       fixtures_dir = File.join('spec', 'fixtures', 'aws', 'amis')
-      FileUtils.cp(Dir[File.join(fixtures_dir, "*-us-east-1.tgz")].first, @default_stemcell_dir)
+      FileUtils.cp(Dir[File.join(fixtures_dir, '*-us-east-1.tgz')].first, @default_stemcell_dir)
 
       s3_client = double(:s3_client)
       allow(s3_client).to receive(:put)

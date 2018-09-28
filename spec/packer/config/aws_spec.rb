@@ -11,74 +11,78 @@ describe Packer::Config::Aws do
       Timecop.return
     end
 
-    let (:regions) {[
-        {
-            'name' => 'region1',
-            'base_ami' => 'baseami1',
-            'vpc_id' => 'vpc1',
-            'subnet_id' => 'subnet1',
-            'security_group' => 'sg1'
-        }
-    ]}
+    let(:region) do
+      {
+        name: 'region1',
+        base_ami: 'baseami1',
+        vpc_id: 'vpc1',
+        subnet_id: 'subnet1',
+        security_group: 'sg1'
+      }
+    end
 
-    let (:builders) { Packer::Config::Aws.new(
+    let(:builders) do
+      Packer::Config::Aws.new(
         aws_access_key: 'some-aws-access-key',
         aws_secret_key: 'some-aws-secret-key',
-        regions: regions,
+        region: region,
         output_directory: 'some-output-directory',
         os: os,
         vm_prefix: 'some-vm-prefix'
-    ).builders }
+      ).builders
+    end
 
-    let (:baseline_builders) { {
-        'name' => 'amazon-ebs-region1',
-        'type' => 'amazon-ebs',
-        'access_key' => 'some-aws-access-key',
-        'secret_key' => 'some-aws-secret-key',
-        'region' => 'region1',
-        'source_ami' => 'baseami1',
-        'instance_type' => 'm5.large',
-        'vpc_id' => 'vpc1',
-        'subnet_id' => 'subnet1',
-        'associate_public_ip_address' => true,
-        'launch_block_device_mappings' => [
-            {
-                'device_name': '/dev/sda1',
-                'volume_size': 30,
-                'volume_type': 'gp2',
-                'delete_on_termination': true,
-            }
+    let(:baseline_builders) do
+      {
+        name: 'amazon-ebs-region1',
+        type: 'amazon-ebs',
+        access_key: 'some-aws-access-key',
+        secret_key: 'some-aws-secret-key',
+        region: 'region1',
+        source_ami: 'baseami1',
+        instance_type: 'm5.large',
+        vpc_id: 'vpc1',
+        subnet_id: 'subnet1',
+        associate_public_ip_address: true,
+        launch_block_device_mappings: [
+          {
+            'device_name': '/dev/sda1',
+            'volume_size': 30,
+            'volume_type': 'gp2',
+            'delete_on_termination': true,
+          }
         ],
-        'communicator' => 'winrm',
-        'winrm_username' => 'Administrator',
-        'winrm_timeout' => '1h',
-        'user_data_file' => 'scripts/aws/setup_winrm.txt',
-        'security_group_id' => 'sg1',
-        'ami_groups' => 'all',
-        'run_tags' => {'Name' => "some-vm-prefix-#{Time.now.to_i}"},
-    } }
+        communicator: 'winrm',
+        winrm_username: 'Administrator',
+        winrm_timeout: '1h',
+        user_data_file: 'scripts/aws/setup_winrm.txt',
+        security_group_id: 'sg1',
+        ami_groups: 'all',
+        run_tags: { Name: "some-vm-prefix-#{Time.now.to_i}" }
+      }
+    end
 
     context 'all OSs' do
-      let (:os) { '' }
+      let(:os) { '' }
 
       it 'returns the baseline builders' do
         expect(builders[0]).to include(baseline_builders)
-        expect(builders[0]['ami_name']).to match(/BOSH-.*-region1/)
+        expect(builders[0][:ami_name]).to match(/BOSH-.*-region1/)
       end
     end
 
     context 'windows2012R2' do
-      let (:os) { 'windows2012R2' }
+      let(:os) { 'windows2012R2' }
 
       it 'returns the expected builders with a 128GB root disk' do
         expect(builders[0]).to include(baseline_builders.merge({
-                                                                   'instance_type' => 'm4.xlarge',
-                                                                   'launch_block_device_mappings' => [
+                                                                   instance_type: 'm4.xlarge',
+                                                                   launch_block_device_mappings: [
                                                                        {
-                                                                           'device_name': '/dev/sda1',
-                                                                           'volume_size': 128,
-                                                                           'volume_type': 'gp2',
-                                                                           'delete_on_termination': true,
+                                                                           device_name: '/dev/sda1',
+                                                                           volume_size: 128,
+                                                                           volume_type: 'gp2',
+                                                                           delete_on_termination: true,
                                                                        }
                                                                    ],
                                                                }))
@@ -90,13 +94,13 @@ describe Packer::Config::Aws do
         builders = Packer::Config::Aws.new(
           aws_access_key: '',
           aws_secret_key: '',
-          regions: [{}],
+          region: region,
           output_directory: '',
           os: '',
           vm_prefix: ''
         ).builders
         expect(builders[0]).to include(
-          'run_tags' => {'Name' => "packer-#{Time.now.to_i}"}
+          run_tags: { Name: "packer-#{Time.now.to_i}" }
         )
       end
     end
@@ -117,13 +121,13 @@ describe Packer::Config::Aws do
       it 'returns the expected provisioners' do
         allow(SecureRandom).to receive(:hex).and_return("some-password")
         provisioners = Packer::Config::Aws.new(
-            aws_access_key: '',
-            aws_secret_key: '',
-            regions: [],
-            output_directory: 'some-output-directory',
-            os: 'windows2012R2',
-            vm_prefix: '',
-            mount_ephemeral_disk: false,
+          aws_access_key: '',
+          aws_secret_key: '',
+          region: '',
+          output_directory: 'some-output-directory',
+          os: 'windows2012R2',
+          vm_prefix: '',
+          mount_ephemeral_disk: false
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
@@ -174,7 +178,7 @@ describe Packer::Config::Aws do
         provisioners = Packer::Config::Aws.new(
           aws_access_key: '',
           aws_secret_key: '',
-          regions: [],
+          region: '',
           output_directory: 'some-output-directory',
           os: 'windows2016',
           vm_prefix: '',
@@ -219,7 +223,7 @@ describe Packer::Config::Aws do
           provisioners = Packer::Config::Aws.new(
             aws_access_key: '',
             aws_secret_key: '',
-            regions: [],
+            region: '',
             output_directory: 'some-output-directory',
             os: 'windows2016',
             vm_prefix: '',
@@ -249,7 +253,7 @@ describe Packer::Config::Aws do
         provisioners = Packer::Config::Aws.new(
           aws_access_key: '',
           aws_secret_key: '',
-          regions: [],
+          region: '',
           output_directory: 'some-output-directory',
           os: 'windows1803',
           vm_prefix: '',
@@ -294,7 +298,7 @@ describe Packer::Config::Aws do
           provisioners = Packer::Config::Aws.new(
             aws_access_key: '',
             aws_secret_key: '',
-            regions: [],
+            region: '',
             output_directory: 'some-output-directory',
             os: 'windows2016',
             vm_prefix: '',
