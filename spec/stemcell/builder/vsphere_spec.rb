@@ -204,57 +204,110 @@ describe Stemcell::Builder do
         builder.build
       end
 
-      it 'builds a windows2016 stemcell tarball' do
-        os = 'windows2016'
-        packer_config = double(:packer_config)
-        packer_runner = double(:packer_runner)
-        allow(packer_runner).to receive(:run).with(packer_command, packer_vars).
-          and_yield(packer_output).and_return(0)
-        allow(Packer::Runner).to receive(:new).with(config).and_return(packer_runner)
-        allow(packer_config).to receive(:dump).and_return(config)
-        allow(Packer::Config::VSphere).to receive(:new).with(
-          administrator_password: administrator_password,
-          source_path: source_path,
-          output_directory: output_directory,
-          mem_size: mem_size,
-          num_vcpus: num_vcpus,
-          product_key: product_key,
-          owner: owner,
-          organization: organization,
-          os: os,
-          enable_rdp: false,
-          new_password: '',
-          skip_windows_update: false,
-          http_proxy: http_proxy,
-          https_proxy: https_proxy,
-          bypass_list: bypass_list,
-          mount_ephemeral_disk: true,
-          ).and_return(packer_config)
+      context 'when os is windows2016' do
+        before(:each) do
+          @os = 'windows2016'
+          @packer_config = double(:packer_config)
+          allow(@packer_config).to receive(:dump).and_return(config)
+          packer_runner = double(:packer_runner)
+          allow(packer_runner).to receive(:run).with(packer_command, packer_vars).
+              and_yield(packer_output).and_return(0)
+          allow(Packer::Runner).to receive(:new).with(config).and_return(packer_runner)
+        end
 
-        builder = Stemcell::Builder::VSphere.new(
-          os: os,
-          output_directory: output_directory,
-          version: version,
-          agent_commit: agent_commit,
-          packer_vars: packer_vars,
-          administrator_password: administrator_password,
-          source_path: source_path,
-          mem_size: mem_size,
-          num_vcpus: num_vcpus,
-          product_key: product_key,
-          owner: owner,
-          organization: organization,
-          new_password: '',
-          http_proxy: http_proxy,
-          https_proxy: https_proxy,
-          bypass_list: bypass_list,
-          mount_ephemeral_disk: 'true',
+        it 'builds a stemcell tarball' do
+          allow(Packer::Config::VSphere).to receive(:new).with(
+            administrator_password: administrator_password,
+            source_path: source_path,
+            output_directory: output_directory,
+            mem_size: mem_size,
+            num_vcpus: num_vcpus,
+            product_key: product_key,
+            owner: owner,
+            organization: organization,
+            os: @os,
+            enable_rdp: false,
+            new_password: '',
+            skip_windows_update: false,
+            http_proxy: http_proxy,
+            https_proxy: https_proxy,
+            bypass_list: bypass_list,
+            mount_ephemeral_disk: true,
+            ).and_return(@packer_config)
+
+          builder = Stemcell::Builder::VSphere.new(
+            os: @os,
+            output_directory: output_directory,
+            version: version,
+            agent_commit: agent_commit,
+            packer_vars: packer_vars,
+            administrator_password: administrator_password,
+            source_path: source_path,
+            mem_size: mem_size,
+            num_vcpus: num_vcpus,
+            product_key: product_key,
+            owner: owner,
+            organization: organization,
+            new_password: '',
+            http_proxy: http_proxy,
+            https_proxy: https_proxy,
+            bypass_list: bypass_list,
+            mount_ephemeral_disk: 'true',
+            )
+          stembuild = double(:stembuild)
+          allow(Stemcell::Builder::VSphere::Stembuild).to receive(:new).with("#{output_directory}/some_vmdk.vmdk", "stemcell-version", "#{output_directory}", '2016').and_return(stembuild)
+          allow(stembuild).to receive(:run)
+
+          builder.build
+        end
+
+        it 'passes build_context to packer config generator if set' do
+          allow(Packer::Config::VSphere).to receive(:new).with(
+            administrator_password: administrator_password,
+            source_path: source_path,
+            output_directory: output_directory,
+            mem_size: mem_size,
+            num_vcpus: num_vcpus,
+            product_key: product_key,
+            owner: owner,
+            organization: organization,
+            os: @os,
+            enable_rdp: false,
+            new_password: '',
+            skip_windows_update: false,
+            http_proxy: http_proxy,
+            https_proxy: https_proxy,
+            bypass_list: bypass_list,
+            mount_ephemeral_disk: true,
+            build_context: :patchfile,
+          ).and_return(@packer_config)
+
+          builder = Stemcell::Builder::VSphere.new(
+            os: @os,
+            output_directory: output_directory,
+            version: version,
+            agent_commit: agent_commit,
+            packer_vars: packer_vars,
+            administrator_password: administrator_password,
+            source_path: source_path,
+            mem_size: mem_size,
+            num_vcpus: num_vcpus,
+            product_key: product_key,
+            owner: owner,
+            organization: organization,
+            new_password: '',
+            http_proxy: http_proxy,
+            https_proxy: https_proxy,
+            bypass_list: bypass_list,
+            mount_ephemeral_disk: 'true',
+            build_context: :patchfile,
           )
-        stembuild = double(:stembuild)
-        allow(Stemcell::Builder::VSphere::Stembuild).to receive(:new).with("#{output_directory}/some_vmdk.vmdk", "stemcell-version", "#{output_directory}", '2016').and_return(stembuild)
-        allow(stembuild).to receive(:run)
+          stembuild = double(:stembuild)
+          allow(Stemcell::Builder::VSphere::Stembuild).to receive(:new).with("#{output_directory}/some_vmdk.vmdk", "stemcell-version", "#{output_directory}", '2016').and_return(stembuild)
+          allow(stembuild).to receive(:run)
 
-        builder.build
+          builder.build
+        end
       end
 
       it 'builds a windows1803 stemcell tarball' do

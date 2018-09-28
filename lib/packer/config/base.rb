@@ -10,7 +10,17 @@ module Packer
         @mount_ephemeral_disk = mount_ephemeral_disk
       end
 
-      def self.pre_provisioners(os, skip_windows_update: false, reduce_mtu: false, iaas: '', http_proxy: '', https_proxy: '', bypass_list: '')
+      def self.pre_provisioners(
+          os,
+          skip_windows_update: false,
+          reduce_mtu: false,
+          iaas: '',
+          http_proxy: '',
+          https_proxy: '',
+          bypass_list: '',
+          build_context: :stemcell
+      )
+
         pre = []
         if os == 'windows2012R2'
           pre = [
@@ -25,9 +35,15 @@ module Packer
             Provisioners.setup_proxy_settings(http_proxy, https_proxy, bypass_list),
             Provisioners::NEW_PROVISIONER,
             ]
-          if iaas.downcase == 'azure' && os == 'windows1803'
-            pre += [Provisioners::remove_docker(os),
-                    Provisioners::INSTALL_CF_FEATURES_1803_AZURE]
+
+          azure1803 = iaas.downcase == 'azure' && os == 'windows1803'
+
+          if azure1803 || (iaas.downcase == 'vsphere' && build_context == :patchfile)
+            pre += [Provisioners::remove_docker()]
+          end
+
+          if azure1803
+            pre += [Provisioners::INSTALL_CF_FEATURES_1803_AZURE]
           else
             pre += [Provisioners::INSTALL_CF_FEATURES_2016]
           end

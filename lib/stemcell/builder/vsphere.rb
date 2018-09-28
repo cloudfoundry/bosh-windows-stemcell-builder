@@ -61,6 +61,10 @@ module Stemcell
         @organization = organization
         @new_password = new_password
         @skip_windows_update = skip_windows_update
+        if args.has_key?(:build_context)
+          @build_context = args[:build_context]
+          args.delete(:build_context)
+        end
         super(args)
       end
 
@@ -78,7 +82,7 @@ module Stemcell
 
       private
       def packer_config
-        Packer::Config::VSphere.new(
+        config_args = {
           administrator_password: @administrator_password,
           new_password: @new_password,
           source_path: @source_path,
@@ -95,6 +99,14 @@ module Stemcell
           https_proxy: @https_proxy,
           bypass_list: @bypass_list,
           mount_ephemeral_disk: @mount_ephemeral_disk,
+        }
+
+        if !@build_context.nil?
+          config_args[:build_context] = @build_context
+        end
+
+        Packer::Config::VSphere.new(
+          **config_args,
         ).dump
       end
 

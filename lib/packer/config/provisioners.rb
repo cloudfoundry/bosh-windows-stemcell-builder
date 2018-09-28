@@ -114,15 +114,12 @@ module Packer
         ]
       end
 
-      def self.remove_docker(os)
-        if os == 'windows1803'
-          return {
-            'type' => 'windows-restart',
-            'restart_command' => "powershell.exe -Command Remove-DockerPackage",
-            "restart_check_command" => "powershell -command \"& {Write-Output 'restarted.'}\""
-          }
-        end
-        [] # Deal with non-returning case
+      def self.remove_docker
+        return {
+          'type' => 'windows-restart',
+          'restart_command' => "powershell.exe -Command Remove-DockerPackage",
+          "restart_check_command" => "powershell -command \"& {Write-Output 'restarted.'}\""
+        }
       end
 
       INSTALL_SSHD = [

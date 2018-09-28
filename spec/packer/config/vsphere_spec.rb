@@ -271,6 +271,37 @@ describe Packer::Config do
             )
           end
         end
+
+        context 'when building a patchfile' do
+          it 'calls remove-docker' do
+            allow(SecureRandom).to receive(:hex).and_return("some-password")
+            provisioners = Packer::Config::VSphere.new(
+              output_directory: 'output_directory',
+              num_vcpus: 1,
+              mem_size: 1000,
+              product_key: 'key',
+              organization: 'me',
+              owner: 'me',
+              administrator_password: 'password',
+              source_path: 'source_path',
+              os: 'windows2016',
+              enable_rdp: false,
+              new_password: 'new-password',
+              http_proxy: 'foo',
+              https_proxy: 'bar',
+              bypass_list: 'b_ee',
+              build_context: :patchfile
+            ).provisioners
+
+            expect(provisioners).to include(
+              {
+                "type"=>"windows-restart",
+                "restart_command"=>"powershell.exe -Command Remove-DockerPackage",
+                "restart_check_command"=> "powershell -command \"& {Write-Output 'restarted.'}\""
+              }
+            )
+          end
+        end
       end
 
       context 'windows 1803' do
