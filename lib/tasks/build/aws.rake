@@ -22,16 +22,16 @@ namespace :build do
     ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR')
 
     # Get input amis from Amazon
-    base_amis = JSON.parse(
+    base_ami = JSON.parse(
       File.read(
         Dir.glob(File.join(base_amis_dir, 'base-amis-*.json'))[0]
       ).chomp
     )
-    raise "No ami information for #{region}" unless base_amis['name'] == region
-    puts "base_amis.count: #{base_amis.count}"
+    raise "No ami information for #{region}" unless base_ami['name'] == region
+    puts "Found ami information for: #{region}"
 
     # Create stemcell
-    aws_builder = get_aws_builder(output_directory, region, base_amis)
+    aws_builder = get_aws_builder(output_directory, region, base_ami)
     aws_builder.build_from_packer(ami_output_directory)
 
     # Upload the final tgz to S3
@@ -125,7 +125,7 @@ namespace :build do
   end
 end
 
-def get_aws_builder(output_directory, region, base_amis=[])
+def get_aws_builder(output_directory, region, base_ami)
   version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
 
   build_dir = File.expand_path('../../../../build', __FILE__)
@@ -135,7 +135,7 @@ def get_aws_builder(output_directory, region, base_amis=[])
 
   Stemcell::Builder::Aws.new(
     agent_commit: agent_commit,
-    amis: base_amis,
+    ami: base_ami,
     aws_access_key: Stemcell::Builder::validate_env('AWS_ACCESS_KEY'),
     aws_secret_key: Stemcell::Builder::validate_env('AWS_SECRET_KEY'),
     os: Stemcell::Builder::validate_env('OS_VERSION'),

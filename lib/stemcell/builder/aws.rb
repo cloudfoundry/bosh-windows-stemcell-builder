@@ -1,8 +1,8 @@
 module Stemcell
   class Builder
     class Aws < Base
-      def initialize(amis:, aws_access_key:, aws_secret_key:, vm_prefix:, **args)
-        @amis = amis
+      def initialize(ami:, aws_access_key:, aws_secret_key:, vm_prefix:, **args)
+        @ami = ami
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
         @vm_prefix = vm_prefix
@@ -29,40 +29,40 @@ module Stemcell
 
       private
 
-        def packer_config
-          Packer::Config::Aws.new(
-            aws_access_key: @aws_access_key,
-            aws_secret_key: @aws_secret_key,
-            regions: @amis,
-            output_directory: @output_directory,
-            os: @os,
-            vm_prefix: @vm_prefix,
-            mount_ephemeral_disk: @mount_ephemeral_disk
-          ).dump
-        end
+      def packer_config
+        Packer::Config::Aws.new(
+          aws_access_key: @aws_access_key,
+          aws_secret_key: @aws_secret_key,
+          region: @ami,
+          output_directory: @output_directory,
+          os: @os,
+          vm_prefix: @vm_prefix,
+          mount_ephemeral_disk: @mount_ephemeral_disk
+        ).dump
+      end
 
-        def parse_packer_output(packer_output)
-          amis = []
-          packer_output.each_line do |line|
-            if !(line.include?("secret_key") || line.include?("access_key"))
-              puts line
-            end
-            ami = parse_ami(line)
-            if !ami.nil?
-              amis.push(ami)
-            end
+      def parse_packer_output(packer_output)
+        amis = []
+        packer_output.each_line do |line|
+          if !(line.include?('secret_key') || line.include?('access_key'))
+            puts line
           end
-          amis
-        end
-
-        def parse_ami(line)
-          unless line.include?(",artifact,0,id,")
-            return
+          ami = parse_ami(line)
+          if !ami.nil?
+            amis.push(ami)
           end
-
-          region_id = line.split(",").last.split(":")
-          return {'region'=> region_id[0].chomp, 'ami_id'=> region_id[1].chomp}
         end
+        amis
+      end
+
+      def parse_ami(line)
+        unless line.include?(',artifact,0,id,')
+          return
+        end
+
+        region_id = line.split(',').last.split(':')
+        return {'region'=> region_id[0].chomp, 'ami_id'=> region_id[1].chomp}
+      end
     end
   end
 end
