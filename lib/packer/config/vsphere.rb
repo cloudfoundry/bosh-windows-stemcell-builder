@@ -104,8 +104,7 @@ module Packer
             'numvcpus' => @num_vcpus.to_s,
             'displayname' => "packer-vmx-#{@timestamp}"
           },
-          'output_directory' => @output_directory,
-          'skip_clean_files' => true
+          'output_directory' => @output_directory
         ]
       end
 
