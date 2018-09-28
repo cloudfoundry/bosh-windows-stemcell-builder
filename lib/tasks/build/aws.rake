@@ -26,7 +26,8 @@ namespace :build do
       File.read(
         Dir.glob(File.join(base_amis_dir, 'base-amis-*.json'))[0]
       ).chomp
-    ).select { |ami| ami['name'] == region }
+    )
+    raise "No ami information for #{region}" unless base_amis['name'] == region
     puts "base_amis.count: #{base_amis.count}"
 
     # Create stemcell
