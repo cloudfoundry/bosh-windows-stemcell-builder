@@ -1,5 +1,4 @@
 require 'securerandom'
-require_relative 'config/base'
 require_relative 'config/provisioners'
 require_relative 'config/aws'
 require_relative 'config/azure'
