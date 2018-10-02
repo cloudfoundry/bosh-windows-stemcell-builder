@@ -333,6 +333,13 @@ function Disable-NetBIOS {
 }
 
 function Remove-DockerPackage {
+    $dockerPackage = Get-Package -Name docker -ErrorAction ignore
+
+    if ($dockerPackage -eq $null) {
+      Write-Log "Docker is not installed. No need to remove."
+      return
+    }
+
     Write-Log "Uninstalling Docker: Starting"
     Uninstall-Package -Name docker -ProviderName DockerMsftProvider -ErrorAction Ignore
     Uninstall-Module -Name DockerMsftProvider -ErrorAction Ignore

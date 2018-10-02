@@ -99,7 +99,6 @@ module Packer
                 'displayname' => "packer-vmx-#{@timestamp}"
             },
             'output_directory' => @output_directory,
-            'skip_clean_files' => true
         ]
       end
 
