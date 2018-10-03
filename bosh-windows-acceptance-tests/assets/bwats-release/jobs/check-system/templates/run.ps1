@@ -373,7 +373,7 @@ function Verify-NoDocker {
     docker ps
   } catch {
     Write-Host "Docker is not installed"
-    Exit 0
+    return
   }
 
   Write-Error "Docker is installed. It shouldn't be!"
