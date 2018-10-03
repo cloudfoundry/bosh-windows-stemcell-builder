@@ -333,7 +333,7 @@ function Disable-NetBIOS {
 }
 
 function Remove-DockerPackage {
-    $dockerPackage = Get-Package -Name docker -ErrorAction ignore
+    $dockerPackage = Get-Package -Name DockerMsftProvider -ErrorAction ignore
 
     if ($dockerPackage -eq $null) {
       Write-Log "Docker is not installed. No need to remove."
@@ -341,8 +341,8 @@ function Remove-DockerPackage {
     }
 
     Write-Log "Uninstalling Docker: Starting"
-    Uninstall-Package -Name docker -ProviderName DockerMsftProvider -ErrorAction Ignore
-    Uninstall-Module -Name DockerMsftProvider -ErrorAction Ignore
+    Uninstall-Package -Name docker -ProviderName DockerMsftProvider
+    Uninstall-Module -Name DockerMsftProvider
 
     Write-Log "Uninstalling Docker: HNSNetworks"
     Get-HNSNetwork | Remove-HNSNetwork
