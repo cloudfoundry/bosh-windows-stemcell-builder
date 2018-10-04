@@ -351,7 +351,7 @@ function Remove-DockerPackage {
     cmd.exe /c rmdir /s /q "C:\ProgramData\Docker"
 
     Write-Log "Uninstalling Docker: Removing Hyper-V"
-    Remove-WindowsFeature Hyper-V
+    Uninstall-WindowsFeature Hyper-V
 
     Write-Log "Uninstalling Docker: Complete"
 
