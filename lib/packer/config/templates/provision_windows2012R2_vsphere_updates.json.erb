@@ -45,7 +45,8 @@
   {
     "type": "windows-restart",
     "restart_command": "powershell.exe -Command Wait-WindowsUpdates -Password <%= password %> -User Provisioner",
-    "restart_timeout": "12h"
+    "restart_timeout": "12h",
+    "restart_check_command": "powershell -command \"& {Write-Output \'restarted.\'}\""
   },
   {
     "type": "powershell",
@@ -90,11 +91,13 @@
   {
     "type": "windows-restart",
     "restart_command": "powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force",
-    "restart_timeout": "1h"
+    "restart_timeout": "1h",
+    "restart_check_command": "powershell -command \"& {Write-Output \'restarted.\'}\""
   },
   {
     "type": "windows-restart",
     "restart_command": "powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force",
-    "restart_timeout": "1h"
+    "restart_timeout": "1h",
+    "restart_check_command": "powershell -command \"& {Write-Output \'restarted.\'}\""
   }
 ]
