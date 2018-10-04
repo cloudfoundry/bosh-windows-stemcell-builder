@@ -354,4 +354,7 @@ function Remove-DockerPackage {
     Remove-WindowsFeature Hyper-V
 
     Write-Log "Uninstalling Docker: Complete"
+
+    shutdown /r /c "packer restart" /t 5
+    net stop winrm
 }
