@@ -23,6 +23,19 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
+      "Upgrade-PSVersion"
+    ],
+    "elevated_user": "Administrator",
+    "elevated_password": "{{.WinRMPassword}}"
+  },
+  {
+    "type": "windows-restart"
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
       "New-Provisioner"
     ]
   },

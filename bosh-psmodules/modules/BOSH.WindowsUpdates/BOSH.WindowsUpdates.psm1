@@ -408,3 +408,29 @@ function Enable-CredSSP() {
     #Policy set to "mitigated"
     reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" /v AllowEncryptionOracle /t REG_DWORD /d 1 /f
 }
+
+function Upgrade-PSVersion () {
+    if (Test-PSVersion) {
+        Write-Log "Upgrade-PSVersion: No need to upgrade. PSVersion is 5 or above"
+        return
+    }
+
+    $existingProtocol = [Net.ServicePointManager]::SecurityProtocol
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Write-Log "Upgrade-PSVersion: Downloading."
+
+    $MSUPath = "c:\provision\PS51.msu"
+    Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=839516" -UseBasicParsing -OutFile $MSUPath
+
+    Write-Log "Upgrade-PSVersion: Downloaded. Installing."
+
+    $p = Start-Process -FilePath $MSUPath -ArgumentList '/quiet /norestart /log:"C:\provision\psupgrade.log"' -Wait -PassThru
+    Write-Log "Upgrade-PSVersion: Installed. Process exit code: $($p.ExitCode)"
+    [Net.ServicePointManager]::SecurityProtocol = $existingProtocol
+}
+
+function Test-PSVersion {
+    $version = $PSVersionTable.PSVersion
+    Write-Log "Powershell is $version"
+    $version.Major -ge 5
+}
