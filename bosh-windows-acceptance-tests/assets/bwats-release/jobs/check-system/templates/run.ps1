@@ -380,6 +380,15 @@ function Verify-NoDocker {
   Exit 1
 }
 
+function Verify-PSVersion5 {
+  $PSMajorVersion = $PSVersionTable.PSVersion.Major
+
+  if ($PSMajorVersion -lt 5) {
+    Write-Error "Powershell Major version is $PSMajorVersion. It should be at least 5"
+    Exit 1
+  }
+}
+
 Verify-LGPO
 Verify-Dependencies
 Verify-Acls
@@ -394,4 +403,5 @@ Verify-AgentBehavior
 Verify-RandomPassword
 Verify-NTPSync
 Verify-NoDocker
+Verify-PSVersion5
 Exit 0
