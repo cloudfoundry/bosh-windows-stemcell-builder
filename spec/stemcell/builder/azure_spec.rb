@@ -27,7 +27,6 @@ describe Stemcell::Builder do
         client_secret = 'some-client-secret'
         tenant_id = 'some-tenant-id'
         subscription_id = 'some-subscription-id'
-        object_id = 'some-object-id'
         resource_group_name = 'some-resource-group-name'
         storage_account = 'some-storage-account'
         location = 'some-location'
@@ -45,7 +44,6 @@ describe Stemcell::Builder do
           client_secret: client_secret,
           tenant_id: tenant_id,
           subscription_id: subscription_id,
-          object_id: object_id,
           resource_group_name: resource_group_name,
           storage_account: storage_account,
           location: location,
@@ -94,7 +92,6 @@ describe Stemcell::Builder do
           client_secret: client_secret,
           tenant_id: tenant_id,
           subscription_id: subscription_id,
-          object_id: object_id,
           resource_group_name: resource_group_name,
           storage_account: storage_account,
           location: location,
@@ -117,7 +114,6 @@ describe Stemcell::Builder do
         client_secret: '',
         tenant_id: '',
         subscription_id: '',
-        object_id: '',
         resource_group_name: '',
         storage_account: '',
         location: '',
@@ -143,7 +139,6 @@ describe Stemcell::Builder do
         client_secret: '',
         tenant_id: '',
         subscription_id: '',
-        object_id: '',
         resource_group_name: '',
         storage_account: '',
         location: '',
@@ -169,7 +164,6 @@ describe Stemcell::Builder do
         client_secret: '',
         tenant_id: '',
         subscription_id: '',
-        object_id: '',
         resource_group_name: '',
         storage_account: '',
         location: '',

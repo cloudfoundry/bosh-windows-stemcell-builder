@@ -5,12 +5,11 @@ require 'json'
 module Packer
   module Config
     class Azure
-      def initialize(client_id:, client_secret:, tenant_id:, subscription_id:, object_id:, resource_group_name:, storage_account:, location:, vm_size:, os:, output_directory:, vm_prefix: '', mount_ephemeral_disk: false)
+      def initialize(client_id:, client_secret:, tenant_id:, subscription_id:, resource_group_name:, storage_account:, location:, vm_size:, os:, output_directory:, vm_prefix: '', mount_ephemeral_disk: false)
         @client_id = client_id
         @client_secret = client_secret
         @tenant_id = tenant_id
         @subscription_id = subscription_id
-        @object_id = object_id
         @resource_group_name = resource_group_name
         @storage_account = storage_account
         @location = location
@@ -29,7 +28,6 @@ module Packer
                 'client_secret' => @client_secret,
                 'tenant_id' => @tenant_id,
                 'subscription_id' => @subscription_id,
-                'object_id' => @object_id,
                 'resource_group_name' => @resource_group_name,
                 'temp_resource_group_name' => "#{@vm_prefix}-#{Time.now.to_i}",
                 'storage_account' => @storage_account,
