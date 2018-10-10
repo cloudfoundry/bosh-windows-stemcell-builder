@@ -387,6 +387,8 @@ function Verify-PSVersion5 {
     Write-Error "Powershell Major version is $PSMajorVersion. It should be at least 5"
     Exit 1
   }
+
+  Write-Host "Powershell is up to date: Version is: $($PSVersiontable.PSversion)"
 }
 
 Verify-LGPO
