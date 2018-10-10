@@ -23,10 +23,18 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
+      "Add-Account -User Provisioner -Password <%= password %>"
+    ]
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
       "Upgrade-PSVersion"
     ],
-    "elevated_user": "Administrator",
-    "elevated_password": "{{.WinRMPassword}}"
+    "elevated_user": "Provisioner",
+    "elevated_password": "<%= password %>"
   },
   {
     "type": "windows-restart"
@@ -45,14 +53,6 @@
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
       "Install-CFFeatures"
-    ]
-  },
-  {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
-      "Add-Account -User Provisioner -Password <%= password %>"
     ]
   },
   {
