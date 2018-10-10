@@ -102,6 +102,7 @@ function Write-AgentConfig {
     $azureConfig = @{
       "Platform" = @{
         "Linux" = @{
+          "CreatePartitionIfNoEphemeralDisk" = $true
           "DevicePathResolutionType" = "scsi"
         }
       }
