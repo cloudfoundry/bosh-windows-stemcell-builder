@@ -27,7 +27,6 @@ namespace :build do
       client_secret: Stemcell::Builder::validate_env('CLIENT_SECRET'),
       tenant_id: Stemcell::Builder::validate_env('TENANT_ID'),
       subscription_id: Stemcell::Builder::validate_env('SUBSCRIPTION_ID'),
-      object_id: Stemcell::Builder::validate_env('OBJECT_ID'),
       resource_group_name: Stemcell::Builder::validate_env('RESOURCE_GROUP_NAME'),
       storage_account: Stemcell::Builder::validate_env('STORAGE_ACCOUNT'),
       location: Stemcell::Builder::validate_env('LOCATION'),

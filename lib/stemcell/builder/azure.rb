@@ -3,13 +3,12 @@ require 'open-uri'
 module Stemcell
   class Builder
     class Azure < Base
-      def initialize(client_id:, client_secret:, tenant_id:, subscription_id:, object_id:, resource_group_name:,
+      def initialize(client_id:, client_secret:, tenant_id:, subscription_id:, resource_group_name:,
                      storage_account:, location:, vm_size:, publisher:, offer:, sku:, vm_prefix:, **args)
         @client_id = client_id
         @client_secret = client_secret
         @tenant_id = tenant_id
         @subscription_id = subscription_id
-        @object_id = object_id
         @resource_group_name = resource_group_name
         @storage_account = storage_account
         @location = location
@@ -48,7 +47,6 @@ module Stemcell
             client_secret: @client_secret,
             tenant_id: @tenant_id,
             subscription_id: @subscription_id,
-            object_id: @object_id,
             resource_group_name: @resource_group_name,
             storage_account: @storage_account,
             location: @location,

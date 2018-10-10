@@ -37,7 +37,6 @@ describe 'Azure' do
       ENV['CLIENT_SECRET'] = 'some-azure_secret_key'
       ENV['TENANT_ID'] = 'some-tenant-id'
       ENV['SUBSCRIPTION_ID'] = 'some-subscription-id'
-      ENV["OBJECT_ID"] = 'some-object-id'
       ENV['RESOURCE_GROUP_NAME'] = 'some-resource-group-name'
       ENV['STORAGE_ACCOUNT'] = 'some-storage-account'
       ENV['LOCATION'] = 'some-location'
