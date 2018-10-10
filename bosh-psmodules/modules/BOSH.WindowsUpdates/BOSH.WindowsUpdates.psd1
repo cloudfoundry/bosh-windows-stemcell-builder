@@ -7,18 +7,7 @@ Copyright = '(c) 2017 BOSH'
 Description = 'Install Windows Updates on a BOSH deployed vm'
 PowerShellVersion = '4.0'
 RequiredModules = @('BOSH.Utils','BOSH.WinRM','BOSH.Autologon')
-FunctionsToExport = @('Install-WindowsUpdates',
-                      'Register-WindowsUpdatesTask',
-                      'Unregister-WindowsUpdatesTask',
-                      'Wait-WindowsUpdates',
-                      'Test-InstalledUpdates',
-                      'Install-KB4056898',
-                      'Install-KB4338825',
-                      'Install-KB2538243',
-                      'Disable-AutomaticUpdates',
-                      'Enable-CVE-2015-6161',
-                      'Enable-CVE-2017-8529',
-                      'Enable-CredSSP')
+FunctionsToExport = '*'
 CmdletsToExport = @()
 VariablesToExport = '*'
 AliasesToExport = @()
