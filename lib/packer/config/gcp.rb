@@ -32,6 +32,7 @@ module Packer
                 'winrm_username' => 'winrmuser',
                 'winrm_use_ssl' => false,
                 'winrm_timeout' => '1h',
+                'state_timeout' => '10m',
                 'metadata' => {
                     'sysprep-specialize-script-url' => 'https://raw.githubusercontent.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1',
                     'name' => "#{@vm_prefix}-#{Time.now.to_i}",
