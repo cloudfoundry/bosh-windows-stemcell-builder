@@ -43,7 +43,7 @@ rake run:bwats[iaas]                                                           #
 
 In Concourse see [Greenhouse CI](https://github.com/cloudfoundry-incubator/greenhouse-ci/tree/master/bosh-windows-stemcell-builder) for required environment variables for these tasks. For example, for `rake build:vsphere` refer to this [task.yml](https://github.com/cloudfoundry-incubator/greenhouse-ci/blob/master/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-vmx/task.yml).
 
-Instructions for building a manual stemcell for vSphere can be found in the [wiki](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/wiki/Creating-a-vSphere-Stemcell-by-Hand).
+Instructions for building a manual stemcell for vSphere can be found in the [wiki](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/wiki/Creating-a-vSphere-Windows-Stemcell).
 
 #### Running the tests
 ```
