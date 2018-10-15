@@ -9,6 +9,11 @@
 $script:ScriptName = $MyInvocation.MyCommand.ToString()
 $script:ScriptPath = $MyInvocation.MyCommand.Path
 
+function Find-WindowsUpdatesTask {
+    $task = Get-ScheduledTask -TaskName "InstallWindowsUpdates" -ErrorAction SilentlyContinue
+    return $task -ne $null
+}
+
 function Register-WindowsUpdatesTask {
     $Prin = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
     $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
@@ -18,7 +23,12 @@ function Register-WindowsUpdatesTask {
 }
 
 function Unregister-WindowsUpdatesTask {
+    $task = Find-WindowsUpdatesTask
+    if ($task)
+    {
+        Write-Log "Restart Scheduled Task Exists - Removing It"
         Unregister-ScheduledTask -TaskName "InstallWindowsUpdates" -Confirm:$false
+    }
 }
 
 function Wait-WindowsUpdates {
@@ -80,15 +90,10 @@ function Install-WindowsUpdates {
 }
 
 function Invoke-RebootOrComplete() {
-    $RegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
     $RegistryEntry = "InstallWindowsUpdates"
     switch ($script:RestartRequired) {
         0 {
-            $prop = (Get-ItemProperty $RegistryKey).$RegistryEntry
-            if ($prop) {
-                Write-Log "Restart Registry Entry Exists - Removing It"
-                Remove-ItemProperty -Path $RegistryKey -Name $RegistryEntry -ErrorAction SilentlyContinue
-            }
+            Unregister-WindowsUpdatesTask
 
             Write-Log "No Restart Required"
             Get-UpdateBatch
@@ -110,12 +115,12 @@ function Invoke-RebootOrComplete() {
             Write-Log "$winrm_config"
         }
         1 {
-            $prop = (Get-ItemProperty $RegistryKey).$RegistryEntry
-            if (-not $prop) {
-                Write-Log "Restart Registry Entry Does Not Exist - Creating It"
-                Set-ItemProperty -Path $RegistryKey -Name $RegistryEntry -Value "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -ExecutionPolicy Bypass -Command Install-WindowsUpdates"
+            $prop = Find-WindowsUpdatesTask
+            if (-not $prop ) {
+                Write-Log "Restart Scheduled Task Does Not Exist - Creating It"
+                Register-WindowsUpdatesTask
             } else {
-                Write-Log "Restart Registry Entry Exists Already"
+                Write-Log "Restart Scheduled Task Exists Already"
             }
 
             Write-Log "Restart Required - Restarting..."
