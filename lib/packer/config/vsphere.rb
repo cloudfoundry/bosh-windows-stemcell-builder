@@ -103,7 +103,7 @@ module Packer
       end
 
       def provisioners
-        ProvisionerFactory.new(@os, 'vsphere', @mount_ephemeral_disk, @http_proxy, @https_proxy, @bypass_list).dump
+        ProvisionerFactory.new(@os, 'vsphere', @mount_ephemeral_disk, @http_proxy, @https_proxy, @bypass_list, @build_context).dump
       end
     end
   end
