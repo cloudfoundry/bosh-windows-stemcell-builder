@@ -39,6 +39,7 @@ describe 'Package::BWATS' do
 			'stemcell_os' => 'some-os',
 			'az' => 'some-az',
 			'vm_type' => 'some-type',
+			'root_ephemeral_vm_type' => 'some-root-ephemeral-type',
 			'vm_extensions' => 'some-vm-extensions',
 			'mount_ephemeral_disk' => false,
 			'network' => 'some-network'
@@ -51,6 +52,7 @@ describe 'Package::BWATS' do
 		ENV['STEMCELL_OS']= config['stemcell_os']
 		ENV['AZ']= config['az']
 		ENV['VM_TYPE']= config['vm_type']
+		ENV['ROOT_EPHEMERAL_VM_TYPE']= config['root_ephemeral_vm_type']
 		ENV['VM_EXTENSIONS']= config['vm_extensions']
 		ENV['NETWORK']= config['network']
 		Rake::Task['package:bwats'].invoke

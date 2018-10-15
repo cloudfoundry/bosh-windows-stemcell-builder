@@ -42,6 +42,7 @@ namespace :package do
 	    'stemcell_os' => ENV['STEMCELL_OS'],
 	    'az' => ENV['AZ'],
 	    'vm_type' => ENV['VM_TYPE'],
+	    'root_ephemeral_vm_type' => ENV['ROOT_EPHEMERAL_VM_TYPE'],
 	    'vm_extensions' => ENV['VM_EXTENSIONS'],
 	    'network' => ENV['NETWORK'],
 	    'mount_ephemeral_disk' => ENV['MOUNT_EPHEMERAL_DISK'] == 'true'
