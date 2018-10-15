@@ -39,16 +39,17 @@ const MbsaURL = "https://download.microsoft.com/download/8/E/1/8E16A4C7-DD28-436
 const redeployRetries = 10
 
 type ManifestProperties struct {
-	DeploymentName     string
-	ReleaseName        string
-	AZ                 string
-	VmType             string
-	VmExtensions       string
-	Network            string
-	StemcellOs         string
-	StemcellVersion    string
-	ReleaseVersion     string
-	MountEphemeralDisk bool
+	DeploymentName      string
+	ReleaseName         string
+	AZ                  string
+	VmType              string
+	RootEphemeralVmType string
+	VmExtensions        string
+	Network             string
+	StemcellOs          string
+	StemcellVersion     string
+	ReleaseVersion      string
+	MountEphemeralDisk  bool
 }
 
 type StemcellYML struct {
@@ -63,14 +64,15 @@ type Config struct {
 		ClientSecret string `json:"client_secret"`
 		Target       string `json:"target"`
 	} `json:"bosh"`
-	Stemcellpath       string `json:"stemcell_path"`
-	StemcellOs         string `json:"stemcell_os"`
-	Az                 string `json:"az"`
-	VmType             string `json:"vm_type"`
-	VmExtensions       string `json:"vm_extensions"`
-	Network            string `json:"network"`
-	SkipCleanup        bool   `json:"skip_cleanup"`
-	MountEphemeralDisk bool   `json:"mount_ephemeral_disk"`
+	Stemcellpath        string `json:"stemcell_path"`
+	StemcellOs          string `json:"stemcell_os"`
+	Az                  string `json:"az"`
+	VmType              string `json:"vm_type"`
+	RootEphemeralVmType string `json:"root_ephemeral_vm_type"`
+	VmExtensions        string `json:"vm_extensions"`
+	Network             string `json:"network"`
+	SkipCleanup         bool   `json:"skip_cleanup"`
+	MountEphemeralDisk  bool   `json:"mount_ephemeral_disk"`
 }
 
 func NewConfig() (*Config, error) {
@@ -373,6 +375,7 @@ func (m ManifestProperties) toMap() map[string]string {
 	manifest["ReleaseName"] = m.ReleaseName
 	manifest["AZ"] = m.AZ
 	manifest["VmType"] = m.VmType
+	manifest["RootEphemeralVmType"] = m.RootEphemeralVmType
 	manifest["VmExtensions"] = m.VmExtensions
 	manifest["Network"] = m.Network
 	manifest["StemcellOs"] = m.StemcellOs
@@ -465,20 +468,38 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 
 func (c *Config) deployWithManifest(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string, manifestPath string) error {
 	manifestProperties := ManifestProperties{
-		DeploymentName:     deploymentName,
-		ReleaseName:        "bwats-release",
-		AZ:                 c.Az,
-		VmType:             c.VmType,
-		VmExtensions:       c.VmExtensions,
-		Network:            c.Network,
-		StemcellOs:         c.StemcellOs,
-		StemcellVersion:    fmt.Sprintf(`"%s"`, stemcellVersion),
-		ReleaseVersion:     bwatsVersion,
-		MountEphemeralDisk: c.MountEphemeralDisk,
+		DeploymentName:      deploymentName,
+		ReleaseName:         "bwats-release",
+		AZ:                  c.Az,
+		VmType:              c.VmType,
+		RootEphemeralVmType: c.RootEphemeralVmType,
+		VmExtensions:        c.VmExtensions,
+		Network:             c.Network,
+		StemcellOs:          c.StemcellOs,
+		StemcellVersion:     fmt.Sprintf(`"%s"`, stemcellVersion),
+		ReleaseVersion:      bwatsVersion,
+		MountEphemeralDisk:  c.MountEphemeralDisk,
 	}
 
-	err := bosh.Run(fmt.Sprintf("-d %s deploy %s %s", deploymentName, manifestPath, manifestProperties.toVarsString()))
-	Expect(err).To(Succeed())
+	var err error
+
+	if c.RootEphemeralVmType != "" {
+		pwd, err := os.Getwd()
+		Expect(err).To(Succeed())
+		opsFilePath := filepath.Join(pwd, "assets", "root-disk-as-ephemeral.yml")
+
+		err = bosh.Run(fmt.Sprintf(
+			"-d %s deploy %s -o %s %s",
+			deploymentName,
+			manifestPath,
+			opsFilePath,
+			manifestProperties.toVarsString(),
+		))
+	} else {
+		err = bosh.Run(fmt.Sprintf("-d %s deploy %s %s", deploymentName, manifestPath, manifestProperties.toVarsString()))
+	}
+
+	Expect(err).NotTo(HaveOccurred())
 
 	return nil
 }
