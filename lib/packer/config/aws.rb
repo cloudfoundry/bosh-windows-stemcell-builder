@@ -55,7 +55,7 @@ module Packer
       private
 
       def instance_type
-        type = 'm5.large'
+        type = 'm4.large'
 
         if @os == 'windows2012R2'
           type = 'm4.xlarge'

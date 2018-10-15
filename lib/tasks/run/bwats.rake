@@ -31,7 +31,7 @@ namespace :run do
     if ENV["USE_RETRIES"].to_s == 'true'
       ginkgo_command += " --flakeAttempts=3"
     end
-    ginkgo_command += " --focus=\"#{ENV["GINKGO_FOCUS"]}\" -r -v #{test_path}"
+    ginkgo_command += " --focus=\"#{ENV["GINKGO_FOCUS"]}\" --skip=\"#{ENV["GINKGO_SKIP"]}\" -r -v #{test_path}"
     exec_command(ginkgo_command)
   end
 end

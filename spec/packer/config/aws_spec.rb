@@ -40,7 +40,7 @@ describe Packer::Config::Aws do
         secret_key: 'some-aws-secret-key',
         region: 'region1',
         source_ami: 'baseami1',
-        instance_type: 'm5.large',
+        instance_type: 'm4.large',
         vpc_id: 'vpc1',
         subnet_id: 'subnet1',
         associate_public_ip_address: true,
