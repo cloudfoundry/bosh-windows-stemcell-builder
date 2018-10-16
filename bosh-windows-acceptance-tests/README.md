@@ -24,6 +24,7 @@ You can create a `config.json` file, eg:
   "vm_extensions": "<comma separated string of options, e.g. 50GB_ephemeral_disk>",
   "network": "<network from bosh cloud config>",
   "skip_cleanup": "<skip cleanup - if this is false all unused stemcells are deleted>"
+  "skip_ms_update_test": "<skip check-updates errand - if true, it will not test that all Windows updates are installed>"
 }
 ```
 

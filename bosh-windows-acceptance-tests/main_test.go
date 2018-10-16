@@ -73,6 +73,7 @@ type Config struct {
 	Network             string `json:"network"`
 	SkipCleanup         bool   `json:"skip_cleanup"`
 	MountEphemeralDisk  bool   `json:"mount_ephemeral_disk"`
+	SkipMSUpdateTest    bool   `json:"skip_ms_update_test"`
 }
 
 func NewConfig() (*Config, error) {
@@ -288,8 +289,12 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("is fully updated", func() { // 860s
-		err := runTest("check-updates")
-		Expect(err).NotTo(HaveOccurred())
+		if config.SkipMSUpdateTest {
+			Skip("Skipping check-updates test - SkipMSUpdateTest set to true")
+		} else {
+			err := runTest("check-updates")
+			Expect(err).NotTo(HaveOccurred())
+		}
 	})
 
 	It("mounts ephemeral disks when asked to do so and does not mount them otherwise", func() {
