@@ -42,6 +42,27 @@ namespace :build do
     s3_client.put(output_bucket, artifact_name, File.join(output_directory, artifact_name))
   end
 
+
+  desc 'Validate packer output AMI is available'
+  task :validate_ami do
+    # Check required environment variables
+    version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
+    ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR') # contains the ami of the image created by packer
+
+    # Get packer output data
+    version = File.read(File.join(version_dir, 'number')).chomp
+    packer_output_data = JSON.parse(File.read(File.join(ami_output_directory, "packer-output-ami-#{version}.txt")))
+    packer_output_ami = packer_output_data['ami_id']
+    packer_output_region = packer_output_data['region']
+
+    # Get packer output image name from EC2
+    ec2_describe_command = "aws ec2 describe-images --image-ids #{packer_output_ami} --region #{packer_output_region}"
+    packer_image_data = JSON.parse(exec_command(ec2_describe_command))
+    while packer_image_data['Images'].count != 1 do
+      packer_image_data = JSON.parse(exec_command(ec2_describe_command))
+    end
+  end
+
   desc 'Copy AMI from source to remaining regions'
   task :aws_ami do
     # Check required environment variables
