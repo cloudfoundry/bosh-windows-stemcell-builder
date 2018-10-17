@@ -45,7 +45,8 @@ namespace :package do
 	    'root_ephemeral_vm_type' => ENV['ROOT_EPHEMERAL_VM_TYPE'],
 	    'vm_extensions' => ENV['VM_EXTENSIONS'],
 	    'network' => ENV['NETWORK'],
-	    'mount_ephemeral_disk' => ENV['MOUNT_EPHEMERAL_DISK'] == 'true'
+	    'mount_ephemeral_disk' => ENV['MOUNT_EPHEMERAL_DISK'] == 'true',
+      'skip_ms_update_test' => ENV['SKIP_MS_UPDATE_TEST'] == 'true'
 	}
 	FileUtils.mkdir_p build_dir
 	File.open(File.join(build_dir,'config.json'), 'w') { |file| file.write(JSON.pretty_generate(config)) }
