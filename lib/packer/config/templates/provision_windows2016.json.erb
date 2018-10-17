@@ -38,6 +38,7 @@
     "restart_timeout": "1h",
     "restart_check_command": "powershell -command \"& {Write-Output \'restarted.\'}\""
   },
+  <% if install_windows_updates %>
   {
     "type": "powershell",
     "inline": [
@@ -76,6 +77,7 @@
       "Remove-Account -User Provisioner"
     ]
   },
+  <% end %>
   {
     "type": "powershell",
     "inline": [
