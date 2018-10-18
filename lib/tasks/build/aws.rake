@@ -5,6 +5,8 @@ require 'tempfile'
 namespace :build do
   class FailedAMICopyError < RuntimeError
   end
+  class FailedAMIValidationError < RuntimeError
+  end
 
   desc 'Build AWS Stemcell'
   task :aws do
@@ -55,11 +57,24 @@ namespace :build do
     packer_output_ami = packer_output_data['ami_id']
     packer_output_region = packer_output_data['region']
 
-    # Get packer output image name from EC2
-    ec2_describe_command = "aws ec2 describe-images --image-ids #{packer_output_ami} --region #{packer_output_region}"
-    packer_image_data = JSON.parse(exec_command(ec2_describe_command))
-    while packer_image_data['Images'].count != 1 do
-      packer_image_data = JSON.parse(exec_command(ec2_describe_command))
+    puts "Waiting for #{packer_output_ami} to become available..."
+
+    ami_pending = true
+    while ami_pending do
+
+      ec2_describe_command = "aws ec2 describe-images --image-ids #{packer_output_ami} " \
+         "--region #{packer_output_region} --filters Name=state,Values=available,failed"
+      ami_description = JSON.parse(exec_command(ec2_describe_command))
+
+      if ami_description['Images'].count == 1
+        ami_pending = false
+        if ami_description['Images'][0]['State'] == "available"
+          puts "AMI #{packer_output_ami} is available"
+        else
+          puts "AWS failed to create AMI #{packer_output_ami}"
+          raise FailedAMIValidationError.new("AWS failed to create AMI #{packer_output_ami}")
+        end
+      end
     end
   end
 
