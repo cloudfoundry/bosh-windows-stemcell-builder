@@ -332,7 +332,8 @@ func uploadStemcell(config *Config, bosh *BoshCommand) {
 	err = bosh.Run(fmt.Sprintf("upload-stemcell %s", matches[0]))
 	if err != nil {
 		// AWS takes a while to distribute the AMI across accounts
-		time.Sleep(2 * time.Minute)
+		time.Sleep(3 * time.Minute)
+		err = bosh.Run(fmt.Sprintf("upload-stemcell %s", matches[0]))
 	}
 	Expect(err).NotTo(HaveOccurred())
 }
