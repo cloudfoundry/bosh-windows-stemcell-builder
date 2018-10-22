@@ -96,13 +96,16 @@ describe 'VSphere' do
 
   describe "with patchfile" do
     before(:each) do
-      os_version = 'windows2012R2'
+      @os_version = 'windows2016'
       @version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
 
       ENV['AWS_ACCESS_KEY_ID']= 'some-key'
       ENV['AWS_SECRET_ACCESS_KEY'] = 'secret-key'
       ENV['AWS_REGION'] = 'some-region'
+      ENV['AZURE_STORAGE_ACCOUNT_NAME'] = 'some-account-name'
+      ENV['AZURE_STORAGE_ACCESS_KEY'] = 'some-access-key'
+      ENV['AZURE_CONTAINER_NAME'] = 'container-name'
       ENV['CACHE_DIR'] = '/tmp'
       ENV['STEMCELL_OUTPUT_BUCKET'] = 'some-stemcell-output-bucket'
       ENV['OUTPUT_BUCKET'] = 'some-output-bucket'
@@ -114,7 +117,7 @@ describe 'VSphere' do
       ENV['OWNER'] = 'owner'
       ENV['ORGANIZATION'] = 'organization'
 
-      ENV['OS_VERSION'] = os_version
+      ENV['OS_VERSION'] = @os_version
       ENV['VERSION_DIR'] = @version_dir
       ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'vsphere')}:#{ENV['PATH']}"
@@ -147,12 +150,10 @@ describe 'VSphere' do
         endpoint: nil)
         .and_return(s3_vmx)
 
-      allow(S3).to receive(:test_upload_permissions)
-
-      @vhd_version = '0-0'
+      allow(Executor).to receive(:exec_command)
+      @vhd_version = '20181709'
       @vhd_filename = "some-last-file-Containers-#{@vhd_version}-en.us.vhd"
       s3_client= double(:s3_client)
-      allow(s3_client).to receive(:put)
       allow(s3_client).to receive(:list).and_return([@vhd_filename])
       allow(s3_client).to receive(:get)
 
@@ -161,26 +162,16 @@ describe 'VSphere' do
       ).and_return(s3_client)
     end
 
-    it 'should build a vsphere stemcell from patchfile' do
-      Rake::Task['build:vsphere_patchfile'].invoke
-
+    it 'should build a vsphere stemcell and generate a patchfile' do
       packer_output_vmdk = File.join(@output_directory, 'fake.vmdk')
       expect(packer_output_vmdk).not_to be_nil
-    end
-
-    context 'when we are not authorized to upload to the S3 bucket' do
-      before(:each) do
-        allow(S3).to receive(:test_upload_permissions).and_raise(Aws::S3::Errors::Forbidden.new('', ''))
-      end
-
-      it 'should fail before building the stemcell' do
-        expect do
-          Rake::Task['build:vsphere_patchfile'].invoke
-        end.to raise_exception(Aws::S3::Errors::Forbidden)
-
-        files = Dir.glob(File.join(@output_directory, '*').gsub('\\', '/'))
-        expect(files).to be_empty
-      end
+      expect(Executor).to receive(:exec_command).with("az storage blob upload "\
+        "--container-name #{ENV['AZURE_CONTAINER_NAME']} "\
+        "--account-key #{ENV['AZURE_STORAGE_ACCESS_KEY']} "\
+        "--name #{@os_version}/patchfile-#{@version}-#{@vhd_version} "\
+        "--file #{File.join(File.expand_path(@output_directory), "patchfile-#{@version}-#{@vhd_version}")} "\
+        "--account-name #{ENV['AZURE_STORAGE_ACCOUNT_NAME']}")
+      Rake::Task['build:vsphere_patchfile'].invoke
     end
   end
 
