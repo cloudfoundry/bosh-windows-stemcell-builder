@@ -5,6 +5,7 @@ require 'tempfile'
 require_relative '../../s3'
 require_relative '../../file_helper'
 require_relative '../../stemcell/builder/vsphere'
+require_relative '../../exec_command'
 
 
 STDOUT.sync = true
@@ -48,7 +49,7 @@ namespace :build do
     vmx.put(output_directory, vmx_version)
   end
 
-  desc 'Build VSphere patchfile and create stemcell with it'
+  desc 'Build VSphere stemcell and generate a patchfile'
   task :vsphere_patchfile do
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     version = File.read(File.join(version_dir, 'number')).chomp
@@ -57,17 +58,14 @@ namespace :build do
     signature_path = File.join(output_directory, 'signature')
 
     image_bucket = Stemcell::Builder::validate_env('VHD_VMDK_BUCKET')
-    patch_output_bucket = Stemcell::Builder::validate_env('PATCH_OUTPUT_BUCKET')
     cache_dir = Stemcell::Builder::validate_env('CACHE_DIR')
-
-    S3.test_upload_permissions(patch_output_bucket, ENV["S3_ENDPOINT"])
 
     s3_client = S3::Client.new(endpoint: ENV["S3_ENDPOINT"])
 
     # Get the most recent vhd
     last_file = s3_client.list(image_bucket).select{|file| /.vhd$/.match(file)}.sort.last
     image_basename = File.basename(last_file, File.extname(last_file))
-
+    os_version = Stemcell::Builder::validate_env('OS_VERSION')
     vhd_version = FileHelper.parse_vhd_version(image_basename)
     patch_path = File.join(File.expand_path(output_directory), "patchfile-#{version}-#{vhd_version}")
 
@@ -101,7 +99,7 @@ namespace :build do
       product_key: Stemcell::Builder::validate_env('PRODUCT_KEY'),
       owner: Stemcell::Builder::validate_env('OWNER'),
       organization: Stemcell::Builder::validate_env('ORGANIZATION'),
-      os: Stemcell::Builder::validate_env('OS_VERSION'),
+      os: os_version,
       output_directory: output_directory,
       packer_vars: {},
       version: version,
@@ -123,9 +121,17 @@ namespace :build do
     diff_command = "gordiff delta #{signature_path} #{output_vmdk_path} #{patch_path}"
     puts "generating patch: #{diff_command}"
     `#{diff_command}`
-
     patch_filename = File.basename patch_path
-    s3_client.put(patch_output_bucket, patch_filename, patch_path)
+    container_name = Stemcell::Builder::validate_env('AZURE_CONTAINER_NAME')
+    storage_access_key = Stemcell::Builder::validate_env('AZURE_STORAGE_ACCESS_KEY')
+    storage_account_name = Stemcell::Builder::validate_env('AZURE_STORAGE_ACCOUNT_NAME')
+    az_upload_command = "az storage blob upload "\
+      "--container-name #{container_name} "\
+      "--account-key #{storage_access_key} "\
+      "--name #{os_version}/untested/#{patch_filename} "\
+      "--file #{patch_path} "\
+      "--account-name #{storage_account_name}"
+    Executor.exec_command(az_upload_command)
   end
 
   desc 'Build VSphere Stemcell'
