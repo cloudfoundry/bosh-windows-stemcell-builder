@@ -168,7 +168,7 @@ describe 'VSphere' do
       expect(Executor).to receive(:exec_command).with("az storage blob upload "\
         "--container-name #{ENV['AZURE_CONTAINER_NAME']} "\
         "--account-key #{ENV['AZURE_STORAGE_ACCESS_KEY']} "\
-        "--name #{@os_version}/patchfile-#{@version}-#{@vhd_version} "\
+        "--name #{@os_version}/untested/patchfile-#{@version}-#{@vhd_version} "\
         "--file #{File.join(File.expand_path(@output_directory), "patchfile-#{@version}-#{@vhd_version}")} "\
         "--account-name #{ENV['AZURE_STORAGE_ACCOUNT_NAME']}")
       Rake::Task['build:vsphere_patchfile'].invoke

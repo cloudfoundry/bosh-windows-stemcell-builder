@@ -49,7 +49,7 @@ namespace :build do
     vmx.put(output_directory, vmx_version)
   end
 
-  desc 'Build VSphere patchfile and create stemcell with it'
+  desc 'Build VSphere stemcell and generate a patchfile'
   task :vsphere_patchfile do
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     version = File.read(File.join(version_dir, 'number')).chomp
@@ -128,7 +128,7 @@ namespace :build do
     az_upload_command = "az storage blob upload "\
       "--container-name #{container_name} "\
       "--account-key #{storage_access_key} "\
-      "--name #{os_version}/#{patch_filename} "\
+      "--name #{os_version}/untested/#{patch_filename} "\
       "--file #{patch_path} "\
       "--account-name #{storage_account_name}"
     Executor.exec_command(az_upload_command)
