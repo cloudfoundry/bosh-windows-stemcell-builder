@@ -124,7 +124,7 @@ namespace :build do
     patch_filename = File.basename patch_path
 
     publish_os_version = os_version.match(/windows(.*)/)[1]
-    File.open(File.join(output_directory, 'manifest.yml'), 'w') do |f|
+    File.open(File.join(output_directory, "patchfile-#{version}-#{vhd_version}.yml"), 'w') do |f|
       f.puts "patch_file: patchfile-#{version}-#{vhd_version}"
       f.puts "os_version: #{publish_os_version}"
       f.puts "output_dir: ."
