@@ -177,7 +177,7 @@ describe 'VSphere' do
     it 'should generate a manifest.yml' do
       Rake::Task['build:vsphere_patchfile'].invoke
 
-      manifest = File.join(@output_directory, 'manifest.yml')
+      manifest = File.join(@output_directory, "patchfile-#{@version}-#{@vhd_version}.yml")
       expect(File.exist? manifest).to be(true)
       manifest_content = File.read(manifest)
       expect(manifest_content).to include("patch_file: patchfile-#{@version}-#{@vhd_version}")
