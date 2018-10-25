@@ -122,6 +122,16 @@ namespace :build do
     puts "generating patch: #{diff_command}"
     `#{diff_command}`
     patch_filename = File.basename patch_path
+
+    publish_os_version = os_version.match(/windows(.*)/)[1]
+    File.open(File.join(output_directory, 'manifest.yml'), 'w') do |f|
+      f.puts "patch_file: patchfile-#{version}-#{vhd_version}"
+      f.puts "os_version: #{publish_os_version}"
+      f.puts "output_dir: ."
+      f.puts "vhd_file: #{vhd_filename}"
+      f.puts "version: #{version}"
+    end
+
     container_name = Stemcell::Builder::validate_env('AZURE_CONTAINER_NAME')
     storage_access_key = Stemcell::Builder::validate_env('AZURE_STORAGE_ACCESS_KEY')
     storage_account_name = Stemcell::Builder::validate_env('AZURE_STORAGE_ACCOUNT_NAME')

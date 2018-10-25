@@ -162,7 +162,7 @@ describe 'VSphere' do
       ).and_return(s3_client)
     end
 
-    it 'should build a vsphere stemcell and generate a patchfile' do
+    it 'should generate a patchfile and uploads it to Azure' do
       packer_output_vmdk = File.join(@output_directory, 'fake.vmdk')
       expect(packer_output_vmdk).not_to be_nil
       expect(Executor).to receive(:exec_command).with("az storage blob upload "\
@@ -172,6 +172,19 @@ describe 'VSphere' do
         "--file #{File.join(File.expand_path(@output_directory), "patchfile-#{@version}-#{@vhd_version}")} "\
         "--account-name #{ENV['AZURE_STORAGE_ACCOUNT_NAME']}")
       Rake::Task['build:vsphere_patchfile'].invoke
+    end
+
+    it 'should generate a manifest.yml' do
+      Rake::Task['build:vsphere_patchfile'].invoke
+
+      manifest = File.join(@output_directory, 'manifest.yml')
+      expect(File.exist? manifest).to be(true)
+      manifest_content = File.read(manifest)
+      expect(manifest_content).to include("patch_file: patchfile-#{@version}-#{@vhd_version}")
+      expect(manifest_content).to include("os_version: 2016")
+      expect(manifest_content).to include("output_dir: .")
+      expect(manifest_content).to include("vhd_file: #{@vhd_filename}")
+      expect(manifest_content).to include("version: #{@version}")
     end
   end
 
