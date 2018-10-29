@@ -54,7 +54,8 @@ namespace :build do
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     version = File.read(File.join(version_dir, 'number')).chomp
 
-    output_directory = Stemcell::Builder::validate_env('OUTPUT_DIR') # packer-output must not exist before packer is run!
+    output_directory = Stemcell::Builder::validate_env('OUTPUT_DIR')
+    FileUtils.rm_rf(output_directory) # packer-output directory must not exist before packer is run!
     signature_path = File.join(output_directory, 'signature')
 
     image_bucket = Stemcell::Builder::validate_env('VHD_VMDK_BUCKET')
@@ -123,8 +124,10 @@ namespace :build do
     `#{diff_command}`
     patch_filename = File.basename patch_path
 
+    manifest_file_path = File.join(output_directory, "patchfile-#{version}-#{vhd_version}.yml")
+    puts "generating manifest file: #{manifest_file_path}"
     publish_os_version = os_version.match(/windows(.*)/)[1]
-    File.open(File.join(output_directory, "patchfile-#{version}-#{vhd_version}.yml"), 'w') do |f|
+    File.open(manifest_file_path, 'w') do |f|
       f.puts "patch_file: patchfile-#{version}-#{vhd_version}"
       f.puts "os_version: #{publish_os_version}"
       f.puts "output_dir: ."
