@@ -122,30 +122,37 @@ namespace :build do
     diff_command = "gordiff delta #{signature_path} #{output_vmdk_path} #{patch_path}"
     puts "generating patch: #{diff_command}"
     `#{diff_command}`
-    patch_filename = File.basename patch_path
-
-    manifest_directory = Stemcell::Builder::validate_env('MANIFEST_DIRECTORY')
-    manifest_file_path = File.join(manifest_directory, "patchfile-#{version}-#{vhd_version}.yml")
-    puts "generating manifest file: #{manifest_file_path}"
-    publish_os_version = os_version.match(/windows(.*)/)[1]
-    File.open(manifest_file_path, 'w') do |f|
-      f.puts "patch_file: patchfile-#{version}-#{vhd_version}"
-      f.puts "os_version: #{publish_os_version}"
-      f.puts "output_dir: ."
-      f.puts "vhd_file: #{vhd_filename}"
-      f.puts "version: #{version}"
-    end
-
+    patchfile_name =  "#{os_version}/untested/#{File.basename(patch_path)}"
     container_name = Stemcell::Builder::validate_env('AZURE_CONTAINER_NAME')
     storage_access_key = Stemcell::Builder::validate_env('AZURE_STORAGE_ACCESS_KEY')
     storage_account_name = Stemcell::Builder::validate_env('AZURE_STORAGE_ACCOUNT_NAME')
     az_upload_command = "az storage blob upload "\
       "--container-name #{container_name} "\
       "--account-key #{storage_access_key} "\
-      "--name #{os_version}/untested/#{patch_filename} "\
+      "--name #{patchfile_name} "\
       "--file #{patch_path} "\
       "--account-name #{storage_account_name}"
+    #move into Stemcell::Publisher::Azure
     Executor.exec_command(az_upload_command)
+
+    manifest_directory = Stemcell::Builder::validate_env('MANIFEST_DIRECTORY')
+    manifest_file_path = File.join(manifest_directory, "patchfile-#{version}-#{vhd_version}.yml")
+    azure_publisher = Stemcell::Publisher::Azure.new(
+      azure_storage_account: storage_account_name,
+      azure_storage_access_key: storage_access_key,
+      container_name: container_name,
+      container_path: patchfile_name
+    )
+
+    puts "generating manifest file: #{manifest_file_path}"
+    publish_os_version = os_version.match(/windows(.*)/)[1]
+    File.open(manifest_file_path, 'w') do |f|
+      f.puts "patch_file: #{azure_publisher.vhd_url}"
+      f.puts "os_version: #{publish_os_version}"
+      f.puts "output_dir: ."
+      f.puts "vhd_file: #{vhd_filename}"
+      f.puts "version: #{version}"
+    end
   end
 
   desc 'Build VSphere Stemcell'

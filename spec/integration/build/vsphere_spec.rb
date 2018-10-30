@@ -162,6 +162,12 @@ describe 'VSphere' do
       allow(S3::Client).to receive(:new).with(
         endpoint: nil
       ).and_return(s3_client)
+
+      Timecop.freeze
+    end
+
+    after(:each) do
+      Timecop.return
     end
 
     after(:each) do
@@ -169,24 +175,46 @@ describe 'VSphere' do
     end
 
     it 'should generate a patchfile and uploads it to Azure' do
+      allow(Executor).to receive(:exec_command).and_return("")
       packer_output_vmdk = File.join(@output_directory, 'fake.vmdk')
-      expect(packer_output_vmdk).not_to be_nil
-      expect(Executor).to receive(:exec_command).with("az storage blob upload "\
+      expected_upload_command = "az storage blob upload "\
         "--container-name #{ENV['AZURE_CONTAINER_NAME']} "\
         "--account-key #{ENV['AZURE_STORAGE_ACCESS_KEY']} "\
         "--name #{@os_version}/untested/patchfile-#{@version}-#{@vhd_version} "\
         "--file #{File.join(File.expand_path(@output_directory), "patchfile-#{@version}-#{@vhd_version}")} "\
-        "--account-name #{ENV['AZURE_STORAGE_ACCOUNT_NAME']}")
+        "--account-name #{ENV['AZURE_STORAGE_ACCOUNT_NAME']}"
+
+      expect(packer_output_vmdk).not_to be_nil
+      expect(Executor).to receive(:exec_command).once.with(expected_upload_command)
       Rake::Task['build:vsphere_patchfile'].invoke
     end
 
     it 'should generate a manifest.yml' do
+      validFrom = (Time.now.utc - 1.day).iso8601
+      validTo = (Time.now.utc + 2.year).iso8601
+      expected_blob_command = "az storage blob url "\
+      "--container-name #{ENV['AZURE_CONTAINER_NAME']} "\
+      "--name #{@os_version}/untested/patchfile-#{@version}-#{@vhd_version} "\
+      "--account-name #{ENV['AZURE_STORAGE_ACCOUNT_NAME']} "\
+      "--account-key #{ENV['AZURE_STORAGE_ACCESS_KEY']}"
+
+      expected_sas_commmand = "az storage container generate-sas "\
+      "--name #{ENV['AZURE_CONTAINER_NAME']} "\
+      "--permissions rl "\
+      "--account-name #{ENV['AZURE_STORAGE_ACCOUNT_NAME']} "\
+      "--account-key #{ENV['AZURE_STORAGE_ACCESS_KEY']} "\
+      "--start #{validFrom} "\
+      "--expiry #{validTo}"
+
+      expect(Executor).to receive(:exec_command).once.with(expected_blob_command).and_return(" \"some-blob-url\" ")
+      expect(Executor).to receive(:exec_command).once.with(expected_sas_commmand).and_return(" \"some-sas-key\" ")
+
       Rake::Task['build:vsphere_patchfile'].invoke
 
       manifest = File.join(@manifest_directory, "patchfile-#{@version}-#{@vhd_version}.yml")
       expect(File.exist? manifest).to be(true)
       manifest_content = File.read(manifest)
-      expect(manifest_content).to include("patch_file: patchfile-#{@version}-#{@vhd_version}")
+      expect(manifest_content).to include("patch_file: some-blob-url?some-sas-key")
       expect(manifest_content).to include("os_version: 2016")
       expect(manifest_content).to include("output_dir: .")
       expect(manifest_content).to include("vhd_file: #{@vhd_filename}")
