@@ -53,7 +53,7 @@ END
 
       def create_azure_sas
         now = Time.now.utc
-        next_year = (now + 1.year).iso8601
+        next_year = (now + 2.year).iso8601
         yesterday = (now - 1.day).iso8601
         create_sas_cmd = "az storage container generate-sas --name #{container_name} "\
           "--permissions rl "\
