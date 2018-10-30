@@ -96,6 +96,7 @@ describe 'VSphere' do
 
   describe "with patchfile" do
     before(:each) do
+      @manifest_directory = Dir.mktmpdir('manifest')
       @os_version = 'windows2016'
       @version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
@@ -119,6 +120,7 @@ describe 'VSphere' do
 
       ENV['OS_VERSION'] = @os_version
       ENV['VERSION_DIR'] = @version_dir
+      ENV['MANIFEST_DIRECTORY'] = @manifest_directory
       ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
       ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'vsphere')}:#{ENV['PATH']}"
 
@@ -162,6 +164,10 @@ describe 'VSphere' do
       ).and_return(s3_client)
     end
 
+    after(:each) do
+      FileUtils.rm_rf(@manifest_directory)
+    end
+
     it 'should generate a patchfile and uploads it to Azure' do
       packer_output_vmdk = File.join(@output_directory, 'fake.vmdk')
       expect(packer_output_vmdk).not_to be_nil
@@ -177,7 +183,7 @@ describe 'VSphere' do
     it 'should generate a manifest.yml' do
       Rake::Task['build:vsphere_patchfile'].invoke
 
-      manifest = File.join(@output_directory, "patchfile-#{@version}-#{@vhd_version}.yml")
+      manifest = File.join(@manifest_directory, "patchfile-#{@version}-#{@vhd_version}.yml")
       expect(File.exist? manifest).to be(true)
       manifest_content = File.read(manifest)
       expect(manifest_content).to include("patch_file: patchfile-#{@version}-#{@vhd_version}")
