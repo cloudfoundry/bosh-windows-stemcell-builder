@@ -124,7 +124,8 @@ namespace :build do
     `#{diff_command}`
     patch_filename = File.basename patch_path
 
-    manifest_file_path = File.join(output_directory, "patchfile-#{version}-#{vhd_version}.yml")
+    manifest_directory = Stemcell::Builder::validate_env('MANIFEST_DIRECTORY')
+    manifest_file_path = File.join(manifest_directory, "patchfile-#{version}-#{vhd_version}.yml")
     puts "generating manifest file: #{manifest_file_path}"
     publish_os_version = os_version.match(/windows(.*)/)[1]
     File.open(manifest_file_path, 'w') do |f|
