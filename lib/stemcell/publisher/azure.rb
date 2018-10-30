@@ -30,14 +30,14 @@ END
         puts instructions
       end
 
-      def copy_vhd_to_published_storage_account
+      def copy_from_storage_account(source_storage_account, source_storage_key)
         login_to_azure
         azure_copy_command = "az storage blob copy start "\
-          "--source-account-key \"#{azure_storage_access_key}\" "\
-          "--source-account-name \"#{azure_storage_account}\" "\
+          "--source-account-key \"#{source_storage_key}\" "\
+          "--source-account-name \"#{source_storage_account}\" "\
           "--source-container \"system\" "\
           "--source-blob \"#{container_path}\" "\
-          "--account-name \"#{azure_published_storage_account}\" "\
+          "--account-name \"#{azure_storage_account}\" "\
           "--destination-container \"system\" "\
           "--destination-blob \"#{container_path}\""
         puts "running azure copy"
@@ -45,10 +45,11 @@ END
         Executor.exec_command_no_output(azure_copy_command)
       end
 
-      private
       def vhd_url
         retrieve_blob_url + "?" + create_azure_sas
       end
+
+      private
 
       def create_azure_sas
         now = Time.now.utc
@@ -56,7 +57,7 @@ END
         yesterday = (now - 1.day).iso8601
         create_sas_cmd = "az storage container generate-sas --name #{container_name} "\
           "--permissions rl "\
-          "--account-name #{azure_published_storage_account} --account-key #{azure_published_storage_access_key} "\
+          "--account-name #{azure_storage_account} --account-key #{azure_storage_access_key} "\
           "--start #{yesterday} --expiry #{next_year}"
 
         Executor.exec_command(create_sas_cmd).strip.gsub('"','')
@@ -66,7 +67,7 @@ END
         blob_url_command = "az storage blob url "\
         "--container-name #{container_name} "\
         "--name #{container_path} "\
-        "--account-name #{azure_published_storage_account} --account-key #{azure_published_storage_access_key}"
+        "--account-name #{azure_storage_account} --account-key #{azure_storage_access_key}"
 
         Executor.exec_command(blob_url_command).strip.gsub('"','')
       end
