@@ -28,12 +28,6 @@
   },
   {
     "type": "windows-restart",
-   "restart_command": "powershell.exe -Command Remove-DockerPackage",
-    "restart_timeout": "1h",
-   "restart_check_command": "powershell -command \"& {Write-Output \'restarted.\'}\""
-  },
-  {
-    "type": "windows-restart",
     "restart_command": "powershell.exe -Command Install-CFFeatures",
     "restart_timeout": "1h",
     "restart_check_command": "powershell -command \"& {Write-Output \'restarted.\'}\""
