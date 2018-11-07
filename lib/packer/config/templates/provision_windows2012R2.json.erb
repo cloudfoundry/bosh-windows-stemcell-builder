@@ -177,6 +177,22 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
+      "Disable-TLS11"
+    ]
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
+      "Enable-TLS12"
+    ]
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
       "Disable-3DES"
     ]
   },

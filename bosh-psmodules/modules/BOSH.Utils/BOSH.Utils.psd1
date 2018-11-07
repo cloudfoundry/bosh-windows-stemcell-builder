@@ -18,6 +18,8 @@ FunctionsToExport = @(
     'Clear-ProxySettings',
     'Disable-RC4',
     'Disable-TLS1',
+    'Disable-TLS11',
+    'Enable-TLS12',
     'Disable-3DES',
     'Disable-DCOM',
     'Get-OSVersion')

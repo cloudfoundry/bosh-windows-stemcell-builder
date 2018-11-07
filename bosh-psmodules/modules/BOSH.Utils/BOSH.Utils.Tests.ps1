@@ -178,7 +178,6 @@ Describe "Disable-TLS1" {
         $serverPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Server'
         $serverPathExists = Test-Path -Path $serverPath
 
-        $oldServerEnabledValue = (Get-ItemProperty -path $serverPath -ErrorAction SilentlyContinue).'Enabled'
         $oldServerDisabledValue =  (Get-ItemProperty -path $serverPath -ErrorAction SilentlyContinue).'DisabledByDefault'
         $oldServerValue = (Get-ItemProperty -path $serverPath -ErrorAction SilentlyContinue).'Enabled'
 
@@ -201,6 +200,60 @@ Describe "Disable-TLS1" {
 
         Restore-RegistryState -KeyExists $clientPathExists -KeyPath $clientPath -ValueName 'Enabled' -ValueData $oldClientValue
         Restore-RegistryState -KeyExists $clientPathExists -KeyPath $clientPath -ValueName 'DisabledByDefault' -ValueData $oldClientDisabledValue
+    }
+}
+
+Describe "Disable-TLS11" {
+    It "Disables the use of TLS 1.0" {
+        $serverPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Server'
+        $serverPathExists = Test-Path -Path $serverPath
+
+        $oldServerDisabledValue =  (Get-ItemProperty -path $serverPath -ErrorAction SilentlyContinue).'DisabledByDefault'
+        $oldServerValue = (Get-ItemProperty -path $serverPath -ErrorAction SilentlyContinue).'Enabled'
+
+        $clientPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Client'
+        $clientPathExists = Test-Path -Path $clientPath
+
+        $oldClientEnabledValue = (Get-ItemProperty -path $clientPath -ErrorAction SilentlyContinue).'Enabled'
+        $oldClientDisabledValue = (Get-ItemProperty -path $clientPath -ErrorAction SilentlyContinue).'DisabledByDefault'
+
+        { Disable-TLS11 } | Should Not Throw
+
+        (Get-ItemProperty -Path $serverPath).'Enabled' | Should Be "0"
+        (Get-ItemProperty -Path $serverPath).'DisabledByDefault' | Should Be "1"
+
+        (Get-ItemProperty -Path $clientPath).'Enabled' | Should Be "0"
+        (Get-ItemProperty -Path $clientPath).'DisabledByDefault' | Should Be "1"
+
+        Restore-RegistryState -KeyExists $serverPathExists -KeyPath $serverPath -ValueName 'Enabled' -ValueData $oldServerValue
+        Restore-RegistryState -KeyExists $serverPathExists -KeyPath $serverPath -ValueName 'DisabledByDefault' -ValueData $oldServerDisabledValue
+
+        Restore-RegistryState -KeyExists $clientPathExists -KeyPath $clientPath -ValueName 'Enabled' -ValueData $oldClientValue
+        Restore-RegistryState -KeyExists $clientPathExists -KeyPath $clientPath -ValueName 'DisabledByDefault' -ValueData $oldClientDisabledValue
+    }
+}
+
+Describe "Enable-TLS12" {
+    It "Disables the use of TLS 1.0" {
+        $serverPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server'
+        $serverPathExists = Test-Path -Path $serverPath
+
+        $oldServerValue = (Get-ItemProperty -path $serverPath -ErrorAction SilentlyContinue).'Enabled'
+
+        $clientPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client'
+        $clientPathExists = Test-Path -Path $clientPath
+
+        $oldClientEnabledValue = (Get-ItemProperty -path $clientPath -ErrorAction SilentlyContinue).'Enabled'
+
+        { Enable-TLS12 } | Should Not Throw
+
+        (Get-ItemProperty -Path $serverPath).'Enabled' | Should Be "1"
+
+        (Get-ItemProperty -Path $clientPath).'Enabled' | Should Be "1"
+
+        Restore-RegistryState -KeyExists $serverPathExists -KeyPath $serverPath -ValueName 'Enabled' -ValueData $oldServerValue
+
+        Restore-RegistryState -KeyExists $clientPathExists -KeyPath $clientPath -ValueName 'Enabled' -ValueData $oldClientValue
     }
 }
 
