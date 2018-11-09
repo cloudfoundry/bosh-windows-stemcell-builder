@@ -83,17 +83,12 @@ namespace :build do
     # Check required environment variables
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR') # contains the ami of the image created by packer
-    default_stemcell_directory = Stemcell::Builder::validate_env_dir('DEFAULT_STEMCELL_DIR') # contains the stemcell tgz created with packer
     destination_regions = Stemcell::Builder::validate_env('REGIONS').split(',')
     copied_amis = Array.new
 
     # Setup dir where we will save the individual regional stemcell tgz
     copied_stemcells_directory = File.absolute_path("copied-regional-stemcells")
     FileUtils.mkdir_p(copied_stemcells_directory)
-
-    # Directory where the final aggregate light stemcell will be saved
-    output_directory = File.absolute_path("bosh-windows-stemcell")
-    FileUtils.mkdir_p(output_directory)
 
     # Get packer output data
     version = File.read(File.join(version_dir, 'number')).chomp
@@ -124,16 +119,6 @@ namespace :build do
       aws_builder.build([new_ami])
     end
 
-    # Move the default stemcell into the copied stemcells directory so that it will be aggregated
-    FileUtils.cp(Dir[File.join(default_stemcell_directory, "*.tgz")].first, copied_stemcells_directory)
-
-    # Aggregate amis
-    Stemcell::Packager.aggregate_the_amis(copied_stemcells_directory, output_directory, packer_output_region)
-
-    # Create stemcell sha file
-    stemcell_tarball_file = Dir[File.join(output_directory, "*.tgz")].first
-    Stemcell::Packager.generate_sha(stemcell_tarball_file, output_directory)
-
     #Copy region is asynchronous and takes time. Need to poll each ami and make them public once they are available
     while copied_amis.count > 0 do
       copied_amis.delete_if do |copied_ami|
@@ -159,6 +144,34 @@ namespace :build do
       end
     end
 
+  end
+
+  desc 'Aggregate AMIs into stemcell manifest'
+  task :aws_aggregate do
+    version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
+    ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR') # contains the ami of the image created by packer
+
+    output_directory = File.absolute_path("bosh-windows-stemcell")
+    copied_stemcells_directory = File.absolute_path("copied-regional-stemcells")
+    FileUtils.mkdir_p(output_directory)
+    FileUtils.mkdir_p(copied_stemcells_directory)
+
+    version = File.read(File.join(version_dir, 'number')).chomp
+    packer_output_data = JSON.parse(File.read(File.join(ami_output_directory, "packer-output-ami-#{version}.txt")))
+    packer_output_region = packer_output_data['region']
+
+    stemcell_directories = Stemcell::Builder::validate_env('COPIED_STEMCELL_DIRECTORIES').split(',')
+    stemcell_directories.each do |stemcell_dir|
+      FileUtils.cp_r(Dir[File.join(stemcell_dir, "*.tgz")], copied_stemcells_directory)
+    end
+
+    default_stemcell_directory = Stemcell::Builder::validate_env_dir('DEFAULT_STEMCELL_DIR') # contains the stemcell tgz created with packer
+    FileUtils.cp(Dir[File.join(default_stemcell_directory, "*.tgz")].first, copied_stemcells_directory)
+
+    Stemcell::Packager.aggregate_the_amis(copied_stemcells_directory, output_directory, packer_output_region)
+
+    stemcell_tarball_file = Dir[File.join(output_directory, "*.tgz")].first
+    Stemcell::Packager.generate_sha(stemcell_tarball_file, output_directory)
   end
 end
 
