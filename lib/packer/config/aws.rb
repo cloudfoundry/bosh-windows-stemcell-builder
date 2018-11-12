@@ -14,6 +14,8 @@ module Packer
       end
 
       def builders
+        stemcell_builder_dir = File.expand_path('../../../../', __FILE__)
+        packer_ci_private_key_location = ENV.fetch('PACKER_CI_PRIVATE_KEY_LOCATION', '../packer-ci-private-key/key')
         [
           {
             name: "amazon-ebs-#{@region[:name]}",
@@ -31,11 +33,11 @@ module Packer
             communicator: 'winrm',
             winrm_username: 'Administrator',
             winrm_timeout: '1h',
-            user_data_file: 'scripts/aws/setup_winrm.txt',
+            user_data_file: File.join(stemcell_builder_dir, 'scripts', 'aws', 'setup_winrm.txt'),
             security_group_id: @region[:security_group],
             ami_groups: 'all',
             ssh_keypair_name: 'packer_ci',
-            ssh_private_key_file: '../packer-ci-private-key/key',
+            ssh_private_key_file: packer_ci_private_key_location,
             run_tags: { Name: "#{@vm_prefix}-#{Time.now.to_i}" }
           }
         ]
