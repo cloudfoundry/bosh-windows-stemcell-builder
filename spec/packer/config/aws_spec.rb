@@ -55,7 +55,6 @@ describe Packer::Config::Aws do
         communicator: 'winrm',
         winrm_username: 'Administrator',
         winrm_timeout: '1h',
-        user_data_file: 'scripts/aws/setup_winrm.txt',
         security_group_id: 'sg1',
         ami_groups: 'all',
         run_tags: { Name: "some-vm-prefix-#{Time.now.to_i}" }
@@ -68,6 +67,7 @@ describe Packer::Config::Aws do
       it 'returns the baseline builders' do
         expect(builders[0]).to include(baseline_builders)
         expect(builders[0][:ami_name]).to match(/BOSH-.*-region1/)
+        expect(builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
       end
     end
 

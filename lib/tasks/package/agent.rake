@@ -16,15 +16,20 @@ end
 namespace :package do
     desc 'Package BOSH Agent and dependencies into agent.zip'
     task :agent do
-        build_dir = File.expand_path('../../../../build', __FILE__)
+        base_dir_location = ENV.fetch('BUILD_BASE_DIR', '../../../../')
+
+        base_dir = File.expand_path(base_dir_location, __FILE__)
+        build_dir = File.join(base_dir, 'build')
         agent_dir = File.join(build_dir,'compiled-agent')
         deps_dir = File.join(agent_dir,'deps')
+
+        stemcell_builder_dir = File.expand_path('../../../../', __FILE__)
 
         FileUtils.mkdir_p(agent_dir)
         FileUtils.mkdir_p(deps_dir)
 
-        ENV['GOPATH'] = Dir.pwd
-        Dir.chdir(File.join('src', 'github.com', 'cloudfoundry' ,'bosh-agent')) do
+        ENV['GOPATH'] = stemcell_builder_dir
+        Dir.chdir(File.join(stemcell_builder_dir, 'src', 'github.com', 'cloudfoundry' ,'bosh-agent')) do
             ENV['GOOS'] = 'windows'
             ENV['GOARCH'] = 'amd64'
             version_file = File.join('main', 'version.go')

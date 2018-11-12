@@ -6,8 +6,13 @@ require_relative '../../zip_file'
 namespace :package do
     desc 'Package BOSH psmodules into bosh-psmodules.zip'
     task :psmodules do
-        build_dir = File.expand_path('../../../../build', __FILE__)
-        psmodules_dir = File.join(Dir.pwd,'bosh-psmodules','modules')
+        base_dir_location = ENV.fetch('BUILD_BASE_DIR', '../../../../')
+        base_dir = File.expand_path(base_dir_location, __FILE__)
+
+        build_dir = File.join(base_dir, 'build')
+
+        stemcell_builder_dir = File.expand_path('../../../../', __FILE__)
+        psmodules_dir = File.join(stemcell_builder_dir,'bosh-psmodules','modules')
 
         FileUtils.mkdir_p(build_dir)
 
