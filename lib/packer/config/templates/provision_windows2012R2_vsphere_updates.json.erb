@@ -5,9 +5,15 @@
     "destination": "C:\\provision\\bosh-psmodules.zip"
   },
   {
+    "type": "file",
+    "source": "scripts/install-bosh-psmodules.ps1",
+    "destination": "C:\\provision\\install-bosh-psmodules.ps1"
+  },
+  {
     "type": "powershell",
-    "scripts": [
-      "scripts/install-bosh-psmodules.ps1"
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "C:\\provision\\install-bosh-psmodules.ps1"
     ]
   },
   {

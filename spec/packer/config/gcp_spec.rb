@@ -104,7 +104,8 @@ describe Packer::Config::Gcp do
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
-          {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
+          {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1"},
+          {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
           {'type'=>'powershell', 'inline'=>['$ErrorActionPreference = "Stop";',
             'trap { $host.SetShouldExit(1) }',
             'Set-ProxySettings ']},
@@ -164,7 +165,8 @@ describe Packer::Config::Gcp do
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip"},
-          {"type"=>"powershell", "scripts"=>["scripts/install-bosh-psmodules.ps1"]},
+          {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1"},
+          {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
           {'type'=>'powershell', 'inline'=>['$ErrorActionPreference = "Stop";',
                                             'trap { $host.SetShouldExit(1) }',
                                             'Set-ProxySettings ']},
@@ -212,7 +214,8 @@ describe Packer::Config::Gcp do
         ).provisioners
         expected_provisioners_except_lgpo = [
           {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip"},
-          {"type" => "powershell", "scripts" => ["scripts/install-bosh-psmodules.ps1"]},
+          {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1"},
+          {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
           {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
             'trap { $host.SetShouldExit(1) }',
             'Set-ProxySettings ']},
