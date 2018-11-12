@@ -84,12 +84,14 @@ namespace :build do
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR') # contains the ami of the image created by packer
     destination_regions = Stemcell::Builder::validate_env('REGIONS').split(',')
+    default_stemcell_directory = Stemcell::Builder::validate_env_dir('DEFAULT_STEMCELL_DIR') # contains the stemcell tgz created with packer
     copied_amis = Array.new
 
     # Setup dir where we will save the individual regional stemcell tgz
     copied_stemcells_directory = File.absolute_path("copied-regional-stemcells")
     FileUtils.mkdir_p(copied_stemcells_directory)
 
+    FileUtils.cp(Dir[File.join(default_stemcell_directory, "*.tgz")].first, copied_stemcells_directory)
     # Get packer output data
     version = File.read(File.join(version_dir, 'number')).chomp
     packer_output_data = JSON.parse(File.read(File.join(ami_output_directory, "packer-output-ami-#{version}.txt")))
@@ -165,8 +167,6 @@ namespace :build do
       FileUtils.cp_r(Dir[File.join(stemcell_dir, "*.tgz")], copied_stemcells_directory)
     end
 
-    default_stemcell_directory = Stemcell::Builder::validate_env_dir('DEFAULT_STEMCELL_DIR') # contains the stemcell tgz created with packer
-    FileUtils.cp(Dir[File.join(default_stemcell_directory, "*.tgz")].first, copied_stemcells_directory)
 
     Stemcell::Packager.aggregate_the_amis(copied_stemcells_directory, output_directory, packer_output_region)
 

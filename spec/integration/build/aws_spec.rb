@@ -130,6 +130,11 @@ describe 'Aws' do
         File.join(@amis_dir, "packer-output-ami-#{@version}.txt"),
         {'region' => 'us-east-1', 'ami_id' => 'ami-east1id'}.to_json
       )
+
+      ENV['DEFAULT_STEMCELL_DIR'] = @default_stemcell_dir = Dir.mktmpdir
+      fixtures_dir = File.join('spec', 'fixtures', 'aws', 'amis')
+      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-us-east-1.tgz')].first, @default_stemcell_dir)
+
       ENV['REGIONS'] = 'us-east-2'
       @copied_stemcells_dir = 'copied-regional-stemcells'
 
@@ -174,7 +179,11 @@ describe 'Aws' do
 
       Rake::Task['build:aws_ami'].invoke
 
-      copied_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")].first
+      default_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")][0]
+      manifest = YAML.load(read_from_tgz(default_stemcell, 'stemcell.MF'))
+      expect(manifest['cloud_properties']['ami']['us-east-1']).to eq ('us-east-1-ami')
+
+      copied_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")][1]
       manifest = YAML.load(read_from_tgz(copied_stemcell, 'stemcell.MF'))
       expect(manifest['cloud_properties']['ami']['us-east-2']).to eq ('ami-east2id')
     end
@@ -226,10 +235,9 @@ describe 'Aws' do
           {'region' => 'us-east-1', 'ami_id' => 'ami-east1id'}.to_json
       )
 
-      ENV['DEFAULT_STEMCELL_DIR'] = @default_stemcell_dir = Dir.mktmpdir
       fixtures_dir = File.join('spec', 'fixtures', 'aws', 'amis')
 
-      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-us-east-1.tgz')].first, @default_stemcell_dir)
+      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-us-east-1.tgz')].first, @copied1)
       FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-1.tgz')].first, @copied1)
       FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-2.tgz')].first, @copied2)
       FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-3.tgz')].first, @copied2)
