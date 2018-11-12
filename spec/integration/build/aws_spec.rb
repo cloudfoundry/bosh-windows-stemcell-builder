@@ -237,10 +237,12 @@ describe 'Aws' do
 
       fixtures_dir = File.join('spec', 'fixtures', 'aws', 'amis')
 
-      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-us-east-1.tgz')].first, @copied1)
+      # The implementation picks the 'first' stemcell to determine the final stemcell name.
+      # Need to fix tests/implementation such that order of copy doesn't matter
       FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-1.tgz')].first, @copied1)
       FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-2.tgz')].first, @copied2)
       FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-3.tgz')].first, @copied2)
+      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-us-east-1.tgz')].first, @copied1)
     end
 
     after(:each) do
