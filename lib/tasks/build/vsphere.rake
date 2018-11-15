@@ -152,6 +152,7 @@ namespace :build do
       f.puts "output_dir: ."
       f.puts "vhd_file: #{vhd_filename}"
       f.puts "version: #{version}"
+      f.puts "api_version: 2"
     end
   end
 
