@@ -214,6 +214,7 @@ describe 'VSphere' do
       manifest = File.join(@manifest_directory, "patchfile-#{@version}-#{@vhd_version}.yml")
       expect(File.exist? manifest).to be(true)
       manifest_content = File.read(manifest)
+      expect(manifest_content).to include("api_version: 2")
       expect(manifest_content).to include("patch_file: some-blob-url?some-sas-key")
       expect(manifest_content).to include("os_version: 2016")
       expect(manifest_content).to include("output_dir: .")

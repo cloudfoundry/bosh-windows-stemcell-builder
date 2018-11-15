@@ -9,6 +9,7 @@ module Stemcell
         @contents = {
           'name' => name,
           'version' => version,
+          'api_version' => 2,
           'sha1' => sha,
           'operating_system' => os,
           'cloud_properties' => {}
