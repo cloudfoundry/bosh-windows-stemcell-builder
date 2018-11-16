@@ -532,9 +532,9 @@ describe Packer::Config do
               bypass_list: 'bee'
           ).provisioners
           expected_provisioners_except_lgpo = [
-              {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip"},
-              {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1"},
-              {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
+              {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before"=>"60s"},
+              {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1", "pause_before"=>"60s"},
+              {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], 'pause_before'=>'60s'},
               {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                     'trap { $host.SetShouldExit(1) }',
                                                     'Set-ProxySettings foo bar bee']},
@@ -542,8 +542,9 @@ describe Packer::Config do
               {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                     'trap { $host.SetShouldExit(1) }',
                                                     'Upgrade-PSVersion'],
-               'elevated_user' => 'Provisioner',
-               'elevated_password' => "some-password!"
+                                                    'elevated_user' => 'Provisioner',
+                                                    'elevated_password' => "some-password!",
+                                                    'pause_before'=>'30s'
               },
               {"type" => "windows-restart"},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},

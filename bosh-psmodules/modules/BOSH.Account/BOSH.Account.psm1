@@ -18,9 +18,13 @@ function Add-Account {
 
     Write-Log "Adding local user $User to $Group."
     $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
+    Write-Log $adsi
     $AdminGroup = $adsi.Children | where {$_.SchemaClassName -eq 'group' -and $_.Name -eq $Group }
+    Write-Log $AdminGroup
     $UserObject = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $User }
+    Write-Log $UserObject
     $AdminGroup.Add($UserObject.Path)
+    Write-Log "Completed adding $User to $Group"
 }
 
 <#
