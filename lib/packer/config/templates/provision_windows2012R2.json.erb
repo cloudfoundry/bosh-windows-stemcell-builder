@@ -2,19 +2,22 @@
   {
     "type": "file",
     "source": "build/bosh-psmodules.zip",
-    "destination": "C:\\provision\\bosh-psmodules.zip"
+    "destination": "C:\\provision\\bosh-psmodules.zip",
+    "pause_before": "60s"
   },
   {
     "type": "file",
     "source": "scripts/install-bosh-psmodules.ps1",
-    "destination": "C:\\provision\\install-bosh-psmodules.ps1"
+    "destination": "C:\\provision\\install-bosh-psmodules.ps1",
+    "pause_before": "60s"
   },
   {
     "type": "powershell",
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "C:\\provision\\install-bosh-psmodules.ps1"
-    ]
+    ],
+    "pause_before": "60s"
   },
   {
     "type": "powershell",
@@ -40,7 +43,8 @@
       "Upgrade-PSVersion"
     ],
     "elevated_user": "Provisioner",
-    "elevated_password": "<%= password %>"
+    "elevated_password": "<%= password %>",
+    "pause_before": "30s"
   },
   {
     "type": "windows-restart"
