@@ -15,7 +15,7 @@ function Write-Log {
 
    $msg = "{0} {1}" -f (Get-Date -Format o), $Message
    Add-Content -Path $LogFile -Value $msg -Encoding 'UTF8'
-   $msg
+   Write-Host $msg
 }
 
 function Get-Log {
