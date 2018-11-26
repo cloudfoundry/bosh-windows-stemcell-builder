@@ -1,6 +1,8 @@
 module Stemcell
   class Builder
     class Gcp < Base
+      attr_accessor :image_url
+
       def initialize(account_json:, source_image:, image_family:, vm_prefix:, **args)
         @account_json = account_json
         @project_id = JSON.parse(@account_json)['project_id']
@@ -11,8 +13,8 @@ module Stemcell
       end
 
       def build
-        image_url = run_packer
-        manifest = Manifest::Gcp.new(@version, @os, image_url).dump
+        @image_url = run_packer
+        manifest = Manifest::Gcp.new(@version, @os, @image_url).dump
         super(
           iaas: 'google-kvm',
           is_light: true,
