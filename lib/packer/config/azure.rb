@@ -44,8 +44,7 @@ module Packer
                 'winrm_use_ssl' => 'true',
                 'winrm_insecure' => 'true',
                 'winrm_timeout' => '1h',
-                'winrm_username' => 'packer',
-                'winrm_password' => 'Password123!'
+                'winrm_username' => 'packer'
             }
         ]
       end
