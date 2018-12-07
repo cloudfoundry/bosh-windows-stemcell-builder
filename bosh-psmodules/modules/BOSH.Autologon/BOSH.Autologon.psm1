@@ -13,10 +13,11 @@ function Enable-Autologon {
         [string]$User="Provisioner"
     )
 
-    Write-Log "Enable Autologon"
+    Write-Log "Enabling Autologon"
     Set-ItemProperty -Path $RegistryKey -Name AutoAdminLogon -Value 1 -Force
     Set-ItemProperty -Path $RegistryKey -Name DefaultUserName -Value $User -Force
     Set-ItemProperty -Path $RegistryKey -Name DefaultPassword -Value $Password -Force
+    Write-Log "Enabled Autologon"
 }
 
 function Disable-Autologon {
