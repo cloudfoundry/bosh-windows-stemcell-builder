@@ -98,10 +98,8 @@ function Protect-CFCell {
   Write-Log "Getting WinRM config"
   $winrm_config = & cmd.exe /c 'winrm get winrm/config'
   Write-Log "$winrm_config"
-  Write-Log "Getting WinRM config"
-  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
-  Write-Log "$winrm_config"
   disable-service("WinRM")
+  Get-Service | Where-Object {$_.Name -eq "WinRM" } | Stop-Service -NoWait
   disable-service("W3Svc")
   disable-rdp
   set-firewall
