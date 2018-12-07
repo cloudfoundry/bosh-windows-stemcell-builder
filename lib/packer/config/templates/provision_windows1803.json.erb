@@ -85,14 +85,6 @@
   },
   <% end %>
   {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
-      "Protect-CFCell"
-    ]
-  },
-  {
     "type": "file",
     "source": "../sshd/OpenSSH-Win64.zip",
     "destination": "C:\\provision\\OpenSSH-Win64.zip"
@@ -177,6 +169,14 @@
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
       "Clear-Provisioner"
+    ]
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
+      "Protect-CFCell"
     ]
   },
   <% if iaas == "vsphere" %>
