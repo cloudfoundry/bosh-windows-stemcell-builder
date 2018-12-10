@@ -35,7 +35,6 @@ function Wait-WindowsUpdates {
     Param([string]$Password,[string]$User)
 
     Enable-Autologon -Password $Password -User $User
-    shutdown /r /c "packer restart" /t 5
 
     Write-Log "Getting WinRM config"
     $winrm_config = & cmd.exe /c 'winrm get winrm/config'
