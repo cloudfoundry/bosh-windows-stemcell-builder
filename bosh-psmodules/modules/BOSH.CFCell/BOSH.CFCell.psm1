@@ -67,8 +67,6 @@ function Install-CFFeatures2016 {
 
   Write-Log "Setting WinRM startup type to automatic"
   Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
-  shutdown /r /c "packer restart" /t 5
-  net stop winrm
 }
 
 function Wait-ForNewIfaces() {
@@ -176,7 +174,6 @@ function get-firewall {
   $firewall = (Get-NetFirewallProfile -Name $profile)
   $result = "{0},{1},{2}" -f $profile,$firewall.DefaultInboundAction,$firewall.DefaultOutboundAction
   return $result
-
 }
 
 function check-firewall {
@@ -354,7 +351,4 @@ function Remove-DockerPackage {
     Uninstall-WindowsFeature Hyper-V
 
     Write-Log "Uninstalling Docker: Complete"
-
-    shutdown /r /c "packer restart" /t 5
-    net stop winrm
 }
