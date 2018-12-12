@@ -63,9 +63,7 @@
   },
   {
     "type": "windows-restart",
-    "restart_command": "powershell.exe -Command Wait-WindowsUpdates -Password <%= password %> -User Provisioner",
-    "restart_timeout": "12h",
-    "restart_check_command": "powershell -command \"& {Write-Output \'restarted.\'}\""
+    "restart_timeout": "12h"
   },
   {
     "type": "powershell",
