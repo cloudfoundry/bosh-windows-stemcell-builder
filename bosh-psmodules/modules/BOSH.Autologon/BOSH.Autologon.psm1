@@ -15,6 +15,7 @@ function Enable-Autologon {
 
     Write-Log "Enable Autologon"
     Set-ItemProperty -Path $RegistryKey -Name AutoAdminLogon -Value 1 -Force
+    Set-ItemProperty -Path $RegistryKey -Name AutoLogonCount -Value 50 -Force
     Set-ItemProperty -Path $RegistryKey -Name DefaultUserName -Value $User -Force
     Set-ItemProperty -Path $RegistryKey -Name DefaultPassword -Value $Password -Force
 }
