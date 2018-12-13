@@ -151,7 +151,7 @@ namespace :build do
       f.puts "os_version: #{publish_os_version}"
       f.puts "output_dir: ."
       f.puts "vhd_file: #{vhd_filename}"
-      f.puts "version: #{version}"
+      f.puts "stemcell_version: #{version}"
       f.puts "api_version: 2"
     end
   end
