@@ -11,7 +11,7 @@ function Install-CFFeatures {
       Install-CFFeatures2012
     }
     "10.0.*" {
-      Install-CFFeatures2016
+      Install-CFFeatures2016 -ForceReboot
     }
     default {
       Write-Error "Unsupported Windows version $($OS.Version)"
@@ -27,7 +27,7 @@ function Install-CFFeatures {
 #>
 function Install-CFFeatures2012 {
   Write-Log "Getting WinRM config"
-  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  $winrm_config = Get-WinRMConfig
   Write-Log "$winrm_config"
 
   Write-Log "Installing CloudFoundry Cell Windows 2012 Features"
@@ -51,8 +51,10 @@ function Install-CFFeatures2012 {
     This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows 2016
 #>
 function Install-CFFeatures2016 {
+  param([switch]$ForceReboot)
+
   Write-Log "Getting WinRM config"
-  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  $winrm_config = Get-WinRMConfig
   Write-Log "$winrm_config"
 
   Write-Log "Installing CloudFoundry Cell Windows 2016 Features"
@@ -67,6 +69,10 @@ function Install-CFFeatures2016 {
 
   Write-Log "Setting WinRM startup type to automatic"
   Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
+
+  if ($ForceReboot -eq $true) {
+      Restart-Computer
+  }
 }
 
 function Wait-ForNewIfaces() {
@@ -94,17 +100,17 @@ function Wait-ForNewIfaces() {
 
 function Protect-CFCell {
   Write-Log "Getting WinRM config"
-  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  $winrm_config = Get-WinRMConfig
   Write-Log "$winrm_config"
   Write-Log "Getting WinRM config"
-  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  $winrm_config = Get-WinRMConfig
   Write-Log "$winrm_config"
   disable-service("WinRM")
   disable-service("W3Svc")
   disable-rdp
   set-firewall
   Write-Log "Getting WinRM config"
-  $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+  $winrm_config = Get-WinRMConfig
   Write-Log "$winrm_config"
 
   Write-Log "Disabling NetBIOS over TCP"

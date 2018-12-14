@@ -37,13 +37,13 @@ function Wait-WindowsUpdates {
     Enable-Autologon -Password $Password -User $User
 
     Write-Log "Getting WinRM config"
-    $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+    $winrm_config = Get-WinRMConfig
     Write-Log "$winrm_config"
 
     disable-service("WinRM")
 
     Write-Log "Getting WinRM config"
-    $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+    $winrm_config = Get-WinRMConfig
     Write-Log "$winrm_config"
 }
 
@@ -110,7 +110,7 @@ function Invoke-RebootOrComplete() {
             }
 
             Write-Log "Getting WinRM config"
-            $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+            $winrm_config = Get-WinRMConfig
             Write-Log "$winrm_config"
         }
         1 {
@@ -209,7 +209,7 @@ function Install-UpdateBatch() {
         Enable-WinRM
 
         Write-Log "Getting WinRM config"
-        $winrm_config = & cmd.exe /c 'winrm get winrm/config'
+        $winrm_config = Get-WinRMConfig
         Write-Log "$winrm_config"
         break
     }
