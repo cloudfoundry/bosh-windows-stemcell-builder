@@ -22,7 +22,9 @@ FunctionsToExport = @(
     'Enable-TLS12',
     'Disable-3DES',
     'Disable-DCOM',
-    'Get-OSVersion')
+    'Get-OSVersion',
+    'Get-WinRMConfig'
+)
 CmdletsToExport = @()
 VariablesToExport = '*'
 AliasesToExport = @()

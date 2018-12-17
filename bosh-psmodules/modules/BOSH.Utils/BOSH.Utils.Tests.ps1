@@ -1,5 +1,7 @@
-#We remove WinRM as it imports BOSH.Utils
+#We remove multiple module that import BOSH.Utils
 Remove-Module -Name BOSH.WinRM -ErrorAction Ignore
+Remove-Module -Name BOSH.CFCell -ErrorAction Ignore
+Remove-Module -Name BOSH.AutoLogon -ErrorAction Ignore
 
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
 Import-Module ./BOSH.Utils.psm1
@@ -330,6 +332,34 @@ Describe "Get-OSVersion" {
 
         Assert-MockCalled Write-Log -Times 1 -Scope It -ParameterFilter { $Message -eq "invalid OS detected" } -ModuleName BOSH.Utils
         Assert-MockCalled Get-OSVersionString -Times 1 -Scope It -ModuleName BOSH.Utils
+    }
+}
+
+Describe "Get-WinRMConfig" {
+    It "makes a request for winrm config, returns stdout" {
+        Mock Invoke-Expression {
+            "Lots of winrm config"
+        } -ModuleName BOSH.Utils
+
+        $output = ""
+        { Get-WinRMConfig | Set-Variable -Name "output" -Scope 1 } | Should -Not -Throw
+
+        $output | Should -eq "Lots of winrm config"
+
+        Assert-MockCalled Invoke-Expression -Times 1 -Scope It `
+            -ParameterFilter { $Command -and $Command -eq "winrm get winrm/config" } -ModuleName BOSH.Utils
+    }
+
+    It "throws a descriptive failure when winrm config is unavailable" {
+        Mock Invoke-Expression {
+            Write-Error "Some error output"
+        } -ModuleName BOSH.Utils
+
+        $output = ""
+        { Get-WinRMConfig | Set-Variable -Name "output" -Scope 1 } | `
+            Should -Throw "Failed to get WinRM config: Some error output"
+
+        $output | Should -eq ""
     }
 }
 

@@ -261,3 +261,13 @@ function Get-OSVersion {
         throw $_.Exception
     }
 }
+
+function Get-WinRMConfig {
+    Invoke-Expression "winrm get winrm/config" -OutVariable result -ErrorVariable err 2>&1 | Out-Null
+
+    if ($err -ne "") {
+        throw "Failed to get WinRM config: $err"
+    }
+
+    return $result
+}

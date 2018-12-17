@@ -58,6 +58,43 @@ Describe "Protect-CFCell" {
     }
 }
 
+Describe "Install-CFFeatures" {
+    It "restarts computer on Microsoft server 2016 and later" {
+        Mock Install-CFFeatures2012 { } -ModuleName BOSH.CFCell
+        Mock Install-CFFeatures2016 { } -ModuleName BOSH.CFCell
+        Mock Write-Error { } -ModuleName BOSH.CFCell
+        Mock Get-WmiObject { New-Object PSObject -Property @{Version = "10.0.1803"} } -ModuleName BOSH.CFCell
+
+        { Install-CFFeatures } | Should -Not -Throw
+
+        Assert-MockCalled Install-CFFeatures2016 -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $ForceReboot }
+        Assert-MockCalled Install-CFFeatures2012 -Times 0 -Scope It -ModuleName BOSH.CFCell
+    }
+}
+
+Describe "Install-CFFeatures2016" {
+    BeforeEach {
+        Mock Write-Log { } -ModuleName BOSH.CFCell
+        Mock Get-WinRMConfig { "Some config" } -ModuleName BOSH.CFCell
+        Mock WindowsFeatureInstall { } -ModuleName BOSH.CFCell
+        Mock Remove-WindowsFeature { } -ModuleName BOSH.CFCell
+        Mock Set-Service { } -ModuleName BOSH.CFCell
+        Mock Restart-Computer { } -ModuleName BOSH.CFCell
+    }
+
+    It "triggers a machine restart when the -ForceReboot flag is set" {
+        { Install-CFFeatures2016 -ForceReboot } | Should -Not -Throw
+
+        Assert-MockCalled Restart-Computer -Times 1 -Scope It -ModuleName BOSH.CFCell
+    }
+
+    It "doesn't trigger a machine restart if -ForceReboot flag not set" {
+        { Install-CFFeatures2016 } | Should -Not -Throw
+
+        Assert-MockCalled Restart-Computer -Times 0 -Scope It -ModuleName BOSH.CFCell
+    }
+}
+
 Describe "Remove-DockerPackage" {
     It "Is impossible to test this" {
         # Pest has issues mocking functions that use validateSet See: https://github.com/pester/Pester/issues/734
