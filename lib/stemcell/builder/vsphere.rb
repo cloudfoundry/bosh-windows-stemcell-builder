@@ -169,7 +169,7 @@ module Stemcell
 
       class Stembuild
         def initialize(vmdk_file, version_flag, output_directory, os_flag)
-          @cmd = "stembuild -vmdk \"#{vmdk_file}\" -v \"#{version_flag}\" -output \"#{output_directory}\" -os #{os_flag}"
+          @cmd = "stembuild package -vmdk \"#{vmdk_file}\" -stemcell-version \"#{version_flag}\" -outputDir \"#{output_directory}\" -os #{os_flag}"
         end
 
         def run
