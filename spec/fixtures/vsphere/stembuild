@@ -11,10 +11,8 @@ This is not the real stembuild
 HEREDOC
 
     output_dir =
-  if ARGV[0] == "-vmdk" # stembuild used to package packer output vmdk into tgz
-    ARGV[5]
-  elsif ARGV[0] == "-vhd" # stembuild used to apply patchfile and package output into tgz
-    ENV['OUTPUT_DIR']
+  if ARGV[0] == "package" # stembuild used to package packer output vmdk into tgz
+    ARGV[6]
   end
 
 FileUtils.cp(File.join(__dir__, "bosh-stemcell-5555.5-vsphere-esxi-windows2012R2-go_agent.tgz"), output_dir)
