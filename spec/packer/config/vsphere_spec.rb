@@ -81,7 +81,6 @@ describe Packer::Config do
                                                                               'trap { $host.SetShouldExit(1) }',
                                                                               'Clear-ProxySettings']},
                                         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
-                                        {"type" => "windows-restart", "restart_command" => "powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force", "restart_timeout" => "1h", "restart_check_command" => "powershell -command \"& {Write-Output 'restarted.'}\""},
                                         {"type" => "windows-restart", "restart_command" => "powershell.exe -Command Start-Sleep -Seconds 900; Restart-Computer -Force", "restart_timeout" => "1h", "restart_check_command" => "powershell -command \"& {Write-Output 'restarted.'}\""}
                                     ].flatten
                                 )
