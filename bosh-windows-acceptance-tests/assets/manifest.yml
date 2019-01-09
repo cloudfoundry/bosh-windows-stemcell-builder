@@ -41,6 +41,7 @@ instance_groups:
   lifecycle: errand
   azs: [((AZ))]
   vm_type: ((VmType))
+  vm_extensions: [((VmExtensions))]
   networks:
   - name: ((Network))
   jobs:
