@@ -1,16 +1,6 @@
 - type: replace
-  path: /instance_groups/-
-  value:
-    name: check-root-ephemeral
-    instances: 1
-    stemcell: windows
-    azs: [((AZ))]
-    vm_type: ((RootEphemeralVmType))
-    networks:
-    - name: ((Network))
-    jobs:
-    - name: ephemeral-disk
-      release: ((ReleaseName))
-      properties:
-        run_test:
-          enabled: true
+  path: /instance_groups/name=check-multiple/vm_type
+  value: ((RootEphemeralVmType))
+
+- type: remove
+  path: /instance_groups/name=check-multiple/vm_extensions
