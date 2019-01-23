@@ -50,3 +50,10 @@ class OSwindows1803 < Provisioner
     JSON.parse(result)
   end
 end
+
+class OSwindows2019 < Provisioner
+  def dump
+    result = @erb.result_with_hash({iaas: @iaas, password: SecureRandom.hex(10) + "!", ephemeral_disk_flag: @ephemeral_disk_flag, proxy_settings: @proxy_settings, install_windows_updates: @installWindowsUpdates})
+    JSON.parse(result)
+  end
+end
