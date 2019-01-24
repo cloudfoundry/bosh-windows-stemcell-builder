@@ -129,6 +129,8 @@ module Stemcell
           os_flag = '2016'
         when 'windows1803'
           os_flag = '1803'
+        when 'windows2019'
+          os_flag = '2019'
         else
           os_flag = '2012R2'
         end
