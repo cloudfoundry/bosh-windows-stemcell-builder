@@ -95,7 +95,7 @@ function Verify-Acls {
       "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow"
   ))
 
-  if ($windowsVersion -match "2016") {
+  if ($windowsVersion -match "2016" -Or $windowsVersion -match "2019") {
     Write-Host "Adding 1709 ACLs"
     # for 2016, for some reason every file in C:\Program Files\OpenSSH
     # ends up with "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow".
@@ -260,7 +260,7 @@ function Verify-InstalledFeatures {
     Assert-IsInstalled "AS-NET-Framework"
     Assert-IsInstalled "Web-WHC"
     Assert-IsInstalled "Web-ASP"
-  } elseif ($windowsVersion -Match "2016") {
+  } elseif ($windowsVersion -Match "2016" -Or $windowsVersion -Match "2019") {
     Assert-IsInstalled "Containers"
     Assert-IsNotInstalled "Windows-Defender-Features"
   } else {
