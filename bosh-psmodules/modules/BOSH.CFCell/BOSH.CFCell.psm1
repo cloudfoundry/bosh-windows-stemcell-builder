@@ -63,7 +63,7 @@ function Install-CFFeatures2016 {
 
   WindowsFeatureInstall("FS-Resource-Manager")
   WindowsFeatureInstall("Containers")
-  Remove-WindowsFeature Windows-Defender-Features
+  Get-WindowsFeature | Where-Object -FilterScript { $_.Name -like '*Defender*' } | Uninstall-WindowsFeature -Remove
 
   Write-Log "Installed CloudFoundry Cell Windows 2016 Features"
 
