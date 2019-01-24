@@ -405,6 +405,10 @@ function Invoke-Sysprep() {
           Update-AWS2016Config
           Enable-AWS2016Sysprep
         }
+        "windows2019" {
+          Update-AWS2016Config
+          Enable-AWS2016Sysprep
+        }
       }
     }
     "gcp" {

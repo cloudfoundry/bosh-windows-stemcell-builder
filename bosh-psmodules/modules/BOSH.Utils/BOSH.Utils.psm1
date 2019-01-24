@@ -251,6 +251,11 @@ function Get-OSVersion {
             Write-Log "Found OS version: Windows 1803"
             "windows2016"
         }
+        elseif ($osVersion -match "10\.0\.17763\..+")
+        {
+            Write-Log "Found OS version: Windows 2019"
+            "windows2019"
+        }
         else {
             throw "invalid OS detected"
         }
