@@ -14,6 +14,36 @@
         powershell -ExecutionPolicy Bypass -File install-sshd.ps1
     Pop-Location
 
+
+    $SSHDir="C:\Program Files\OpenSSH"
+    $LGPOPath="C:\Windows\LGPO.exe"
+    $InfFilePath="C:\Windows\Temp\enable-ssh.inf"
+
+    $InfFileContents=@'
+[Unicode]
+Unicode=yes
+[Version]
+signature=$CHICAGO$
+Revision=1
+[Registry Values]
+[System Access]
+[Privilege Rights]
+SeDenyNetworkLogonRight=*S-1-5-32-546
+SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349-687026318-516638107-1125189541
+'@
+
+    if (Test-Path $LGPOPath) {
+        "Found $LGPOPath. Modifying security policies to support ssh."
+        Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
+        & $LGPOPath /s $InfFilePath
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "LGPO.exe exited with non-zero code: ${LASTEXITCODE}"
+            Exit $LASTEXITCODE
+        }
+    } else {
+        "Did not find $LGPOPath. Assuming existing security policies are sufficient to support ssh."
+    }
+
     # Grant NT AUTHORITY\Authenticated Users access to .EXEs and the .DLL in OpenSSH
     $FileNames=@(
         "libcrypto.dll",
@@ -33,6 +63,37 @@
         cacls.exe $path /E /P "NT AUTHORITY\Authenticated Users:R"
     }
 
-    Set-Service sshd -StartupType Disabled
-    Set-Service ssh-agent -StartupType Disabled
+    Set-Service sshd -StartupType Automatic
+    Set-Service ssh-agent -StartupType Automatic
+
+    Start-Service -Name ssh-agent
+
+    Push-Location $SSHDir
+        New-Item -ItemType Directory -Path "$env:ProgramData\ssh" -ErrorAction Ignore
+
+        "Removing any existing host keys"
+        Remove-Item -Path "$env:ProgramData\ssh\ssh_host_*"
+
+        "Generating new host keys"
+        .\ssh-keygen -A
+
+        "Fixing host key permissions"
+        .\FixHostFilePermissions.ps1 -Confirm:$false
+
+        "Adding ssh keys to ssh-agent"
+        Get-ChildItem $env:ProgramData\ssh\ssh_host_*_key | % {
+            "Adding $_.Name to ssh-agent"
+            .\ssh-add $_.FullName
+
+            "Removing $_.Name from folder"
+            Remove-Item $_.FullName
+        }
+
+        "listing ssh keys"
+        .\ssh-add -L
+    Pop-Location
+
+    "Starting 'sshd' service"
+    Start-Service -Name sshd
+
 }
