@@ -62,7 +62,7 @@ GEM
       ruby_dep (~> 1.2)
     lumberjack (1.0.11)
     method_source (0.8.2)
-    mini_portile2 (2.3.0)
+    mini_portile2 (2.4.0)
     minitest (5.10.1)
     ms_rest (0.7.2)
       concurrent-ruby (~> 1.0)
@@ -75,10 +75,10 @@ GEM
       ms_rest (~> 0.7.2)
     multipart-post (2.0.0)
     nenv (0.3.0)
-    nokogiri (1.8.2)
-      mini_portile2 (~> 2.3.0)
-    nokogiri (1.8.2-x64-mingw32)
-      mini_portile2 (~> 2.3.0)
+    nokogiri (1.10.1)
+      mini_portile2 (~> 2.4.0)
+    nokogiri (1.10.1-x64-mingw32)
+      mini_portile2 (~> 2.4.0)
     notiffany (0.1.1)
       nenv (~> 0.1)
       shellany (~> 0.0)
@@ -139,7 +139,7 @@ DEPENDENCIES
   aws-sdk
   azure_mgmt_resources
   guard-rspec
-  nokogiri
+  nokogiri (>= 1.8.5)
   rake
   rspec
   rubyzip (~> 1.2.2)
