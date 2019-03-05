@@ -15,7 +15,7 @@ class Provisioner
   def initialize(os, iaas, enable_ephemeral_disk, http_proxy = nil, https_proxy = nil, bypass_list = nil, build_context = nil)
     @iaas = iaas
     @ephemeral_disk_flag = enable_ephemeral_disk ? ' -EnableEphemeralDiskMounting' : ''
-    @proxy_settings = http_proxy ? "#{http_proxy} #{https_proxy} #{bypass_list}" : ''
+    @proxy_settings = http_proxy || https_proxy ? "\\\"#{http_proxy}\\\" \\\"#{https_proxy}\\\" \\\"#{bypass_list}\\\"" : ''
     @installWindowsUpdates = (build_context != :patchfile)
 
     filename = File.expand_path("../templates/provision_#{os}.json.erb", __FILE__)

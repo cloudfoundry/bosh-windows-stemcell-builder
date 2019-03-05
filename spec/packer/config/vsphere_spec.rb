@@ -69,7 +69,7 @@ describe Packer::Config do
                                         {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
                                         {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                                               'trap { $host.SetShouldExit(1) }',
-                                                                              'Set-ProxySettings foo bar bee']},
+                                                                              'Set-ProxySettings "foo" "bar" "bee"']},
                                         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
                                         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
                                         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
@@ -183,7 +183,95 @@ describe Packer::Config do
         ENV.delete('STEMCELL_DEPS_DIR')
       end
 
+      shared_examples 'proxy configurable' do
+        let(:dummy_parameters) do
+          {
+            output_directory: 'output_directory',
+            num_vcpus: 1,
+            mem_size: 1000,
+            product_key: 'key',
+            organization: 'me',
+            owner: 'me',
+            administrator_password: 'password',
+            source_path: 'source_path',
+            os: os_version,
+            enable_rdp: false,
+            new_password: 'new-password',
+            http_proxy: nil,
+            https_proxy: nil,
+            bypass_list: nil
+          }
+        end
+
+        it "doesn't call Set-ProxySettings when no proxy settings are provided" do
+          provisioners = Packer::Config::VSphere.new(dummy_parameters).provisioners
+
+          proxy_setting_entries = provisioners.select do |p|
+            p.has_key?('inline') && p['inline'].any? { |l| l =~ /Set-ProxySettings/ }
+          end
+          expect(proxy_setting_entries.length).to eq(0)
+        end
+
+        it 'calls Set-ProxySettings with both proxies when http and https proxies are set' do
+          provisioners = Packer::Config::VSphere.new(
+              dummy_parameters.merge(
+                  http_proxy: 'foo',
+                  https_proxy: 'bar',
+                  bypass_list: 'bee'
+              )
+          ).provisioners
+
+          proxy_setting_entries = provisioners.select do |p|
+            p.has_key?('inline') && p['inline'].any? { |l| l =~ /Set-ProxySettings/ }
+          end
+          expect(proxy_setting_entries.length).to eq(1)
+
+          proxy_setting_command = proxy_setting_entries[0]['inline'].detect{ |l| l =~ /Set-ProxySettings/}
+          expect(proxy_setting_command).to eq 'Set-ProxySettings "foo" "bar" "bee"'
+        end
+
+        it 'Set-ProxySettings called with empty https proxy when only http proxy is set' do
+          provisioners = Packer::Config::VSphere.new(
+              dummy_parameters.merge(
+                  http_proxy: 'foo',
+                  bypass_list: 'bee'
+              )
+          ).provisioners
+
+          proxy_setting_entries = provisioners.select do |p|
+            p.has_key?('inline') && p['inline'].any? { |l| l =~ /Set-ProxySettings/ }
+          end
+          expect(proxy_setting_entries.length).to eq(1)
+
+          proxy_setting_command = proxy_setting_entries[0]['inline'].detect{ |l| l =~ /Set-ProxySettings/}
+          expect(proxy_setting_command).to eq 'Set-ProxySettings "foo" "" "bee"'
+        end
+
+
+        it 'Set-ProxySettings called with empty http proxy when only https proxy is set' do
+          provisioners = Packer::Config::VSphere.new(
+              dummy_parameters.merge(
+                  https_proxy: 'bar',
+                  bypass_list: 'bee'
+              )
+          ).provisioners
+
+          proxy_setting_entries = provisioners.select do |p|
+            p.has_key?('inline') && p['inline'].any? { |l| l =~ /Set-ProxySettings/ }
+          end
+          expect(proxy_setting_entries.length).to eq(1)
+
+          proxy_setting_command = proxy_setting_entries[0]['inline'].detect{ |l| l =~ /Set-ProxySettings/}
+          expect(proxy_setting_command).to eq 'Set-ProxySettings "" "bar" "bee"'
+        end
+
+      end
+
       context 'windows 2016' do
+        it_behaves_like "proxy configurable" do
+          let(:os_version) { 'windows2016' }
+        end
+
         it 'returns the expected provisioners for the vmx build' do
           allow(SecureRandom).to receive(:hex).and_return('some-password')
 
@@ -210,7 +298,7 @@ describe Packer::Config do
                   {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
                   {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                         'trap { $host.SetShouldExit(1) }',
-                                                        'Set-ProxySettings foo bar bee']},
+                                                        'Set-ProxySettings "foo" "bar" "bee"']},
                   {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
                   {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
                   {"type" => "windows-restart", "restart_timeout"=>"1h" },
@@ -272,7 +360,7 @@ describe Packer::Config do
                   {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
                   {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                         'trap { $host.SetShouldExit(1) }',
-                                                        'Set-ProxySettings foo bar bee']},
+                                                        'Set-ProxySettings "foo" "bar" "bee"']},
                   {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
                   {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
                   {"type" => "windows-restart", "restart_timeout"=>"1h" },
@@ -367,6 +455,10 @@ describe Packer::Config do
       end
 
       context 'windows 1803' do
+        it_behaves_like "proxy configurable" do
+          let(:os_version) { 'windows1803' }
+        end
+
         it 'returns the expected provisioners for the vmx build' do
           allow(SecureRandom).to receive(:hex).and_return('some-password')
 
@@ -393,7 +485,7 @@ describe Packer::Config do
                   {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
                   {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                         'trap { $host.SetShouldExit(1) }',
-                                                        'Set-ProxySettings foo bar bee']},
+                                                        'Set-ProxySettings "foo" "bar" "bee"']},
                   {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
                   {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
                   {"type" => "windows-restart", "restart_timeout"=>"1h" },
@@ -455,7 +547,7 @@ describe Packer::Config do
                   {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
                   {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                         'trap { $host.SetShouldExit(1) }',
-                                                        'Set-ProxySettings foo bar bee']},
+                                                        'Set-ProxySettings "foo" "bar" "bee"']},
                   {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
                   {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
                   {"type" => "windows-restart", "restart_timeout"=>"1h" },
@@ -520,6 +612,10 @@ describe Packer::Config do
       end
 
       context 'windows 2012' do
+        it_behaves_like "proxy configurable" do
+          let(:os_version) { 'windows2012R2' }
+        end
+
         it 'returns the expected provisioners' do
           allow(SecureRandom).to receive(:hex).and_return('some-password')
 
@@ -545,7 +641,7 @@ describe Packer::Config do
               {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], 'pause_before'=>'60s'},
               {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                     'trap { $host.SetShouldExit(1) }',
-                                                    'Set-ProxySettings foo bar bee']},
+                                                    'Set-ProxySettings "foo" "bar" "bee"']},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
               {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                     'trap { $host.SetShouldExit(1) }',
@@ -591,6 +687,10 @@ describe Packer::Config do
       end
 
       context 'windows 2019' do
+        it_behaves_like "proxy configurable" do
+          let(:os_version) { 'windows2019' }
+        end
+
         it 'returns the expected provisioners for the vmx build' do
           allow(SecureRandom).to receive(:hex).and_return('some-password')
 
@@ -617,7 +717,7 @@ describe Packer::Config do
               {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
               {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                     'trap { $host.SetShouldExit(1) }',
-                                                    'Set-ProxySettings foo bar bee']},
+                                                    'Set-ProxySettings "foo" "bar" "bee"']},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
               {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
               {"type" => "windows-restart", "restart_timeout"=>"1h" },
@@ -679,7 +779,7 @@ describe Packer::Config do
               {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1']},
               {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
                                                     'trap { $host.SetShouldExit(1) }',
-                                                    'Set-ProxySettings foo bar bee']},
+                                                    'Set-ProxySettings "foo" "bar" "bee"']},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
               {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
               {"type" => "windows-restart", "restart_timeout"=>"1h" },

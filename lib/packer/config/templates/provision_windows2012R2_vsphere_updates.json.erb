@@ -84,6 +84,7 @@
       "Test-InstalledUpdates"
     ]
   },
+<% if proxy_settings != '' %>
   {
     "type": "powershell",
     "inline": [
@@ -92,6 +93,7 @@
       "Clear-ProxySettings"
     ]
   },
+<% end %>
   {
     "type": "powershell",
     "inline": [

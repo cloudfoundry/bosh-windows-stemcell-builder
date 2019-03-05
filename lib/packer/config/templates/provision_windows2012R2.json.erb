@@ -19,6 +19,7 @@
     ],
     "pause_before": "60s"
   },
+  <% if proxy_settings != '' %>
   {
     "type": "powershell",
     "inline": [
@@ -27,6 +28,7 @@
       "Set-ProxySettings <%= proxy_settings %>"
     ]
   },
+  <% end %>
   {
     "type": "powershell",
     "inline": [
@@ -220,6 +222,7 @@
       "Disable-DCOM"
     ]
   },
+<% if proxy_settings != '' %>
   {
     "type": "powershell",
     "inline": [
@@ -228,6 +231,7 @@
       "Clear-ProxySettings"
     ]
   },
+<% end %>
   {
     "type": "powershell",
     "inline": [
