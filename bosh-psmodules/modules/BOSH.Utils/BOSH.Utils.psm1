@@ -138,18 +138,48 @@ function Protect-Path {
    }
 }
 
+
+
 function Set-ProxySettings {
     Param([string]$HTTPProxy,[string]$HTTPSProxy,[string]$BypassList)
 
     $ProxyServerString = ""
+
     if ($HTTPProxy) {
         $ProxyServerString = "http=$HTTPProxy"
+
     }
     if ($HTTPSProxy) {
         $ProxyServerString = "$ProxyServerString;https=$HTTPSProxy"
     }
 
+    function Add-ProxySettings {
+        Param(
+            [Parameter(Mandatory=$False)]
+            [string]$Proxy
+        ,
+            [Parameter(Mandatory=$False)]
+            [string]$BypassProxy
+        )
+
+        [string] $start =  [System.Text.Encoding]::ASCII.GetString([byte[]](70, 0, 0, 0, 25, 0, 0, 0, 3, 0, 0, 0, 29, 0, 0, 0 ), 0, 16);
+        [string] $endproxy = [System.Text.Encoding]::ASCII.GetString([byte[]]( 233, 0, 0, 0 ), 0, 4);
+        [string] $end = [System.Text.Encoding]::ASCII.GetString([byte[]]( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 0, 36);
+
+        [string] $text = "$($start)$($Proxy)$($endproxy)$($BypassProxy)$($end)";
+        [byte[]] $data = [System.Text.Encoding]::ASCII.GetBytes($text);
+
+        $regKeyConnections = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections"
+        Set-ItemProperty -Path $regKeyConnections -Name "DefaultConnectionSettings" -Value $data -ErrorVariable err 2>&1 | Out-Null
+        if ($err -ne "") {
+            throw "Failed to set proxy settings: $($err)"
+        }
+    }
+
     if ($ProxyServerString) {
+        Add-ProxySettings $ProxyServerString $BypassList
+
+        #Also add NetSH proxy settings for Windows-Updates
         $set_proxy = ""
         if ($BypassList) {
             $set_proxy = & cmd.exe /c "netsh winhttp set proxy proxy-server=`"$ProxyServerString`" bypass-list=`"$BypassList`""
@@ -161,16 +191,11 @@ function Set-ProxySettings {
         if ($LASTEXITCODE -ne 0) {
             exit(1)
         }
-    }
 }
 
 function Clear-ProxySettings {
-    $reset_proxy = & cmd.exe /c "netsh winhttp reset proxy"
+    $reset_proxy = Remove-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections" -Name "DefaultConnectionSettings"
     Write-Log "$reset_proxy"
-
-    if ($LASTEXITCODE -ne 0) {
-        exit(1)
-    }
 }
 
 function Disable-RC4() {

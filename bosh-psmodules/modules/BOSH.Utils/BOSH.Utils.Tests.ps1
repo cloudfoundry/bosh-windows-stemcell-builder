@@ -374,4 +374,41 @@ Describe "Get-WinRMConfig" {
     }
 }
 
+Describe "Set-ProxySettings" {
+    It "sets the Internet Explorer proxy settings" {
+        function Compare-Array {
+            $($args[0] -join ",") -eq $($args[1] -join ",")
+        }
+
+        Mock Set-ItemProperty {
+            "Property set"
+        } -ModuleName BOSH.Utils
+
+        { Set-ProxySettings "http-proxy" "https-proxy" "bypass-list" } | Should Not Throw
+
+        [string] $start =  [System.Text.Encoding]::ASCII.GetString([byte[]](70, 0, 0, 0, 25, 0, 0, 0, 3, 0, 0, 0, 29, 0, 0, 0 ), 0, 16);
+        [string] $endproxy = [System.Text.Encoding]::ASCII.GetString([byte[]]( 233, 0, 0, 0 ), 0, 4);
+        [string] $end = [System.Text.Encoding]::ASCII.GetString([byte[]]( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 0, 36);
+
+        [string] $text = "$($start)http=http-proxy;https=https-proxy$($endproxy)bypass-list$($end)";
+        [byte[]] $data = [System.Text.Encoding]::ASCII.GetBytes($text);
+
+        Assert-MockCalled Set-ItemProperty -Times 1 -ModuleName BOSH.Utils -Scope It `
+            -ParameterFilter {
+            $Path -eq "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections" -and
+            $Name -eq "DefaultConnectionSettings" -and
+            (Compare-Array $Value $data)
+        }
+    }
+
+    It "exits when the registry can't be set or there's an error because the arguments are wrong" {
+        Mock Set-ItemProperty {
+            Write-Error "Property not set"
+        } -ModuleName BOSH.Utils
+
+
+        { Set-ProxySettings "http-proxy" "https-proxy" "bypass-list" } | Should -Throw "Failed to set proxy settings: Property not set"
+    }
+}
+
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
