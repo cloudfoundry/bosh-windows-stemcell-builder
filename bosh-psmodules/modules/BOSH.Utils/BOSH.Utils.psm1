@@ -171,6 +171,7 @@ function Set-ProxySettings {
 
         $regKeyConnections = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections"
         Set-ItemProperty -Path $regKeyConnections -Name "DefaultConnectionSettings" -Value $data -ErrorVariable err 2>&1 | Out-Null
+        Write-Host "Added the IE registry key"
         if ($err -ne "") {
             throw "Failed to set proxy settings: $($err)"
         }
@@ -191,6 +192,7 @@ function Set-ProxySettings {
         if ($LASTEXITCODE -ne 0) {
             exit(1)
         }
+    }
 }
 
 function Clear-ProxySettings {
