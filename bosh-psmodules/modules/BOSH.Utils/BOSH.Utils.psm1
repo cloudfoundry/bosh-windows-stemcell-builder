@@ -196,8 +196,17 @@ function Set-ProxySettings {
 }
 
 function Clear-ProxySettings {
-    $reset_proxy = Remove-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections" -Name "DefaultConnectionSettings"
-    Write-Log "$reset_proxy"
+    $regKeyConnections = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections"
+    $item = Get-Item $regKeyConnections
+    if ($item.Property) {
+        Remove-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections" -Name "DefaultConnectionSettings"
+
+        #We need to pipe the command through Out-String in order to convert its output into a proper string
+        $reset_proxy = (& cmd.exe /c "netsh winhttp reset proxy") | Out-String
+        Write-Log "Cleared proxy settings: $reset_proxy"
+    } else {
+        Write-Log "No proxy settings set. There is nothing to clear."
+    }
 }
 
 function Disable-RC4() {

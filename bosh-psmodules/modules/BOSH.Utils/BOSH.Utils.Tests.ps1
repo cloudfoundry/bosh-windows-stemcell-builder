@@ -411,4 +411,35 @@ Describe "Set-ProxySettings" {
     }
 }
 
+Describe "Clear-ProxySettings"  {
+    BeforeEach {
+        Mock Write-Log { } -ModuleName BOSH.Utils
+    }
+
+    It "Should remove proxy settings if they were set" {
+        $regKeyConnections = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections"
+        Set-ItemProperty -Path $regKeyConnections -Name "DefaultConnectionSettings" -Value "test-value" -ErrorVariable err 2>&1 | Out-Null
+
+        $set_proxy = & cmd.exe /c "netsh winhttp set proxy proxy-server=`"127.0.0.1`""
+
+        Clear-ProxySettings
+
+        $item=Get-Item $regKeyConnections
+
+        #DefaultConnectionSettings is actually added to a "Property" object
+        $item.Property | Should Be $null
+
+        #We need to pipe the netsh command through Out-String in order to convert its output into a proper string
+        $output= (netsh winhttp show proxy) | Out-String
+        $output | Should -BeLike "*Direct access (no proxy server)*"
+        Assert-MockCalled Write-Log -Times 1 -ModuleName BOSH.Utils -Scope It -ParameterFilter { $Message -eq "Cleared proxy settings: $output" }
+    }
+
+    It "Should not error if no proxy settings are found" {
+        Clear-ProxySettings
+
+        Assert-MockCalled Write-Log -Times 1 -ModuleName BOSH.Utils -Scope It -ParameterFilter { $Message -eq "No proxy settings set. There is nothing to clear." }
+    }
+}
+
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
