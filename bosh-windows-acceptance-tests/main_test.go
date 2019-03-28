@@ -329,12 +329,18 @@ func uploadStemcell(config *Config, bosh *BoshCommand) {
 	matches, err := filepath.Glob(config.Stemcellpath)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(matches).To(HaveLen(1))
-	err = bosh.Run(fmt.Sprintf("upload-stemcell %s", matches[0]))
-	if err != nil {
-		// AWS takes a while to distribute the AMI across accounts
-		time.Sleep(3 * time.Minute)
+
+	for {
+		// the ami may not be immediately available, so we retry every three minutes.
+		// if it is actually broken, the concourse timeout will kick in at 90 minutes.
 		err = bosh.Run(fmt.Sprintf("upload-stemcell %s", matches[0]))
+		if err != nil {
+			time.Sleep(3 * time.Minute)
+		} else {
+			break
+		}
 	}
+
 	Expect(err).NotTo(HaveOccurred())
 }
 
