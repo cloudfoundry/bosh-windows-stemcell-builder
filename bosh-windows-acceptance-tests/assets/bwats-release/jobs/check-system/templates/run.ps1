@@ -210,6 +210,7 @@ function Verify-HWCAppStart {
   if ($windowsVersion -Match "2012") {
     # Ensure HWC apps can get started
     Start-Process -FilePath "C:\var\vcap\jobs\check-system\bin\HWCServer.exe" -ArgumentList "9000"
+    Start-Sleep -s 60
     $status = (Invoke-WebRequest -Uri "http://localhost:9000" -UseBasicParsing).StatusCode
     If ($status -ne 200) {
       Write-Error "Failed to start HWC app"
