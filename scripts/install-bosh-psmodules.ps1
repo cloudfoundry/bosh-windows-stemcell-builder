@@ -13,9 +13,20 @@ function Unzip {
     }
 }
 
+$attemptsLeft = 10
+while (!(Test-Path "C:\provision\bosh-psmodules.zip") -and ($attemptsLeft -ne 0)) {
+    Write-Host "Checking for bosh-psmodules.zip..."
+    $attemptsLeft--
+    Start-Sleep 5
+}
+
+if ($attemptsLeft -eq 0) {
+    Write-Error "Could not find bosh-psmodules.zip"
+    Exit 1
+}
+
 $path = "C:\Program Files\WindowsPowerShell\Modules"
 Remove-Item -Path (Join-Path $path "BOSH.*") -Force -Recurse
 
-while (!(Test-Path "C:\provision\bosh-psmodules.zip")) { Start-Sleep 5 }
 Unzip -ZipFile "C:\provision\bosh-psmodules.zip" -OutPath $path -Keep $false
 Import-Module BOSH.Utils
