@@ -17,7 +17,7 @@ $attemptsLeft = 10
 while (!(Test-Path "C:\provision\bosh-psmodules.zip") -and ($attemptsLeft -ne 0)) {
     Write-Host "Checking for bosh-psmodules.zip..."
     $attemptsLeft--
-    Start-Sleep 5
+    Start-Sleep 3600
 }
 
 if ($attemptsLeft -eq 0) {
