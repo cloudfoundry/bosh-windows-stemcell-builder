@@ -235,6 +235,14 @@
   {
     "type": "powershell",
     "inline": [
+       "$ErrorActionPreference = \"Stop\";",
+       "trap { $host.SetShouldExit(1) }",
+       "Remove-SSHKeys"
+     ]
+  },
+  {
+    "type": "powershell",
+    "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
       "Clear-Provisioner"
