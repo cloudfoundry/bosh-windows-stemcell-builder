@@ -34,6 +34,7 @@ describe 'Package::Agent' do
       'deps/',
       'deps/bosh-blobstore-dav.exe',
       'deps/bosh-blobstore-s3.exe',
+      'deps/bosh-blobstore-gcs.exe',
       'deps/job-service-wrapper.exe',
       'deps/pipe.exe',
       'deps/tar.exe',
