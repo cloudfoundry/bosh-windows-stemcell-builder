@@ -297,6 +297,11 @@ var _ = Describe("BOSH Windows", func() {
 		}
 	})
 
+	It("has all certificate authority certs that are present on the Windows Update Server", func() {
+		err := runTest("check-wu-certs")
+		Expect(err).NotTo(HaveOccurred())
+	})
+
 	It("mounts ephemeral disks when asked to do so and does not mount them otherwise", func() {
 		err := runTest("ephemeral-disk")
 		Expect(err).NotTo(HaveOccurred())

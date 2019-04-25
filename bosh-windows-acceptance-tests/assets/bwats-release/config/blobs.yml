@@ -2,8 +2,8 @@ golang-windows/go1.7.1.windows-amd64.zip:
   size: 88842808
   sha: c9b4ca7e68f3e894ae236e9b160c60e94dfb83ad
 mbsa/MBSASetup-x64-EN.msi:
-  size: 1818624
-  sha: de4a9df45ac40dd901c956edfe2f766d2bfddc92
+  size: 1747968
+  sha: 47c028c61fb91e4f8bc25ea43a74ef2d4eb41eb3
 mbsa/MBSASetup-x64-EN.zip:
   size: 1335103
   sha: c9a54c0b0ae1c09e7288367a613849783593ed44

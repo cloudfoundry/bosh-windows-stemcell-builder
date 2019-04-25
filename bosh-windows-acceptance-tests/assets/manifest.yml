@@ -30,6 +30,8 @@ instance_groups:
     release: ((ReleaseName))
   - name: check-system
     release: ((ReleaseName))
+  - name: check-wu-certs
+    release: ((ReleaseName))
   - name: ephemeral-disk
     release: ((ReleaseName))
     properties:
