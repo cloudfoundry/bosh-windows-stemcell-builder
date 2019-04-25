@@ -312,3 +312,48 @@ function Get-WinRMConfig {
 
     return $result
 }
+
+function Get-WUCerts {
+    Write-Log "Loading certs from windows update server"
+    $sstfile = SST-Path
+    Invoke-Certutil -generateSSTFromWU $sstfile
+    Invoke-Import-Certificate -CertStoreLocation Cert:\LocalMachine\Root -FilePath $sstfile
+    Invoke-Remove-Item -path $sstfile
+}
+
+function SST-Path {
+    return [System.IO.Path]::GetTempPath() + 'roots.sst'
+}
+
+function Invoke-Import-Certificate {
+    Param(
+        [Parameter(Mandatory=$True)]
+        [string]$CertStoreLocation
+        ,
+        [Parameter(Mandatory=$True)]
+        [string]$FilePath
+        )
+    Import-Certificate -CertStoreLocation $CertStoreLocation -FilePath $FilePath
+    if ($LASTEXITCODE -ne 0) {
+        Throw "Error importing cert file from windows update server, exited with $LASTEXITCODE"
+    }
+}
+
+function Invoke-Certutil {
+    Param(
+        [Parameter(Mandatory=$True)]
+        [string]$generateSSTFromWU
+        )
+    certutil -generateSSTFromWU $generateSSTFromWU
+    if ($LASTEXITCODE -ne 0) {
+        Throw "Error generating cert file from windows update server, exited with $LASTEXITCODE"
+    }
+}
+
+function Invoke-Remove-Item {
+    Param(
+        [Parameter(Mandatory=$True)]
+        [string]$path
+        )
+    Remove-Item -path $path
+}

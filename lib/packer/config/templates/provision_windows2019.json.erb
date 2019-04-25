@@ -183,6 +183,14 @@
       "Disable-3DES"
     ]
   },
+  {
+    "type": "powershell",
+        "inline": [
+        "$ErrorActionPreference = \"Stop\";",
+        "trap { $host.SetShouldExit(1) }",
+        "Get-WUCerts"
+      ]
+  },
 <% if proxy_settings != '' %>
   {
     "type": "powershell",

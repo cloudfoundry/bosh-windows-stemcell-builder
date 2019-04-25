@@ -442,4 +442,32 @@ Describe "Clear-ProxySettings"  {
     }
 }
 
+Describe "Get-WUCerts" {
+    BeforeEach {
+        Mock SST-Path { "certfile" } -ModuleName BOSH.Utils
+        Mock Invoke-Import-Certificate { } -ModuleName BOSH.Utils
+        Mock Invoke-Certutil { } -ModuleName BOSH.Utils
+        Mock Invoke-Remove-Item { } -ModuleName BOSH.Utils
+    }
+    It "calls certutil and imports the certificates" {
+
+        Get-WUCerts
+
+        Assert-MockCalled SST-Path -Times 1 -Scope It -ModuleName BOSH.Utils
+        Assert-MockCalled Invoke-Certutil -Times 1 -Scope It -ModuleName BOSH.Utils -ParameterFilter { $generateSSTFromWU -eq "certfile" }
+        Assert-MockCalled Invoke-Import-Certificate -Times 1 -Scope It -ModuleName BOSH.Utils -ParameterFilter { $CertStoreLocation -eq "Cert:\LocalMachine\Root" -and $FilePath -eq "certfile" }
+        Assert-MockCalled Invoke-Remove-Item -Times 1 -Scope It -ModuleName BOSH.Utils -ParameterFilter { $path -eq "certfile" }
+    }
+
+    It "throws if the certfile cannot be generated" {
+        Mock Invoke-Certutil { throw 'some error' } -ModuleName BOSH.Utils
+        { Get-WUCerts } | Should Throw "some error"
+    }
+
+    It "throws if the certfile cannot be imported" {
+        Mock Invoke-Import-Certificate { throw 'some error' } -ModuleName BOSH.Utils
+        { Get-WUCerts } | Should Throw "some error"
+    }
+}
+
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
