@@ -4,8 +4,6 @@
         [string]$SSHZipFile = $( Throw "Provide an SSHD zipfile" )
     )
 
-    $env:PROGRAMFILES
-
     New-Item "$env:PROGRAMFILES\SSHTemp" -Type Directory -Force
     Open-Zip -ZipFile $SSHZipFile -OutPath "$env:PROGRAMFILES\SSHTemp"
     Move-Item -Force "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64" "$env:PROGRAMFILES\OpenSSH"
