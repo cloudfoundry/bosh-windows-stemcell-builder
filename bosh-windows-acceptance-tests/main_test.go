@@ -324,6 +324,11 @@ var _ = Describe("BOSH Windows", func() {
 			config.deployWithManifest(bosh, slowCompilingDeploymentName, stemcellVersion, releaseVersion, manifestPath)
 		})
 	})
+
+	It("allows SSH connection", func() {
+		err := bosh.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit", deploymentName))
+		Expect(err).To(Succeed())
+	})
 })
 
 func runTest(testName string) error {
