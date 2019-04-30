@@ -57,7 +57,7 @@ function Install-CFFeatures2016 {
   $winrm_config = Get-WinRMConfig
   Write-Log "$winrm_config"
 
-  Write-Log "Installing CloudFoundry Cell Windows 2016 Features"
+  Write-Log "Installing CloudFoundry Cell Windows Features"
   $ErrorActionPreference = "Stop";
   trap { $host.SetShouldExit(1) }
 
@@ -65,7 +65,7 @@ function Install-CFFeatures2016 {
   WindowsFeatureInstall("Containers")
   Get-WindowsFeature | Where-Object -FilterScript { $_.Name -like '*Defender*' } | Uninstall-WindowsFeature -Remove
 
-  Write-Log "Installed CloudFoundry Cell Windows 2016 Features"
+  Write-Log "Installed CloudFoundry Cell Windows Features"
 
   Write-Log "Setting WinRM startup type to automatic"
   Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic

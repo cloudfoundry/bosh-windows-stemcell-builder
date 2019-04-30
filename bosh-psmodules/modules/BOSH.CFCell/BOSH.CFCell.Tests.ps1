@@ -93,6 +93,19 @@ Describe "Install-CFFeatures2016" {
 
         Assert-MockCalled Restart-Computer -Times 0 -Scope It -ModuleName BOSH.CFCell
     }
+
+    It "logs Installing CloudFoundry Cell Windows Features" {
+        { Install-CFFeatures2016 } | Should -Not -Throw
+
+        Assert-MockCalled Write-Log -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Installing CloudFoundry Cell Windows Features" }
+    }
+
+    It "logs Installed CloudFoundry Cell Windows Features after installation" {
+        { Install-CFFeatures2016 } | Should -Not -Throw
+
+        Assert-MockCalled Write-Log -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Installed CloudFoundry Cell Windows Features" }
+    }
+
 }
 
 Describe "Remove-DockerPackage" {
