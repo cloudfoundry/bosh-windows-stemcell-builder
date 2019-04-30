@@ -147,14 +147,14 @@ function Verify-Services {
     Exit 1
   }
 
-  If ( (Get-Service sshd).StartType -ne "Disabled") {
-    $msg = "sshd is not disabled. It is {0}" -f $(Get-Service sshd).StartType
+  If ( (Get-Service sshd).StartType -ne "Automatic") {
+    $msg = "sshd service start type is not automatic. It is {0}" -f $(Get-Service sshd).StartType
     Write-Error $msg
     Exit 1
   }
 
-  If ( (Get-Service ssh-agent).StartType -ne "Disabled") {
-    $msg = "ssh-agent is not disabled. It is {0}" -f $(Get-Service ssh-agent).StartType
+  If ( (Get-Service ssh-agent).StartType -ne "Automatic") {
+    $msg = "ssh-agent service start type is not automatic. It is {0}" -f $(Get-Service ssh-agent).StartType
     Write-Error $msg
     Exit 1
   }
