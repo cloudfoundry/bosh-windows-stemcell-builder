@@ -27,12 +27,12 @@ Describe "Protect-CFCell" {
        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
        Get-NetFirewallRule -DisplayName "Remote Desktop*" | Set-NetFirewallRule -enabled true
        Get-Service "Termservice" | Set-Service -StartupType "Automatic"
-       netstat /p tcp /a | findstr 3389 | Should Not BeNullOrEmpty
+       netstat /p tcp /a | findstr ":3389 " | Should Not BeNullOrEmpty
 
        Protect-CFCell
 
        Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" | select -exp fDenyTSConnections | Should Be 1
-       netstat /p tcp /a | findstr 3389 | Should BeNullOrEmpty
+       netstat /p tcp /a | findstr ":3389 " | Should BeNullOrEmpty
        Get-NetFirewallRule -DisplayName "Remote Desktop*" | ForEach { $_.enabled | Should be "False" }
        Get-Service "Termservice" | Select -exp starttype | Should Be "Disabled"
     }
