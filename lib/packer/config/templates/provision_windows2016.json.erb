@@ -129,6 +129,14 @@
     ]
   },
   {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
+      "Enable-SSHD"
+    ]
+  },
+  {
     "type": "file",
     "source": "../windows-stemcell-dependencies/lgpo/LGPO.exe",
     "destination": "C:\\windows\\LGPO.exe"
