@@ -7,6 +7,7 @@ Copyright = '(c) 2017 BOSH'
 Description = 'Install Microsoft SSHD'
 PowerShellVersion = '4.0'
 FunctionsToExport = @('Install-SSHD',
+'Enable-SSHD',
 'Remove-SSHKeys')
 CmdletsToExport = @()
 VariablesToExport = '*'

@@ -17,9 +17,29 @@
     powershell -ExecutionPolicy Bypass -File install-sshd.ps1
     Pop-Location
 
+    #    # Grant NT AUTHORITY\Authenticated Users access to .EXEs and the .DLL in OpenSSH
+    $FileNames = @(
+    "libcrypto.dll",
+    "scp.exe",
+    "sftp-server.exe",
+    "sftp.exe",
+    "ssh-add.exe",
+    "ssh-agent.exe",
+    "ssh-keygen.exe",
+    "ssh-keyscan.exe",
+    "ssh-shellhost.exe",
+    "ssh.exe",
+    "sshd.exe"
+    )
+    Invoke-CACL -FileNames $FileNames
 
-    $SSHDir = "$env:PROGRAMFILES\OpenSSH"
+    Set-Service -Name sshd -StartupType Disabled
+    # ssh-agent is not the same as ssh-agent in *nix openssh
+    Set-Service -Name ssh-agent -StartupType Disabled
+}
 
+function Enable-SSHD
+{
     if ((Get-NetFirewallRule | where { $_.DisplayName -ieq 'SSH' }) -eq $null)
     {
         "Creating firewall rule for SSH"
@@ -29,8 +49,6 @@
     {
         "Firewall rule for SSH already exists"
     }
-
-    $SSHDir = "$env:PROGRAMFILES\OpenSSH"
 
     $InfFilePath = "$env:WINDIR\Temp\enable-ssh.inf"
 
@@ -63,26 +81,12 @@ SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349
     {
         "Did not find $LGPOPath. Assuming existing security policies are sufficient to support ssh."
     }
-    #    # Grant NT AUTHORITY\Authenticated Users access to .EXEs and the .DLL in OpenSSH
-    $FileNames = @(
-    "libcrypto.dll",
-    "scp.exe",
-    "sftp-server.exe",
-    "sftp.exe",
-    "ssh-add.exe",
-    "ssh-agent.exe",
-    "ssh-keygen.exe",
-    "ssh-keyscan.exe",
-    "ssh-shellhost.exe",
-    "ssh.exe",
-    "sshd.exe"
-    )
-    Invoke-CACL -FileNames $FileNames
-    Remove-SSHKeys
 
-    Set-Service -Name sshd -StartupType Automatic #TODO: test
+    Set-Service -Name sshd -StartupType Automatic
     # ssh-agent is not the same as ssh-agent in *nix openssh
-    Set-Service -Name ssh-agent -StartupType Automatic #TODO: test
+    Set-Service -Name ssh-agent -StartupType Automatic
+
+    Remove-SSHKeys
 }
 
 function Remove-SSHKeys
