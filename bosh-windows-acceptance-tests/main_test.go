@@ -39,17 +39,18 @@ const MbsaURL = "https://download.microsoft.com/download/8/E/1/8E16A4C7-DD28-436
 const redeployRetries = 10
 
 type ManifestProperties struct {
-	DeploymentName      string
-	ReleaseName         string
-	AZ                  string
-	VmType              string
-	RootEphemeralVmType string
-	VmExtensions        string
-	Network             string
-	StemcellOs          string
-	StemcellVersion     string
-	ReleaseVersion      string
-	MountEphemeralDisk  bool
+	DeploymentName       string
+	ReleaseName          string
+	AZ                   string
+	VmType               string
+	RootEphemeralVmType  string
+	VmExtensions         string
+	Network              string
+	StemcellOs           string
+	StemcellVersion      string
+	ReleaseVersion       string
+	MountEphemeralDisk   bool
+	SSHDisabledByDefault bool
 }
 
 type StemcellYML struct {
@@ -64,16 +65,17 @@ type Config struct {
 		ClientSecret string `json:"client_secret"`
 		Target       string `json:"target"`
 	} `json:"bosh"`
-	Stemcellpath        string `json:"stemcell_path"`
-	StemcellOs          string `json:"stemcell_os"`
-	Az                  string `json:"az"`
-	VmType              string `json:"vm_type"`
-	RootEphemeralVmType string `json:"root_ephemeral_vm_type"`
-	VmExtensions        string `json:"vm_extensions"`
-	Network             string `json:"network"`
-	SkipCleanup         bool   `json:"skip_cleanup"`
-	MountEphemeralDisk  bool   `json:"mount_ephemeral_disk"`
-	SkipMSUpdateTest    bool   `json:"skip_ms_update_test"`
+	Stemcellpath         string `json:"stemcell_path"`
+	StemcellOs           string `json:"stemcell_os"`
+	Az                   string `json:"az"`
+	VmType               string `json:"vm_type"`
+	RootEphemeralVmType  string `json:"root_ephemeral_vm_type"`
+	VmExtensions         string `json:"vm_extensions"`
+	Network              string `json:"network"`
+	SkipCleanup          bool   `json:"skip_cleanup"`
+	MountEphemeralDisk   bool   `json:"mount_ephemeral_disk"`
+	SkipMSUpdateTest     bool   `json:"skip_ms_update_test"`
+	SSHDisabledByDefault bool   `json:"ssh_disabled_by_default"`
 }
 
 func NewConfig() (*Config, error) {
@@ -385,7 +387,8 @@ func (m ManifestProperties) toVarsString() string {
 		}
 	}
 
-	fmt.Fprintf(&b, "-v MountEphemeralDisk=%t", m.MountEphemeralDisk)
+	fmt.Fprintf(&b, "-v MountEphemeralDisk=%t ", m.MountEphemeralDisk)
+	fmt.Fprintf(&b, "-v SSHDisabledByDefault=%t", m.SSHDisabledByDefault)
 
 	return b.String()
 }
@@ -490,17 +493,18 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 
 func (c *Config) deployWithManifest(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string, manifestPath string) error {
 	manifestProperties := ManifestProperties{
-		DeploymentName:      deploymentName,
-		ReleaseName:         "bwats-release",
-		AZ:                  c.Az,
-		VmType:              c.VmType,
-		RootEphemeralVmType: c.RootEphemeralVmType,
-		VmExtensions:        c.VmExtensions,
-		Network:             c.Network,
-		StemcellOs:          c.StemcellOs,
-		StemcellVersion:     fmt.Sprintf(`"%s"`, stemcellVersion),
-		ReleaseVersion:      bwatsVersion,
-		MountEphemeralDisk:  c.MountEphemeralDisk,
+		DeploymentName:       deploymentName,
+		ReleaseName:          "bwats-release",
+		AZ:                   c.Az,
+		VmType:               c.VmType,
+		RootEphemeralVmType:  c.RootEphemeralVmType,
+		VmExtensions:         c.VmExtensions,
+		Network:              c.Network,
+		StemcellOs:           c.StemcellOs,
+		StemcellVersion:      fmt.Sprintf(`"%s"`, stemcellVersion),
+		ReleaseVersion:       bwatsVersion,
+		MountEphemeralDisk:   c.MountEphemeralDisk,
+		SSHDisabledByDefault: c.SSHDisabledByDefault,
 	}
 
 	var err error

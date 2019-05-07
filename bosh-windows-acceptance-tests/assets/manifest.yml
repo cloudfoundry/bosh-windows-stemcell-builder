@@ -2,13 +2,13 @@
 name: ((DeploymentName))
 
 releases:
-- name: ((ReleaseName))
-  version: '((ReleaseVersion))'
+  - name: ((ReleaseName))
+    version: '((ReleaseVersion))'
 
 stemcells:
-- alias: windows
-  os: ((StemcellOs))
-  version: '((StemcellVersion))'
+  - alias: windows
+    os: ((StemcellOs))
+    version: '((StemcellVersion))'
 
 update:
   canaries: 0
@@ -17,35 +17,38 @@ update:
   max_in_flight: 2
 
 instance_groups:
-- name: check-multiple
-  instances: 1
-  stemcell: windows
-  azs: [((AZ))]
-  vm_type: ((VmType))
-  vm_extensions: [((VmExtensions))]
-  networks:
-  - name: ((Network))
-  jobs:
-  - name: simple-job
-    release: ((ReleaseName))
-  - name: check-system
-    release: ((ReleaseName))
-  - name: check-wu-certs
-    release: ((ReleaseName))
-  - name: ephemeral-disk
-    release: ((ReleaseName))
-    properties:
-      run_test:
-        enabled: ((MountEphemeralDisk))
-- name: check-updates
-  instances: 1
-  stemcell: windows
-  lifecycle: errand
-  azs: [((AZ))]
-  vm_type: ((VmType))
-  vm_extensions: [((VmExtensions))]
-  networks:
-  - name: ((Network))
-  jobs:
+  - name: check-multiple
+    instances: 1
+    stemcell: windows
+    azs: [((AZ))]
+    vm_type: ((VmType))
+    vm_extensions: [((VmExtensions))]
+    networks:
+      - name: ((Network))
+    jobs:
+      - name: simple-job
+        release: ((ReleaseName))
+      - name: check-system
+        release: ((ReleaseName))
+        properties:
+          ssh:
+            disabled_by_default: ((SSHDisabledByDefault))
+      - name: check-wu-certs
+        release: ((ReleaseName))
+      - name: ephemeral-disk
+        release: ((ReleaseName))
+        properties:
+          run_test:
+            enabled: ((MountEphemeralDisk))
   - name: check-updates
-    release: ((ReleaseName))
+    instances: 1
+    stemcell: windows
+    lifecycle: errand
+    azs: [((AZ))]
+    vm_type: ((VmType))
+    vm_extensions: [((VmExtensions))]
+    networks:
+      - name: ((Network))
+    jobs:
+      - name: check-updates
+        release: ((ReleaseName))

@@ -141,20 +141,24 @@ function Verify-Acls {
 }
 
 function Verify-Services {
+  $SSH_Disabled=[bool]$<%= p("ssh.disabled_by_default") %>
+
   If ( (Get-Service WinRM).Status -ne "Stopped") {
     $msg = "WinRM is not Stopped. It is {0}" -f $(Get-Service WinRM).Status
     Write-Error $msg
     Exit 1
   }
 
-  If ( (Get-Service sshd).StartType -ne "Automatic") {
-    $msg = "sshd service start type is not automatic. It is {0}" -f $(Get-Service sshd).StartType
+  $startype = If ($SSH_DISABLED) {"Disabled"} Else {"Automatic"}
+
+  If ( (Get-Service sshd).StartType -ne $startype) {
+    $msg = "sshd service start type is not ${startype}. It is {0}" -f $(Get-Service sshd).StartType
     Write-Error $msg
     Exit 1
   }
 
-  If ( (Get-Service ssh-agent).StartType -ne "Automatic") {
-    $msg = "ssh-agent service start type is not automatic. It is {0}" -f $(Get-Service ssh-agent).StartType
+  If ( (Get-Service ssh-agent).StartType -ne $startype) {
+    $msg = "ssh-agent service start type is not ${startype}. It is {0}" -f $(Get-Service ssh-agent).StartType
     Write-Error $msg
     Exit 1
   }
@@ -395,7 +399,9 @@ function Verify-PSVersion5 {
 Verify-LGPO
 Verify-Dependencies
 Verify-Acls
+
 Verify-Services
+
 Verify-FirewallRules
 Verify-MetadataFirewallRule
 Verify-HWCAppStart

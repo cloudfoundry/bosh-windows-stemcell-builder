@@ -10,3 +10,7 @@ templates:
   HWCServer.exe: bin/HWCServer.exe
   security.inf: inf/security.inf
 packages: []
+properties:
+    ssh.disabled_by_default:
+        description: Used when ssh is disabled by default and should be tested as such
+        default: false
