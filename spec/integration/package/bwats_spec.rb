@@ -36,6 +36,7 @@ describe 'Package::BWATS' do
 				'target' => 'some-target'
 			},
 			'stemcell_path' => File.absolute_path('some-path'),
+			'ssh_disabled_by_default' => true,
 			'stemcell_os' => 'some-os',
 			'az' => 'some-az',
 			'vm_type' => 'some-type',
@@ -56,6 +57,7 @@ describe 'Package::BWATS' do
 		ENV['ROOT_EPHEMERAL_VM_TYPE']= config['root_ephemeral_vm_type']
 		ENV['VM_EXTENSIONS']= config['vm_extensions']
 		ENV['NETWORK']= config['network']
+		ENV['SSH_DISABLED_BY_DEFAULT']= config['ssh_disabled_by_default'].to_s
 		Rake::Task['package:bwats'].invoke
 		pattern = File.join(@build_dir, "config.json").gsub('\\', '/')
 		files = Dir.glob(pattern)
