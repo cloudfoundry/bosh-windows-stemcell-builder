@@ -61,6 +61,7 @@ module Stemcell
         @organization = organization
         @new_password = new_password
         @skip_windows_update = skip_windows_update
+        @build_context = nil
         if args.has_key?(:build_context)
           @build_context = args[:build_context]
           args.delete(:build_context)
