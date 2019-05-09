@@ -3,13 +3,14 @@ require 'securerandom'
 module Packer
   module Config
     class Gcp
-      def initialize(account_json:, project_id:, source_image:, image_family:, os:, output_directory:, vm_prefix: '', mount_ephemeral_disk: false)
+      def initialize(account_json:, project_id:, source_image:, image_family:, os:, output_directory:, version:, vm_prefix: '', mount_ephemeral_disk: false)
         @account_json = account_json
         @project_id = project_id
         @source_image = source_image
         @image_family = image_family
         @os = os
         @output_directory = output_directory
+        @version = version
         @vm_prefix = vm_prefix.empty? ? 'packer' : vm_prefix
         @mount_ephemeral_disk = mount_ephemeral_disk
       end
@@ -42,7 +43,7 @@ module Packer
       end
 
       def provisioners
-        ProvisionerFactory.new(@os, 'gcp', @mount_ephemeral_disk).dump
+        ProvisionerFactory.new(@os, 'gcp', @mount_ephemeral_disk, @version).dump
       end
 
       def dump

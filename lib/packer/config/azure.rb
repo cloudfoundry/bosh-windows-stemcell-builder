@@ -5,7 +5,7 @@ require 'json'
 module Packer
   module Config
     class Azure
-      def initialize(client_id:, client_secret:, tenant_id:, subscription_id:, resource_group_name:, storage_account:, location:, vm_size:, os:, output_directory:, vm_prefix: '', mount_ephemeral_disk: false)
+      def initialize(client_id:, client_secret:, tenant_id:, subscription_id:, resource_group_name:, storage_account:, location:, vm_size:, os:, output_directory:, version:, vm_prefix: '', mount_ephemeral_disk: false)
         @client_id = client_id
         @client_secret = client_secret
         @tenant_id = tenant_id
@@ -16,6 +16,7 @@ module Packer
         @vm_size = vm_size
         @os = os
         @output_directory = output_directory
+        @version = version
         @vm_prefix = vm_prefix.empty? ? 'packer' : vm_prefix
         @mount_ephemeral_disk = mount_ephemeral_disk
       end
@@ -50,7 +51,7 @@ module Packer
       end
 
       def provisioners
-        ProvisionerFactory.new(@os, 'azure', @mount_ephemeral_disk).dump
+        ProvisionerFactory.new(@os, 'azure', @mount_ephemeral_disk, @version).dump
       end
 
       def dump

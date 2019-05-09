@@ -55,7 +55,7 @@ module Packer
       end
 
       def provisioners
-        ProvisionerFactory.new("#{@os}_vsphere_updates", 'update-vsphere', @mount_ephemeral_disk, @http_proxy, @https_proxy, @bypass_list).dump
+        ProvisionerFactory.new("#{@os}_vsphere_updates", 'update-vsphere', @mount_ephemeral_disk, '',@http_proxy, @https_proxy, @bypass_list).dump
       end
     end
 
@@ -66,6 +66,7 @@ module Packer
                      enable_rdp:,
                      new_password:,
                      build_context: :stemcell,
+                     version:,
                      **args)
         @product_key = product_key
         @owner = owner
@@ -73,6 +74,7 @@ module Packer
         @enable_rdp = enable_rdp
         @new_password = new_password
         @build_context = build_context
+        @version = version
         super(args)
       end
 
@@ -103,7 +105,7 @@ module Packer
       end
 
       def provisioners
-        ProvisionerFactory.new(@os, 'vsphere', @mount_ephemeral_disk, @http_proxy, @https_proxy, @bypass_list, @build_context).dump
+        ProvisionerFactory.new(@os, 'vsphere', @mount_ephemeral_disk, @version, @http_proxy, @https_proxy, @bypass_list, @build_context).dump
       end
     end
   end
