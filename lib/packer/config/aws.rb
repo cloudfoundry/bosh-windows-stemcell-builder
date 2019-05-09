@@ -3,12 +3,13 @@ require 'securerandom'
 module Packer
   module Config
     class Aws
-      def initialize(aws_access_key:, aws_secret_key:, region:, os:, output_directory:, vm_prefix: '', mount_ephemeral_disk: false)
+      def initialize(aws_access_key:, aws_secret_key:, region:, os:, output_directory:, version:, vm_prefix: '', mount_ephemeral_disk: false)
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
         @region = region
         @os = os
         @output_directory = output_directory
+        @version = version
         @vm_prefix = vm_prefix.empty? ? 'packer' : vm_prefix
         @mount_ephemeral_disk = mount_ephemeral_disk
       end
@@ -44,7 +45,7 @@ module Packer
       end
 
       def provisioners
-        ProvisionerFactory.new(@os, 'aws', @mount_ephemeral_disk).dump
+        ProvisionerFactory.new(@os, 'aws', @mount_ephemeral_disk, @version).dump
       end
 
       def dump

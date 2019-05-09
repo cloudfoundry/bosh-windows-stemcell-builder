@@ -39,6 +39,7 @@ describe Stemcell::Builder do
           output_directory: output_directory,
           image_family: image_family,
           os: os,
+          version: version,
           vm_prefix: vm_prefix,
           mount_ephemeral_disk: false
         ).and_return(packer_config)
@@ -101,6 +102,7 @@ describe Stemcell::Builder do
             output_directory: output_directory,
             image_family: image_family,
             os: os,
+            version: '',
             vm_prefix: vm_prefix,
             mount_ephemeral_disk: false
           ).and_return(packer_config)

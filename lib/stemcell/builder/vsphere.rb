@@ -93,6 +93,7 @@ module Stemcell
           owner: @owner,
           organization: @organization,
           os: @os,
+          version: @version,
           enable_rdp: @enable_rdp,
           skip_windows_update: @skip_windows_update,
           http_proxy: @http_proxy,

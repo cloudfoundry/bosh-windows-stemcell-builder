@@ -37,6 +37,7 @@ describe Stemcell::Builder do
                 region: amis,
                 output_directory: output_directory,
                 os: os,
+                version: version,
                 vm_prefix: vm_prefix,
                 mount_ephemeral_disk: false,
               )
@@ -97,6 +98,7 @@ describe Stemcell::Builder do
                   region: amis,
                   output_directory: output_directory,
                   os: os,
+                  version: '',
                   vm_prefix: vm_prefix,
                   mount_ephemeral_disk: false,
                 )

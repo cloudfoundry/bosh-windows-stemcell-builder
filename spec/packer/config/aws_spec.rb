@@ -28,6 +28,7 @@ describe Packer::Config::Aws do
         region: region,
         output_directory: 'some-output-directory',
         os: os,
+        version: '',
         vm_prefix: 'some-vm-prefix'
       ).builders
     end
@@ -97,6 +98,7 @@ describe Packer::Config::Aws do
           region: region,
           output_directory: '',
           os: '',
+          version: '',
           vm_prefix: ''
         ).builders
         expect(builders[0]).to include(
@@ -126,6 +128,7 @@ describe Packer::Config::Aws do
           region: '',
           output_directory: 'some-output-directory',
           os: 'windows2012R2',
+          version: '2012R2.12',
           vm_prefix: '',
           mount_ephemeral_disk: false
         ).provisioners
@@ -155,6 +158,9 @@ describe Packer::Config::Aws do
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
           {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS aws -agentZipPath 'C:\\provision\\agent.zip'"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }",
+                                                "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
+                                                "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '2012R2.12'"] },
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-CVE-2015-6161"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-CVE-2017-8529"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-CredSSP"]},
@@ -186,6 +192,7 @@ describe Packer::Config::Aws do
           region: '',
           output_directory: 'some-output-directory',
           os: 'windows2016',
+          version: '2016.76',
           vm_prefix: '',
         ).provisioners
         expected_provisioners_except_lgpo = [
@@ -209,6 +216,9 @@ describe Packer::Config::Aws do
           {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
           {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
           {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS aws -agentZipPath 'C:\\provision\\agent.zip'"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }",
+                                                "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
+                                                "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '2016.76'"] },
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
@@ -236,6 +246,7 @@ describe Packer::Config::Aws do
             region: '',
             output_directory: 'some-output-directory',
             os: 'windows2016',
+            version: '',
             vm_prefix: '',
             mount_ephemeral_disk: true,
           ).provisioners
@@ -264,6 +275,7 @@ describe Packer::Config::Aws do
           aws_access_key: '',
           aws_secret_key: '',
           region: '',
+          version: '1803.24',
           output_directory: 'some-output-directory',
           os: 'windows1803',
           vm_prefix: '',
@@ -289,6 +301,9 @@ describe Packer::Config::Aws do
           {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
           {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS aws -agentZipPath 'C:\\provision\\agent.zip'"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }",
+                                                "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
+                                                "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '1803.24'"] },
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
@@ -315,7 +330,8 @@ describe Packer::Config::Aws do
             aws_secret_key: '',
             region: '',
             output_directory: 'some-output-directory',
-            os: 'windows2016',
+            os: 'windows1803',
+            version: '',
             vm_prefix: '',
             mount_ephemeral_disk: true,
           ).provisioners
@@ -346,6 +362,7 @@ describe Packer::Config::Aws do
           region: '',
           output_directory: 'some-output-directory',
           os: 'windows2019',
+          version: '2019.43',
           vm_prefix: '',
           ).provisioners
         expected_provisioners_except_lgpo = [
@@ -369,6 +386,9 @@ describe Packer::Config::Aws do
           {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
           {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS aws -agentZipPath 'C:\\provision\\agent.zip'"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }",
+                                                "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
+                                                "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '2019.43'"] },
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
@@ -396,6 +416,7 @@ describe Packer::Config::Aws do
             region: '',
             output_directory: 'some-output-directory',
             os: 'windows2019',
+            version: '',
             vm_prefix: '',
             mount_ephemeral_disk: true,
             ).provisioners

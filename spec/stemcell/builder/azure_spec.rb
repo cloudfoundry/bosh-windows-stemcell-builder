@@ -50,6 +50,7 @@ describe Stemcell::Builder do
           vm_size: vm_size,
           output_directory: output_directory,
           os: os,
+          version: version,
           vm_prefix: vm_prefix,
           mount_ephemeral_disk: false,
         ).and_return(packer_config)
