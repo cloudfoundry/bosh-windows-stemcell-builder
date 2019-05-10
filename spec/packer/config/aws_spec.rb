@@ -280,7 +280,7 @@ describe Packer::Config::Aws do
           os: 'windows1803',
           vm_prefix: '',
         ).provisioners
-        expected_provisioners_except_lgpo = [
+        expected_provisioners_base = [
           {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before"=>"60s"},
           {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1", "pause_before"=>"60s"},
           {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before"=>"60s"},
@@ -301,9 +301,6 @@ describe Packer::Config::Aws do
           {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
           {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS aws -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }",
-                                                "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
-                                                "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '1803.24'"] },
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
@@ -315,8 +312,15 @@ describe Packer::Config::Aws do
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Invoke-Sysprep -IaaS aws"]}
         ].flatten
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
-        provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
-        expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
+        expect(provisioners.detect do |p|
+                  p.has_key?('inline')
+                end).not_to be_nil
+        expect(provisioners.detect do |p|
+          p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version")
+        end).not_to be_nil, "Expect provisioners to include New-VersionFile"
+        line_by_line_provisioners = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
+        line_by_line_provisioners = line_by_line_provisioners.delete_if {|x| x .has_key?('inline') && x['inline'].include?("New-VersionFile -Version")}
+        expect(line_by_line_provisioners).to eq (expected_provisioners_base)
 
         FileUtils.rm_rf(stemcell_deps_dir)
         ENV.delete('STEMCELL_DEPS_DIR')

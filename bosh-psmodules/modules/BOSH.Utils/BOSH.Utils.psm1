@@ -303,6 +303,18 @@ function Get-OSVersion {
     }
 }
 
+function New-VersionFile {
+    param([string]$Version)
+
+    if (!$Version) {
+        throw "-Version parameter must be specified as major.minor[.whatever]"
+    }
+
+    $truncatedVersion = $Version.Split('.')[0..1] -Join '.'
+
+    New-Item -Path "/var/vcap/bosh/etc/stemcell_version" -ItemType 'file' -Value $truncatedVersion
+}
+
 function Get-WinRMConfig {
     Invoke-Expression "winrm get winrm/config" -OutVariable result -ErrorVariable err 2>&1 | Out-Null
 
