@@ -470,4 +470,29 @@ Describe "Get-WUCerts" {
     }
 }
 
+Describe "New-VersionFile" {
+    BeforeEach {
+        $versionFileDestination = "/var/vcap/bosh/etc/stemcell_version"
+    }
+
+    AfterEach {
+        Get-ChildItem -Path "/var/vcap/bosh/etc/*" -Include "stemcell_version" | Remove-Item
+    }
+
+    It "creates a version file with OS major.minor -Version parameter value as content" {
+        $version = '1803.456.17-build.2'
+        $versionExpectation = '^1803.456$'
+
+        New-VersionFile -Version $version
+
+        $versionFileDestination | Should -Exist
+        $versionFileDestination | Should -FileContentMatchExactly $versionExpectation
+    }
+
+    It "throws if the version parameter is not specified" {
+        { New-VersionFile } | Should Throw "-Version parameter must be specified as major.minor[.whatever]"
+    }
+}
+
+
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore

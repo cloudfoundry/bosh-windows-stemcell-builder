@@ -24,7 +24,8 @@ FunctionsToExport = @(
     'Disable-DCOM',
     'Get-OSVersion',
     'Get-WinRMConfig',
-    'Get-WUCerts'
+    'Get-WUCerts',
+    'New-VersionFile',
 )
 CmdletsToExport = @()
 VariablesToExport = '*'
