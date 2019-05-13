@@ -155,8 +155,7 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
-      "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '<%= stemcell_version %>'"
+      "New-VersionFile -Version '<%= stemcell_version %>'"
     ]
   },
   {

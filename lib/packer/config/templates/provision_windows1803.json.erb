@@ -159,7 +159,7 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "New-VersionFile -Version"
+      "New-VersionFile -Version '<%= stemcell_version %>'"
     ]
   },
   {

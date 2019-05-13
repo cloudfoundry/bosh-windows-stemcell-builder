@@ -107,6 +107,7 @@ describe Packer::Config::Azure do
     context 'windows 2012' do
       it 'returns the expected provisioners' do
         allow(SecureRandom).to receive(:hex).and_return("some-password")
+        version = '1200.12.7-build.3'
         provisioners = Packer::Config::Azure.new(
           client_id: '',
           client_secret: '',
@@ -118,11 +119,11 @@ describe Packer::Config::Azure do
           vm_size: '',
           output_directory: 'some-output-directory',
           os: 'windows2012R2',
-          version: '2012R2.12',
+          version: version,
           vm_prefix: '',
           mount_ephemeral_disk: false,
         ).provisioners
-        expected_provisioners_except_lgpo = [
+        expected_provisioners_base = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip", "pause_before"=>"60s"},
           {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1", "pause_before"=>"60s"},
           {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], 'pause_before'=>'60s'},
@@ -148,9 +149,6 @@ describe Packer::Config::Azure do
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
           {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }",
-                                                "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
-                                                "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '2012R2.12'"] },
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-CVE-2015-6161"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-CVE-2017-8529"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-CredSSP"]},
@@ -165,14 +163,22 @@ describe Packer::Config::Azure do
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Invoke-Sysprep -IaaS azure"]}
         ].flatten
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
-        provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
-        expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
+
+        expect(provisioners.detect do |p|
+          p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")
+        end).not_to be_nil, "Expect provisioners to include New-VersionFile"
+
+        line_by_line_provisioners = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
+        line_by_line_provisioners = line_by_line_provisioners.delete_if {|p| p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")}
+
+        expect(line_by_line_provisioners).to eq (expected_provisioners_base)
       end
     end
 
     context 'windows 2016' do
       it 'returns the expected provisioners' do
         allow(SecureRandom).to receive(:hex).and_return("some-password")
+        version = '1709.76.2-build.1'
         provisioners = Packer::Config::Azure.new(
           client_id: '',
           client_secret: '',
@@ -184,11 +190,11 @@ describe Packer::Config::Azure do
           vm_size: '',
           output_directory: 'some-output-directory',
           os: 'windows2016',
-          version: '2016.76',
+          version: version,
           vm_prefix: '',
           mount_ephemeral_disk: false,
         ).provisioners
-        expected_provisioners_except_lgpo = [
+        expected_provisioners_base = [
           {"type"=>"file", "source"=>"build/bosh-psmodules.zip", "destination"=>"C:\\provision\\bosh-psmodules.zip", "pause_before"=>"60s"},
           {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1", "pause_before"=>"60s"},
           {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before"=>"60s"},
@@ -209,9 +215,6 @@ describe Packer::Config::Azure do
           {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
           {"type"=>"file", "source"=>"build/agent.zip", "destination"=>"C:\\provision\\agent.zip"},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }",
-                                                "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
-                                                "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '2016.76'"] },
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
@@ -223,8 +226,15 @@ describe Packer::Config::Azure do
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Invoke-Sysprep -IaaS azure"]}
         ].flatten
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
-        provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
-        expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
+
+        expect(provisioners.detect do |p|
+          p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")
+        end).not_to be_nil, "Expect provisioners to include New-VersionFile"
+
+        line_by_line_provisioners = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
+        line_by_line_provisioners = line_by_line_provisioners.delete_if {|p| p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")}
+
+        expect(line_by_line_provisioners).to eq (expected_provisioners_base)
       end
 
       context 'when provisioning with emphemeral disk mounting enabled' do
@@ -263,6 +273,7 @@ describe Packer::Config::Azure do
     context 'windows 1803' do
       it 'returns the expected provisioners' do
         allow(SecureRandom).to receive(:hex).and_return("some-password")
+        version = '1803.23.1-build.2'
         provisioners = Packer::Config::Azure.new(
           client_id: '',
           client_secret: '',
@@ -272,13 +283,13 @@ describe Packer::Config::Azure do
           storage_account: '',
           location: '',
           vm_size: '',
-          version: '1803.24',
+          version: version,
           output_directory: 'some-output-directory',
           os: 'windows1803',
           vm_prefix: '',
           mount_ephemeral_disk: false,
         ).provisioners
-        expected_provisioners_except_lgpo = [
+        expected_provisioners_base = [
           {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before"=>"60s"},
           {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1", "pause_before"=>"60s"},
           {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before"=>"60s"},
@@ -299,9 +310,6 @@ describe Packer::Config::Azure do
           {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
           {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }",
-                                                "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
-                                                "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '1803.24'"] },
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
@@ -313,8 +321,15 @@ describe Packer::Config::Azure do
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Invoke-Sysprep -IaaS azure"]}
         ].flatten
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
-        provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
-        expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
+
+        expect(provisioners.detect do |p|
+          p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")
+        end).not_to be_nil, "Expect provisioners to include New-VersionFile"
+
+        line_by_line_provisioners = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
+        line_by_line_provisioners = line_by_line_provisioners.delete_if {|p| p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")}
+
+        expect(line_by_line_provisioners).to eq (expected_provisioners_base)
       end
 
       context 'when provisioning with emphemeral disk mounting enabled' do
@@ -353,6 +368,7 @@ describe Packer::Config::Azure do
     context 'windows 2019' do
       it 'returns the expected provisioners' do
         allow(SecureRandom).to receive(:hex).and_return("some-password")
+        version = '2019.43.17-build.1'
         provisioners = Packer::Config::Azure.new(
           client_id: '',
           client_secret: '',
@@ -364,11 +380,11 @@ describe Packer::Config::Azure do
           vm_size: '',
           output_directory: 'some-output-directory',
           os: 'windows2019',
-          version: '2019.43',
+          version: version,
           vm_prefix: '',
           mount_ephemeral_disk: false,
           ).provisioners
-        expected_provisioners_except_lgpo = [
+        expected_provisioners_base = [
           {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before"=>"60s"},
           {"type"=>"file", "source"=>"scripts/install-bosh-psmodules.ps1", "destination"=>"C:\\provision\\install-bosh-psmodules.ps1", "pause_before"=>"60s"},
           {"type"=>"powershell", "inline"=>['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before"=>"60s"},
@@ -389,9 +405,6 @@ describe Packer::Config::Azure do
           {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
           {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }",
-                                                "New-Item 'C:\\var\\vcap\\bosh\\etc' -ItemType 'directory'",
-                                                "New-Item -Path 'C:\\var\\vcap\\bosh\\etc\\stemcell_version' -ItemType 'file' -Value '2019.43'"] },
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
           {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
@@ -403,8 +416,15 @@ describe Packer::Config::Azure do
           {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Invoke-Sysprep -IaaS azure"]}
         ].flatten
         expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
-        provisioners_no_lgpo = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
-        expect(provisioners_no_lgpo).to eq (expected_provisioners_except_lgpo)
+
+        expect(provisioners.detect do |p|
+          p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")
+        end).not_to be_nil, "Expect provisioners to include New-VersionFile"
+
+        line_by_line_provisioners = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
+        line_by_line_provisioners = line_by_line_provisioners.delete_if {|p| p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")}
+
+        expect(line_by_line_provisioners).to eq (expected_provisioners_base)
       end
 
       context 'when provisioning with emphemeral disk mounting enabled' do
