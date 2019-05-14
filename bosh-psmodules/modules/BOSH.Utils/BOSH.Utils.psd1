@@ -25,7 +25,7 @@ FunctionsToExport = @(
     'Get-OSVersion',
     'Get-WinRMConfig',
     'Get-WUCerts',
-    'New-VersionFile',
+    'New-VersionFile'
 )
 CmdletsToExport = @()
 VariablesToExport = '*'

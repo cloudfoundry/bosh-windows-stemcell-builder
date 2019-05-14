@@ -312,7 +312,8 @@ function New-VersionFile {
 
     $truncatedVersion = $Version.Split('.')[0..1] -Join '.'
 
-    New-Item -Path "/var/vcap/bosh/etc/stemcell_version" -ItemType 'file' -Value $truncatedVersion
+    New-Item -Path "C:\\var\\vcap\\bosh\\etc" -ItemType 'directory'
+    New-Item -Path "C:\\var\\vcap\\bosh\\etc\\stemcell_version" -ItemType 'file' -Value $truncatedVersion
 }
 
 function Get-WinRMConfig {
