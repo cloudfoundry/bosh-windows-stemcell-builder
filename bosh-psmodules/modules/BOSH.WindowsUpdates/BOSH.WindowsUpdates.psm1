@@ -339,62 +339,6 @@ function Disable-AutomaticUpdates() {
     Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'IncludeRecommendedUpdates'
 }
 
-function Install-KB4056898() {
-    # Required for wusa.exe
-    Set-Service -Name wuauserv -StartupType Manual
-    Start-Service -Name wuauserv
-
-    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/d/msdownload/update/software/secu/2018/01/windows8.1-kb4056898-x64_ad6c91c5ec12608e4ac179b2d15586d244f0d2f3.msu' -Outfile C:\provision\kb4056898.msu
-
-    wusa.exe C:\provision\kb4056898.msu /quiet
-}
-
-function Install-KB4338825() {
-    Write-Log "Preparing: KB4338825."
-
-    Set-Service -Name wuauserv -StartupType Manual
-    Start-Service -Name wuauserv
-
-    Write-Log "Downloading: KB4338825."
-
-    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/c/msdownload/update/software/secu/2018/07/windows10.0-kb4338825-x64_631cd7cfc1e4986e37cb727bae1ee1759a87c688.msu' -Outfile C:\provision\KB4338825.msu
-
-    Write-Log "Installing: KB4338825."
-    wusa.exe C:\provision\KB4338825.msu /quiet
-}
-
-function Install-KB2538243() {
-    Write-Log "Preparing: KB2538243."
-
-    Set-Service -Name wuauserv -StartupType Manual
-    Start-Service -Name wuauserv
-
-    Write-Log "Downloading: KB2538243."
-
-    Invoke-WebRequest -UseBasicParsing -Uri 'http://download.windowsupdate.com/msdownload/update/software/secu/2011/05/vcredist_x86_470640aa4bb7db8e69196b5edb0010933569e98d.exe' -Outfile C:\provision\KB2538243.exe
-
-    Write-Log "Uninstalling: KB2538243."
-    C:\provision\KB2538243.exe /qu
-
-    Write-Log "Installing: KB2538243."
-    C:\provision\KB2538243.exe /q
-}
-
-function Install-KB2267602() {
-    Write-Log "Preparing: KB2267602."
-
-    Set-Service -Name wuauserv -StartupType Manual
-    Start-Service -Name wuauserv
-
-    Write-Log "Downloading: KB2267602."
-
-    Invoke-WebRequest -UseBasicParsing -Uri 'https://go.microsoft.com/fwlink/?LinkID=121721&arch=x64' -Outfile C:\provision\KB2267602.exe
-
-    Write-Log "Installing: KB2267602."
-
-    Start-Process -FilePath "C:\provision\KB2267602.exe" -ArgumentList "/quiet" -Wait
-}
-
 function Enable-CVE-2015-6161() {
     #Enable MS15-124 - Internet Explorer ASLR Bypass fix - CVE-2015-6161
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
