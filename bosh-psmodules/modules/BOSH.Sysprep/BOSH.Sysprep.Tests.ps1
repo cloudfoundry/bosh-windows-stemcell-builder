@@ -8,22 +8,23 @@ Remove-Module -Name BOSH.Utils -ErrorAction Ignore
 Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 
 
-function New-TempDir {
+function New-TempDir
+{
     $parent = [System.IO.Path]::GetTempPath()
-    [string] $name = [System.Guid]::NewGuid()
+    [string]$name = [System.Guid]::NewGuid()
     (New-Item -ItemType Directory -Path (Join-Path $parent $name)).FullName
 }
 
 Describe "Remove-WasPassProcessed" {
     Context "when no answer file path is provided" {
         It "throws" {
-            { Remove-WasPassProcessed } | Should Throw "Cannot bind argument to parameter 'Path' because it is an empty string."
+            { Remove-WasPassProcessed } | Should -Throw "Cannot bind argument to parameter 'Path' because it is an empty string."
         }
     }
 
     Context "when provided a nonexistent answer file" {
         It "throws" {
-            { Remove-WasPassProcessed -AnswerFilePath "C:\IDoNotExist.xml" } | Should Throw "Answer file C:\IDoNotExist.xml does not exist"
+            { Remove-WasPassProcessed -AnswerFilePath "C:\IDoNotExist.xml" } | Should -Throw "Answer file C:\IDoNotExist.xml does not exist"
         }
     }
 
@@ -40,7 +41,7 @@ Describe "Remove-WasPassProcessed" {
         }
 
         It "throws" {
-            { Remove-WasPassProcessed -AnswerFilePath $BadAnswerXmlPath } | Should Throw "Cannot convert value `"bad xml`" to type `"System.Xml.XmlDocument`". Error: `"The specified node cannot be inserted as the valid child of this node, because the specified node is the wrong type.`""
+            { Remove-WasPassProcessed -AnswerFilePath $BadAnswerXmlPath } | Should -Throw "Cannot convert value `"bad xml`" to type `"System.Xml.XmlDocument`". Error: `"The specified node cannot be inserted as the valid child of this node, because the specified node is the wrong type.`""
         }
     }
 
@@ -77,8 +78,9 @@ Describe "Remove-WasPassProcessed" {
             Remove-WasPassProcessed $answerFilePath
             $content = [xml](Get-Content $answerFilePath)
 
-            foreach ($specializeBlock in $content.unattend.settings) {
-               $specializeBlock.HasAttribute("wasPassProcessed") | Should Be False
+            foreach ($specializeBlock in $content.unattend.settings)
+            {
+                $specializeBlock.HasAttribute("wasPassProcessed") | Should Be False
             }
         }
     }
@@ -103,7 +105,7 @@ Describe "Remove-WasPassProcessed" {
         It "does nothing" {
             Remove-WasPassProcessed $GoodAnswerFilePath
             $content = [xml](Get-Content $GoodAnswerFilePath)
-            $mwdBlock = ((($content.unattend.settings|where {$_.pass -eq 'specialize'}).component|where {$_.name -eq "Microsoft-Windows-Deployment"}))
+            $mwdBlock = ((($content.unattend.settings|where { $_.pass -eq 'specialize' }).component|where { $_.name -eq "Microsoft-Windows-Deployment" }))
             $specializeBlock = $mwdBlock.ParentNode
             $specializeBlock.hasAttribute("wasPassProcessed") | Should Be False
         }
@@ -113,13 +115,13 @@ Describe "Remove-WasPassProcessed" {
 Describe "Remove-UserAccounts" {
     Context "when no answer file path is provided" {
         It "throws" {
-            { Remove-UserAccounts } | Should Throw "Cannot bind argument to parameter 'Path' because it is an empty string."
+            { Remove-UserAccounts } | Should -Throw "Cannot bind argument to parameter 'Path' because it is an empty string."
         }
     }
 
     Context "when provided a nonexistent answer file" {
         It "throws" {
-            { Remove-UserAccounts -AnswerFilePath "C:\IDoNotExist.xml" } | Should Throw "Answer file C:\IDoNotExist.xml does not exist"
+            { Remove-UserAccounts -AnswerFilePath "C:\IDoNotExist.xml" } | Should -Throw "Answer file C:\IDoNotExist.xml does not exist"
         }
     }
 
@@ -136,7 +138,7 @@ Describe "Remove-UserAccounts" {
         }
 
         It "throws" {
-            { Remove-UserAccounts -AnswerFilePath $BadAnswerXmlPath } | Should Throw "Cannot convert value `"bad xml`" to type `"System.Xml.XmlDocument`". Error: `"The specified node cannot be inserted as the valid child of this node, because the specified node is the wrong type.`""
+            { Remove-UserAccounts -AnswerFilePath $BadAnswerXmlPath } | Should -Throw "Cannot convert value `"bad xml`" to type `"System.Xml.XmlDocument`". Error: `"The specified node cannot be inserted as the valid child of this node, because the specified node is the wrong type.`""
         }
     }
 
@@ -158,7 +160,7 @@ Describe "Remove-UserAccounts" {
         }
 
         It "does nothing" {
-            { Remove-UserAccounts -AnswerFilePath $noOOBEXmlPath } | Should Throw "Could not locate oobeSystem XML block. You may not be running this function on an answer file."
+            { Remove-UserAccounts -AnswerFilePath $noOOBEXmlPath } | Should -Throw "Could not locate oobeSystem XML block. You may not be running this function on an answer file."
         }
     }
 
@@ -182,7 +184,7 @@ Describe "Remove-UserAccounts" {
         It "does nothing" {
             Remove-UserAccounts -AnswerFilePath $GoodAnswerFilePath
             $content = [xml](Get-Content $GoodAnswerFilePath)
-            $userAccountsBlock = (($content.unattend.settings|where {$_.pass -eq 'oobeSystem'}).component|where {$_.name -eq "Microsoft-Windows-Shell-Setup"}).UserAccounts
+            $userAccountsBlock = (($content.unattend.settings|where { $_.pass -eq 'oobeSystem' }).component|where { $_.name -eq "Microsoft-Windows-Shell-Setup" }).UserAccounts
             $userAccountsBlock | Should Be $Null
         }
     }
@@ -212,7 +214,7 @@ Describe "Remove-UserAccounts" {
         It "Removes the UserAccounts xml block" {
             Remove-UserAccounts -AnswerFilePath $GoodAnswerFilePath
             $content = [xml](Get-Content $GoodAnswerFilePath)
-            $userAccountsBlock = (($content.unattend.settings|where {$_.pass -eq 'oobeSystem'}).component|where {$_.name -eq "Microsoft-Windows-Shell-Setup"}).UserAccounts
+            $userAccountsBlock = (($content.unattend.settings|where { $_.pass -eq 'oobeSystem' }).component|where { $_.name -eq "Microsoft-Windows-Shell-Setup" }).UserAccounts
             $userAccountsBlock | Should Be $Null
         }
     }
@@ -221,13 +223,13 @@ Describe "Remove-UserAccounts" {
 Describe "Invoke-Sysprep" {
     Context "when not provided an IaaS" {
         It "throws" {
-            { Invoke-Sysprep -OsVersion "windows2012R2" } | Should Throw "Provide the IaaS this stemcell will be used for"
+            { Invoke-Sysprep -OsVersion "windows2012R2" } | Should -Throw "Provide the IaaS this stemcell will be used for"
         }
     }
 
     Context "when provided an invalid Iaas" {
         It "throws" {
-            { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO -OsVersion "windows2012R2" } | Should Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
+            { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO -OsVersion "windows2012R2" } | Should -Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
         }
     }
 
@@ -277,7 +279,7 @@ Describe "Invoke-Sysprep" {
             }
 
             It "handles Windows 1803" {
-                Mock Get-OSVersion { "windows2016" } -ModuleName Bosh.Sysprep
+                Mock Get-OSVersion { "windows1803" } -ModuleName Bosh.Sysprep
 
                 { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
 
@@ -292,7 +294,6 @@ Describe "Invoke-Sysprep" {
 
             It "handles other OS'" {
                 Mock Get-OSVersion { Throw "invalid OS detected" } -ModuleName Bosh.Sysprep
-
 
                 { Invoke-Sysprep -Iaas "aws" } | Should -Throw "invalid OS detected"
 
@@ -310,11 +311,10 @@ Describe "Invoke-Sysprep" {
             # We don't want to trigger Sysprep during our test
             It "handles Windows 2012R2" {
                 Mock Get-OSVersion { "windows2012R2" } -ModuleName Bosh.Sysprep
-
+                $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-2012R2"
                 { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
 
-                Assert-MockCalled Enable-LocalSecurityPolicy -Times 1 -Scope It -ModuleName BOSH.Sysprep
-
+                Assert-MockCalled Enable-LocalSecurityPolicy -ParameterFilter { $PolicySource -eq $ExpectedPath } -Times 1 -Scope It -ModuleName BOSH.Sysprep
             }
 
             It "handles Windows 1709" {
@@ -326,9 +326,25 @@ Describe "Invoke-Sysprep" {
             }
 
             It "handles Windows 1803" {
-                Mock Get-OSVersion { "windows2016" } -ModuleName Bosh.Sysprep
-
+                Mock Get-OSVersion { "windows1803" } -ModuleName Bosh.Sysprep
+                $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-1803-2019"
                 { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
+
+                Assert-MockCalled Enable-LocalSecurityPolicy -ParameterFilter { $PolicySource -eq $ExpectedPath } -Times 1 -Scope It -ModuleName BOSH.Sysprep
+            }
+
+            It "handles Windows 2019" {
+                Mock Get-OSVersion { "windows2019" } -ModuleName Bosh.Sysprep
+                $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-1803-2019"
+                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
+
+                Assert-MockCalled Enable-LocalSecurityPolicy -ParameterFilter { $PolicySource -eq $ExpectedPath } -Times 1 -Scope It -ModuleName BOSH.Sysprep
+            }
+
+            It "skips local policy update if -SkipLGPO is set" {
+                Mock Get-OSVersion { "windows2012R2" } -ModuleName Bosh.Sysprep
+
+                { Invoke-Sysprep -Iaas "aws" -SkipLGPO } | Should -Not -Throw
 
                 Assert-MockCalled Enable-LocalSecurityPolicy -Times 0 -Scope It -ModuleName BOSH.Sysprep
             }
@@ -340,7 +356,6 @@ Describe "Invoke-Sysprep" {
 
                 Assert-MockCalled Enable-LocalSecurityPolicy -Times 0 -Scope It -ModuleName BOSH.Sysprep
             }
-
         }
     }
 }
@@ -368,11 +383,11 @@ Describe "ModifyInfFile" {
 
 Describe "Create-Unattend" {
     BeforeEach {
-        $UnattendDestination=(New-TempDir)
-        $NewPassword="NewPassword"
-        $ProductKey= "ProductKey"
-        $Organization="Organization"
-        $Owner="Owner"
+        $UnattendDestination = (New-TempDir)
+        $NewPassword = "NewPassword"
+        $ProductKey = "ProductKey"
+        $Organization = "Organization"
+        $Owner = "Owner"
     }
 
     AfterEach {
@@ -386,19 +401,19 @@ Describe "Create-Unattend" {
                 -ProductKey $ProductKey `
                 -Organization $Organization `
                 -Owner $Owner
-        } | Should Not Throw
+        } | Should -Not -Throw
         Test-Path (Join-Path $UnattendDestination "unattend.xml") | Should Be $True
     }
 
     It "handles special chars in passwords" {
         $NewPassword = "<!--Password123"
         {
-        Create-Unattend -UnattendDestination $UnattendDestination `
+            Create-Unattend -UnattendDestination $UnattendDestination `
                 -NewPassword $NewPassword `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
                 -Owner $Owner
-        } | Should Not Throw
+        } | Should -Not -Throw
 
         $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
         [xml]$unattendXML = Get-Content -Path $unattendPath
@@ -409,12 +424,12 @@ Describe "Create-Unattend" {
 
     It "handles null for NewPassword" {
         {
-        Create-Unattend -UnattendDestination $UnattendDestination `
+            Create-Unattend -UnattendDestination $UnattendDestination `
                 -NewPassword $null `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
                 -Owner $Owner
-        } | Should Not Throw
+        } | Should -Not -Throw
 
         $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
         [xml]$unattendXML = Get-Content -Path $unattendPath
@@ -426,12 +441,12 @@ Describe "Create-Unattend" {
 
     It "handles empty string for NewPassword" {
         {
-        Create-Unattend -UnattendDestination $UnattendDestination `
+            Create-Unattend -UnattendDestination $UnattendDestination `
                 -NewPassword "" `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
                 -Owner $Owner
-        } | Should Not Throw
+        } | Should -Not -Throw
 
         $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
         [xml]$unattendXML = Get-Content -Path $unattendPath
@@ -443,11 +458,11 @@ Describe "Create-Unattend" {
 
     It "handles not providing NewPassword" {
         {
-        Create-Unattend -UnattendDestination $UnattendDestination `
+            Create-Unattend -UnattendDestination $UnattendDestination `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
                 -Owner $Owner
-        } | Should Not Throw
+        } | Should -Not -Throw
 
         $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
         [xml]$unattendXML = Get-Content -Path $unattendPath
@@ -460,12 +475,12 @@ Describe "Create-Unattend" {
     Context "the generated Unattend file" {
         BeforeEach {
             {
-            Create-Unattend -UnattendDestination $UnattendDestination `
+                Create-Unattend -UnattendDestination $UnattendDestination `
                      -NewPassword $NewPassword `
                      -ProductKey $ProductKey `
                      -Organization $Organization `
                      -Owner $Owner
-            } | Should Not Throw
+            } | Should -Not -Throw
             $unattendPath = (Join-Path $UnattendDestination "unattend.xml")
             [xml]$unattendXML = Get-Content -Path $unattendPath
             $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
@@ -482,7 +497,7 @@ Describe "Create-Unattend" {
             {
                 Create-Unattend -UnattendDestination $UnattendDestination `
                     -NewPassword $NewPassword
-            } | Should Not Throw
+            } | Should -Not -Throw
             [xml]$unattendXML = Get-Content -Path $unattendPath
             $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
             $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
@@ -493,7 +508,7 @@ Describe "Create-Unattend" {
             {
                 Create-Unattend -UnattendDestination $UnattendDestination `
                     -NewPassword $NewPassword -Organization 'Test-Org' -Owner 'Test-Owner'
-            } | Should Not Throw
+            } | Should -Not -Throw
             [xml]$unattendXML = Get-Content -Path $unattendPath
             $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
             $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
@@ -504,19 +519,19 @@ Describe "Create-Unattend" {
 }
 
 Describe "Allow-NTPSync" {
-   It "Sets registry keys that allow the clock to be synced when delta is greater than 15 hours" {
-			 $oldMaxNegPhaseCorrection = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection'
-			 $oldMaxPosPhaseCorrection = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxPosPhaseCorrection'
+    It "Sets registry keys that allow the clock to be synced when delta is greater than 15 hours" {
+        $oldMaxNegPhaseCorrection = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection'
+        $oldMaxPosPhaseCorrection = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxPosPhaseCorrection'
 
-    { Allow-NTPSync } | Should Not Throw
+        { Allow-NTPSync } | Should -Not -Throw
 
-			$maxValue = [uint32]::MaxValue
-      (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection' | Should Be $maxValue
-      (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxPosPhaseCorrection' | Should Be $maxValue
+        $maxValue = [uint32]::MaxValue
+        (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection' | Should Be $maxValue
+        (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxPosPhaseCorrection' | Should Be $maxValue
 
-			Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxNegPhaseCorrection' -Value $oldMaxNegPhaseCorrection
-			Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxPosPhaseCorrection' -Value $oldMaxPosPhaseCorrection
-   }
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxNegPhaseCorrection' -Value $oldMaxNegPhaseCorrection
+        Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxPosPhaseCorrection' -Value $oldMaxPosPhaseCorrection
+    }
 }
 
 Remove-Module -Name BOSH.Sysprep -ErrorAction Ignore

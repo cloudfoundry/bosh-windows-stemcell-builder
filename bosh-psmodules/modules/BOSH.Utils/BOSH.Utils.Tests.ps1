@@ -319,7 +319,7 @@ Describe "Get-OSVersion" {
         $actualOSVersion = $null
 
         { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
-        $actualOsVersion | Should -eq "windows2016"
+        $actualOsVersion | Should -eq "windows1803"
 
         Assert-MockCalled Write-Log -Times 1 -Scope It -ParameterFilter { $Message -eq "Found OS version: Windows 1803" } -ModuleName BOSH.Utils
         Assert-MockCalled Get-OSVersionString -Times 1 -Scope It -ModuleName BOSH.Utils

@@ -6,9 +6,8 @@
 #>
 function Enable-LocalSecurityPolicy {
   Param (
-    [string]$PolicySource = (Join-Path $PSScriptRoot "cis-merge")
+    [string]$PolicySource =$(throw "Policy backup filepath is required")
   )
-
   Write-Log "Starting LocalSecurityPolicy"
 
   # Convert registry.txt files into registry.pol files
@@ -365,13 +364,14 @@ function Enable-AWS2016Sysprep {
 .Description
   This cmdlet runs Sysprep and generalizes a VM so it can be a BOSH stemcell
 #>
-function Invoke-Sysprep() {
+function Invoke-Sysprep()
+{
   Param (
-    [string]$IaaS = $(Throw "Provide the IaaS this stemcell will be used for"),
+    [string]$IaaS = $( Throw "Provide the IaaS this stemcell will be used for" ),
     [string]$NewPassword,
-    [string]$ProductKey="",
-    [string]$Organization="",
-    [string]$Owner="",
+    [string]$ProductKey = "",
+    [string]$Organization = "",
+    [string]$Owner = "",
     [switch]$SkipLGPO,
     [switch]$EnableRDP
   )
@@ -383,21 +383,28 @@ function Invoke-Sysprep() {
   # WARN WARN: this should be removed when Microsoft fixes this bug
   # See tracker story https://www.pivotaltracker.com/story/show/150238324
   # Skip sysprep if using Windows Server 2016 insider build with UALSVC bug
-  $RegPath="HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-  If ((Get-ItemProperty -Path $RegPath).CurrentBuildNumber -Eq '16278') {
+  $RegPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+  If ((Get-ItemProperty -Path $RegPath).CurrentBuildNumber -Eq '16278')
+  {
     Stop-Computer
   }
 
   Allow-NTPSync
 
-  # For now, apply LGPO only on 2012R2
-  switch ($OsVersion) {
-    "windows2012R2" {
-      if (-Not $SkipLGPO) {
-        if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
-          Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
-        }
-        Enable-LocalSecurityPolicy
+  if (-Not $SkipLGPO)
+  {
+    if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
+      Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
+    }
+
+    switch ($OsVersion)
+    {
+      "windows2012R2" {
+        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-2012R2")
+      }
+
+      { ($_ -eq "windows1803") -or ($_ -eq "windows2019") }{
+        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-1803-2019")
       }
     }
   }
@@ -409,11 +416,7 @@ function Invoke-Sysprep() {
           Update-AWS2012R2Config
           Start-Process "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -ArgumentList "-sysprep" -Wait
         }
-        "windows2016" {
-          Update-AWS2016Config
-          Enable-AWS2016Sysprep
-        }
-        "windows2019" {
+        {($_ -eq"windows2016") -or ($_ -eq"windows1803") -or ($_ -eq"windows2019")} {
           Update-AWS2016Config
           Enable-AWS2016Sysprep
         }
