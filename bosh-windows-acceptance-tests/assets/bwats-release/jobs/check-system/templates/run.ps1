@@ -396,6 +396,17 @@ function Verify-PSVersion5 {
   Write-Host "Powershell is up to date: Version is: $($PSVersiontable.PSversion)"
 }
 
+function Verify-VersionFile {
+  $VersionFileExists = Test-Path "C:\\var\\vcap\\bosh\\etc\\stemcell_version" -PathType Leaf
+
+  if (-Not $VersionFileExists) {
+    Write-Error "Version file does not exits at path C:\\var\\vcap\\bosh\\etc\\stemcell_version"
+    Exit 1
+  }
+
+  Write-Host "Version file exists at path C:\\var\\vcap\\bosh\\etc\\stemcell_version"
+}
+
 Verify-LGPO
 Verify-Dependencies
 Verify-Acls
@@ -413,4 +424,6 @@ Verify-RandomPassword
 Verify-NTPSync
 Verify-NoDocker
 Verify-PSVersion5
+
+Verify-VersionFile
 Exit 0
