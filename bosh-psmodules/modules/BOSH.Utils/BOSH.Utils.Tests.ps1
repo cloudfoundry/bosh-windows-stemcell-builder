@@ -476,7 +476,7 @@ Describe "New-VersionFile" {
     }
 
     AfterEach {
-        Get-ChildItem -Path "/var/vcap/bosh/etc/*" -Include "stemcell_version" | Remove-Item
+        Remove-Item -ErrorAction Ignore -Recurse "/var/vcap/bosh/etc"
     }
 
     It "creates a version file with OS major.minor -Version parameter value as content" {
