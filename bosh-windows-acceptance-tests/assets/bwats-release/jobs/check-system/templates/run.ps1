@@ -1,64 +1,73 @@
-﻿function Verify-LGPO {
-  $windowsVersion = Get-OSVersion
+﻿function Verify-LGPO
+{
   echo "Running this function Verify-LGPO"
-  if ($windowsVersion -Match "2012") {
-    echo "Verifying that expected policies have been applied"
+  echo "Verifying that expected policies have been applied"
 
-    lgpo /b $PSScriptRoot
-    $LgpoDir = "$PSScriptRoot\" + (Get-ChildItem $PSScriptRoot -Directory | ?{ $_.Name -match "{*}" } | select -First 1).Name
+  lgpo /b $PSScriptRoot
+  $LgpoDir = "$PSScriptRoot\" + (Get-ChildItem $PSScriptRoot -Directory | ?{ $_.Name -match "{*}" } | select -First 1).Name
 
-    $OutputDir = "$PSScriptRoot\lgpo_test"
-    mkdir $OutputDir
+  $OutputDir = "$PSScriptRoot\lgpo_test"
+  mkdir $OutputDir
 
-    lgpo /parse /m "$LgpoDir\DomainSysvol\GPO\Machine\registry.pol" > "$OutputDir\machine_registry.unedited.txt"
-    Get-Content "$OutputDir\machine_registry.unedited.txt" | select -Skip 3 > "$OutputDir\machine_registry.txt"
+  lgpo /parse /m "$LgpoDir\DomainSysvol\GPO\Machine\registry.pol" > "$OutputDir\machine_registry.unedited.txt"
+  Get-Content "$OutputDir\machine_registry.unedited.txt" | select -Skip 3 > "$OutputDir\machine_registry.txt"
 
-    lgpo /parse /u "$LgpoDir\DomainSysvol\GPO\User\registry.pol" > "$OutputDir\user_registry.unedited.txt"
-    Get-Content "$OutputDir\user_registry.unedited.txt" | select -Skip 3 > "$OutputDir\user_registry.txt"
+  lgpo /parse /u "$LgpoDir\DomainSysvol\GPO\User\registry.pol" > "$OutputDir\user_registry.unedited.txt"
+  Get-Content "$OutputDir\user_registry.unedited.txt" | select -Skip 3 > "$OutputDir\user_registry.txt"
 
-    copy "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv" "$OutputDir"
-    $Csv = Import-Csv "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv"
-    $Include = $Csv[0].psobject.properties | select -ExpandProperty Name -Skip 1
-    $Csv | select $Include | export-csv "$OutputDir\audit.csv" -NoTypeInformation
+  copy "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv" "$OutputDir"
+  $Csv = Import-Csv "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv"
+  $Include = $Csv[0].psobject.properties | select -ExpandProperty Name -Skip 1
+  $Csv | select $Include | export-csv "$OutputDir\audit.csv" -NoTypeInformation
 
-    copy "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\SecEdit\GptTmpl.inf" "$OutputDir"
+  copy "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\SecEdit\GptTmpl.inf" "$OutputDir"
 
-    function Compare-LGPOPolicies {
-      Param (
-        [string] $ActualPoliciesFile = (Throw "ActualPoliciesFile param required"),
-        [string] $ExpectedPoliciesFile = (Throw "ExpectedPoliciesFile param required"),
-        [string] $PolicyDelimiter = (Throw "PolicyDelimiter param required")
-      )
+  function Compare-LGPOPolicies
+  {
+    Param (
+      [string] $ActualPoliciesFile = (Throw "ActualPoliciesFile param required"),
+    [string] $ExpectedPoliciesFile = (Throw "ExpectedPoliciesFile param required"),
+    [string] $PolicyDelimiter = (Throw "PolicyDelimiter param required")
+    )
 
-      $ActualPolicies = Get-Content $ActualPoliciesFile -Raw
-      $ActualPoliciesMatches = ($ActualPolicies | Select-String "(?sn)\s*(.+?)$PolicyDelimiter" -AllMatches)
-      $ActualPoliciesArray = ($ActualPoliciesMatches | Select -Expand Matches | Select -Expand Value)
+    $ActualPolicies = Get-Content $ActualPoliciesFile -Raw
+    $ActualPoliciesMatches = ($ActualPolicies | Select-String "(?sn)\s*(.+?)$PolicyDelimiter" -AllMatches)
+    $ActualPoliciesArray = ($ActualPoliciesMatches | Select -Expand Matches | Select -Expand Value)
 
-      $ExpectedPolicies = Get-Content $ExpectedPoliciesFile -Raw
-      $ExpectedPoliciesMatches = ($ExpectedPolicies | Select-String "(?sn)\s*(.+?)$PolicyDelimiter" -AllMatches)
-      $ExpectedPoliciesArray = ($ExpectedPoliciesMatches | Select -Expand Matches | Select -Expand Value)
+    $ExpectedPolicies = Get-Content $ExpectedPoliciesFile -Raw
+    $ExpectedPoliciesMatches = ($ExpectedPolicies | Select-String "(?sn)\s*(.+?)$PolicyDelimiter" -AllMatches)
+    $ExpectedPoliciesArray = ($ExpectedPoliciesMatches | Select -Expand Matches | Select -Expand Value)
 
-      $count = 0
-      foreach ($policy in $ExpectedPoliciesArray) {
-        if (-not $ActualPoliciesArray.contains($policy)) {
-          Write-Error "Actual policies do not include policy: $policy"
-          $count += 1
-        }
-      }
-      if (-not $count -eq 0) {
-        Write-Error "There are missing policies"
-        exit 1
-      }
+    $count = 0
+    foreach ($policy in $ExpectedPoliciesArray) {
+    if (-not $ActualPoliciesArray.contains($policy)) {
+    Write-Error "Actual policies do not include policy: $policy"
+    $count += 1
     }
-
-    $newLineDelimiter = [System.Environment]::NewLine
-    $TestDir = "$PSScriptRoot\..\test"
-
-    Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "$newLineDelimiter$newLineDelimiter"
-    Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "$newLineDelimiter$newLineDelimiter"
-    Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "$newLineDelimiter"
-    Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "$newLineDelimiter"
+    }
+    if (-not $count -eq 0) {
+    Write-Error "There are missing policies"
+    exit 1
+    }
   }
+
+  $newLineDelimiter = [System.Environment]::NewLine
+
+  $OsVersion = Get-OSVersion
+  switch ($OsVersion)
+  {
+    "windows2012R2" {
+      $TestDir = "$PSScriptRoot\..\test-2012R2"
+    }
+    { ($_ -eq "windows1803") -or ($_ -eq "windows1803") }{
+      $TestDir = "$PSScriptRoot\..\test-1803-2019"
+    }
+  }
+
+  Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "$newLineDelimiter$newLineDelimiter"
+  Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "$newLineDelimiter$newLineDelimiter"
+  Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "$newLineDelimiter"
+  Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "$newLineDelimiter"
 }
 
 function Verify-Dependencies {
@@ -407,7 +416,11 @@ function Verify-VersionFile {
   Write-Host "Version file exists at path C:\\var\\vcap\\bosh\\etc\\stemcell_version"
 }
 
-Verify-LGPO
+#CIS hardening has been skipped for Windows1709
+$osVersion = Get-OSVersion
+if (-Not ($osVersion -Match "2016")) {
+  Verify-LGPO
+}
 Verify-Dependencies
 Verify-Acls
 

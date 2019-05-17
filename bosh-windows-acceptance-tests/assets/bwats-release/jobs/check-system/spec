@@ -3,12 +3,17 @@ name: check-system
 description: "This errand verifies that Microsoft Auto Updates are disabled on the target machine"
 templates:
   run.ps1: bin/run.ps1
-  audit.csv: test/audit.csv
-  GptTmpl.inf: test/GptTmpl.inf
-  machine_registry.txt: test/machine_registry.txt
-  user_registry.txt: test/user_registry.txt
   HWCServer.exe: bin/HWCServer.exe
   security.inf: inf/security.inf
+  2012R2-expected-policies/audit.csv: test-2012R2/audit.csv
+  2012R2-expected-policies/GptTmpl.inf: test-2012R2/GptTmpl.inf
+  2012R2-expected-policies/machine_registry.txt: test-2012R2/machine_registry.txt
+  2012R2-expected-policies/user_registry.txt: test-2012R2/user_registry.txt
+  1803-2019-expected-policies/audit.csv: test-1803-2019/audit.csv
+  1803-2019-expected-policies/GptTmpl.inf: test-1803-2019/GptTmpl.inf
+  1803-2019-expected-policies/machine_registry.txt: test-1803-2019/machine_registry.txt
+  1803-2019-expected-policies/user_registry.txt: test-1803-2019/user_registry.txt
+
 packages: []
 properties:
     ssh.disabled_by_default:
