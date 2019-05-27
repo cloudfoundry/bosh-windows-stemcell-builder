@@ -104,17 +104,17 @@ function Verify-Acls {
       "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow"
   ))
 
-  if ($windowsVersion -match "2016" -Or $windowsVersion -match "2019") {
-    Write-Host "Adding 1709 ACLs"
-    # for 2016, for some reason every file in C:\Program Files\OpenSSH
-    # ends up with "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow".
-    # adding this to unblock 2016 pipeline
-    $expectedacls.Add("APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow")
-    $expectedacls.Add("NT AUTHORITY\Authenticated Users,Allow")
-  } elseif ($windowsVersion -match "2012") {
+  if ($windowsVersion -match "2012") {
     Write-Host "Adding 2012R2 ACLs"
     $expectedacls.Add("NT SERVICE\sshd,Allow")
     # For the new OpenSSH v7.7.2.0p1-Beta and later
+    $expectedacls.Add("NT AUTHORITY\Authenticated Users,Allow")
+  } else {
+    Write-Host "Adding ${windowsVersion} ACLs"
+    # for 2016 and later, for some reason every file in C:\Program Files\OpenSSH
+    # ends up with "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow".
+    # adding this to unblock 2016 and later pipelines
+    $expectedacls.Add("APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow")
     $expectedacls.Add("NT AUTHORITY\Authenticated Users,Allow")
   }
 
@@ -274,12 +274,9 @@ function Verify-InstalledFeatures {
     Assert-IsInstalled "AS-NET-Framework"
     Assert-IsInstalled "Web-WHC"
     Assert-IsInstalled "Web-ASP"
-  } elseif ($windowsVersion -Match "2016" -Or $windowsVersion -Match "2019") {
+  } else {
     Assert-IsInstalled "Containers"
     Assert-IsNotInstalled "Windows-Defender-Features"
-  } else {
-   Write-Error "Verify-InstalledFeatures : Invalid OSVersion"
-   Exit 1
   }
 }
 
