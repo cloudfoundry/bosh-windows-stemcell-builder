@@ -76,6 +76,8 @@ describe Packer::Config do
                                         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"]},
                                         {"type"=>"windows-restart", "restart_timeout"=>"12h"},
                                         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+                                        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
+                                        {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
                                         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
                                         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Test-InstalledUpdates"]},
                                         {'type' => 'powershell', 'inline' => ['$ErrorActionPreference = "Stop";',
@@ -342,7 +344,22 @@ describe Packer::Config do
             p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")
           end).not_to be_nil, "Expect provisioners to include New-VersionFile"
 
+          expect(provisioners.detect do |p|
+            p.has_key?('inline') && p['inline'].include?("Get-HotFix > hotfixes.log")
+          end).not_to be_nil, "Expect provisioners to include Get-HotFix"
+
+          expect(provisioners.detect do |p|
+            p.has_key?('destination') && p['destination'] == "hotfixes.log" && p['direction'] == "download"
+          end).not_to be_nil, "Expect provisioners to copy hotfix.log"
+
+
+          hotfixIndex = provisioners.index {|p| p.has_key?('inline') && p["inline"].include?("Get-HotFix > hotfixes.log")}
+          windowsUpdateIndex = provisioners.index {|p| p.has_key?('inline') && p["inline"].include?("Wait-WindowsUpdates -Password some-password! -User Provisioner")}
+          expect(hotfixIndex).to be > windowsUpdateIndex, "Expect Get-HotFix to be called after windows updates"
+
           line_by_line_provisioners = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
+          line_by_line_provisioners = line_by_line_provisioners.delete_if {|p| p.has_key?('inline') && p['inline'].include?("Get-HotFix > hotfixes.log")}
+          line_by_line_provisioners = line_by_line_provisioners.delete_if {|p| p.has_key?('destination') && p['destination'].include?("hotfixes.log")}
           line_by_line_provisioners = line_by_line_provisioners.delete_if {|p| p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")}
 
           expect(line_by_line_provisioners).to eq (expected_provisioners_base)
@@ -526,6 +543,8 @@ describe Packer::Config do
                   {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"]},
                   {"type" => "windows-restart", "restart_timeout" => "12h"},
                   {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+                  {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
+                  {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
                   {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
                   {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell"]},
                   ## omitting LGPO provisioner because random string in it
@@ -710,6 +729,8 @@ describe Packer::Config do
               {"type"=>"powershell", "inline"=>["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"]},
               {"type"=>"windows-restart", "restart_timeout"=>"12h"},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+              {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
+              {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Test-InstalledUpdates"]},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell"]},
@@ -790,6 +811,8 @@ describe Packer::Config do
               {"type"=>"powershell", "inline"=> ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"]},
               {"type" => "windows-restart", "restart_timeout" => "12h"},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+              {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
+              {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
               {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell"]},
               ## omitting LGPO provisioner because random string in it

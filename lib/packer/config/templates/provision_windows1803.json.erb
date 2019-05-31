@@ -103,6 +103,20 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
+      "Get-HotFix > hotfixes.log"
+    ]
+  },
+  {
+    "type": "file",
+    "source": "hotfixes.log",
+    "destination": "hotfixes.log",
+    "direction": "download"
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
       "Remove-Account -User Provisioner"
     ]
   },
