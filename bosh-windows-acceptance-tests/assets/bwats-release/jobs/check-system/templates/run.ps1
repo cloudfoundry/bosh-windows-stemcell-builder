@@ -26,8 +26,8 @@
   {
     Param (
       [string] $ActualPoliciesFile = (Throw "ActualPoliciesFile param required"),
-    [string] $ExpectedPoliciesFile = (Throw "ExpectedPoliciesFile param required"),
-    [string] $PolicyDelimiter = (Throw "PolicyDelimiter param required")
+      [string] $ExpectedPoliciesFile = (Throw "ExpectedPoliciesFile param required"),
+      [string] $PolicyDelimiter = (Throw "PolicyDelimiter param required")
     )
 
     $ActualPolicies = Get-Content $ActualPoliciesFile -Raw
