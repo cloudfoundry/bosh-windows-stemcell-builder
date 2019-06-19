@@ -413,16 +413,32 @@ function Verify-VersionFile {
   Write-Host "Version file exists at path C:\\var\\vcap\\bosh\\etc\\stemcell_version"
 }
 
+function Verify-HyperVIsEnabled {
+
+  $feature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V
+
+  if ($feature.State -ne "Enabled") {
+    Write-Error "Hyper-V is NOT enabled"
+    Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V
+    Exit 1
+  }
+
+  Write-Host "Hyper-V is enabled"
+}
+
 #CIS hardening has been skipped for Windows1709
 $osVersion = Get-OSVersion
-if (-Not ($osVersion -Match "2016")) {
+if (-Not ($osVersion -Match "windows2016")) {
   Verify-LGPO
 }
+#HyperV not enabled for 2012R2 or 1709:
+if (-Not ($osVersion -Match "windows2012R2")) {
+  VerifyHyperVisEnabled
+}
+
 Verify-Dependencies
 Verify-Acls
-
 Verify-Services
-
 Verify-FirewallRules
 Verify-MetadataFirewallRule
 Verify-HWCAppStart
@@ -434,6 +450,6 @@ Verify-RandomPassword
 Verify-NTPSync
 Verify-NoDocker
 Verify-PSVersion5
-
 Verify-VersionFile
+
 Exit 0
