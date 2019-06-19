@@ -494,5 +494,27 @@ Describe "New-VersionFile" {
     }
 }
 
+function getWindowsOptionalFeatureState {
+    param([string] $featureName)
+    $obj = Get-WindowsOptionalFeature -Online -FeatureName $featureName
+    return $obj.State
+}
+
+Describe "Enable-Hyper-V" {
+
+    AfterEach {
+        Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -norestart
+    }
+
+    It "Enables Hyper V" {
+        getWindowsOptionalFeatureState("Microsoft-Hyper-V") | Should -MatchExactly "Disabled"
+
+        Enable-Hyper-V
+
+        getWindowsOptionalFeatureState("Microsoft-Hyper-V") | Should -MatchExactly "Enabled"
+    }
+
+}
+
 
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
