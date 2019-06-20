@@ -431,8 +431,8 @@ $osVersion = Get-OSVersion
 if (-Not ($osVersion -Match "windows2016")) {
   Verify-LGPO
 }
-#HyperV not enabled for 2012R2
-if (-Not ($osVersion -Match "windows2012R2")) {
+#HyperV is enabled only for 2019
+if ($osVersion -Match "windows2019") {
   VerifyHyperVisEnabled
 }
 
