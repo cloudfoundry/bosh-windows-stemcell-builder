@@ -61,6 +61,14 @@
     "type": "windows-restart",
     "restart_timeout": "1h"
   },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
+      "Enable-Hyper-V"
+    ]
+  },
   <% if install_windows_updates %>
   {
     "type": "powershell",
@@ -223,14 +231,6 @@
         "trap { $host.SetShouldExit(1) }",
         "Get-WUCerts"
       ]
-  },
-  {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
-      "Enable-Hyper-V"
-    ]
   },
 <% if proxy_settings != '' %>
   {

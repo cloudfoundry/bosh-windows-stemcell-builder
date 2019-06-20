@@ -224,14 +224,6 @@
         "Get-WUCerts"
       ]
   },
-  {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
-      "Enable-Hyper-V"
-    ]
-  },
 <% if proxy_settings != '' %>
   {
     "type": "powershell",
