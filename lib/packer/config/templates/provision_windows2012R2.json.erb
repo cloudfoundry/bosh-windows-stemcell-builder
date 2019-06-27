@@ -64,7 +64,15 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "Install-CFFeatures"
+      "Register-WindowsUpdatesTask"
+    ]
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
+      "Wait-WindowsUpdates -Password <%= password %> -User Provisioner"
     ]
   },
   {
@@ -76,15 +84,7 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "Register-WindowsUpdatesTask"
-    ]
-  },
-  {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
-      "Wait-WindowsUpdates -Password <%= password %> -User Provisioner"
+      "Install-CFFeatures"
     ]
   },
   {
