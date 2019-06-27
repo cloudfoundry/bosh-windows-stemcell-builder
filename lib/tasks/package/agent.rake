@@ -18,6 +18,20 @@ def download_gcs_cli(destination)
     system("curl -L -o #{File.join(destination, 'bosh-blobstore-gcs.exe')} https://s3.amazonaws.com/bosh-gcscli/bosh-gcscli-#{current_version}-windows-amd64.exe")
 end
 
+def download_s3_cli(destination)
+    current_version="0.0.72"
+    system("curl -L -o #{File.join(destination, 'bosh-blobstore-s3.exe')} https://s3.amazonaws.com/s3cli-artifacts/s3cli-#{current_version}-windows-amd64.exe")
+end
+
+def download_dav_cli(destination)
+    current_version="0.0.30"
+    system("curl -L -o #{File.join(destination, 'bosh-blobstore-dav.exe')} https://s3.amazonaws.com/davcli/davcli-#{current_version}-windows-amd64.exe")
+end
+
+def download_tar(destination)
+    system("curl -L -o #{File.join(destination, 'tar.exe')} https://s3.amazonaws.com/all-bosh-windows/bsdtar/tar.exe")
+end
+
 namespace :package do
     desc 'Package BOSH Agent and dependencies into agent.zip'
     task :agent do
@@ -43,10 +57,7 @@ namespace :package do
             exec_command("go build -o #{File.join(deps_dir,'pipe.exe')} jobsupervisor/pipe/main.go")
             exec_command("git rev-parse HEAD > #{File.join(agent_dir,'sha')}")
             fixtures = File.join(Dir.pwd, "integration","windows","fixtures")
-            deps_files = ['bosh-blobstore-dav.exe',
-                          'bosh-blobstore-s3.exe',
-                          'job-service-wrapper.exe',
-                          'tar.exe']
+            deps_files = ['job-service-wrapper.exe']
             deps_files.each do |dep_file|
                 FileUtils.cp(File.join(fixtures, dep_file), File.join(deps_dir, dep_file))
             end
@@ -56,6 +67,9 @@ namespace :package do
             end
         end
         download_gcs_cli(deps_dir)
+        download_s3_cli(deps_dir)
+        download_dav_cli(deps_dir)
+        download_tar(deps_dir)
         output = File.join(build_dir,"agent.zip")
         FileUtils.rm_rf(output)
         ZipFile::Generator.new(agent_dir,output).write()
