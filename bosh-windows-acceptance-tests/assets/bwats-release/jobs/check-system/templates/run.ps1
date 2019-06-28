@@ -1,4 +1,5 @@
-﻿function Verify-LGPO
+﻿$ErrorActionPreference = "Stop";
+function Verify-LGPO
 {
   echo "Running this function Verify-LGPO"
   echo "Verifying that expected policies have been applied"
@@ -59,7 +60,7 @@
     "windows2012R2" {
       $TestDir = "$PSScriptRoot\..\test-2012R2"
     }
-    { ($_ -eq "windows1803") -or ($_ -eq "windows1803") }{
+    { ($_ -eq "windows1803") -or ($_ -eq "windows2019") }{
       $TestDir = "$PSScriptRoot\..\test-1803-2019"
     }
   }
@@ -441,7 +442,7 @@ if (-Not ($osVersion -Match "windows2016")) {
 }
 #HyperV is enabled only for 2019
 if ($osVersion -Match "windows2019") {
-  VerifyHyperVisEnabled
+  Verify-HyperVisEnabled
 }
 
 Verify-Dependencies
