@@ -278,7 +278,12 @@ function Verify-InstalledFeatures {
     Assert-IsInstalled "Web-ASP"
   } else {
     Assert-IsInstalled "Containers"
-    Assert-IsInstalled "Windows-Defender-Features"
+    Assert-IsInstalled "Windows-Defender"
+
+    if ($windowsVersion -Match "1803") {
+      Assert-IsInstalled "Windows-Defender-Features"
+    }
+
     Assert-DefenderFeaturesDisabled
   }
 }
