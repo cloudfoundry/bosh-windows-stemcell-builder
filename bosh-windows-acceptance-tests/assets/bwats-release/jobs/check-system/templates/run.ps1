@@ -254,16 +254,18 @@ function Verify-InstalledFeatures {
       Write-Host "Found $feature feature"
     }
   }
-  function Assert-IsNotInstalled {
-    Param (
-      [string] $feature = (Throw "feature param required")
-    )
-    If ((Get-WindowsFeature $feature).Installed) {
-      Write-Error "$feature should not be installed"
-      Exit 1
-    } else {
-      Write-Host "$feature is not installed"
-    }
+  function Assert-DefenderFeaturesDisabled {
+    Get-MpPreference |
+      Select -ExpandProperty CimInstanceProperties |
+      Where-Object { $_.Name -Like "Disable*"} |
+      ForEach-Object {
+        if ($_.Value -eq $false) {
+          Write-Error "Expected Windows Defender property $($_.Name) to be true, because all Defender features should be disabled, it was false"
+          Exit 1
+        } else {
+          Write-Host "$($_.Name) property is correctly set to $($_.Value)"
+        }
+      }
   }
   $windowsVersion = Get-OSVersion
 
@@ -276,7 +278,8 @@ function Verify-InstalledFeatures {
     Assert-IsInstalled "Web-ASP"
   } else {
     Assert-IsInstalled "Containers"
-    Assert-IsNotInstalled "Windows-Defender-Features"
+    Assert-IsInstalled "Windows-Defender-Features"
+    Assert-DefenderFeaturesDisabled
   }
 }
 
