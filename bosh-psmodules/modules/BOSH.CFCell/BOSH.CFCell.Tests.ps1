@@ -71,9 +71,17 @@ Describe "Protect-CFCell" {
     }
 
     It "sets all Windows Defender `disable` settings to true" {
-        [hashtable[]]$MpPrefParameters = @{Name = "DisableOption"}, @{Name = "DontModifyThis"}, @{Name = "DisableOtherThing"}
-
-        Mock Get-Command { [hashtable]@{ParameterSets = [hashtable]@{Parameters = $MpPrefParameters}} } -ModuleName BOSH.CFCell
+        Mock Get-Command {
+            [hashtable]@{
+                ParameterSets = [hashtable]@{
+                    Parameters = @(
+                        @{Name = "DisableOption"},
+                        @{Name = "DontModifyThis"},
+                        @{Name = "DisableOtherThing"}
+                    )
+                }
+            }
+        } -ModuleName BOSH.CFCell
         Mock Set-MpPreference { } -ModuleName BOSH.CFCell
 
         Protect-CFCell
