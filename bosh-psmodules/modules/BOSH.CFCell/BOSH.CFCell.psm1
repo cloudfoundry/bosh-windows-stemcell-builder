@@ -63,7 +63,6 @@ function Install-CFFeatures2016 {
 
   WindowsFeatureInstall("FS-Resource-Manager")
   WindowsFeatureInstall("Containers")
-  Get-WindowsFeature | Where-Object -FilterScript { $_.Name -like '*Defender*' } | Uninstall-WindowsFeature -Remove
 
   Write-Log "Installed CloudFoundry Cell Windows Features"
 
@@ -115,6 +114,26 @@ function Protect-CFCell {
 
   Write-Log "Disabling NetBIOS over TCP"
   Disable-NetBIOS
+
+  Disable-WindowsDefenderFeatures
+}
+
+function Disable-WindowsDefenderFeatures {
+    if (Get-Command -Name Set-MpPreference -ErrorAction SilentlyContinue)
+    {
+        Write-Log "Disabling Windows Defender Features"
+        (Get-Command -Name Set-MpPreference).ParameterSets.Parameters |
+                Where-Object {
+                    $_.Name -Like "Disable*"
+                } |
+                ForEach-Object {
+                    Write-Log "Setting Defender preference $( $_.Name ) to True"
+                    iex "Set-MpPreference -$( $_.Name ) `$true"
+                }
+    }
+    else {
+        Write-Log "Set-MpPreference command not found, assuming Windows Defender is not installed"
+    }
 }
 
 function WindowsFeatureInstall {
