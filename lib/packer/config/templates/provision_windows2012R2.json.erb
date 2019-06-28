@@ -84,6 +84,18 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
+      "Install-CFFeatures"
+    ]
+  },
+  {
+    "type": "windows-restart",
+    "restart_timeout": "12h"
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
       "Unregister-WindowsUpdatesTask"
     ]
   },
@@ -100,18 +112,6 @@
     "source": "hotfixes.log",
     "destination": "hotfixes.log",
     "direction": "download"
-  },
-  {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
-      "Install-CFFeatures"
-    ]
-  },
-  {
-    "type": "windows-restart",
-    "restart_timeout": "12h"
   },
   {
     "type": "powershell",
