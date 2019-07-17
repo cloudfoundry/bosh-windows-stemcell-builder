@@ -360,7 +360,7 @@ function Verify-RandomPassword {
 }
 
 function Verify-NTPSync {
-  echo "Verifying NTP synch works correctly"
+  echo "Verifying NTP sync works correctly"
   w32tm /query /configuration
 
   Set-Date -Date (Get-Date).AddHours(8)
@@ -375,7 +375,7 @@ function Verify-NTPSync {
       w32tm /resync
 
       if ((Get-Date) -ge $OutOfSyncTime) {
-          Write-Error "Time not reset correctly via NTP on attempt $($i+1) of 10: $(Get-Date) greater than or equal to $OutOfSyncTime"
+          Write-Host "Time not reset correctly via NTP on attempt $($i+1) of 10: $(Get-Date) greater than or equal to $OutOfSyncTime"
       } else {
           $TimeSetCorrectly = $true
           break
