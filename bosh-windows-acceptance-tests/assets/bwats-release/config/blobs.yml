@@ -1,9 +1,12 @@
 golang-windows/go1.7.1.windows-amd64.zip:
   size: 88842808
-  sha: c9b4ca7e68f3e894ae236e9b160c60e94dfb83ad
+  sha: sha256:af2b836bb894672cf4c28df32a2ee3ff560e2b463e1ab44bb99833064ba09e5f
+lgpo/LGPO.exe:
+  size: 410088
+  sha: sha256:f218db26d05c80d105dc779ba4e99c72f37ffc9f78d70d359bbe230713b765b4
 mbsa/MBSASetup-x64-EN.msi:
-  size: 1747968
-  sha: 47c028c61fb91e4f8bc25ea43a74ef2d4eb41eb3
+  size: 1818624
+  sha: sha256:ccbfccdec5d33a479c15ba2bea31f0967d7eb1e9435855111e016105b1b59138
 mbsa/MBSASetup-x64-EN.zip:
   size: 1335103
   sha: c9a54c0b0ae1c09e7288367a613849783593ed44

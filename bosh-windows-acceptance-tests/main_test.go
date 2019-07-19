@@ -1,6 +1,7 @@
 package bosh_windows_acceptance_tests_test
 
 import (
+	"archive/zip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -36,21 +37,24 @@ const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
 const MbsaFile = "MBSASetup-x64-EN.msi"
 const MbsaURL = "https://download.microsoft.com/download/8/E/1/8E16A4C7-DD28-4368-A83A-282C82FC212A/MBSASetup-x64-EN.msi"
 
+const LgpoUrl = "https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FFA-9429-7E023E7DA8D8/LGPO.zip"
+const lgpoFile = "LGPO.exe"
 const redeployRetries = 10
 
 type ManifestProperties struct {
-	DeploymentName       string
-	ReleaseName          string
-	AZ                   string
-	VmType               string
-	RootEphemeralVmType  string
-	VmExtensions         string
-	Network              string
-	StemcellOs           string
-	StemcellVersion      string
-	ReleaseVersion       string
-	MountEphemeralDisk   bool
-	SSHDisabledByDefault bool
+	DeploymentName            string
+	ReleaseName               string
+	AZ                        string
+	VmType                    string
+	RootEphemeralVmType       string
+	VmExtensions              string
+	Network                   string
+	StemcellOs                string
+	StemcellVersion           string
+	ReleaseVersion            string
+	MountEphemeralDisk        bool
+	SSHDisabledByDefault      bool
+	SecurityComplianceApplied bool
 }
 
 type StemcellYML struct {
@@ -65,17 +69,18 @@ type Config struct {
 		ClientSecret string `json:"client_secret"`
 		Target       string `json:"target"`
 	} `json:"bosh"`
-	Stemcellpath         string `json:"stemcell_path"`
-	StemcellOs           string `json:"stemcell_os"`
-	Az                   string `json:"az"`
-	VmType               string `json:"vm_type"`
-	RootEphemeralVmType  string `json:"root_ephemeral_vm_type"`
-	VmExtensions         string `json:"vm_extensions"`
-	Network              string `json:"network"`
-	SkipCleanup          bool   `json:"skip_cleanup"`
-	MountEphemeralDisk   bool   `json:"mount_ephemeral_disk"`
-	SkipMSUpdateTest     bool   `json:"skip_ms_update_test"`
-	SSHDisabledByDefault bool   `json:"ssh_disabled_by_default"`
+	Stemcellpath              string `json:"stemcell_path"`
+	StemcellOs                string `json:"stemcell_os"`
+	Az                        string `json:"az"`
+	VmType                    string `json:"vm_type"`
+	RootEphemeralVmType       string `json:"root_ephemeral_vm_type"`
+	VmExtensions              string `json:"vm_extensions"`
+	Network                   string `json:"network"`
+	SkipCleanup               bool   `json:"skip_cleanup"`
+	MountEphemeralDisk        bool   `json:"mount_ephemeral_disk"`
+	SkipMSUpdateTest          bool   `json:"skip_ms_update_test"`
+	SSHDisabledByDefault      bool   `json:"ssh_disabled_by_default"`
+	SecurityComplianceApplied bool   `json:"security_compliance_applied"`
 }
 
 func NewConfig() (*Config, error) {
@@ -368,6 +373,39 @@ func createBwatsRelease(bosh *BoshCommand) string {
 	mbsaMsiPath, err := downloadFile("mbsa-", MbsaURL)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(bosh.RunIn(fmt.Sprintf("add-blob %s mbsa/%s", mbsaMsiPath, MbsaFile), releaseDir)).To(Succeed())
+
+	lgpoZipPath, err := downloadFile("lgpo-", LgpoUrl)
+	Expect(err).NotTo(HaveOccurred())
+
+	zipReader, err := zip.OpenReader(lgpoZipPath)
+	Expect(err).NotTo(HaveOccurred())
+
+	lgpoPath, err := ioutil.TempFile("", lgpoFile)
+	Expect(err).NotTo(HaveOccurred())
+
+	for _, zipFile := range zipReader.File {
+		if zipFile.Name == lgpoFile {
+			filename := lgpoPath.Name()
+			f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, zipFile.Mode())
+			Expect(err).NotTo(HaveOccurred())
+
+			zipRC, err := zipFile.Open()
+			Expect(err).NotTo(HaveOccurred())
+
+			_, err = io.Copy(f, zipRC)
+			Expect(err).NotTo(HaveOccurred())
+
+			err = f.Close()
+			Expect(err).NotTo(HaveOccurred())
+
+			err = zipRC.Close()
+			Expect(err).NotTo(HaveOccurred())
+		}
+	}
+
+	Expect(lgpoPath.Name()).To(BeAnExistingFile())
+	Expect(bosh.RunIn(fmt.Sprintf("add-blob %s lgpo/%s", lgpoPath.Name(), lgpoFile), releaseDir)).To(Succeed())
+
 	Expect(bosh.RunIn(fmt.Sprintf("create-release --force --version %s", releaseVersion), releaseDir)).To(Succeed())
 	Expect(bosh.RunIn("upload-release", releaseDir)).To(Succeed())
 
@@ -383,12 +421,19 @@ func (m ManifestProperties) toVarsString() string {
 
 	for k, v := range manifest {
 		if v != "" {
-			fmt.Fprintf(&b, fmtString, k, v)
+			_, err := fmt.Fprintf(&b, fmtString, k, v)
+			Expect(err).NotTo(HaveOccurred())
 		}
 	}
 
-	fmt.Fprintf(&b, "-v MountEphemeralDisk=%t ", m.MountEphemeralDisk)
-	fmt.Fprintf(&b, "-v SSHDisabledByDefault=%t", m.SSHDisabledByDefault)
+	boolOperators := []string{
+		fmt.Sprintf("-v MountEphemeralDisk=%t", m.MountEphemeralDisk),
+		fmt.Sprintf("-v SSHDisabledByDefault=%t", m.SSHDisabledByDefault),
+		fmt.Sprintf("-v SecurityComplianceApplied=%t", m.SecurityComplianceApplied),
+	}
+
+	_, err := fmt.Fprintf(&b, strings.Join(boolOperators, " "))
+	Expect(err).NotTo(HaveOccurred())
 
 	return b.String()
 }
@@ -493,18 +538,19 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 
 func (c *Config) deployWithManifest(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string, manifestPath string) error {
 	manifestProperties := ManifestProperties{
-		DeploymentName:       deploymentName,
-		ReleaseName:          "bwats-release",
-		AZ:                   c.Az,
-		VmType:               c.VmType,
-		RootEphemeralVmType:  c.RootEphemeralVmType,
-		VmExtensions:         c.VmExtensions,
-		Network:              c.Network,
-		StemcellOs:           c.StemcellOs,
-		StemcellVersion:      fmt.Sprintf(`"%s"`, stemcellVersion),
-		ReleaseVersion:       bwatsVersion,
-		MountEphemeralDisk:   c.MountEphemeralDisk,
-		SSHDisabledByDefault: c.SSHDisabledByDefault,
+		DeploymentName:            deploymentName,
+		ReleaseName:               "bwats-release",
+		AZ:                        c.Az,
+		VmType:                    c.VmType,
+		RootEphemeralVmType:       c.RootEphemeralVmType,
+		VmExtensions:              c.VmExtensions,
+		Network:                   c.Network,
+		StemcellOs:                c.StemcellOs,
+		StemcellVersion:           fmt.Sprintf(`"%s"`, stemcellVersion),
+		ReleaseVersion:            bwatsVersion,
+		MountEphemeralDisk:        c.MountEphemeralDisk,
+		SSHDisabledByDefault:      c.SSHDisabledByDefault,
+		SecurityComplianceApplied: c.SecurityComplianceApplied,
 	}
 
 	var err error

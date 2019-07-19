@@ -25,10 +25,29 @@ You can create a `config.json` file, eg:
   "network": "<network from bosh cloud config>",
   "skip_cleanup": "<skip cleanup - if this is false all unused stemcells are deleted>"
   "skip_ms_update_test": "<skip check-updates errand - if true, it will not test that all Windows updates are installed>",
-  "ssh_disabled_by_default": "check ssh daemon default startup type - if true then it checks that the startup type is DISABLED. If false or missing, checks startup type is AUTOMATIC"
+  "ssh_disabled_by_default": "check ssh daemon default startup type - if true then it checks that the startup type is DISABLED. If false or missing, checks startup type is AUTOMATIC",
+  "security_compliance_applied": "check that Microsoft Baseline policies have been applied"
 }
 ```
 
 And then run these tests with `CONFIG_JSON=<path-to-config.json> ginkgo`.
 
 The timeout for BOSH commands can be overridden with the BWATS_BOSH_TIMEOUT environment variable.
+
+# Release dependencies
+
+## LGPO
+
+- Download LGPO.zip from the [Microsoft Security Compliance Toolkit](https://www.microsoft.com/en-us/download/details.aspx?id=55319)
+- Unzip LGPO
+- Add LGPO.exe as a bosh blob locally: `bosh add-blob <PATH TO UNZIP LOCATION>/LGPO.exe lgpo/LGPO.exe`
+
+## MBSA
+
+- Download MBSASetup-x64-EN.msi from [Microsoft](https://www.microsoft.com/en-us/download/details.aspx?id=19892)
+- Add file as a bosh blob locally: `bosh add-blob <PATH TO DOWNLOAD LOCATION>/MBSA-Setup-x64-EN.msi mbsa/MBSA-Setup-x64-EN.msi`
+
+## Go
+
+- Download go version 1.7.1 from [Go's Downloads page](https://dl.google.com/go/go1.7.1.windows-amd64.zip)
+- Add file as a bosh blob locally `bosh add-blob <PATH TO DOWNLOAD LOCATION>/go1.7.1.windows-amd64.zip golang-windows/go1.7.1.windows-amd64.zip`

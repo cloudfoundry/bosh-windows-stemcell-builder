@@ -1,0 +1,3 @@
+[submodule "assets/bwats-release/src/Pester"]
+	path = assets/bwats-release/src/Pester
+	url = https://github.com/pester/Pester.git

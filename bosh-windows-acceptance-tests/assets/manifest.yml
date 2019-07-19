@@ -33,6 +33,8 @@ instance_groups:
         properties:
           ssh:
             disabled_by_default: ((SSHDisabledByDefault))
+          security_compliance:
+            expected_to_comply: ((SecurityComplianceApplied))
       - name: check-wu-certs
         release: ((ReleaseName))
       - name: ephemeral-disk
