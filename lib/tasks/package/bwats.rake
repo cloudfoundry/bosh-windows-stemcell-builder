@@ -47,7 +47,8 @@ namespace :package do
 	    'network' => ENV['NETWORK'],
 	    'mount_ephemeral_disk' => ENV['MOUNT_EPHEMERAL_DISK'] == 'true',
 	    'ssh_disabled_by_default' => ENV['SSH_DISABLED_BY_DEFAULT'] == 'true',
-	    'skip_ms_update_test' => ENV['SKIP_MS_UPDATE_TEST'] == 'true'
+	    'skip_ms_update_test' => ENV['SKIP_MS_UPDATE_TEST'] == 'true',
+	    'security_compliance_applied' => ENV['SECURITY_COMPLIANCE_APPLIED'] == 'true'
 	}
 	FileUtils.mkdir_p build_dir
 	File.open(File.join(build_dir,'config.json'), 'w') { |file| file.write(JSON.pretty_generate(config)) }
