@@ -22,7 +22,6 @@ Describe "Audit Policies" {
         'Other System Events' = 'Success and Failure';
         'Security State Change' = 'Success';
         'Security System Extension' = 'Success';
-        'Unknown Policy' = 'No auditing';
         'System Integrity' = 'Success and Failure';
     }
 
@@ -51,5 +50,4 @@ Describe "Audit Policies" {
             $actualPolicy.'Inclusion Setting' | Should -Be $expectedValue
         }
     }
-
 }
