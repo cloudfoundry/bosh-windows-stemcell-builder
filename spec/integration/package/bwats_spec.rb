@@ -44,7 +44,8 @@ describe 'Package::BWATS' do
 			'vm_extensions' => 'some-vm-extensions',
 			'mount_ephemeral_disk' => false,
 			'network' => 'some-network',
-      'skip_ms_update_test' => false
+      'skip_ms_update_test' => false,
+      'security_compliance_applied' => false
 		}
 		ENV['BOSH_CA_CERT'] = config['bosh']['ca_cert']
 		ENV['BOSH_CLIENT']= config['bosh']['client']

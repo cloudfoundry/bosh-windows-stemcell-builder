@@ -146,6 +146,3 @@ DEPENDENCIES
   simplecov
   timecop
   webmock
-
-BUNDLED WITH
-   1.17.1
