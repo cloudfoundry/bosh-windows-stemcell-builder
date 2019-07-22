@@ -403,8 +403,12 @@ function Invoke-Sysprep()
         Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-2012R2")
       }
 
-      { ($_ -eq "windows1803") -or ($_ -eq "windows2019") }{
-        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-1803-2019")
+      "windows1803" {
+        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-1803")
+      }
+
+      "windows2019" {
+        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-2019")
       }
     }
   }

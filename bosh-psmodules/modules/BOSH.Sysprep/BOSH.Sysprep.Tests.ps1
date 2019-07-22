@@ -327,7 +327,7 @@ Describe "Invoke-Sysprep" {
 
             It "handles Windows 1803" {
                 Mock Get-OSVersion { "windows1803" } -ModuleName Bosh.Sysprep
-                $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-1803-2019"
+                $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-1803"
                 { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
 
                 Assert-MockCalled Enable-LocalSecurityPolicy -ParameterFilter { $PolicySource -eq $ExpectedPath } -Times 1 -Scope It -ModuleName BOSH.Sysprep
@@ -335,7 +335,7 @@ Describe "Invoke-Sysprep" {
 
             It "handles Windows 2019" {
                 Mock Get-OSVersion { "windows2019" } -ModuleName Bosh.Sysprep
-                $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-1803-2019"
+                $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-2019"
                 { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
 
                 Assert-MockCalled Enable-LocalSecurityPolicy -ParameterFilter { $PolicySource -eq $ExpectedPath } -Times 1 -Scope It -ModuleName BOSH.Sysprep
