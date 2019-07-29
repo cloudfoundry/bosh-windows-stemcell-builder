@@ -1,20 +1,31 @@
 require 'rspec/expectations'
 
-RSpec::Matchers.define :include_provisioner do |expected_provisioner, after:nil|
+RSpec::Matchers.define :include_provisioner do |expected_provisioner, after:[]|
   match do |actual_provisioners|
-    provisioner_index = actual_provisioners.find_index do |provisioner|
-      expected_provisioner.matches? provisioner
-    end
+    return includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after:after)
+  end
+end
 
-    #TODO consider turning this into a recursive function that checks a subset of the provisioners
-    # allow after to be an array of provisioners
-    if after == nil
-      return provisioner_index != nil
+def provisioner_is_after?(actual_provisioners, after, provisioner_index)
+  after_index = actual_provisioners.find_index do |provisioner|
+    after[0].matches? provisioner
+  end
+  return provisioner_index != nil && after_index != nil && provisioner_index > after_index
+end
+
+def includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after:[])
+  provisioner_index = actual_provisioners.find_index do |provisioner|
+    expected_provisioner.matches? provisioner
+  end
+  if after == nil || after.length == 0
+    return provisioner_index != nil
+  elsif after.length == 1
+    return provisioner_is_after?(actual_provisioners, after, provisioner_index)
+  else
+    if includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after:[after[0]])
+      return includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after:after[1, -1])
     else
-      after_index = actual_provisioners.find_index do |provisioner|
-        after.matches? provisioner
-      end
-      return provisioner_index != nil && after_index != nil && provisioner_index > after_index
+      return false
     end
   end
 end
@@ -100,7 +111,7 @@ describe 'provisioners' do
         'C:\provision\install-bosh-psmodules.ps1'
     )
 
-    expect(@provisioners).to include_provisioner(install_modules_provisioner, after:upload_install_modules)
+    expect(@provisioners).to include_provisioner(install_modules_provisioner, after:[upload_install_modules, upload_modules])
     # prov_index = @provisioners.find_index do |x|
     #   x['type'] == 'powershell' && x.has_key?('inline') && x['inline'].include?('C:\provision\install-bosh-psmodules.ps1')
     # end
