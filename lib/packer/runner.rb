@@ -24,7 +24,7 @@ module Packer
 
       logConfig(config_file.path)
 
-      packer_command = "packer #{command} -machine-readable #{args_combined} #{config_file.path}"
+      packer_command = "/Users/pivotal/go/src/github.com/hashicorp/packer/bin/packer #{command} #{args_combined} #{config_file.path}"
       puts packer_command
 
       Open3.popen2e(packer_command) do |stdin, out, wait_thr|
