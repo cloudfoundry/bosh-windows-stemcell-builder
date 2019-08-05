@@ -1,34 +1,40 @@
 require 'rspec/expectations'
 
 RSpec::Matchers.define :include_provisioner do |expected_provisioner, after:[]|
-  match do |actual_provisioners|
-    return includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after:after)
-  end
-end
 
-def provisioner_is_after?(actual_provisioners, after, provisioner_index)
-  after_index = actual_provisioners.find_index do |provisioner|
-    after[0].matches? provisioner
-  end
-  return provisioner_index != nil && after_index != nil && provisioner_index > after_index
-end
-
-def includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after:[])
-  provisioner_index = actual_provisioners.find_index do |provisioner|
-    expected_provisioner.matches? provisioner
-  end
-  if after == nil || after.length == 0
-    return provisioner_index != nil
-  elsif after.length == 1
-    return provisioner_is_after?(actual_provisioners, after, provisioner_index)
-  else
-    if includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after:[after[0]])
-      return includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after:after[1, -1])
-    else
-      return false
+  def provisioner_is_after?(actual_provisioners, after, provisioner_index)
+    after_index = actual_provisioners.find_index do |provisioner|
+      after.matches? provisioner
     end
+    if after_index == nil
+      @failure_message = "include provisioner:\n\t#{after.inspect}"
+    end
+    return provisioner_index != nil && after_index != nil && provisioner_index > after_index
+  end
+
+  def includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after)
+    provisioner_index = actual_provisioners.find_index do |provisioner|
+      expected_provisioner.matches? provisioner
+    end
+
+    provisioner_found = false
+    if after.length == 0
+      provisioner_found = provisioner_index != nil
+    elsif provisioner_is_after?(actual_provisioners, after[0], provisioner_index)
+      provisioner_found = includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after[1..-1])
+    end
+
+    return provisioner_found
+  end
+
+  match do |actual_provisioners|
+    return includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after)
+  end
+  description do
+    "\n\t#{@failure_message}"
   end
 end
+
 
 class TestProvisioner
   attr_accessor :command, :source, :destination, :provisioner_type
@@ -46,6 +52,15 @@ class TestProvisioner
     provisioner.provisioner_type = :powershell
     provisioner.command = command
     provisioner
+  end
+
+  def inspect
+    case @provisioner_type
+      when :powershell
+        super
+      when :file
+        return "File Provisioner with source: '#{@source}' and destination: '#{@destination}'"
+    end
   end
 
   def matches?(actual_provisioner)
@@ -103,7 +118,6 @@ describe 'provisioners' do
   end
 
   it 'runs install bosh ps modules after uploading zip file and install script' do
-    #TODO use test provisioner matcher, while driving out order
     install_modules_provisioner = TestProvisioner.new_powershell_provisioner('C:\provision\install-bosh-psmodules.ps1')
     upload_modules = TestProvisioner.new_file_provisioner('build/bosh-psmodules.zip', 'C:\provision\bosh-psmodules.zip')
     upload_install_modules = TestProvisioner.new_file_provisioner(
@@ -112,26 +126,9 @@ describe 'provisioners' do
     )
 
     expect(@provisioners).to include_provisioner(install_modules_provisioner, after:[upload_install_modules, upload_modules])
-    # prov_index = @provisioners.find_index do |x|
-    #   x['type'] == 'powershell' && x.has_key?('inline') && x['inline'].include?('C:\provision\install-bosh-psmodules.ps1')
-    # end
-    #
-    # expect(prov_index).not_to be_nil
-    #
-    # zip_index = @provisioners.find_index do |x|
-    #   x['type'] == 'file' && x['source'] == 'build/bosh-psmodules.zip' && x['destination'] == 'C:\provision\bosh-psmodules.zip'
-    # end
-    #
-    # install_script_index = @provisioners.find_index do |x|
-    #   x['type'] == 'file' && x['source'] == 'scripts/install-bosh-psmodules.ps1' && x['destination'] == 'C:\provision\install-bosh-psmodules.ps1'
-    # end
-    #
-    # expect(prov_index).to be > zip_index
-    # expect(prov_index).to be > install_script_index
   end
 
   it 'runs get-hotfix after hotfixes applied' do
-    # noinspection RubyInterpreter
     prov_index = @provisioners.find_index do |p|
       p['type'] == 'powershell' && p.has_key?('inline') && p['inline'].include?('Get-HotFix > hotfixes.log')
     end
@@ -150,7 +147,7 @@ describe 'provisioners' do
     expect(prov_index).to be > unregister_windows_index, 'Print Hotfix provisioner not after Unregister Windows-Updates'
   end
 
-  it 'Runs Unregister windows update after the post-RegisterWindowsUpdates windows-restart' do
+  it 'runs Unregister windows update after the post-RegisterWindowsUpdates windows-restart' do
     register_windows_updates_task_provisioner = TestProvisioner.new_powershell_provisioner('Register-WindowsUpdatesTask')
     expect(@provisioners).to include_provisioner(register_windows_updates_task_provisioner), 'test matcher'
 
