@@ -1,6 +1,6 @@
-golang-windows/go1.7.1.windows-amd64.zip:
-  size: 88842808
-  sha: sha256:af2b836bb894672cf4c28df32a2ee3ff560e2b463e1ab44bb99833064ba09e5f
+golang-windows/go1.12.7.windows-amd64.zip:
+  size: 141335938
+  sha: sha256:502712c0e29edc6b9cda6fa5e4b6ff9b36e27d225373baead8708c9634aa8e50
 lgpo/LGPO.exe:
   size: 410088
   sha: sha256:f218db26d05c80d105dc779ba4e99c72f37ffc9f78d70d359bbe230713b765b4
