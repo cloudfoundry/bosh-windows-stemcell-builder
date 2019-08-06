@@ -30,7 +30,7 @@ func init() {
 
 const BOSH_TIMEOUT = 90 * time.Minute
 
-const GoZipFile = "go1.7.1.windows-amd64.zip"
+const GoZipFile = "go1.12.7.windows-amd64.zip"
 const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
 
 // If this URL becomes invalid then we will need to configure an external blobstore for bwats-release
