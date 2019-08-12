@@ -7,7 +7,9 @@ RSpec::Matchers.define :include_provisioner do |expected_provisioner, after:[]|
       after.matches? provisioner
     end
     if after_index == nil
-      @failure_message = "include provisioner:\n\t#{after.inspect}"
+      @failure_message = "after: \n\t#{after.inspect}, which does not exist"
+    elsif provisioner_index <= after_index
+      @failure_message = "after:\n\t#{after.inspect}"
     end
     return provisioner_index != nil && after_index != nil && provisioner_index > after_index
   end
@@ -31,7 +33,7 @@ RSpec::Matchers.define :include_provisioner do |expected_provisioner, after:[]|
     return includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after)
   end
   description do
-    "\n\t#{@failure_message}"
+    "include \n\t#{expected_provisioner.inspect} #{@failure_message}"
   end
 end
 
@@ -57,7 +59,7 @@ class TestProvisioner
   def inspect
     case @provisioner_type
       when :powershell
-        super
+        return "Powershell provisioner with command: '#{@command}'"
       when :file
         return "File Provisioner with source: '#{@source}' and destination: '#{@destination}'"
     end
@@ -68,7 +70,15 @@ class TestProvisioner
       when :powershell
         actual_provisioner['type'] == 'powershell' &&
         actual_provisioner.has_key?('inline') &&
-        actual_provisioner['inline'].include?(@command)
+        actual_provisioner['inline'].find do |script_line|
+          if @command.is_a?(String)
+            script_line.eql? @command
+          elsif @command.is_a?(Regexp)
+            script_line =~ @command
+          else
+            raise "provisioner command neither string nor regex"
+          end
+        end
       when :file
         actual_provisioner['type'] == 'file' &&
         actual_provisioner['source'] == @source &&
@@ -83,7 +93,6 @@ describe 'provisioners' do
   before(:context) do
     stemcell_deps_dir = Dir.mktmpdir('gcp')
     ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
-
     @provisioners = Packer::Config::Aws.new(
         aws_access_key: '',
         aws_secret_key: '',
@@ -128,7 +137,12 @@ describe 'provisioners' do
     expect(@provisioners).to include_provisioner(install_modules_provisioner, after:[upload_install_modules, upload_modules])
   end
 
-  it 'runs get-hotfix after hotfixes applied' do
+  it 'runs get-hotfix after windows updates are applied' do
+    get_hotfix_prov = TestProvisioner.new_powershell_provisioner('Get-HotFix > hotfixes.log')
+    wait_windows_update_prov = TestProvisioner.new_powershell_provisioner(/Wait-WindowsUpdates -Password .+ -User Provisioner/)
+    expect(@provisioners).to include_provisioner(get_hotfix_prov, after:[wait_windows_update_prov])
+    # expect(@provisioners).to include_provisioner(get_hotfix_prov)
+
     prov_index = @provisioners.find_index do |p|
       p['type'] == 'powershell' && p.has_key?('inline') && p['inline'].include?('Get-HotFix > hotfixes.log')
     end
