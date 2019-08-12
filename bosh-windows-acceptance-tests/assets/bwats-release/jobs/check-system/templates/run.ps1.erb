@@ -467,7 +467,18 @@ $validatePolicies=[bool]$<%= p("security_compliance.expected_to_comply") %>
 
 if ( $validatePolicies )
 {
-  $pesterResults = Invoke-Pester $PSScriptRoot -PassThru
+  $pesterResults = Invoke-Pester $PSScriptRoot/AuditPolicies.Tests.ps1 -PassThru
+  if ($pesterResults.FailedCount -gt 0)
+  {
+    Exit 1
+  }
+}
+
+$validateInternetExplorerRegistry=[bool]$<%= p("security_compliance.expected_internet_explorer_registry") %>
+
+if ( $validateInternetExplorerRegistry )
+{
+  $pesterResults = Invoke-Pester $PSScriptRoot/InternetExplorerRegistry.Tests.ps1
   if ($pesterResults.FailedCount -gt 0)
   {
     Exit 1

@@ -14,6 +14,8 @@ templates:
   1803-2019-expected-policies/machine_registry.txt: test-1803-2019/machine_registry.txt
   1803-2019-expected-policies/user_registry.txt: test-1803-2019/user_registry.txt
   AuditPolicies.Tests.ps1: bin/AuditPolicies.Tests.ps1
+  InternetExplorerRegistry.Tests.ps1: bin/InternetExplorerRegistry.Tests.ps1
+  internet-explorer-policies.csv: config/internet-explorer-policies.csv
 
 packages:
 - pester
@@ -25,4 +27,7 @@ properties:
     default: false
   security_compliance.expected_to_comply:
     description: Determines whether stemcell being tested is expected to comply with Microsofts Windows Security Compliance Policies
+    default: false
+  security_compliance.expected_internet_explorer_registry:
+    description: Indicates that the stemcell is expected to be configured with Internet Explorer registry keys that comply with Microsofts Windows Security Compliance Baseline
     default: false
