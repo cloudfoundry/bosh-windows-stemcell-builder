@@ -29,4 +29,6 @@ $path = "C:\Program Files\WindowsPowerShell\Modules"
 Remove-Item -Path (Join-Path $path "BOSH.*") -Force -Recurse
 
 Unzip -ZipFile "C:\provision\bosh-psmodules.zip" -OutPath $path -Keep $false
-Import-Module BOSH.Utils
+
+Import-Module -Name BOSH.Utils
+Import-Module -Name BOSH.Registry

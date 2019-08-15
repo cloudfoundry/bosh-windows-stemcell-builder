@@ -7,7 +7,8 @@
     Description = 'Install Microsoft SSHD'
     PowerShellVersion = '4.0'
     FunctionsToExport = @(
-        'Set-RegistryProperty'
+        'Set-RegistryProperty',
+        'Set-InternetExplorerRegistries'
     )
     CmdletsToExport = @()
     VariablesToExport = @()
