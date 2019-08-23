@@ -30,25 +30,30 @@ function Verify-LGPO
       [string] $ExpectedPoliciesFile = (Throw "ExpectedPoliciesFile param required"),
       [string] $PolicyDelimiter = (Throw "PolicyDelimiter param required")
     )
+    Write-Host "actual policies $ActualPoliciesFile"
+    Write-Host "expected policies $ExpectedPoliciesFile"
 
-    $ActualPolicies = Get-Content $ActualPoliciesFile -Raw
-    $ActualPoliciesMatches = ($ActualPolicies | Select-String "(?sn)\s*(.+?)$PolicyDelimiter" -AllMatches)
-    $ActualPoliciesArray = ($ActualPoliciesMatches | Select -Expand Matches | Select -Expand Value)
+    $delims = [char[]]"`r`n`t "
+    $ActualPolicies = (Get-Content $ActualPoliciesFile -Raw).Replace("`r`n","`n")
+    $ActualPoliciesArray = ( [regex]::split($ActualPolicies, $PolicyDelimiter) | foreach {
+    $_.Trim($delims)
+    } )
 
-    $ExpectedPolicies = Get-Content $ExpectedPoliciesFile -Raw
-    $ExpectedPoliciesMatches = ($ExpectedPolicies | Select-String "(?sn)\s*(.+?)$PolicyDelimiter" -AllMatches)
-    $ExpectedPoliciesArray = ($ExpectedPoliciesMatches | Select -Expand Matches | Select -Expand Value)
+    $ExpectedPolicies = (Get-Content $ExpectedPoliciesFile -Raw).Replace("`r`n","`n")
+    $ExpectedPoliciesArray = ( [regex]::split($ExpectedPolicies, $PolicyDelimiter) | foreach {
+    $_.Trim($delims)
+    } )
 
     $count = 0
     foreach ($policy in $ExpectedPoliciesArray) {
-    if (-not $ActualPoliciesArray.contains($policy)) {
+    if ($policy -notin $ActualPoliciesArray) {
     Write-Error "Actual policies do not include policy: $policy"
     $count += 1
     }
     }
     if (-not $count -eq 0) {
     Write-Error "There are missing policies"
-    exit 1
+    return 1
     }
   }
 
@@ -65,10 +70,10 @@ function Verify-LGPO
     }
   }
 
-  Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "$newLineDelimiter$newLineDelimiter"
-  Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "$newLineDelimiter$newLineDelimiter"
-  Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "$newLineDelimiter"
-  Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "$newLineDelimiter"
+  Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "\n\n"
+  Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "\n\n"
+  Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "\n"
+  Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "\n"
 }
 
 function Verify-Dependencies {
@@ -468,17 +473,6 @@ $validatePolicies=[bool]$<%= p("security_compliance.expected_to_comply") %>
 if ( $validatePolicies )
 {
   $pesterResults = Invoke-Pester $PSScriptRoot/AuditPolicies.Tests.ps1 -PassThru
-  if ($pesterResults.FailedCount -gt 0)
-  {
-    Exit 1
-  }
-}
-
-$validateInternetExplorerRegistry=[bool]$<%= p("security_compliance.expected_internet_explorer_registry") %>
-
-if ( $validateInternetExplorerRegistry )
-{
-  $pesterResults = Invoke-Pester $PSScriptRoot/InternetExplorerRegistry.Tests.ps1
   if ($pesterResults.FailedCount -gt 0)
   {
     Exit 1
