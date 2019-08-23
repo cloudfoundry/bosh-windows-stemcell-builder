@@ -258,6 +258,14 @@
       "Clear-Provisioner"
     ]
   },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
+      "Set-InternetExplorerRegistries"
+    ]
+  },
   <% if iaas == "vsphere" %>
   {
     "type": "powershell",

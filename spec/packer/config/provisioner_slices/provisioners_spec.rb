@@ -1,96 +1,10 @@
 require 'rspec/expectations'
-
-RSpec::Matchers.define :include_provisioner do |expected_provisioner, after: []|
-
-  def provisioner_is_after?(actual_provisioners, after, provisioner_index)
-    after_index = actual_provisioners.find_index do |provisioner|
-      after.matches? provisioner
-    end
-    if after_index == nil
-      @failure_message = "after: \n\t#{after.inspect}, which does not exist"
-    elsif provisioner_index <= after_index
-      @failure_message = "after:\n\t#{after.inspect}"
-    end
-    return provisioner_index != nil && after_index != nil && provisioner_index > after_index
-  end
-
-  def includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after)
-    provisioner_index = actual_provisioners.find_index do |provisioner|
-      expected_provisioner.matches? provisioner
-    end
-
-    provisioner_found = false
-    if after.length == 0
-      provisioner_found = provisioner_index != nil
-    elsif provisioner_is_after?(actual_provisioners, after[0], provisioner_index)
-      provisioner_found = includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after[1..-1])
-    end
-
-    return provisioner_found
-  end
-
-  match do |actual_provisioners|
-    return includes_provisioner_ordered?(actual_provisioners, expected_provisioner, after)
-  end
-  description do
-    "include \n\t#{expected_provisioner.inspect} #{@failure_message}"
-  end
-end
-
-
-class TestProvisioner
-  attr_accessor :command, :source, :destination, :provisioner_type
-
-  def self.new_file_provisioner(source, destination)
-    provisioner = new
-    provisioner.provisioner_type = :file
-    provisioner.source = source
-    provisioner.destination = destination
-    provisioner
-  end
-
-  def self.new_powershell_provisioner(command)
-    provisioner = new
-    provisioner.provisioner_type = :powershell
-    provisioner.command = command
-    provisioner
-  end
-
-  def inspect
-    case @provisioner_type
-    when :powershell
-      return "Powershell provisioner with command: '#{@command}'"
-    when :file
-      return "File Provisioner with source: '#{@source}' and destination: '#{@destination}'"
-    end
-  end
-
-  def matches?(actual_provisioner)
-    case @provisioner_type
-    when :powershell
-      actual_provisioner['type'] == 'powershell' &&
-          actual_provisioner.has_key?('inline') &&
-          actual_provisioner['inline'].find do |script_line|
-            if @command.is_a?(String)
-              script_line.eql? @command
-            elsif @command.is_a?(Regexp)
-              script_line =~ @command
-            else
-              raise "provisioner command neither string nor regex"
-            end
-          end
-    when :file
-      actual_provisioner['type'] == 'file' &&
-          actual_provisioner['source'] == @source &&
-          actual_provisioner['destination'] == @destination
-    else
-      false
-    end
-  end
-end
+require './spec/packer/config/provisioner_slices/provisioner_matcher'
+require './spec/packer/config/provisioner_slices/test_provisioner'
+require './spec/packer/config/provisioner_slices/provisioners_2019'
 
 shared_examples "a standard provisioner" do |provisioner_config|
-  let(:provisioners) { provisioner_config.provisioners }
+  let(:provisioners) {provisioner_config.provisioners}
 
   it 'does not have nonsense provisioner' do
     nonsense_provisioner = TestProvisioner.new_powershell_provisioner('some-garbage')
@@ -186,16 +100,16 @@ describe 'provisioners' do
 
   context 'aws' do
     standard_options = {
-      aws_access_key: '',
-      aws_secret_key: '',
-      region: '',
-      output_directory: 'some-output-directory',
-      version: '',
+        aws_access_key: '',
+        aws_secret_key: '',
+        region: '',
+        output_directory: 'some-output-directory',
+        version: '',
     }
 
     context '2012R2' do
       it_behaves_like "a standard provisioner", Packer::Config::Aws.new(
-        standard_options.merge(os: 'windows2012R2')
+          standard_options.merge(os: 'windows2012R2')
       )
     end
 
@@ -204,30 +118,62 @@ describe 'provisioners' do
           standard_options.merge(os: 'windows1803')
       )
     end
+
+    context '2019' do
+      packer_config_aws_2019 = Packer::Config::Aws.new(
+          standard_options.merge(os: 'windows2019')
+      )
+      it_behaves_like "a standard provisioner", packer_config_aws_2019
+
+      it_behaves_like "a 2019 provisioner", packer_config_aws_2019
+
+      it 'runs Set-InternetExplorerRegistries before Invoke-Sysprep is run' do
+        invoke_sysprep_provisioner = TestProvisioner.new_powershell_provisioner(/Invoke-Sysprep -IaaS aws/)
+        internet_explorer_provisioner = TestProvisioner.new_powershell_provisioner("Set-InternetExplorerRegistries")
+
+        expect(packer_config_aws_2019.provisioners).to include_provisioner(invoke_sysprep_provisioner, after: [internet_explorer_provisioner])
+      end
+    end
   end
 
   context 'vsphere' do
     standard_options = {
-      output_directory: 'output_directory',
-      num_vcpus: 1,
-      mem_size: 1000,
-      product_key: 'key',
-      organization: 'me',
-      owner: 'me',
-      administrator_password: 'password',
-      source_path: 'source_path',
-      version: '',
-      enable_rdp: false,
-      new_password: 'new-password',
-      http_proxy: nil,
-      https_proxy: nil,
-      bypass_list: nil,
+        output_directory: 'output_directory',
+        num_vcpus: 1,
+        mem_size: 1000,
+        product_key: 'key',
+        organization: 'me',
+        owner: 'me',
+        administrator_password: 'password',
+        source_path: 'source_path',
+        version: '',
+        enable_rdp: false,
+        new_password: 'new-password',
+        http_proxy: nil,
+        https_proxy: nil,
+        bypass_list: nil,
     }
 
     context '2012R2' do
       it_behaves_like 'a standard provisioner', Packer::Config::VSphere.new(
-        standard_options.merge(os: 'windows2012R2')
+          standard_options.merge(os: 'windows2012R2')
       )
+    end
+
+    context '2019' do
+      packer_config_vsphere_2019 = Packer::Config::VSphere.new(
+          standard_options.merge(os: 'windows2019')
+      )
+      it_behaves_like 'a standard provisioner', packer_config_vsphere_2019
+
+      it_behaves_like "a 2019 provisioner", packer_config_vsphere_2019
+
+      it 'runs Set-InternetExplorerRegistries before Invoke-Sysprep is run' do
+        optimize_disk_provisioner = TestProvisioner.new_powershell_provisioner("Optimize-Disk")
+        internet_explorer_provisioner = TestProvisioner.new_powershell_provisioner("Set-InternetExplorerRegistries")
+
+        expect(packer_config_vsphere_2019.provisioners).to include_provisioner(optimize_disk_provisioner, after: [internet_explorer_provisioner])
+      end
     end
   end
 end
