@@ -1,89 +1,82 @@
 Remove-Module -Name BOSH.Registry -ErrorAction Ignore
-Import-Module ./BOSH.Registry.psd1
+Import-Module ./BOSH.Registry.psm1
 
 Describe "BOSH.Registry" {
     BeforeEach {
-        Mock Set-ItemProperty { } -ModuleName BOSH.Registry #actually
         $newItemReturn = [pscustomobject]@{"NewPath" = "HKCU:/Path/created";}
         Mock New-Item { $newItemReturn } -ModuleName BOSH.Registry
         # reset for our -parameterfilter mock
         Mock New-Item { $newItemReturn } -ModuleName BOSH.Registry -ParameterFilter { $PSBoundParameters['ErrorAction'] -eq "Stop" }
     }
 
-    It "Set-RegistryProperty adds a property to the registry" {
-        {Set-RegistryProperty -Path "HKLM:/Some/Registry/Path" -Name "A Registry Key" -Value "yes"} | Should -Not -Throw
+    It "Set-InternetExplorerRegistries applies internet explorer settings when valid policy files are generated" {
+        Mock Invoke-LGPO-Build-Pol-From-Text { 0 } -ModuleName BOSH.Registry
+        Mock Invoke-LGPO-Apply-Policies  { 0 } -ModuleName BOSH.Registry
 
-        Assert-MockCalled Set-ItemProperty -Exactly 1 -Scope It -ModuleName BOSH.Registry -ParameterFilter {
-            $Path -eq "HKLM:/Some/Registry/Path" -and $Name -eq "A Registry Key" -and $Value -eq "yes"
-        }
+        Set-InternetExplorerRegistries
+
+        Assert-MockCalled Invoke-LGPO-Build-Pol-From-Text -Exactly 2 -Scope It -ModuleName BOSH.Registry
+        Assert-MockCalled Invoke-LGPO-Apply-Policies -Exactly 1 -Scope It -ModuleName BOSH.Registry
+    }
+    It "Set-InternetExplorerRegistries errors out when policy application fails" {
+        Mock Invoke-LGPO-Build-Pol-From-Text { 0 } -ModuleName BOSH.Registry
+        Mock Invoke-LGPO-Apply-Policies  { 1 } -ModuleName BOSH.Registry
+
+        { Set-InternetExplorerRegistries } | Should -Throw "Error Applying IE policy:"
+
+        Assert-MockCalled Invoke-LGPO-Build-Pol-From-Text -Exactly 2 -Scope It -ModuleName BOSH.Registry
+        Assert-MockCalled Invoke-LGPO-Apply-Policies -Exactly 1 -Scope It -ModuleName BOSH.Registry
     }
 
-    It "Set-RegistryProperty ensures the folder exists, before modifying the registry property" {
-        {Set-RegistryProperty -Path "HKLM:/Some/Registry/Path" -Name "A Registry Key" -Value "yes"} | Should -Not -Throw
-
-        Assert-MockCalled New-Item -Exactly 1 -Scope It -ModuleName BOSH.Registry -ParameterFilter {
-            $Path -eq "HKLM:/Some/Registry/Path" -and $ItemType -eq "Directory" -and $Force -eq $True
+    It "Set-InternetExplorerRegistries errors out when User policy generation fails and does not attempt policy application" {
+        Mock Invoke-LGPO-Build-Pol-From-Text { 0 } -ModuleName BOSH.Registry -ParameterFilter {
+            $LGPOTextReadPath -like "*machine.txt"
         }
+        Mock Invoke-LGPO-Build-Pol-From-Text { 1 } -ModuleName BOSH.Registry -ParameterFilter {
+            $LGPOTextReadPath -like "*user.txt"
+        }
+
+        { Set-InternetExplorerRegistries } | Should -Throw "Generating IE policy: User"
+
+        Assert-MockCalled Invoke-LGPO-Build-Pol-From-Text -Exactly 2 -Scope It -ModuleName BOSH.Registry
+        Assert-MockCalled Invoke-LGPO-Apply-Policies -Exactly 0 -Scope It -ModuleName BOSH.Registry
     }
 
-    It "a list of items piped to Set-Registry causes every item in the list to have a key value set" {
-        $keyList = @(
-            [pscustomobject]@{"Path" = "HKCU:/Registry/Key/Path/One"; "Name" = "RegistryOne"; "Value" = "1"},
-            [pscustomobject]@{"Path" = "HKCU:/Registry/Key/Path/Two"; "Name" = "RegistryTwo"; "Value" = "2"},
-            [pscustomobject]@{"Path" = "HKCU:/Registry/Key/Path/Three"; "Name" = "RegistryThree"; "Value" = "3"}
-        )
+    It "Set-InternetExplorerRegistries errors out when Machine policy generation fails and does not attempt policy application" {
+        Mock Invoke-LGPO-Build-Pol-From-Text { 1 } -ModuleName BOSH.Registry -ParameterFilter {
+            $LGPOTextReadPath -like "*machine.txt"
+        }
 
-        $keyList | Set-RegistryProperty
+        { Set-InternetExplorerRegistries } | Should -Throw "Generating IE policy: Machine"
 
-        Assert-MockCalled Set-ItemProperty -Exactly 3 -Scope It -ModuleName BOSH.Registry
-        Assert-MockCalled Set-ItemProperty -Exactly 1 -Scope It -ModuleName BOSH.Registry -ParameterFilter {
-            $Path -eq "HKCU:/Registry/Key/Path/One" -and $Name -eq "RegistryOne" -and $Value -eq "1"
-        }
-        Assert-MockCalled Set-ItemProperty -Exactly 1 -Scope It -ModuleName BOSH.Registry -ParameterFilter {
-            $Path -eq "HKCU:/Registry/Key/Path/Two" -and $Name -eq "RegistryTwo" -and $Value -eq "2"
-        }
-        Assert-MockCalled Set-ItemProperty -Exactly 1 -Scope It -ModuleName BOSH.Registry -ParameterFilter {
-            $Path -eq "HKCU:/Registry/Key/Path/Three" -and $Name -eq "RegistryThree" -and $Value -eq "3"
-        }
+        Assert-MockCalled Invoke-LGPO-Build-Pol-From-Text -Exactly 1 -Scope It -ModuleName BOSH.Registry
+        Assert-MockCalled Invoke-LGPO-Apply-Policies -Exactly 0 -Scope It -ModuleName BOSH.Registry
     }
 
-    It "Set-RegistryProperty doesn't call Set-ItemProperty if New-Item fails" {
+    It "Set-InternetExplorerRegistries doesn't call Invoke-LGPO-Build-Pol-From-Text if New-Item call for Machine Directory fails" {
         # ErrorAction Parameterfilter is present to ensure we only throw an error on a New-Item call that is configured to throw errors
-        Mock New-Item { Throw 'some error' } -ModuleName BOSH.Registry -ParameterFilter { $PSBoundParameters['ErrorAction'] -eq "Stop" }
+        Mock New-Item { Throw 'some error' } -ModuleName BOSH.Registry -ParameterFilter {
+            $Path -like "*Machine" -and
+            $PSBoundParameters['ErrorAction'] -eq "Stop"
+        }
 
-        { Set-RegistryProperty -Path "HKLM:/Some/Registry/Path" -Name "A reigstry Key" -Value "no" } | Should -Throw
+        { Set-InternetExplorerRegistries } | Should -Throw
 
-        Assert-MockCalled Set-ItemProperty -Exactly 0 -Scope It -ModuleName BOSH.Registry
+        Assert-MockCalled Invoke-LGPO-Build-Pol-From-Text -Exactly 0 -Scope It -ModuleName BOSH.Registry
+        Assert-MockCalled Invoke-LGPO-Apply-Policies -Exactly 0 -Scope It -ModuleName BOSH.Registry
     }
 
-    It "Set-RegistryProperty throws path couldn't be created if New-Item fails" {
+
+    It "Set-InternetExplorerRegistries doesn't call Invoke-LGPO-Build-Pol-From-Text if New-Item call for User Directory fails" {
         # ErrorAction Parameterfilter is present to ensure we only throw an error on a New-Item call that is configured to throw errors
-        Mock New-Item { Throw 'some error' } -ModuleName BOSH.Registry -ParameterFilter { $PSBoundParameters['ErrorAction'] -eq "Stop" }
-
-        { Set-RegistryProperty -Path "Something" -Name "Thing" -Value "no" } | Should -Throw "Unable to create path 'Something'"
-    }
-
-    It "Set-RegistryProperty throws could not set registry key if Set-ItemProperty fails" {
-        # ErrorAction Parameterfilter is present to ensure we only throw an error on a Set-ItemProperty call that is configured to throw errors
-        Mock Set-ItemProperty { Throw 'some error'  } -ModuleName BOSH.Registry -ParameterFilter { $PSBoundParameters['ErrorAction'] -eq "Stop" }
-
-        {Set-RegistryProperty -Path "HKLM:/Some/Registry/Path" -Name "A Registry Key" -Value "yes"} |
-            Should -Throw "Unable to set registry key at 'HKLM:/Some/Registry/Path'"
-    }
-
-    It "Set-InternetExplorerRegistries imports internet-explorer.csv and pipes to Set-RegistryProperty" {
-        Mock Import-Csv { [pscustomobject]@{"Path" = "a"; "Name" = "b"; "Value" = "c"} } -ModuleName BOSH.Registry
-        Mock Set-RegistryProperty { } -ModuleName BOSH.Registry
-
-        { Set-InternetExplorerRegistries } | Should -Not -Throw
-
-        $expectedPath = Join-Path -Path $PSScriptRoot -ChildPath "data\internet-explorer.csv"
-
-        Assert-MockCalled Import-Csv -Exactly 1 -Scope It -ModuleName BOSH.Registry -ParameterFilter {
-            $Path -eq $expectedPath
+        Mock New-Item { Throw 'some error' } -ModuleName BOSH.Registry -ParameterFilter {
+            $Path -like "*User" -and
+                    $PSBoundParameters['ErrorAction'] -eq "Stop"
         }
-        Assert-MockCalled Set-RegistryProperty -Exactly 1 -Scope It -ModuleName BOSH.Registry -ParameterFilter {
-            $Path -eq "a" -and $Name -eq "b" -and $Value -eq "c"
-        }
+
+        { Set-InternetExplorerRegistries } | Should -Throw
+
+        Assert-MockCalled Invoke-LGPO-Build-Pol-From-Text -Exactly 1 -Scope It -ModuleName BOSH.Registry
+        Assert-MockCalled Invoke-LGPO-Apply-Policies -Exactly 0 -Scope It -ModuleName BOSH.Registry
     }
 }
