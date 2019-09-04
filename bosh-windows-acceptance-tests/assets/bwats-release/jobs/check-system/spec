@@ -9,10 +9,14 @@ templates:
   2012R2-expected-policies/GptTmpl.inf: test-2012R2/GptTmpl.inf
   2012R2-expected-policies/machine_registry.txt: test-2012R2/machine_registry.txt
   2012R2-expected-policies/user_registry.txt: test-2012R2/user_registry.txt
-  1803-2019-expected-policies/audit.csv: test-1803-2019/audit.csv
-  1803-2019-expected-policies/GptTmpl.inf: test-1803-2019/GptTmpl.inf
-  1803-2019-expected-policies/machine_registry.txt: test-1803-2019/machine_registry.txt
-  1803-2019-expected-policies/user_registry.txt: test-1803-2019/user_registry.txt
+  2019-expected-policies/audit.csv: test-2019/audit.csv
+  2019-expected-policies/GptTmpl.inf: test-2019/GptTmpl.inf
+  2019-expected-policies/machine_registry.txt: test-2019/machine_registry.txt
+  2019-expected-policies/user_registry.txt: test-2019/user_registry.txt
+  1803-expected-policies/audit.csv: test-1803/audit.csv
+  1803-expected-policies/GptTmpl.inf: test-1803/GptTmpl.inf
+  1803-expected-policies/machine_registry.txt: test-1803/machine_registry.txt
+  1803-expected-policies/user_registry.txt: test-1803/user_registry.txt
   AuditPolicies.Tests.ps1: bin/AuditPolicies.Tests.ps1
 
 packages:

@@ -65,8 +65,11 @@ function Verify-LGPO
     "windows2012R2" {
       $TestDir = "$PSScriptRoot\..\test-2012R2"
     }
-    { ($_ -eq "windows1803") -or ($_ -eq "windows2019") }{
-      $TestDir = "$PSScriptRoot\..\test-1803-2019"
+    "windows1803" {
+      $TestDir = "$PSScriptRoot\..\test-1803"
+    }
+    "windows2019" {
+      $TestDir = "$PSScriptRoot\..\test-2019"
     }
   }
 
