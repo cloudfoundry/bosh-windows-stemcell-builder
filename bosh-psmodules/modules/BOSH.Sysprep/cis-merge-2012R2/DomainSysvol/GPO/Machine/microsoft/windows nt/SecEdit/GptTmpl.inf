@@ -4,17 +4,13 @@ Unicode=yes
 Revision=1
 signature="$CHICAGO$"
 [Registry Values]
-MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\SafeDllSearchMode=4,1
-MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog\Security\WarningLevel=4,90
 MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Setup\RecoveryConsole\securitylevel=4,0
 MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Setup\RecoveryConsole\setcommand=4,0
 MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\AllocateDASD=1,"0"
-MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\AutoAdminLogon=1,"0"
 MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\CachedLogonsCount=1,"4"
 MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ForceUnlockLogon=4,1
 MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\PasswordExpiryWarning=4,14
 MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ScRemoveOption=1,"1"
-MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\ScreenSaverGracePeriod=1,"5"
 MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ConsentPromptBehaviorAdmin=4,2
 MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ConsentPromptBehaviorUser=4,0
 MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\DisableCAD=4,0
@@ -73,8 +69,6 @@ MACHINE\System\CurrentControlSet\Services\Netlogon\Parameters\requiresignorseal=
 MACHINE\System\CurrentControlSet\Services\Netlogon\Parameters\requirestrongkey=4,1
 MACHINE\System\CurrentControlSet\Services\Netlogon\Parameters\sealsecurechannel=4,1
 MACHINE\System\CurrentControlSet\Services\Netlogon\Parameters\signsecurechannel=4,1
-MACHINE\System\CurrentControlSet\Services\Tcpip6\Parameters\DisableIPSourceRouting=4,2
-MACHINE\System\CurrentControlSet\Services\Tcpip\Parameters\DisableIPSourceRouting=4,2
 [System Access]
 ClearTextPassword=0
 EnableAdminAccount=1
