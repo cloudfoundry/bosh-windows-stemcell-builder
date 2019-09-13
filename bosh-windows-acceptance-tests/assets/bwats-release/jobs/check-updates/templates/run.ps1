@@ -26,7 +26,8 @@ Write-Host "Session: $Session"
 $Searcher = $Session.CreateUpdateSearcher()
 Write-Host "Searcher: $Searcher"
 $UninstalledUpdates = $Searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0").Updates
-$FilteredUpdates = @($UninstalledUpdates | Where-Object {$_.Title -notmatch "KB2267602"})
+$FilteredUpdates = @($UninstalledUpdates | `
+    Where-Object {$_.Title -notmatch "KB2267602" -And $_.Title -NotMatch "KB4052623"})
 if ($FilteredUpdates.Count -ne 0) {
     Write-Log "The following updates are not currently installed:"
     foreach ($Update in $FilteredUpdates) {
