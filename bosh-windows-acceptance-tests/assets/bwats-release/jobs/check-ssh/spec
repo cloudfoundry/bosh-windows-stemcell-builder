@@ -1,0 +1,9 @@
+---
+name: check-ssh
+
+templates:
+  run.ps1: bin/run.ps1
+
+packages: []
+
+properties: {}
