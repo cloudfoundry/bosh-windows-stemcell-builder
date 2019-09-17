@@ -17,6 +17,11 @@ module Packer
       def builders
         stemcell_builder_dir = File.expand_path('../../../../', __FILE__)
         packer_ci_private_key_location = ENV.fetch('PACKER_CI_PRIVATE_KEY_LOCATION', '../packer-ci-private-key/key')
+        #TODO deleteme. Added to resolve a winrm with newer source ami (ami-0060daada4a15ad8a)
+        source_ami = @region[:base_ami]
+        if @os == 'windows2019'
+          source_ami = "ami-075f071b62b749647"
+        end
         [
           {
             name: "amazon-ebs-#{@region[:name]}",
@@ -24,7 +29,7 @@ module Packer
             access_key: @aws_access_key,
             secret_key: @aws_secret_key,
             region: @region[:name],
-            source_ami: @region[:base_ami],
+            source_ami: source_ami,
             instance_type: instance_type,
             ami_name: "BOSH-#{SecureRandom.uuid}-#{@region[:name]}",
             vpc_id: @region[:vpc_id],
