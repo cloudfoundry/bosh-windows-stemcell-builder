@@ -62,15 +62,60 @@ describe Packer::Config::Aws do
       }
     end
 
-    context 'all OSs' do
+    context 'windows2019' do
+      let(:os) { 'windows2019' }
+
+      it 'returns the baseline builders' do
+
+        expect(builders[0]).to include(baseline_builders.merge({source_ami: "ami-075f071b62b749647"}))
+        expect(builders[0][:ami_name]).to match(/BOSH-.*-region1/)
+        expect(builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
+      end
+    end
+
+    context 'default' do
       let(:os) { '' }
 
       it 'returns the baseline builders' do
+
         expect(builders[0]).to include(baseline_builders)
         expect(builders[0][:ami_name]).to match(/BOSH-.*-region1/)
         expect(builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
       end
     end
+
+    context 'windows2019 govcloud' do
+      let(:os) { 'windows2019' }
+
+      it 'returns the baseline builders' do
+        gov_region = {
+            name: 'region1-gov',
+            base_ami: 'baseami1',
+            vpc_id: 'vpc1',
+            subnet_id: 'subnet1',
+            security_group: 'sg1'
+        }
+
+        gov_builders = Packer::Config::Aws.new(
+              aws_access_key: 'some-aws-access-key',
+              aws_secret_key: 'some-aws-secret-key',
+              region: gov_region,
+              output_directory: 'some-output-directory',
+              os: os,
+              version: '',
+              vm_prefix: 'some-vm-prefix'
+          ).builders
+
+
+        expect(gov_builders[0]).to include(baseline_builders.merge({
+                                                                       source_ami: "ami-a180cfc0",
+                                                                       region: 'region1-gov',
+                                                                       name: "amazon-ebs-region1-gov"}))
+        expect(gov_builders[0][:ami_name]).to match(/BOSH-.*-region1/)
+        expect(gov_builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
+      end
+    end
+
 
     context 'windows2012R2' do
       let(:os) { 'windows2012R2' }
@@ -78,6 +123,7 @@ describe Packer::Config::Aws do
       it 'returns the expected builders with a 128GB root disk' do
         expect(builders[0]).to include(baseline_builders.merge({
                                                                    instance_type: 'm4.xlarge',
+                                                                   source_ami: "ami-067ff23da8261d1c7",
                                                                    launch_block_device_mappings: [
                                                                        {
                                                                            device_name: '/dev/sda1',
