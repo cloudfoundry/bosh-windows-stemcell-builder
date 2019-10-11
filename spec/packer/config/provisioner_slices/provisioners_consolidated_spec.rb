@@ -40,7 +40,7 @@ describe 'provisioners' do
 
     context '2019' do
       packer_config_aws_2019 = Packer::Config::Aws.new(
-          standard_options.merge(os: 'windows2019')
+          standard_options.merge(os: 'windows2019_consolidated')
       )
       it_behaves_like "a standard consolidated provisioner", packer_config_aws_2019
 
