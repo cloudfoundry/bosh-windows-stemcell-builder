@@ -7,9 +7,8 @@ Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 #this function does not exist on VMs without Windows Defender installed
 function Set-MpPreference() {
     param(
-        [bool]$DisableOption,
-        [bool]$DisableOtherThing,
-        [bool]$DontModifyThis
+        [bool]$DisableBehaviorMonitoring,
+        [bool]$OtherThing
     )
 }
 
@@ -75,9 +74,8 @@ Describe "Protect-CFCell" {
             [hashtable]@{
                 ParameterSets = [hashtable]@{
                     Parameters = @(
-                        @{Name = "DisableOption"},
-                        @{Name = "DontModifyThis"},
-                        @{Name = "DisableOtherThing"}
+                        @{Name = "DisableBehaviorMonitoring"},
+                        @{Name = "OtherThing"}
                     )
                 }
             }
@@ -88,13 +86,10 @@ Describe "Protect-CFCell" {
 
         Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Disabling Windows Defender Features" }
 
-        Assert-MockCalled Set-MpPreference -Exactly 1 -Scope It -ParameterFilter { $DisableOption -eq $true } -ModuleName BOSH.CFCell
-        Assert-MockCalled Set-MpPreference -Exactly 1 -Scope It -ParameterFilter { $DisableOtherThing -eq $true } -ModuleName BOSH.CFCell
-        Assert-MockCalled Set-MpPreference -Exactly 0 -Scope It -ParameterFilter { $DontModifyThis -eq $true } -ModuleName BOSH.CFCell
+        Assert-MockCalled Set-MpPreference -Exactly 1 -Scope It -ParameterFilter { $DisableBehaviorMonitoring -eq $true } -ModuleName BOSH.CFCell
+        Assert-MockCalled Set-MpPreference -Exactly 0 -Scope It -ParameterFilter { $OtherThing -eq $true } -ModuleName BOSH.CFCell
 
-        Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Setting Defender preference DisableOption to True" }
-        Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Setting Defender preference DisableOtherThing to True" }
-        Assert-MockCalled Write-Log -Exactly 0 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Setting Defender preference DontModifyThis to True" }
+        Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Setting Defender preference DisableBehaviorMonitoring to True" }
     }
 
     It "does not attempt to change Windows Defender settings if Windows Defender is not installed" {
