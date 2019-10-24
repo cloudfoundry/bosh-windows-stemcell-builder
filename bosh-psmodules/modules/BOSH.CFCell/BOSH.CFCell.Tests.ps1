@@ -75,9 +75,9 @@ Describe "Protect-CFCell" {
             [hashtable]@{
                 ParameterSets = [hashtable]@{
                     Parameters = @(
-                        @{Name = "DisableOption"},
+                        @{Name = "DisableBehaviorMonitoring"},
                         @{Name = "DontModifyThis"},
-                        @{Name = "DisableOtherThing"}
+                        @{Name = "OtherThing"}
                     )
                 }
             }
