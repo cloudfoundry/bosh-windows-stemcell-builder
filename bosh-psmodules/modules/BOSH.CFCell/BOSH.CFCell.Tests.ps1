@@ -4,6 +4,13 @@ Import-Module ./BOSH.CFCell.psm1
 Remove-Module -Name BOSH.Utils -ErrorAction Ignore
 Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 
+#this function does not exist on VMs without Windows Defender installed
+function Set-MpPreference() {
+    param(
+        [bool]$DisableBehaviorMonitoring,
+        [bool]$OtherThing,
+    )
+}
 
 Describe "Protect-CFCell" {
     BeforeEach {
