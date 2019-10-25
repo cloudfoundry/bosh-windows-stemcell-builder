@@ -8,7 +8,7 @@ Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 function Set-MpPreference() {
     param(
         [bool]$DisableBehaviorMonitoring,
-        [bool]$OtherThing,
+        [bool]$OtherThing
     )
 }
 
