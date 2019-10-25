@@ -88,9 +88,9 @@ Describe "Protect-CFCell" {
 
         Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Disabling Windows Defender Features" }
 
-        Assert-MockCalled Set-MpPreference -Exactly 1 -Scope It -ParameterFilter { $DisableOption -eq $true } -ModuleName BOSH.CFCell
-        Assert-MockCalled Set-MpPreference -Exactly 1 -Scope It -ParameterFilter { $DisableOtherThing -eq $true } -ModuleName BOSH.CFCell
-        Assert-MockCalled Set-MpPreference -Exactly 0 -Scope It -ParameterFilter { $DontModifyThis -eq $true } -ModuleName BOSH.CFCell
+        Assert-MockCalled Set-MpPreference -Exactly 1 -Scope It -ParameterFilter { $DisableBehaviorMonitoring -eq $true } -ModuleName BOSH.CFCell
+        #Assert-MockCalled Set-MpPreference -Exactly 1 -Scope It -ParameterFilter { $DisableOtherThing -eq $true } -ModuleName BOSH.CFCell
+        #Assert-MockCalled Set-MpPreference -Exactly 0 -Scope It -ParameterFilter { $DontModifyThis -eq $true } -ModuleName BOSH.CFCell
 
         Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Setting Defender preference DisableOption to True" }
         Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Setting Defender preference DisableOtherThing to True" }
