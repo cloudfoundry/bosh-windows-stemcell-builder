@@ -3,6 +3,26 @@ require './spec/packer/config/provisioner_slices/provisioner_matcher'
 require './spec/packer/config/provisioner_slices/test_provisioner'
 
 shared_examples "a standard consolidated provisioner" do |provisioner_config|
+  let(:provisioners) {provisioner_config.provisioners}
+
+  it 'uploads assets' do
+    upload_assets_zip = TestProvisioner.new_file_provisioner('build/assets.zip', 'C:\provision\assets.zip')
+    expect(provisioners).to include_provisioner(upload_assets_zip)
+  end
+
+  it 'run the install script' do
+    install_script = TestProvisioner.new_powershell_provisioner('Install-ProvisionerScripts')
+    expect(provisioners).to include_provisioner(install_script)
+    # We need a way of installing our new consolidated provisioners.
+    # No decision on this yet.
+  end
+
+  it 'run the first consolidated provisioner' do
+    provisioner_one = TestProvisioner.new_powershell_provisioner('Run-ProvisionerOne')
+    expect(provisioners).to include_provisioner(provisioner_one)
+  end
+
+
 
 end
 

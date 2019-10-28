@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "type": "file",
+    "source": "build/assets.zip",
+    "destination": "C:\\provision\\assets.zip",
+    "pause_before": "60s"
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
+      "Run-ProvisionerOne"
+    ]
+  }
+]
