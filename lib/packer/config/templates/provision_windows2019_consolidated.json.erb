@@ -10,6 +10,15 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
+      "Expand-Archive C:\\provision\\assets.zip",
+      "Import-And-Run-ProvisionerOne.ps1"
+    ]
+  },
+  {
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
       "Run-ProvisionerOne"
     ]
   }

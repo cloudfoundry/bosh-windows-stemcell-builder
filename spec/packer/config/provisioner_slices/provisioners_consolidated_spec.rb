@@ -11,14 +11,14 @@ shared_examples "a standard consolidated provisioner" do |provisioner_config|
   end
 
   it 'run the install script' do
-    install_script = TestProvisioner.new_powershell_provisioner('Install-ProvisionerScripts')
+    install_script = TestProvisioner.new_powershell_provisioner('Expand-Archive C:\provision\assets.zip')
     expect(provisioners).to include_provisioner(install_script)
     # We need a way of installing our new consolidated provisioners.
     # No decision on this yet.
   end
 
-  it 'run the first consolidated provisioner' do
-    provisioner_one = TestProvisioner.new_powershell_provisioner('Run-ProvisionerOne')
+  it 'import and run the first consolidated provisioner' do
+    provisioner_one = TestProvisioner.new_powershell_provisioner('Import-And-Run-ProvisionerOne.ps1')
     expect(provisioners).to include_provisioner(provisioner_one)
   end
 
@@ -46,11 +46,11 @@ describe 'provisioners' do
         version: '',
     }
 
-    context '1803' do
-      it_behaves_like "a standard consolidated provisioner", Packer::Config::Aws.new(
-          standard_options.merge(os: 'windows1803_consolidated')
-      )
-    end
+    # context '1803' do
+    #   it_behaves_like "a standard consolidated provisioner", Packer::Config::Aws.new(
+    #       standard_options.merge(os: 'windows1803_consolidated')
+    #   )
+    # end
 
     context '2019' do
       packer_config_aws_2019 = Packer::Config::Aws.new(
@@ -81,7 +81,7 @@ describe 'provisioners' do
 
     context '2019' do
       packer_config_vsphere_2019 = Packer::Config::VSphere.new(
-          standard_options.merge(os: 'windows2019')
+          standard_options.merge(os: 'windows2019_consolidated')
       )
       it_behaves_like 'a standard consolidated provisioner', packer_config_vsphere_2019
     end
