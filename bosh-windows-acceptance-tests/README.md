@@ -5,7 +5,7 @@ This repo houses tests used to verify Windows Stemcells function as expected.
 # Example configuration
 
 
-These tests are run in the [BOSH Windows Stemcells Pipeline](https://main.bosh-ci.cf-app.com/teams/main/pipelines/windows-stemcells).
+These tests are run in the [BOSH Windows Stemcells Pipeline](https://bosh-windows.ci.cf-app.com/).
 
 You can create a `config.json` file, eg:
 
