@@ -51,3 +51,9 @@ The timeout for BOSH commands can be overridden with the BWATS_BOSH_TIMEOUT envi
 
 - Download go version 1.12.7 from [Go's Downloads page](https://dl.google.com/go/go1.12.7.windows-amd64.zip)
 - Add file as a bosh blob locally `bosh add-blob <PATH TO DOWNLOAD LOCATION>/go1.12.7.windows-amd64.zip golang-windows/go1.12.7.windows-amd64.zip`
+
+
+# Internals of the release and what it does
+This release has a few tests that verify if the features are installed on stemcell or not. There are few jobs on the BWATS release at [assets/bwats-release/jobs path](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests/tree/master/assets/bwats-release/jobs.
+
+When ginkgo tests are run, these jobs are installed on the stemcells and the tests in each job are run against it. As part of running BWATs there are several deployments done, to avoid conficts on same stemcell. 
