@@ -39,9 +39,7 @@ namespace :package do
         Dir.chdir(File.join(stemcell_builder_dir, 'src', 'github.com', 'cloudfoundry' ,'bosh-agent')) do
             ENV['GOOS'] = 'windows'
             ENV['GOARCH'] = 'amd64'
-            version_file = File.join('main', 'version.go')
-            File.write(version_file, File.open(version_file, &:read).gsub('[DEV BUILD]', get_agent_version))
-            # exec_command("go build -o #{File.join(agent_dir_destination,'bosh-agent.exe')} github.com/cloudfoundry/bosh-agent/main")
+
             FileUtils.cp(File.join(agent_dir_location,'bosh-agent.exe'), agent_dir_destination)
             exec_command("go build -o #{File.join(deps_dir,'pipe.exe')} jobsupervisor/pipe/main.go")
             exec_command("git rev-parse HEAD > #{File.join(agent_dir_destination,'sha')}")
