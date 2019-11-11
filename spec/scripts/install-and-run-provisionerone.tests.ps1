@@ -1,3 +1,0 @@
-It "calls bosh-psmodules" {
-
-}
