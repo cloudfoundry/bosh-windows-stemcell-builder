@@ -10,6 +10,7 @@ function CreateFakeOpenSSHZip
     $installSpyBehavior = "echo installed > $installScriptSpyStatus"
     echo $installSpyBehavior > "$dir\OpenSSH-Win64\install-sshd.ps1"
     echo "fake sshd" > "$dir\OpenSSH-Win64\sshd.exe"
+    echo "fake config" > "$dir\OpenSSH-Win64\sshd_config_default"
 
     Compress-Archive -Force -Path "$dir\OpenSSH-Win64" -DestinationPath $fakeZipPath
 }
@@ -246,4 +247,33 @@ Describe "Install-SSHD" {
 
         Assert-VerifiableMock
     }
+
+    It "modifies the openssh configuration to remove default admin key location" {
+        Mock Get-Content { @"
+Match Group administrators
+AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
+"@ } -ModuleName BOSH.SSH -ParameterFilter { $Path -like "*sshd_config_default" }
+
+        Install-SSHD -SSHZipFile $FAKE_ZIP
+        Get-Content $env:PROGRAMFILES\OpenSSH\sshd_config_default | Out-String | Should -BeLike "#*#*"
+    }
+
+}
+
+Describe "Modify-DefaultOpenSSHConfig"{
+    It "Comments out default configuration for where administrator keys are stored" {
+
+        Mock Get-Content {
+@"
+Match Group administrators
+AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
+"@
+        } -ModuleName BOSH.SSH
+
+        $result = Modify-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
+
+        Assert-MockCalled Get-Content -Times 1 -ModuleName BOSH.SSH -Scope It -ParameterFilter { $Path -like "*sshd_config_default" }
+        $result | Should -BeLike "#*#*"
+    }
+
 }
