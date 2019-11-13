@@ -9,6 +9,8 @@
 
     $ConfigPath =  "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64\sshd_config_default"
     $ModifiedConfigContents = Modify-DefaultOpenSSHConfig -ConfigPath $ConfigPath
+    Write-Host "modified config:"
+    Write-Host"'${ModifiedConfigContents}'"
     Remove-Item -Force $ConfigPath
     Out-File -FilePath $ConfigPath -InputObject $ModifiedConfigContents
 
