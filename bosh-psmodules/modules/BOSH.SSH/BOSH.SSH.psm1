@@ -10,7 +10,7 @@
     $ConfigPath =  "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64\sshd_config_default"
     $ModifiedConfigContents = Modify-DefaultOpenSSHConfig -ConfigPath $ConfigPath
     Remove-Item -Force $ConfigPath
-    Out-File -FilePath $ConfigPath -InputObject $ModifiedConfigContents
+    Out-File -FilePath $ConfigPath -InputObject $ModifiedConfigContents -Encoding UTF8
 
     Move-Item -Force "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64" "$env:PROGRAMFILES\OpenSSH"
     Remove-Item -Force "$env:PROGRAMFILES\SSHTemp"
