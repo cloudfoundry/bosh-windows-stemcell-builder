@@ -248,7 +248,7 @@ Describe "Install-SSHD" {
         Assert-VerifiableMock
     }
 
-    It "modifies the openssh configuration to remove default admin key location" {
+    It "modifies the openssh configuration to remove default admin key location while maintaining UTF-8 encoding" {
         Mock Get-Content { @"
 Match Group administrators
 AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
@@ -256,6 +256,7 @@ AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
 
         Install-SSHD -SSHZipFile $FAKE_ZIP
         Get-Content $env:PROGRAMFILES\OpenSSH\sshd_config_default | Out-String | Should -BeLike "#*#*"
+        file.exe $env:PROGRAMFILES\OpenSSH\sshd_config_default | Should -BeLike "*UTF-8*"
     }
 
 }
