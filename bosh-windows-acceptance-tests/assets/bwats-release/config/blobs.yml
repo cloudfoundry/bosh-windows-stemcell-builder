@@ -4,9 +4,3 @@ golang-windows/go1.12.7.windows-amd64.zip:
 lgpo/LGPO.exe:
   size: 410088
   sha: sha256:f218db26d05c80d105dc779ba4e99c72f37ffc9f78d70d359bbe230713b765b4
-mbsa/MBSASetup-x64-EN.msi:
-  size: 1818624
-  sha: sha256:ccbfccdec5d33a479c15ba2bea31f0967d7eb1e9435855111e016105b1b59138
-mbsa/MBSASetup-x64-EN.zip:
-  size: 1335103
-  sha: c9a54c0b0ae1c09e7288367a613849783593ed44

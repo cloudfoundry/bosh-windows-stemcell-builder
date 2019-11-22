@@ -32,11 +32,6 @@ const BOSH_TIMEOUT = 90 * time.Minute
 
 const GoZipFile = "go1.12.7.windows-amd64.zip"
 const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
-
-// If this URL becomes invalid then we will need to configure an external blobstore for bwats-release
-const MbsaFile = "MBSASetup-x64-EN.msi"
-const MbsaURL = "https://download.microsoft.com/download/8/E/1/8E16A4C7-DD28-4368-A83A-282C82FC212A/MBSASetup-x64-EN.msi"
-
 const LgpoUrl = "https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FFA-9429-7E023E7DA8D8/LGPO.zip"
 const lgpoFile = "LGPO.exe"
 const redeployRetries = 10
@@ -380,9 +375,6 @@ func createBwatsRelease(bosh *BoshCommand) string {
 	Expect(err).NotTo(HaveOccurred())
 	releaseDir := filepath.Join(pwd, "assets", "bwats-release")
 	Expect(bosh.RunIn(fmt.Sprintf("add-blob %s golang-windows/%s", goZipPath, GoZipFile), releaseDir)).To(Succeed())
-	mbsaMsiPath, err := downloadFile("mbsa-", MbsaURL)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(bosh.RunIn(fmt.Sprintf("add-blob %s mbsa/%s", mbsaMsiPath, MbsaFile), releaseDir)).To(Succeed())
 
 	lgpoZipPath, err := downloadFile("lgpo-", LgpoUrl)
 	Expect(err).NotTo(HaveOccurred())

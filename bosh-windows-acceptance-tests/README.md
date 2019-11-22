@@ -42,11 +42,6 @@ The timeout for BOSH commands can be overridden with the BWATS_BOSH_TIMEOUT envi
 - Unzip LGPO
 - Add LGPO.exe as a bosh blob locally: `bosh add-blob <PATH TO UNZIP LOCATION>/LGPO.exe lgpo/LGPO.exe`
 
-## MBSA
-
-- Download MBSASetup-x64-EN.msi from [Microsoft](https://www.microsoft.com/en-us/download/details.aspx?id=19892)
-- Add file as a bosh blob locally: `bosh add-blob <PATH TO DOWNLOAD LOCATION>/MBSASetup-x64-EN.msi mbsa/MBSASetup-x64-EN.msi`
-
 ## Go
 
 - Download go version 1.12.7 from [Go's Downloads page](https://dl.google.com/go/go1.12.7.windows-amd64.zip)
