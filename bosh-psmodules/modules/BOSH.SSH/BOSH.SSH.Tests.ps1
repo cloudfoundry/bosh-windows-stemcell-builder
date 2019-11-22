@@ -1,6 +1,42 @@
 Remove-Module -Name BOSH.SSH -ErrorAction Ignore
 Import-Module ./BOSH.SSH.psm1
 
+function Get-FileEncoding {
+    [CmdletBinding()]
+    param (
+        [Alias("PSPath")]
+        [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $True)]
+        [String]$Path
+        ,
+        [Parameter(Mandatory = $False)]
+        [System.Text.Encoding]$DefaultEncoding = [System.Text.Encoding]::ASCII
+    )
+
+    process {
+        [Byte[]]$bom = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 -Path $Path
+
+        $encoding_found = $false
+
+        foreach ($encoding in [System.Text.Encoding]::GetEncodings().GetEncoding()) {
+            $preamble = $encoding.GetPreamble()
+            if ($preamble) {
+                foreach ($i in 0..$preamble.Length) {
+                    if ($preamble[$i] -ne $bom[$i]) {
+                        break
+                    } elseif ($i -eq $preable.Length) {
+                        $encoding_found = $encoding
+                    }
+                }
+            }
+        }
+
+        if (!$encoding_found) {
+            $encoding_found = $DefaultEncoding
+        }
+
+        $encoding_found
+    }
+}
 
 function CreateFakeOpenSSHZip
 {
@@ -10,6 +46,7 @@ function CreateFakeOpenSSHZip
     $installSpyBehavior = "echo installed > $installScriptSpyStatus"
     echo $installSpyBehavior > "$dir\OpenSSH-Win64\install-sshd.ps1"
     echo "fake sshd" > "$dir\OpenSSH-Win64\sshd.exe"
+    echo "fake config" > "$dir\OpenSSH-Win64\sshd_config_default"
 
     Compress-Archive -Force -Path "$dir\OpenSSH-Win64" -DestinationPath $fakeZipPath
 }
@@ -246,4 +283,34 @@ Describe "Install-SSHD" {
 
         Assert-VerifiableMock
     }
+
+    It "modifies the openssh configuration to remove default admin key location while maintaining UTF-8 encoding" {
+        Mock Get-Content { @"
+Match Group administrators
+AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
+"@ } -ModuleName BOSH.SSH -ParameterFilter { $Path -like "*sshd_config_default" }
+
+        Install-SSHD -SSHZipFile $FAKE_ZIP
+        Get-Content $env:PROGRAMFILES\OpenSSH\sshd_config_default | Out-String | Should -BeLike "#*#*"
+        Get-FileEncoding $env:PROGRAMFILES\OpenSSH\sshd_config_default | Should -BeLike "System.Text.UTF8Encoding"
+    }
+
+}
+
+Describe "Modify-DefaultOpenSSHConfig"{
+    It "Comments out default configuration for where administrator keys are stored" {
+
+        Mock Get-Content {
+@"
+Match Group administrators
+AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
+"@
+        } -ModuleName BOSH.SSH
+
+        $result = Modify-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
+
+        Assert-MockCalled Get-Content -Times 1 -ModuleName BOSH.SSH -Scope It -ParameterFilter { $Path -like "*sshd_config_default" }
+        $result | Should -BeLike "#*#*"
+    }
+
 }

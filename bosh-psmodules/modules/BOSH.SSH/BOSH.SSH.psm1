@@ -6,6 +6,12 @@
 
     New-Item "$env:PROGRAMFILES\SSHTemp" -Type Directory -Force
     Open-Zip -ZipFile $SSHZipFile -OutPath "$env:PROGRAMFILES\SSHTemp"
+
+    $ConfigPath =  "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64\sshd_config_default"
+    $ModifiedConfigContents = Modify-DefaultOpenSSHConfig -ConfigPath $ConfigPath
+    Remove-Item -Force $ConfigPath
+    Out-File -FilePath $ConfigPath -InputObject $ModifiedConfigContents -Encoding UTF8
+
     Move-Item -Force "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64" "$env:PROGRAMFILES\OpenSSH"
     Remove-Item -Force "$env:PROGRAMFILES\SSHTemp"
 
@@ -121,4 +127,17 @@ function Run-LGPO
         [string]$InfFilePath = $( Throw "Provide Inf file path" )
     )
     & $LGPOPath /s $InfFilePath
+}
+
+function Modify-DefaultOpenSSHConfig
+{
+    param (
+        [string]$ConfigPath = $( Throw "Provide openssh default config path" )
+    )
+
+    $ModifiedConfig = Get-Content $ConfigPath `
+    | %{$_ -replace ".*Match Group administrators.*", "#$&"} `
+    | %{$_ -replace ".*AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys.*", "#$&" }
+
+    return $ModifiedConfig
 }
