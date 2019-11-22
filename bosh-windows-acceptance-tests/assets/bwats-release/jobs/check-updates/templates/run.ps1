@@ -1,6 +1,9 @@
 $ErrorActionPreference = "Stop"
 trap { $host.SetShouldExit(1) }
 
+Set-Service -Name wuauserv -StartupType Manual
+Start-Service -Name wuauserv
+
 $Session = New-Object -ComObject Microsoft.Update.Session
 Write-Host "Session: $Session"
 $Searcher = $Session.CreateUpdateSearcher()
