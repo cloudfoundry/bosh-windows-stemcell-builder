@@ -42,7 +42,7 @@ namespace :package do
 
             FileUtils.cp(File.join(agent_dir_location,'bosh-agent.exe'), agent_dir_destination)
             exec_command("go build -o #{File.join(deps_dir,'pipe.exe')} jobsupervisor/pipe/main.go")
-            exec_command("git rev-parse HEAD > #{File.join(agent_dir_destination,'sha')}")
+            exec_command("sha1sum #{File.join(agent_dir_destination, 'bosh-agent.exe')} | grep -o '^\S*' > #{File.join(agent_dir_destination,'sha')}")
             fixtures = File.join(Dir.pwd, "integration","windows","fixtures")
             deps_files = ['bosh-blobstore-dav.exe',
                           'bosh-blobstore-s3.exe',
