@@ -11,6 +11,7 @@ load File.expand_path('../../../../lib/tasks/package/agent.rake', __FILE__)
 describe 'Package::Agent' do
   before(:each) do
     @original_env = ENV.to_hash
+    ENV['BOSH_AGENT_DIR'] = './spec/fixtures/bosh-agent'
     @build_dir = File.expand_path('../../../../build', __FILE__)
     FileUtils.mkdir_p(@build_dir)
     @version_file = File.join('src', 'github.com', 'cloudfoundry', 'bosh-agent', 'main', 'version.go')
