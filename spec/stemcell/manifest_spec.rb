@@ -8,7 +8,7 @@ describe Stemcell::Manifest do
         expect(YAML.load(manifest)).to eq(
           'name' => 'base',
           'version' => '1.0.0-build.1',
-          'api_version' => 2,
+          'api_version' => 3,
           'sha1' => 'sha',
           'operating_system' => 'os',
           'cloud_properties' => {}
@@ -34,7 +34,7 @@ describe Stemcell::Manifest do
         expect(YAML.load(manifest)).to eq(
           'name' => 'bosh-aws-xen-hvm-some-os-stemcell-go_agent',
           'version' => '1.0',
-          'api_version' => 2,
+          'api_version' => 3,
           'sha1' => 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
           'operating_system' => 'some-os',
           'cloud_properties' => {
@@ -59,7 +59,7 @@ describe Stemcell::Manifest do
         expect(YAML.load(manifest)).to eq(
           'name' => 'bosh-google-kvm-some-os-go_agent',
           'version' => '1.0',
-          'api_version' => 2,
+          'api_version' => 3,
           'sha1' => 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
           'operating_system' => 'some-os',
           'cloud_properties' => {
@@ -80,7 +80,7 @@ describe Stemcell::Manifest do
         expect(YAML.load(manifest)).to eq(
           'name' => 'bosh-vsphere-esxi-some-os-go_agent',
           'version' => '1.0',
-          'api_version' => 2,
+          'api_version' => 3,
           'sha1' => 'sha',
           'operating_system' => 'some-os',
           'cloud_properties' => {
@@ -100,7 +100,7 @@ describe Stemcell::Manifest do
         expect(YAML.load(manifest)).to eq(
           'name' => 'bosh-azure-hyperv-some-os-go_agent',
           'version' => '1.0.0-build.1',
-          'api_version' => 2,
+          'api_version' => 3,
           'sha1' => 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
           'operating_system' => 'some-os',
           'cloud_properties' => {

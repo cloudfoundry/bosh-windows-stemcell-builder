@@ -66,8 +66,7 @@ describe Packer::Config::Aws do
       let(:os) { 'windows2019' }
 
       it 'returns the baseline builders' do
-
-        expect(builders[0]).to include(baseline_builders.merge({source_ami: "ami-075f071b62b749647"}))
+        expect(builders[0]).to include(baseline_builders)
         expect(builders[0][:ami_name]).to match(/BOSH-.*-region1/)
         expect(builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
       end
@@ -77,7 +76,6 @@ describe Packer::Config::Aws do
       let(:os) { '' }
 
       it 'returns the baseline builders' do
-
         expect(builders[0]).to include(baseline_builders)
         expect(builders[0][:ami_name]).to match(/BOSH-.*-region1/)
         expect(builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
