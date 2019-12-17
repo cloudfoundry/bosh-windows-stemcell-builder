@@ -21,8 +21,6 @@ module Packer
         source_ami = @region[:base_ami]
         if @os == 'windows2019' && @region[:name].include?('gov')
           source_ami = "ami-a180cfc0"
-        elsif @os == 'windows2019'
-          source_ami = "ami-075f071b62b749647"
         elsif @os == 'windows2012R2'
           source_ami = "ami-067ff23da8261d1c7"
         end
