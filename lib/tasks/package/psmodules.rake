@@ -11,8 +11,8 @@ namespace :package do
 
         build_dir = File.join(base_dir, 'build')
 
-        psmodules_location = ENV.fetch('BOSH_PSMODULES_DIR', '../../../../bosh-psmodules')
-        psmodules_dir = File.join(psmodules_location,'modules')
+        stemcell_builder_dir = File.expand_path('../../../../', __FILE__)
+        psmodules_dir = File.join(stemcell_builder_dir,'bosh-psmodules','modules')
 
         FileUtils.mkdir_p(build_dir)
 
