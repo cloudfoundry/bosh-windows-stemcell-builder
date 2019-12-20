@@ -106,7 +106,6 @@ describe Packer::Config::Aws do
 
 
         expect(gov_builders[0]).to include(baseline_builders.merge({
-                                                                       source_ami: "ami-a180cfc0",
                                                                        region: 'region1-gov',
                                                                        name: "amazon-ebs-region1-gov"}))
         expect(gov_builders[0][:ami_name]).to match(/BOSH-.*-region1/)
