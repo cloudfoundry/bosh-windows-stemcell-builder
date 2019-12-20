@@ -19,9 +19,7 @@ module Packer
         packer_ci_private_key_location = ENV.fetch('PACKER_CI_PRIVATE_KEY_LOCATION', '../packer-ci-private-key/key')
         #TODO deleteme. Added to resolve a winrm with newer source ami (ami-0060daada4a15ad8a)
         source_ami = @region[:base_ami]
-        if @os == 'windows2019' && @region[:name].include?('gov')
-          source_ami = "ami-a180cfc0"
-        elsif @os == 'windows2012R2'
+        if @os == 'windows2012R2'
           source_ami = "ami-067ff23da8261d1c7"
         end
         [
