@@ -97,7 +97,7 @@ describe 'VSphere' do
   describe "with patchfile" do
     before(:each) do
       @manifest_directory = Dir.mktmpdir('manifest')
-      @os_version = 'windows2016'
+      @os_version = 'windows2019'
       @version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
 
@@ -216,7 +216,7 @@ describe 'VSphere' do
       manifest_content = File.read(manifest)
       expect(manifest_content).to include("api_version: 2")
       expect(manifest_content).to include("patch_file: some-blob-url?some-sas-key")
-      expect(manifest_content).to include("os_version: 2016")
+      expect(manifest_content).to include("os_version: 2019")
       expect(manifest_content).to include("output_dir: .")
       expect(manifest_content).to include("vhd_file: #{@vhd_filename}")
       expect(manifest_content).to include("version: #{@version}")
