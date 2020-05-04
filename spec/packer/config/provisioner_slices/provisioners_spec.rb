@@ -141,7 +141,7 @@ describe 'provisioners' do
         https_proxy: nil,
         bypass_list: nil,
     }
-    
+
 
     context '2019' do
       packer_config_vsphere_2019 = Packer::Config::VSphere.new(

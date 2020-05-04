@@ -35,7 +35,7 @@ describe 'VSphere' do
 
   describe 'add updates' do
     before(:each) do
-      os_version = 'windows2012R2'
+      os_version = 'windows2019'
 
       ENV['AWS_ACCESS_KEY_ID']= 'some-key'
       ENV['AWS_SECRET_ACCESS_KEY'] = 'secret-key'

@@ -23,8 +23,8 @@ describe 'Aws' do
     Rake::Task['build:aws'].reenable
     Rake::Task['build:aws_ami'].reenable
 
-    @os_version = 'windows2012R2'
-    @version = '1200.3.1-build.2'
+    @os_version = 'windows2019'
+    @version = '2019.9.99-build.9'
     @agent_commit = 'some-agent-commit'
 
     ENV['AMIS_DIR'] = @amis_dir
