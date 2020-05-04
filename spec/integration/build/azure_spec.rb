@@ -30,7 +30,7 @@ describe 'Azure' do
   it 'should build an azure stemcell' do
     Dir.mktmpdir('azure-stemcell-test') do |tmpdir|
       os_version = 'windows2019'
-      version = '1200.3.1-build.2'
+      version = '1200.0.1-build.7'
       agent_commit = 'some-agent-commit'
 
       ENV['CLIENT_ID'] = 'some-azure_access_key'

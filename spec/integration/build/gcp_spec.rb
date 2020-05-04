@@ -32,7 +32,7 @@ describe 'Gcp' do
   it 'should build a gcp stemcell' do
     Dir.mktmpdir('gcp-stemcell-test') do |tmpdir|
       os_version = 'windows2019'
-      version = '1200.0.1-build.7'
+      version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
 
       ENV['ACCOUNT_JSON'] = {'project_id' => 'some-project-id'}.to_json

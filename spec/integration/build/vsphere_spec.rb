@@ -33,67 +33,6 @@ describe 'VSphere' do
     FileUtils.rm_rf(@stemcell_deps_dir)
   end
 
-  describe 'add updates' do
-    before(:each) do
-      os_version = 'windows2019'
-
-      ENV['AWS_ACCESS_KEY_ID']= 'some-key'
-      ENV['AWS_SECRET_ACCESS_KEY'] = 'secret-key'
-      ENV['AWS_REGION'] = 'some-region'
-      ENV['INPUT_BUCKET'] = 'input-vmx-bucket'
-      ENV['VMX_CACHE_DIR'] = '/tmp'
-      ENV['OUTPUT_BUCKET'] = 'stemcell-output-bucket'
-      ENV['VERSION_DIR'] = @version_dir
-
-      ENV['ADMINISTRATOR_PASSWORD'] = 'pass'
-
-      ENV['OS_VERSION'] = os_version
-      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'vsphere')}:#{ENV['PATH']}"
-
-      File.write(
-        File.join(@version_dir, 'number'),
-        'some-version'
-      )
-
-      s3_vmx= double(:s3_vmx)
-      allow(s3_vmx).to receive(:fetch).and_return("1234")
-      allow(s3_vmx).to receive(:put)
-
-      allow(S3::Vmx).to receive(:new).with(
-        input_bucket: 'input-vmx-bucket',
-        output_bucket: 'stemcell-output-bucket',
-        vmx_cache_dir: '/tmp',
-        endpoint: nil)
-        .and_return(s3_vmx)
-
-      allow(S3).to receive(:test_upload_permissions)
-    end
-
-    it 'should build a vsphere_add_updates vmx' do
-      Rake::Task['build:vsphere_add_updates'].invoke
-
-      pattern = File.join(@output_directory, "*.vmx").gsub('\\', '/')
-      files = Dir.glob(pattern)
-      expect(files.length).to eq(1)
-      expect(files[0]).to eq(File.join(@output_directory,"file.vmx"))
-    end
-
-    context 'when we are not authorized to upload to the S3 bucket' do
-      before(:each) do
-        allow(S3).to receive(:test_upload_permissions).and_raise(Aws::S3::Errors::Forbidden.new('', ''))
-      end
-
-      it 'should fail before building the vmx' do
-        expect do
-          Rake::Task['build:vsphere_add_updates'].invoke
-        end.to raise_exception(Aws::S3::Errors::Forbidden)
-
-        files = Dir.glob(File.join(@output_directory, '*').gsub('\\', '/'))
-        expect(files).to be_empty
-      end
-    end
-  end
-
   describe "with patchfile" do
     before(:each) do
       @manifest_directory = Dir.mktmpdir('manifest')
@@ -225,7 +164,7 @@ describe 'VSphere' do
 
   describe 'stemcell' do
     before(:each) do
-      os_version = 'windows2012R2'
+      os_version = 'windows2019'
       version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
 
@@ -287,7 +226,7 @@ describe 'VSphere' do
       stembuild_version_arg = JSON.parse(File.read("#{@output_directory}/myargs"))[4]
       expect(stembuild_version_arg).to eq('1200.3.1-build.2')
       stemcell_filename = File.basename(Dir["#{@output_directory}/*.tgz"].first)
-      expect(stemcell_filename).to eq "bosh-stemcell-1200.3.1-build.2-vsphere-esxi-windows2012R2-go_agent.tgz"
+      expect(stemcell_filename).to eq "bosh-stemcell-1200.3.1-build.2-vsphere-esxi-windows2019-go_agent.tgz"
     end
 
     context 'when we are not authorized to upload to the S3 bucket' do
