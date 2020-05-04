@@ -31,7 +31,7 @@ describe 'Gcp' do
 
   it 'should build a gcp stemcell' do
     Dir.mktmpdir('gcp-stemcell-test') do |tmpdir|
-      os_version = 'windows2012R2'
+      os_version = 'windows2019'
       version = '1200.3.1-build.2'
       agent_commit = 'some-agent-commit'
 

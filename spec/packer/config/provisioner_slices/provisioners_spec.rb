@@ -107,18 +107,6 @@ describe 'provisioners' do
         version: '',
     }
 
-    context '2012R2' do
-      it_behaves_like "a standard provisioner", Packer::Config::Aws.new(
-          standard_options.merge(os: 'windows2012R2')
-      )
-    end
-
-    context '1803' do
-      it_behaves_like "a standard provisioner", Packer::Config::Aws.new(
-          standard_options.merge(os: 'windows1803')
-      )
-    end
-
     context '2019' do
       packer_config_aws_2019 = Packer::Config::Aws.new(
           standard_options.merge(os: 'windows2019')
@@ -154,11 +142,6 @@ describe 'provisioners' do
         bypass_list: nil,
     }
 
-    context '2012R2' do
-      it_behaves_like 'a standard provisioner', Packer::Config::VSphere.new(
-          standard_options.merge(os: 'windows2012R2')
-      )
-    end
 
     context '2019' do
       packer_config_vsphere_2019 = Packer::Config::VSphere.new(
