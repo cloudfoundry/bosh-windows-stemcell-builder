@@ -1,5 +1,4 @@
 require 'rake'
-load File.expand_path('../../../lib/tasks/build/aws.rake', __dir__)
 
 describe 'AWS Rake' do
   context 'validate_ami'do
