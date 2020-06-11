@@ -448,10 +448,6 @@ $osVersion = Get-OSVersion
 if (-Not ($osVersion -Match "windows2016")) {
   Verify-LGPO
 }
-#HyperV is enabled only for 2019
-if ($osVersion -Match "windows2019") {
-  Verify-HyperVisEnabled
-}
 
 Verify-Dependencies
 Verify-Acls
