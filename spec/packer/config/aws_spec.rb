@@ -91,7 +91,8 @@ describe Packer::Config::Aws do
             base_ami: 'baseami1',
             vpc_id: 'vpc1',
             subnet_id: 'subnet1',
-            security_group: 'sg1'
+            security_group: 'sg1',
+            use_private_ip_address: true
         }
 
         gov_builders = Packer::Config::Aws.new(
@@ -107,7 +108,8 @@ describe Packer::Config::Aws do
 
         expect(gov_builders[0]).to include(baseline_builders.merge({
                                                                        region: 'region1-gov',
-                                                                       name: "amazon-ebs-region1-gov"}))
+                                                                       name: "amazon-ebs-region1-gov",
+                                                                       associate_public_ip_address: false}))
         expect(gov_builders[0][:ami_name]).to match(/BOSH-.*-region1/)
         expect(gov_builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
       end

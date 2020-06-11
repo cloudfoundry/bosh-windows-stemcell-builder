@@ -34,7 +34,7 @@ module Packer
             ami_name: "BOSH-#{SecureRandom.uuid}-#{@region[:name]}",
             vpc_id: @region[:vpc_id],
             subnet_id: @region[:subnet_id],
-            associate_public_ip_address: true,
+            associate_public_ip_address: !@region[:use_private_ip_address],
             launch_block_device_mappings: launch_block_device_mappings,
             communicator: 'winrm',
             winrm_username: 'Administrator',
