@@ -36,12 +36,16 @@ describe Stemcell::Publisher::Azure do
       expected_url_command = "az storage blob url --container-name #{@publisher.container_name} --name #{@publisher.container_path} --account-name #{@publisher.azure_storage_account} --account-key #{@publisher.azure_storage_access_key}"
 
       expected_instructions = <<END
-Please login to https://cloudpartner.azure.com
+Please login to https://partner.microsoft.com/en-us/dashboard/commercial-marketplace/overview
 * Click "BOSH Azure Windows Stemcell"
-* Click SKUs -> 2012r2
+* Search Offers for "BOSH Stemcell"
+* Click the one corresponding to the OS version we're promoting
+* Click the plan with Plan ID: "2012r2"
+* Navigate to the Technical Configuration tab
 * Click "+ New VM image" at the bottom
 * Input version "some-version" and OS VHD URL "vhd-url?sas-code"
-* Save and click Publish! Remember to click Go Live (in status tab) after it finishes!!
+* "Save Draft" and click "Review and Publish"
+* Remember to come back to the "2012r2" Plan in partner center and click Go Live after the certification process is complete
 END
 
       expect(Executor).to receive(:exec_command_no_output).with(expected_login_command)

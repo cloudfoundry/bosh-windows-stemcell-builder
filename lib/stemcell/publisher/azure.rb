@@ -20,12 +20,16 @@ module Stemcell
         login_to_azure
 
         instructions = <<END
-Please login to https://cloudpartner.azure.com
+Please login to https://partner.microsoft.com/en-us/dashboard/commercial-marketplace/overview
 * Click "BOSH Azure Windows Stemcell"
-* Click SKUs -> #{sku}
+* Search Offers for "BOSH Stemcell"
+* Click the one corresponding to the OS version we're promoting
+* Click the plan with Plan ID: "#{sku}"
+* Navigate to the Technical Configuration tab
 * Click "+ New VM image" at the bottom
 * Input version "#{version}" and OS VHD URL "#{vhd_url}"
-* Save and click Publish! Remember to click Go Live (in status tab) after it finishes!!
+* "Save Draft" and click "Review and Publish"
+* Remember to come back to the "#{sku}" Plan in partner center and click Go Live after the certification process is complete
 END
         puts instructions
       end
