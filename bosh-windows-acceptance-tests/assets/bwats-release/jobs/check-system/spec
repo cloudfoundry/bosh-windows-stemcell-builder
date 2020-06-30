@@ -30,3 +30,9 @@ properties:
   security_compliance.expected_to_comply:
     description: Determines whether stemcell being tested is expected to comply with Microsofts Windows Security Compliance Policies
     default: false
+  password.default_username:
+    description: Username of default profile on the stemcell whose password should be randomized
+    default: "Administrator"
+  password.default_password:
+    description: Password associated with the default_username on the stemcell before randomization
+    default: "password"

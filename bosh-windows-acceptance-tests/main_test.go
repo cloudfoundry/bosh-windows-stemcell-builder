@@ -47,6 +47,8 @@ type ManifestProperties struct {
 	StemcellOs                string
 	StemcellVersion           string
 	ReleaseVersion            string
+	DefaultUsername           string
+	DefaultPassword           string
 	MountEphemeralDisk        bool
 	SSHDisabledByDefault      bool
 	SecurityComplianceApplied bool
@@ -71,6 +73,8 @@ type Config struct {
 	RootEphemeralVmType       string `json:"root_ephemeral_vm_type"`
 	VmExtensions              string `json:"vm_extensions"`
 	Network                   string `json:"network"`
+	DefaultUsername           string `json:"default_username"`
+	DefaultPassword           string `json:"default_password"`
 	SkipCleanup               bool   `json:"skip_cleanup"`
 	MountEphemeralDisk        bool   `json:"mount_ephemeral_disk"`
 	SkipMSUpdateTest          bool   `json:"skip_ms_update_test"`
@@ -453,6 +457,8 @@ func (m ManifestProperties) toMap() map[string]string {
 	manifest["StemcellOs"] = m.StemcellOs
 	manifest["StemcellVersion"] = m.StemcellVersion
 	manifest["ReleaseVersion"] = m.ReleaseVersion
+	manifest["DefaultUsername"] = m.DefaultUsername
+	manifest["DefaultPassword"] = m.DefaultPassword
 
 	return manifest
 }
@@ -547,6 +553,8 @@ func (c *Config) deployWithManifest(bosh *BoshCommand, deploymentName string, st
 		RootEphemeralVmType:       c.RootEphemeralVmType,
 		VmExtensions:              c.VmExtensions,
 		Network:                   c.Network,
+		DefaultUsername:           c.DefaultUsername,
+		DefaultPassword:           c.DefaultPassword,
 		StemcellOs:                c.StemcellOs,
 		StemcellVersion:           fmt.Sprintf(`"%s"`, stemcellVersion),
 		ReleaseVersion:            bwatsVersion,

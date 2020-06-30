@@ -35,6 +35,9 @@ instance_groups:
             disabled_by_default: ((SSHDisabledByDefault))
           security_compliance:
             expected_to_comply: ((SecurityComplianceApplied))
+          password:
+            default_username: ((DefaultUsername))
+            default_password: ((DefaultPassword))
       - name: check-wu-certs
         release: ((ReleaseName))
       - name: ephemeral-disk
