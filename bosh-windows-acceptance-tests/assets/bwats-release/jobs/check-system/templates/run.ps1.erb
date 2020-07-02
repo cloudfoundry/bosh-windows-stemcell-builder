@@ -360,8 +360,8 @@ function Verify-RandomPassword {
   Add-Type -AssemblyName System.DirectoryServices.AccountManagement
   $ComputerName=hostname
   $DS = New-Object System.DirectoryServices.AccountManagement.PrincipalContext('machine',$ComputerName)
-  $DefaultUsername=[string]$<%= p("password.default_username") %>
-  $DefaultPassword=[string]$<%= p("password.default_password") %>
+  $DefaultUsername='<%= p("password.default_username") %>'
+  $DefaultPassword='<%= p("password.default_password") %>'
   if ($DS.ValidateCredentials($DefaultUsername, $DefaultPassword)) {
       Write-Error "$DefaultUsername password was not randomized"
       Exit 1
