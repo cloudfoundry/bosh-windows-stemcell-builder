@@ -24,34 +24,6 @@ class Provisioner
   end
 end
 
-class OSwindows2012R2 < Provisioner
-  def dump
-    result = @erb.result_with_hash({iaas: @iaas, password: SecureRandom.hex(10) + "!", proxy_settings: @proxy_settings, stemcell_version: @version})
-    JSON.parse(result)
-  end
-end
-
-class OSwindows2012R2_vsphere_updates < Provisioner
-  def dump
-    result = @erb.result_with_hash({iaas: @iaas, password: SecureRandom.hex(10) + "!", proxy_settings: @proxy_settings})
-    JSON.parse(result)
-  end
-end
-
-class OSwindows2016 < Provisioner
-  def dump
-    result = @erb.result_with_hash({iaas: @iaas, password: SecureRandom.hex(10) + "!", ephemeral_disk_flag: @ephemeral_disk_flag, proxy_settings: @proxy_settings, install_windows_updates: @installWindowsUpdates, stemcell_version: @version})
-    JSON.parse(result)
-  end
-end
-
-class OSwindows1803 < Provisioner
-  def dump
-    result = @erb.result_with_hash({iaas: @iaas, password: SecureRandom.hex(10) + "!", ephemeral_disk_flag: @ephemeral_disk_flag, proxy_settings: @proxy_settings, install_windows_updates: @installWindowsUpdates, stemcell_version: @version})
-    JSON.parse(result)
-  end
-end
-
 class OSwindows2019 < Provisioner
   def dump
     result = @erb.result_with_hash({
