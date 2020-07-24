@@ -23,7 +23,7 @@ namespace :publish do
         azure_tenant_id: ENV['AZURE_TENANT_ID'],
         azure_client_id: ENV['AZURE_CLIENT_ID'],
         azure_client_secret: ENV['AZURE_CLIENT_SECRET'],
-        container_name: ENV['CONTAINER_NAME'],
+        container_name: ENV['AZURE_CONTAINER_NAME'],
         container_path: container_path
       )
 
