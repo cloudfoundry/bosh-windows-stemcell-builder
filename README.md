@@ -1,4 +1,10 @@
-# BOSH Windows Stemcell Builder [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
+# BOSH Windows Stemcell Builder (DEPRECATED September 2020) [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
+
+BOSH Windows Stemcell Builder will be deprecated by September 2020. The recommended approach for creating local BOSH Windows stemcells which can be deployed on [Cloud Foundry BOSH](https://bosh.io), is [`stembuild`](https://github.com/cloudfoundry-incubator/stembuild).
+
+[Documentation on how to use `stembuild` can be found here.](https://bosh.io/docs/windows-stemcell-create/)
+
+---
 
 This repo contains a set of scripts for automating the process of building BOSH Windows Stemcells.
 
