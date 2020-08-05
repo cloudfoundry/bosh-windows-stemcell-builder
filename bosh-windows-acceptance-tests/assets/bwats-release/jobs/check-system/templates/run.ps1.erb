@@ -444,6 +444,16 @@ function Verify-HyperVIsEnabled {
   Write-Host "Hyper-V is enabled"
 }
 
+function Verify-TimeZone {
+  # something about GCP
+  $timezone = Get-TimeZone
+  if ($timezone.Id -ne "UTC") {
+    Write-Error "Timezone is $($timezone.Id), but should be: UTC"
+    Exit 1
+  }
+}
+
+
 #CIS hardening has been skipped for Windows1709
 $osVersion = Get-OSVersion
 if (-Not ($osVersion -Match "windows2016")) {
@@ -465,6 +475,7 @@ Verify-NTPSync
 Verify-NoDocker
 Verify-PSVersion5
 Verify-VersionFile
+Verify-TimeZone
 
 Import-Module C:\var\vcap\packages\pester\Pester\Pester.psd1
 
