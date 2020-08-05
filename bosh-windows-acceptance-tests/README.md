@@ -52,3 +52,13 @@ The timeout for BOSH commands can be overridden with the BWATS_BOSH_TIMEOUT envi
 This release has a few tests that verify if the features are installed on stemcell or not. There are few jobs on the BWATS release at [assets/bwats-release/jobs path](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests/tree/master/assets/bwats-release/jobs.
 
 When ginkgo tests are run, these jobs are installed on the stemcells and the tests in each job are run against it. As part of running BWATs there are several deployments done, to avoid conficts on same stemcell. 
+
+The bulk of our assertions are run as part of the check-system job.
+**This is where you will likely want to make changes**, e.g. to add test coverage around our expectations of happy-path stemcell behavior.
+
+The relevant call chain is:
+- CI, (or you, locally), runs `ginkgo .`
+- ginkgo runs `main_test.go`
+- the "check system dep..." test runs the `check-system` bosh errand, whose behavior is defined in `assets/bwats-release/jobs/check-system/spec` and `assets/bwats-release/jobs/check-system/templates/run.ps1.erb`
+- the run.ps1 script defines test functions, and runs them. e.g. `Verify-Dependencies` is defined and run in that run.ps1
+
