@@ -345,7 +345,4 @@ var _ = Describe("BOSH Windows", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
-	It("sets timezone to UTC", func() {
-		err := 
-	})
 })
