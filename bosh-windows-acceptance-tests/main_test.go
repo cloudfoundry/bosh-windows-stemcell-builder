@@ -390,7 +390,7 @@ func createBwatsRelease(bosh *BoshCommand) string {
 	Expect(err).NotTo(HaveOccurred())
 
 	for _, zipFile := range zipReader.File {
-		if zipFile.Name == lgpoFile {
+		if zipFile.Name == "LGPO_30/"+lgpoFile {
 			filename := lgpoPath.Name()
 			f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, zipFile.Mode())
 			Expect(err).NotTo(HaveOccurred())
