@@ -375,13 +375,23 @@ func createBwatsRelease(bosh *BoshCommand) string {
 	Expect(err).NotTo(HaveOccurred())
 
 	releaseVersion = fmt.Sprintf("0.dev+%d", getTimestampInMs())
-	goZipPath, err := downloadFile("golang-", GolangURL)
-	Expect(err).NotTo(HaveOccurred())
+	var goZipPath string
+	if _, err := os.Stat(filepath.Join(pwd, GoZipFile)); os.IsNotExist(err) {
+		goZipPath, err = downloadFile("golang-", GolangURL)
+		Expect(err).NotTo(HaveOccurred())
+	} else {
+		goZipPath = filepath.Join(pwd, GoZipFile)
+	}
 	releaseDir := filepath.Join(pwd, "assets", "bwats-release")
 	Expect(bosh.RunIn(fmt.Sprintf("add-blob %s golang-windows/%s", goZipPath, GoZipFile), releaseDir)).To(Succeed())
 
-	lgpoZipPath, err := downloadFile("lgpo-", LgpoUrl)
-	Expect(err).NotTo(HaveOccurred())
+	var lgpoZipPath string
+	if _, err := os.Stat(filepath.Join(pwd, "LGPO.zip")); os.IsNotExist(err) {
+		lgpoZipPath, err = downloadFile("lgpo-", LgpoUrl)
+		Expect(err).NotTo(HaveOccurred())
+	} else {
+		lgpoZipPath = filepath.Join(pwd, "LGPO.zip")
+	}
 
 	zipReader, err := zip.OpenReader(lgpoZipPath)
 	Expect(err).NotTo(HaveOccurred())
