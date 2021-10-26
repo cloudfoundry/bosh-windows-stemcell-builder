@@ -3,6 +3,7 @@ require 'rubygems/package'
 require 'yaml'
 
 require_relative '../../stemcell/publisher/gcp'
+require_relative '../../stemcell/labeler/gcp'
 
 def read_from_tgz(path, filename)
   contents = ''
@@ -17,24 +18,43 @@ def read_from_tgz(path, filename)
   contents
 end
 
+def image_url
+  root_dir = File.expand_path('../../../../../', __FILE__)
+  pattern = File.join(root_dir, 'bosh-windows-stemcell', '*.tgz')
+  stemcell = Dir.glob(pattern)[0]
+  if stemcell.nil?
+    abort "Unable to find stemcell: #{pattern}"
+  end
+
+  stemcell_mf = read_from_tgz(stemcell, 'stemcell.MF')
+  manifest = YAML.load(stemcell_mf)
+  manifest['cloud_properties']['image_url']
+end
+
 namespace :publish do
   desc 'Publish an image to GCP'
   task :gcp do
     account_json = ENV.fetch('ACCOUNT_JSON')
-
-    root_dir = File.expand_path('../../../../../', __FILE__)
-    pattern = File.join(root_dir,'bosh-windows-stemcell', '*.tgz')
-    stemcell = Dir.glob(pattern)[0]
-    if stemcell.nil?
-      abort "Unable to find stemcell: #{pattern}"
-    end
-
-    stemcell_mf = read_from_tgz(stemcell,'stemcell.MF')
-    manifest = YAML.load(stemcell_mf)
-    image_url = manifest['cloud_properties']['image_url']
-
-    vm_to_add = {image_url: image_url}
+    vm_to_add = { image_url: image_url }
 
     Stemcell::Publisher::Gcp.publish(vm_to_add, account_json)
+  end
+end
+
+namespace :gcp do
+  namespace :label do
+    desc 'Label an image as not published'
+    task :for_test do
+      account_json = ENV.fetch('ACCOUNT_JSON')
+
+      Stemcell::Labeler::Gcp.label(image_url, account_json, "published", "false")
+    end
+
+    desc 'Label an image as published'
+    task :for_production do
+      account_json = ENV.fetch('ACCOUNT_JSON')
+
+      Stemcell::Labeler::Gcp.label(image_url, account_json, "published", "true")
+    end
   end
 end
