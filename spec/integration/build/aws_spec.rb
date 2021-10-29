@@ -180,11 +180,11 @@ describe 'Aws' do
 
       Rake::Task['build:aws_ami'].invoke
 
-      default_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")][0]
+      default_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")].sort[0]
       manifest = YAML.load(read_from_tgz(default_stemcell, 'stemcell.MF'))
       expect(manifest['cloud_properties']['ami']['us-east-1']).to eq ('us-east-1-ami')
 
-      copied_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")][1]
+      copied_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")].sort[1]
       manifest = YAML.load(read_from_tgz(copied_stemcell, 'stemcell.MF'))
       expect(manifest['cloud_properties']['ami']['us-east-2']).to eq ('ami-east2id')
     end
