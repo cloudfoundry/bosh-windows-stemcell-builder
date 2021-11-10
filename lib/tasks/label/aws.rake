@@ -32,7 +32,7 @@ namespace :aws do
     ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR') # contains the ami of the image created by packer
 
     # Get packer output data
-    version = File.read(File.join(version_dir, 'number')).chomp
+    version = File.read(File.join(ami_output_directory, 'version')).chomp
     JSON.parse(File.read(File.join(ami_output_directory, "packer-output-ami-#{version}.txt")))
   end
 end
