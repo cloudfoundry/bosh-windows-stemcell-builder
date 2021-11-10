@@ -33,6 +33,9 @@ namespace :aws do
 
     # Get packer output data
     version = File.read(File.join(ami_output_directory, 'version')).chomp
-    JSON.parse(File.read(File.join(ami_output_directory, "packer-output-ami-#{version}.txt")))
+    packer_output_file_glob = Dir.glob(File.join(ami_output_directory, "packer-output-ami-*.txt"))
+    raise "multiple packer files found" if packer_output_file_glob.length > 1
+    raise "no packer file found" if packer_output_file_glob.length == 0
+    JSON.parse(File.read(packer_output_file_glob.first))
   end
 end
