@@ -28,11 +28,9 @@ namespace :aws do
   end
 
   def packer_data
-    version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     ami_output_directory = Stemcell::Builder::validate_env_dir('AMIS_DIR') # contains the ami of the image created by packer
 
     # Get packer output data
-    version = File.read(File.join(ami_output_directory, 'version')).chomp
     packer_output_file_glob = Dir.glob(File.join(ami_output_directory, "packer-output-ami-*.txt"))
     raise "multiple packer files found" if packer_output_file_glob.length > 1
     raise "no packer file found" if packer_output_file_glob.length == 0
