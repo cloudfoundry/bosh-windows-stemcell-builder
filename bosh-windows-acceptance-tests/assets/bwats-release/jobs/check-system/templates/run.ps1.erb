@@ -265,16 +265,25 @@ function Verify-InstalledFeatures {
   }
   function Assert-DefenderFeaturesDisabled {
     Get-MpPreference |
-      Select -ExpandProperty CimInstanceProperties |
-      Where-Object { $_.Name -Like "Disable*"} |
-      ForEach-Object {
-        if ($_.Value -eq $false) {
-          Write-Error "Expected Windows Defender property $($_.Name) to be true, because all Defender features should be disabled, it was false"
+    Select -ExpandProperty CimInstanceProperties |
+    Where-Object { $_.Name -Like "Disable*" } |
+    ForEach-Object {
+      if ($_.Value -eq $false) {
+        if ($_.Name -eq "DisableFtpParsing") {
+          Write-Host "**************************"
+          Write-Host "Skipping $($_.Name); it's not settable. It was $($_.Value)"
+          Write-Host "<https://www.pivotaltracker.com/story/show/180628580/comments/228655194>"
+          Write-Host "**************************"
+        }
+        else {
+          Write-Error "Expected Windows Defender property $($_.Name) to be True, because all Defender features should be disabled, it was false"
           Exit 1
-        } else {
-          Write-Host "$($_.Name) property is correctly set to $($_.Value)"
         }
       }
+      else {
+        Write-Host "$($_.Name) property is correctly set to $($_.Value)"
+      }
+    }
   }
   $windowsVersion = Get-OSVersion
 
