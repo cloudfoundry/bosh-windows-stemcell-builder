@@ -110,7 +110,8 @@ function Verify-Acls {
       "NT AUTHORITY\SYSTEM,Allow",
       "BUILTIN\Administrators,Allow",
       "CREATOR OWNER,Allow",
-      "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow"
+      "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow",
+      "NT SERVICE\TrustedInstaller,Allow"
   ))
 
   if ($windowsVersion -match "2012") {
