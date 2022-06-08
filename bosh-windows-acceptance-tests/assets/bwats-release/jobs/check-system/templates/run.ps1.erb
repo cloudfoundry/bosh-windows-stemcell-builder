@@ -335,8 +335,8 @@ function Verify-AgentBehavior {
       Write-Error "Missing service: bosh-agent"
       Exit 1
   }
-  if ($agent.StartType -ne "Manual") {
-      Write-Error "verify-agent-start-type: bosh-agent start type is not 'Manual' got: '$($agent.StartType.ToString())'"
+  if ($agent.StartType -ne "Automatic") {
+      Write-Error "verify-agent-start-type: bosh-agent start type is not 'Automatic' got: '$($agent.StartType.ToString())'"
       Exit 1
   }
 
