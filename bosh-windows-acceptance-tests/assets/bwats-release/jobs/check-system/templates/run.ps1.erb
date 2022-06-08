@@ -176,7 +176,6 @@ function Verify-Services {
     Exit 1
   }
 
-  $startype = {"Automatic"}
   If ( (Get-Service ssh-agent).StartType -ne $startype) {
     $msg = "ssh-agent service start type is not ${startype}. It is {0}" -f $(Get-Service ssh-agent).StartType
     Write-Error $msg
