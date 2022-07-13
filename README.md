@@ -1,6 +1,6 @@
 # BOSH Windows Stemcell Builder (DEPRECATED September 2020) [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
 
-BOSH Windows Stemcell Builder will be deprecated by September 2020. The recommended approach for creating local BOSH Windows stemcells which can be deployed on [Cloud Foundry BOSH](https://bosh.io), is [`stembuild`](https://github.com/cloudfoundry-incubator/stembuild).
+BOSH Windows Stemcell Builder will be deprecated by September 2020. The recommended approach for creating local BOSH Windows stemcells which can be deployed on [Cloud Foundry BOSH](https://bosh.io), is [`stembuild`](https://github.com/cloudfoundry/stembuild).
 
 [Documentation on how to use `stembuild` can be found here.](https://bosh.io/docs/windows-stemcell-create/)
 
@@ -44,14 +44,14 @@ rake publish:finalize:azure                                                    #
 rake publish:gcp                                                               # Publish an image to GCP
 ```
 
-In Concourse see [Greenhouse CI](https://github.com/cloudfoundry-incubator/greenhouse-ci/tree/master/bosh-windows-stemcell-builder) for required environment variables for these tasks. For example, for `rake build:vsphere` refer to this [task.yml](https://github.com/cloudfoundry-incubator/greenhouse-ci/blob/master/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-vmx/task.yml).
+In Concourse see [Greenhouse CI](https://github.com/cloudfoundry/greenhouse-ci/tree/master/bosh-windows-stemcell-builder) for required environment variables for these tasks. For example, for `rake build:vsphere` refer to this [task.yml](https://github.com/cloudfoundry/greenhouse-ci/blob/master/bosh-windows-stemcell-builder/create-vsphere-stemcell-from-vmx/task.yml).
 
-Instructions for building a manual stemcell for vSphere can be found in the [wiki](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/wiki/Creating-a-vSphere-Windows-Stemcell).
+Instructions for building a manual stemcell for vSphere can be found in the [wiki](https://github.com/cloudfoundry/bosh-windows-stemcell-builder/wiki/Creating-a-vSphere-Windows-Stemcell).
 
 #### Running the tests
 ```
 bundler exec rspec
 ```
 
-Acceptance testing for stemcells should be done with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests)
+Acceptance testing for stemcells should be done with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry/bosh-windows-acceptance-tests)
 
