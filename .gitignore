@@ -40,3 +40,4 @@ vendor/cache/ruby/
 /build
 /local-builders
 .idea
+.vscode
