@@ -2,7 +2,7 @@ require 'securerandom'
 
 class ProvisionerFactory
   def initialize(os, iaas, enable_ephemeral_disk, version, http_proxy = nil, https_proxy = nil, bypass_list = nil, build_context = nil)
-    klass = "Provisioner::OS#{os}"
+    klass = "OS#{os}"
     @provisioner = Object.const_get(klass).new(os, iaas, enable_ephemeral_disk, version, http_proxy, https_proxy, bypass_list, build_context )
   end
 
