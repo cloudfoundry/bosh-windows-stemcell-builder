@@ -25,6 +25,7 @@ namespace :package do
         agent_dir_location = File.expand_path(ENV.fetch('BOSH_AGENT_DIR'))
 
         base_dir = File.expand_path(base_dir_location, __FILE__)
+        ci_root_dir = File.expand_path(File.join(base_dir_location, '..'), __FILE__)
         build_dir = File.join(base_dir, 'build')
         agent_dir_destination = File.join(build_dir,'compiled-agent')
 
@@ -35,6 +36,9 @@ namespace :package do
         FileUtils.mkdir_p(agent_dir_destination)
         FileUtils.mkdir_p(deps_dir)
 
+        FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'blobstore-s3-cli', 's3cli-*-windows-amd64.exe')).first, File.join(deps_dir, 'bosh-blobstore-s3.exe'))
+        FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'blobstore-dav-cli', 'davcli-*-windows-amd64.exe')).first, File.join(deps_dir, 'bosh-blobstore-dav.exe'))
+        FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'windows-bsdtar', 'tar-*.exe')).first, File.join(deps_dir, 'tar.exe'))
         ENV['GOPATH'] = stemcell_builder_dir
         Dir.chdir(File.join(stemcell_builder_dir, 'src', 'github.com', 'cloudfoundry' ,'bosh-agent')) do
             ENV['GOOS'] = 'windows'
@@ -44,13 +48,8 @@ namespace :package do
             exec_command("go build -o #{File.join(deps_dir,'pipe.exe')} jobsupervisor/pipe/main.go")
             exec_command("git rev-parse HEAD > #{File.join(agent_dir_destination,'sha')}")
             fixtures = File.join(Dir.pwd, "integration","windows","fixtures")
-            deps_files = ['bosh-blobstore-dav.exe',
-                          'bosh-blobstore-s3.exe',
-                          'job-service-wrapper.exe',
-                          'tar.exe']
-            deps_files.each do |dep_file|
-                FileUtils.cp(File.join(fixtures, dep_file), File.join(deps_dir, dep_file))
-            end
+            #all the below files being copied out of bosh-agent should probably be auto-bumped.
+            FileUtils.cp(File.join(fixtures, 'job-service-wrapper.exe'), File.join(deps_dir, 'job-service-wrapper.exe'))
             agent_files = ['service_wrapper.exe','service_wrapper.xml']
             agent_files.each do |agent_file|
                 FileUtils.cp(File.join(fixtures, agent_file), File.join(agent_dir_destination, agent_file))
