@@ -238,8 +238,6 @@ describe 'Aws' do
 
       fixtures_dir = File.join('spec', 'fixtures', 'aws', 'amis')
 
-      # The implementation picks the 'first' stemcell to determine the final stemcell name.
-      # Need to fix tests/implementation such that order of copy doesn't matter
       FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-1.tgz')].first, @copied1)
       FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-2.tgz')].first, @copied2)
       FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-3.tgz')].first, @copied2)
@@ -255,9 +253,12 @@ describe 'Aws' do
 
       Rake::Task['build:aws_aggregate'].invoke
 
-      final_version = /(\d+\.\d+\.\d+)/.match(@version)[0]
-      stemcell = File.join(@output_dir, "light-bosh-stemcell-#{final_version}-aws-xen-hvm-#{@os_version}-go_agent.tgz")
-      stemcell_sha = File.join(@output_dir, "light-bosh-stemcell-#{final_version}-aws-xen-hvm-#{@os_version}-go_agent.tgz.sha")
+      # The implementation picks the 'first' stemcell to determine the final stemcell name.
+      tar_files = Dir.entries('copied-regional-stemcells').select do |x| x.end_with?('.tgz') end
+      output_tgz_name = /(.*go_agent)-(.*)\.tgz/.match(tar_files.first)[1] + ".tgz"
+
+      stemcell = File.join(@output_dir, output_tgz_name)
+      stemcell_sha = File.join(@output_dir, "#{output_tgz_name}.sha")
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq('1200.3')
