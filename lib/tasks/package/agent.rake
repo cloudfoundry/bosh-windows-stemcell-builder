@@ -13,10 +13,6 @@ def get_agent_version
     "#{semver}-#{git_rev}-#{timestamp}-#{go_ver}"
 end
 
-def download_gcs_cli(destination)
-    current_version="0.0.6"
-    system("curl -L -o #{File.join(destination, 'bosh-blobstore-gcs.exe')} https://s3.amazonaws.com/bosh-gcscli/bosh-gcscli-#{current_version}-windows-amd64.exe")
-end
 
 namespace :package do
     desc 'Package BOSH Agent and dependencies into agent.zip'
@@ -37,6 +33,7 @@ namespace :package do
         FileUtils.mkdir_p(deps_dir)
 
         FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'blobstore-s3-cli', 's3cli-*-windows-amd64.exe')).first, File.join(deps_dir, 'bosh-blobstore-s3.exe'))
+        FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'blobstore-gcs-cli', 'bosh-gcscli-*-windows-amd64.exe')).first, File.join(deps_dir, 'bosh-blobstore-gcs.exe'))
         FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'blobstore-dav-cli', 'davcli-*-windows-amd64.exe')).first, File.join(deps_dir, 'bosh-blobstore-dav.exe'))
         FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'windows-bsdtar', 'tar-*.exe')).first, File.join(deps_dir, 'tar.exe'))
         ENV['GOPATH'] = stemcell_builder_dir
@@ -55,7 +52,6 @@ namespace :package do
                 FileUtils.cp(File.join(fixtures, agent_file), File.join(agent_dir_destination, agent_file))
             end
         end
-        download_gcs_cli(deps_dir)
         output = File.join(build_dir,"agent.zip")
         FileUtils.rm_rf(output)
         ZipFile::Generator.new(agent_dir_destination, output).write()
