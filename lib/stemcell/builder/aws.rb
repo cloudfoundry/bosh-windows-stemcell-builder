@@ -1,10 +1,11 @@
 module Stemcell
   class Builder
     class Aws < Base
-      def initialize(ami:, aws_access_key:, aws_secret_key:, vm_prefix:, **args)
+      def initialize(ami:, aws_access_key:, aws_secret_key:, aws_role_arn: '', vm_prefix:, **args)
         @ami = ami
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
+        @aws_role_arn = aws_role_arn
         @vm_prefix = vm_prefix
         super(args)
       end
@@ -33,6 +34,7 @@ module Stemcell
         Packer::Config::Aws.new(
           aws_access_key: @aws_access_key,
           aws_secret_key: @aws_secret_key,
+          aws_role_arn: @aws_role_arn,
           region: @ami,
           output_directory: @output_directory,
           os: @os,

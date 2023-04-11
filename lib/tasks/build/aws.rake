@@ -191,6 +191,7 @@ def get_aws_builder(output_directory, region, base_ami = '')
     ami: base_ami,
     aws_access_key: Stemcell::Builder::validate_env('AWS_ACCESS_KEY'),
     aws_secret_key: Stemcell::Builder::validate_env('AWS_SECRET_KEY'),
+    aws_role_arn: ENV['AWS_ROLE_ARN'],
     os: Stemcell::Builder::validate_env('OS_VERSION'),
     output_directory: output_directory,
     packer_vars: {},

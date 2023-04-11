@@ -34,6 +34,7 @@ describe Stemcell::Builder do
         allow(Packer::Config::Aws).to receive(:new)
           .with(aws_access_key: aws_access_key,
                 aws_secret_key: aws_secret_key,
+                aws_role_arn: '',
                 region: amis,
                 output_directory: output_directory,
                 os: os,
@@ -95,6 +96,7 @@ describe Stemcell::Builder do
           allow(Packer::Config::Aws).to receive(:new)
             .with(aws_access_key: aws_access_key,
                   aws_secret_key: aws_secret_key,
+                  aws_role_arn: '',
                   region: amis,
                   output_directory: output_directory,
                   os: os,

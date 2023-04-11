@@ -21,10 +21,13 @@ describe Packer::Config::Aws do
       }
     end
 
+    let(:aws_role_arn) { '' }
+
     let(:builders) do
       Packer::Config::Aws.new(
         aws_access_key: 'some-aws-access-key',
         aws_secret_key: 'some-aws-secret-key',
+        aws_role_arn: aws_role_arn,
         region: region,
         output_directory: 'some-output-directory',
         os: os,
@@ -69,6 +72,14 @@ describe Packer::Config::Aws do
         expect(builders[0]).to include(baseline_builders)
         expect(builders[0][:ami_name]).to match(/BOSH-.*-region1/)
         expect(builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
+        expect(builders[0][:assume_role]).to be_nil
+      end
+
+      context 'when aws_role_arn is specified' do
+        let(:aws_role_arn) { 'role::arn' }
+        it 'configures packer for assume role' do
+          expect(builders[0][:assume_role][:role_arn]).to equal(aws_role_arn)
+        end
       end
     end
 

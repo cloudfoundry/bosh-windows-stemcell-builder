@@ -3,9 +3,10 @@ require 'securerandom'
 module Packer
   module Config
     class Aws
-      def initialize(aws_access_key:, aws_secret_key:, region:, os:, output_directory:, version:, vm_prefix: '', mount_ephemeral_disk: false)
+      def initialize(aws_access_key:, aws_secret_key:, aws_role_arn: nil, region:, os:, output_directory:, version:, vm_prefix: '', mount_ephemeral_disk: false)
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
+        @aws_role_arn = aws_role_arn
         @region = region
         @os = os
         @output_directory = output_directory
@@ -45,7 +46,7 @@ module Packer
             ssh_keypair_name: 'packer_ci',
             ssh_private_key_file: packer_ci_private_key_location,
             run_tags: { Name: "#{@vm_prefix}-#{Time.now.to_i}" }
-          }
+          }.merge(assume_role_parameters)
         ]
       end
 
@@ -61,6 +62,11 @@ module Packer
       end
 
       private
+
+      def assume_role_parameters
+        return {} if @aws_role_arn.nil? || @aws_role_arn.empty?
+        { assume_role: { role_arn: @aws_role_arn } }
+      end
 
       def instance_type
         type = 'm4.large'
