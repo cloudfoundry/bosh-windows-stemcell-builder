@@ -28,8 +28,8 @@ describe 'Aws' do
     @agent_commit = 'some-agent-commit'
 
     ENV['AMIS_DIR'] = @amis_dir
-    ENV['AWS_ACCESS_KEY'] = @aws_access_key = 'some-aws_access_key'
-    ENV['AWS_SECRET_KEY'] = @aws_secret_key = 'some-aws_secret_key'
+    ENV['PACKER_AWS_ACCESS_KEY'] = @aws_access_key = 'some-aws_access_key'
+    ENV['PACKER_AWS_SECRET_KEY'] = @aws_secret_key = 'some-aws_secret_key'
     ENV['OS_VERSION'] = @os_version
     ENV['PATH'] = "#{File.join(File.expand_path('../../../..', __FILE__), 'spec', 'fixtures', 'aws')}:#{ENV['PATH']}"
     ENV['VERSION_DIR'] = @version_dir
