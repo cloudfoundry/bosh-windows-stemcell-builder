@@ -23,8 +23,6 @@ RSpec.configure do |config|
 
   config.example_status_persistence_file_path = "spec/examples.txt"
 
-  config.warnings = true
-
   if config.files_to_run.one?
     config.default_formatter = 'doc'
   end

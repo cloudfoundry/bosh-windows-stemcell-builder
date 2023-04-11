@@ -102,6 +102,8 @@ describe 'VSphere' do
         endpoint: nil
       ).and_return(s3_client)
 
+      allow_any_instance_of(Object).to receive(:`)
+
       Timecop.freeze
     end
 

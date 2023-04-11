@@ -5,6 +5,7 @@ require 'tempfile'
 require_relative '../../s3'
 require_relative '../../file_helper'
 require_relative '../../stemcell/builder/vsphere'
+require_relative '../../stemcell/publisher/azure'
 require_relative '../../exec_command'
 
 
