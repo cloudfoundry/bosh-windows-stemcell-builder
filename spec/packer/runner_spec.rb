@@ -15,7 +15,7 @@ describe Packer::Runner do
       block_evaluated = false
       exit_status = packer_runner.run('build') do |out|
         out.each_line do |line|
-          if line.include?(",ui,say,Build 'file' finished.")
+          if line.include?(",ui,say,Build 'file' finished")
             block_evaluated = true
           end
         end
