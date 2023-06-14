@@ -21,7 +21,7 @@ class Executor
   end
   def self.exec_command_no_output(cmd)
     STDOUT.sync = true
-    Open3.popen2(cmd) do |stdin, out, wait_thr|
+    Open3.popen2(cmd) do |_stdin, _out, wait_thr|
       exit_status = wait_thr.value
       if exit_status != 0
         raise "error running command: #{cmd}"

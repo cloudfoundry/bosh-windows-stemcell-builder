@@ -18,6 +18,6 @@ namespace :package do
 
         output = File.join(build_dir,"bosh-psmodules.zip")
         FileUtils.rm_rf(output)
-        ZipFile::Generator.new(psmodules_dir, output).write()
+        ZipFile::Generator.new(psmodules_dir, output).write
     end
 end

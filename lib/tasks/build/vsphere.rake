@@ -78,10 +78,10 @@ namespace :build do
     vhd_path = File.join(cache_dir, vhd_filename)
 
     # Download files from S3 if not cached
-    if !File.exist?(vmdk_path)
+    unless File.exist?(vmdk_path)
       s3_client.get(image_bucket, vmdk_filename, vmdk_path)
     end
-    if !File.exist?(vhd_path)
+    unless File.exist?(vhd_path)
       s3_client.get(image_bucket, vhd_filename, vhd_path)
     end
 

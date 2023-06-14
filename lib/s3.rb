@@ -6,8 +6,8 @@ module S3
     def initialize(endpoint: "")
       Aws.use_bundled_cert!
       Aws.config[:s3] = { force_path_style: true }
-      if (endpoint.to_s.empty?)
-        @s3 = Aws::S3::Client.new()
+      if endpoint.to_s.empty?
+        @s3 = Aws::S3::Client.new
       else
         @s3 = Aws::S3::Client.new(endpoint: endpoint)
       end
@@ -50,7 +50,8 @@ module S3
       def rationalize(bucket, key)
         new_bucket, folder = bucket.split('/', 2)
         new_key = folder ? [folder, key].join('/') : key
-        return new_bucket, new_key
+
+        [new_bucket, new_key]
       end
   end
 
@@ -72,7 +73,7 @@ module S3
             puts "Deleting old cache dir #{File.join(@vmx_cache_dir, path)}"
             FileUtils.rm_rf(File.join(@vmx_cache_dir, path))
           end
-        elsif vmx_version = /vmx-v([\d]+).tgz/.match(path)
+        elsif (vmx_version = /vmx-v([\d]+).tgz/.match(path))
           if vmx_version[1] < version
             puts "Deleting old cache file #{File.join(@vmx_cache_dir, path)}"
             FileUtils.rm(File.join(@vmx_cache_dir, path))
@@ -122,7 +123,8 @@ module S3
       if files.length > 1
         raise "Too many vmx files in directory: #{files}"
       end
-      return files[0]
+
+      files[0]
     end
   end
 

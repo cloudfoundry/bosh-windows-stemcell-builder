@@ -40,7 +40,7 @@ namespace :build do
     # Upload the final tgz to S3
     artifact_name = Stemcell::Packager::get_tar_files_from(output_directory).first
 
-    s3_client = S3::Client.new()
+    s3_client = S3::Client.new
     s3_client.put(output_bucket, artifact_name, File.join(output_directory, artifact_name))
   end
 

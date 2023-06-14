@@ -54,6 +54,6 @@ namespace :package do
         end
         output = File.join(build_dir,"agent.zip")
         FileUtils.rm_rf(output)
-        ZipFile::Generator.new(agent_dir_destination, output).write()
+        ZipFile::Generator.new(agent_dir_destination, output).write
     end
 end

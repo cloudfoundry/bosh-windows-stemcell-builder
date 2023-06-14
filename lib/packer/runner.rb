@@ -22,20 +22,20 @@ module Packer
         args_combined += "-var \"#{name}=#{value}\""
       end
 
-      logConfig(config_file.path)
+      log_config(config_file.path)
 
       packer_command = "packer #{command} -machine-readable #{args_combined} #{config_file.path}"
       puts packer_command
 
-      Open3.popen2e(packer_command) do |stdin, out, wait_thr|
+      Open3.popen2e(packer_command) do |_stdin, out, wait_thr|
         yield(out) if block_given?
         return wait_thr.value
       end
     end
 
-    def logConfig(path)
+    def log_config(path)
       config_contents = File.read(path)
-      if !ENV['NEW_PASSWORD'].to_s.empty?
+      unless "#{ENV['NEW_PASSWORD']}".empty?
         config_contents.gsub! ENV['NEW_PASSWORD'], "( redacted )"
       end
       puts "config file contents: #{config_contents}"
