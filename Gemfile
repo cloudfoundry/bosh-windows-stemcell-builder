@@ -1,10 +1,10 @@
 source 'https://rubygems.org'
 
 gem 'rake'
-gem 'aws-sdk'
+gem 'aws-sdk-s3'
 gem 'azure_mgmt_resources'
-gem 'nokogiri', '>=1.8.5'
-gem 'rubyzip', '~>1.3.0'
+gem 'nokogiri'
+gem 'rubyzip'
 gem 'activesupport'
 gem 'activemodel'
 gem 'rspec'
