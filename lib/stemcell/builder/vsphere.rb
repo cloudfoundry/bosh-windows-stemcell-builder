@@ -23,7 +23,7 @@ module Stemcell
         @http_proxy = http_proxy
         @https_proxy = https_proxy
         @bypass_list = bypass_list
-        super(args)
+        super(**args)
       end
     end
 
@@ -31,7 +31,7 @@ module Stemcell
       def initialize(**args)
         args[:agent_commit] = ""
         args[:version] = ""
-        super(args)
+        super(**args)
       end
       def build
         run_packer
@@ -66,7 +66,7 @@ module Stemcell
           @build_context = args[:build_context]
           args.delete(:build_context)
         end
-        super(args)
+        super(**args)
       end
 
       def build

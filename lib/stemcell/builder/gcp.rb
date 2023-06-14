@@ -9,7 +9,7 @@ module Stemcell
         @source_image = source_image
         @image_family = image_family
         @vm_prefix = vm_prefix
-        super(args)
+        super(**args)
       end
 
       def build

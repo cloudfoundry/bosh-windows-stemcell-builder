@@ -129,7 +129,7 @@ describe Packer::Config do
         end
 
         it "doesn't call Set-ProxySettings when no proxy settings are provided" do
-          provisioners = Packer::Config::VSphere.new(dummy_parameters).provisioners
+          provisioners = Packer::Config::VSphere.new(**dummy_parameters).provisioners
 
           proxy_setting_entries = provisioners.select do |p|
             p.has_key?('inline') && p['inline'].any? { |l| l =~ /Set-ProxySettings/ }
@@ -139,7 +139,7 @@ describe Packer::Config do
 
         it 'calls Set-ProxySettings with both proxies when http and https proxies are set' do
           provisioners = Packer::Config::VSphere.new(
-              dummy_parameters.merge(
+            **dummy_parameters.merge(
                   http_proxy: 'foo',
                   https_proxy: 'bar',
                   bypass_list: 'bee'
@@ -157,7 +157,7 @@ describe Packer::Config do
 
         it 'Set-ProxySettings called with empty https proxy when only http proxy is set' do
           provisioners = Packer::Config::VSphere.new(
-              dummy_parameters.merge(
+            **dummy_parameters.merge(
                   http_proxy: 'foo',
                   bypass_list: 'bee'
               )
@@ -175,7 +175,7 @@ describe Packer::Config do
 
         it 'Set-ProxySettings called with empty http proxy when only https proxy is set' do
           provisioners = Packer::Config::VSphere.new(
-              dummy_parameters.merge(
+            **dummy_parameters.merge(
                   https_proxy: 'bar',
                   bypass_list: 'bee'
               )

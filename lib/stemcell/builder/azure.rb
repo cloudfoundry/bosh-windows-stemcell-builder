@@ -17,7 +17,7 @@ module Stemcell
         @offer = offer
         @sku = sku
         @vm_prefix = vm_prefix
-        super(args)
+        super(**args)
       end
 
       def build

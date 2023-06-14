@@ -109,7 +109,7 @@ describe 'provisioners' do
 
     context '2019' do
       packer_config_aws_2019 = Packer::Config::Aws.new(
-          standard_options.merge(os: 'windows2019')
+        **standard_options.merge(os: 'windows2019')
       )
       it_behaves_like "a standard provisioner", packer_config_aws_2019
 
@@ -145,7 +145,7 @@ describe 'provisioners' do
 
     context '2019' do
       packer_config_vsphere_2019 = Packer::Config::VSphere.new(
-          standard_options.merge(os: 'windows2019')
+        **standard_options.merge(os: 'windows2019')
       )
       it_behaves_like 'a standard provisioner', packer_config_vsphere_2019
 

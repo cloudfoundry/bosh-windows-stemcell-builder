@@ -7,7 +7,7 @@ module Stemcell
         @aws_secret_key = aws_secret_key
         @aws_role_arn = aws_role_arn
         @vm_prefix = vm_prefix
-        super(args)
+        super(**args)
       end
 
       def build(amis)

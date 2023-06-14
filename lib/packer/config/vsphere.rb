@@ -75,7 +75,7 @@ module Packer
         @new_password = new_password
         @build_context = build_context
         @version = version
-        super(args)
+        super(**args)
       end
 
       def builders
