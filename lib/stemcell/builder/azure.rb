@@ -4,7 +4,7 @@ module Stemcell
   class Builder
     class Azure < Base
       def initialize(client_id:, client_secret:, tenant_id:, subscription_id:, resource_group_name:,
-                     storage_account:, location:, vm_size:, publisher:, offer:, sku:, vm_prefix:, **args)
+                     storage_account:, location:, vm_size:, publisher:, offer:, sku:, vm_prefix:, **kwargs)
         @client_id = client_id
         @client_secret = client_secret
         @tenant_id = tenant_id
@@ -17,7 +17,7 @@ module Stemcell
         @offer = offer
         @sku = sku
         @vm_prefix = vm_prefix
-        super(**args)
+        super(**kwargs)
       end
 
       def build

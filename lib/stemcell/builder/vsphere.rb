@@ -14,7 +14,7 @@ module Stemcell
                      http_proxy:,
                      https_proxy:,
                      bypass_list:,
-                     **args)
+                     **kwargs)
         @source_path = source_path
         @administrator_password = administrator_password
         @mem_size = mem_size
@@ -23,7 +23,7 @@ module Stemcell
         @http_proxy = http_proxy
         @https_proxy = https_proxy
         @bypass_list = bypass_list
-        super(**args)
+        super(**kwargs)
       end
     end
 

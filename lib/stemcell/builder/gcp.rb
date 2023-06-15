@@ -3,13 +3,13 @@ module Stemcell
     class Gcp < Base
       attr_accessor :image_url
 
-      def initialize(account_json:, source_image:, image_family:, vm_prefix:, **args)
+      def initialize(account_json:, source_image:, image_family:, vm_prefix:, **kwargs)
         @account_json = account_json
         @project_id = JSON.parse(@account_json)['project_id']
         @source_image = source_image
         @image_family = image_family
         @vm_prefix = vm_prefix
-        super(**args)
+        super(**kwargs)
       end
 
       def build
