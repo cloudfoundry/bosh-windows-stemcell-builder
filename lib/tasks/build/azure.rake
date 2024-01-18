@@ -17,6 +17,12 @@ namespace :build do
     Stemcell::Builder::validate_env('BASE_IMAGE')
     Stemcell::Builder::validate_env('BASE_IMAGE_OFFER')
 
+    # Log in to the az CLI in order to create a signed URL later in the process
+    output, status = Open3.capture2e('az', 'login', '--service-principal', '-u', Stemcell::Builder::validate_env('CLIENT_ID'), '-p', Stemcell::Builder::validate_env('CLIENT_SECRET'), '-t', Stemcell::Builder::validate_env('TENANT_ID'))
+    if !status.success?
+      raise "Unable to log into az CLI:\n#{output}"
+    end
+
     azure_builder = Stemcell::Builder::Azure.new(
       packer_vars: {},
       version: version,

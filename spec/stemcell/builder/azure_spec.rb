@@ -35,7 +35,7 @@ describe Stemcell::Builder do
         offer = 'some-offer'
         sku = 'some-sku'
         vm_prefix = 'some-vm-prefix'
-        packer_output = "azure-arm,artifact,0\\nOSDiskUriReadOnlySas: #{disk_image_url}"
+        packer_output = "azure-arm,artifact,0\\nOSDiskUri: #{disk_image_url}"
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
@@ -82,6 +82,7 @@ describe Stemcell::Builder do
                                                             update_list: nil,
                                                             region: nil
                                                            ).and_return('path-to-stemcell')
+        allow(Open3).to receive(:capture2e).and_return(['https://some-signed-url', instance_double(Process::Status, success?: true)])
 
         stemcell_path = Stemcell::Builder::Azure.new(
           os: os,

@@ -1,3 +1,4 @@
+require 'date'
 require 'open-uri'
 
 module Stemcell
@@ -69,12 +70,23 @@ module Stemcell
         end
 
         def parse_disk_uri(line)
-          unless line.include?("azure-arm,artifact,0") and line.include?("OSDiskUriReadOnlySas:")
-            return
+          return unless line.include?("azure-arm,artifact,0") && line.include?("OSDiskUri:")
+
+          os_disk_uri = (line.split '\n').select do |s|
+            s.start_with?("OSDiskUri: ")
+          end.first.gsub("OSDiskUri: ", "").strip
+
+          create_signed_url(os_disk_uri)
+        end
+
+        def create_signed_url(url)
+          one_month_from_now = Date.today + 30
+          output, status = Open3.capture2e('az', 'storage', 'blob', 'generate-sas', '--blob-url', url, '--expiry', "#{one_month_from_now.to_s}T00:00:00Z", '--permissions', 'r', '--account-name', 'unpublishedpremiumstore', '--full-uri', '-o', 'tsv', '--only-show-errors')
+          if !status.success?
+            raise "Unable to sign URL #{url}:\n#{output}"
           end
-          (line.split '\n').select do |s|
-            s.start_with?("OSDiskUriReadOnlySas: ")
-          end.first.gsub("OSDiskUriReadOnlySas: ", "")
+
+          output.lines.last.strip
         end
     end
   end

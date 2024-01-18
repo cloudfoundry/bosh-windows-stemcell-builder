@@ -17,6 +17,12 @@ describe 'Azure' do
     @stemcell_deps_dir = Dir.mktmpdir('azure')
     FileUtils.mkdir_p(@build_dir)
     FileUtils.rm_rf(@output_directory)
+
+    allow(Open3).to receive(:capture2e).with('az', 'login', '--service-principal', any_args).and_return(['', instance_double(Process::Status, success?: true)])
+    allow(Open3).to receive(:capture2e).with('az', 'storage', 'blob', 'generate-sas', any_args) do |*args|
+      expect(args).to include('some-disk-image-url')
+      ['some-signed-disk-image-url', instance_double(Process::Status, success?: true)]
+    end
   end
 
   after(:each) do
@@ -66,7 +72,7 @@ describe 'Azure' do
       Rake::Task['build:azure'].reenable
       Rake::Task['build:azure'].invoke
 
-      expect(File.read(File.join(@output_directory, "bosh-stemcell-#{version}-azure-vhd-uri.txt"))).to eq 'some-disk-image-url'
+      expect(File.read(File.join(@output_directory, "bosh-stemcell-#{version}-azure-vhd-uri.txt"))).to eq 'some-signed-disk-image-url'
 
       stemcell = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-hyperv-#{os_version}-go_agent.tgz")
       stemcell_sha = File.join(@output_directory, "light-bosh-stemcell-#{version}-azure-hyperv-#{os_version}-go_agent.tgz.sha")
