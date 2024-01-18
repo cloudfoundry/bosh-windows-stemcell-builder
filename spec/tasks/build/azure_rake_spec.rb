@@ -23,6 +23,7 @@ describe 'build:azure' do
     allow(azure_builder_class).to receive(:new)
       .with(any_args).and_return(azure_builder_instance)
     allow(azure_builder_instance).to receive(:build).with(no_args)
+    allow(Open3).to receive(:capture2e).with('az', 'login', '--service-principal', any_args).and_return(['', instance_double(Process::Status, success?: true)])
   end
 
   context 'handles ephemeral disk' do
