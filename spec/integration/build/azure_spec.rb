@@ -100,7 +100,7 @@ describe 'Azure' do
 
       # expect(read_from_tgz(stemcell, 'updates.txt')).to eq('some-updates')
 
-      expect(read_from_tgz(stemcell, 'image')).to be_nil
+      expect(read_from_tgz(stemcell, 'image')).to be_empty
       expect(File.read(stemcell_sha)).to eq(Digest::SHA1.hexdigest(File.read(stemcell)))
     end
   end

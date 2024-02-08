@@ -73,7 +73,7 @@ describe 'Gcp' do
       apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
       expect(apply_spec['agent_commit']).to eq(agent_commit)
 
-      expect(read_from_tgz(stemcell, 'image')).to be_nil
+      expect(read_from_tgz(stemcell, 'image')).to be_empty
     end
   end
 end
