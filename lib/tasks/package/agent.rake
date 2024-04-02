@@ -36,8 +36,8 @@ namespace :package do
         FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'blobstore-gcs-cli', 'bosh-gcscli-*-windows-amd64.exe')).first, File.join(deps_dir, 'bosh-blobstore-gcs.exe'))
         FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'blobstore-dav-cli', 'davcli-*-windows-amd64.exe')).first, File.join(deps_dir, 'bosh-blobstore-dav.exe'))
         FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'windows-bsdtar', 'tar-*.exe')).first, File.join(deps_dir, 'tar.exe'))
-        FileUtils.cp(File.join(ci_root_dir, 'winsw-release', 'WinSW.NET461.exe'), File.join(deps_dir, 'job-service-wrapper.exe'))
-        FileUtils.cp(File.join(ci_root_dir, 'winsw-release', 'WinSW.NET461.exe'), File.join(agent_dir_destination, 'service_wrapper.exe'))
+        FileUtils.cp(File.join(ci_root_dir, 'windows-winsw', 'WinSW.NET461.exe'), File.join(deps_dir, 'job-service-wrapper.exe'))
+        FileUtils.cp(File.join(ci_root_dir, 'windows-winsw', 'WinSW.NET461.exe'), File.join(agent_dir_destination, 'service_wrapper.exe'))
         ENV['GOPATH'] = stemcell_builder_dir
         Dir.chdir(File.join(stemcell_builder_dir, 'src', 'github.com', 'cloudfoundry' ,'bosh-agent')) do
             ENV['GOOS'] = 'windows'
