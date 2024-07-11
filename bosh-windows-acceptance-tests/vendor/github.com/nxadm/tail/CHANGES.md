@@ -1,4 +1,22 @@
-# Version v1.4.4
+# Version v1.4.11
+* Bump fsnotify to v1.6.0. Should fix some issues.
+
+# Version v1.4.9
+* Bump fsnotify to v1.5.1 fixes issue #28, hpcloud/tail#90.
+* PR #27: "Add timeout to tests"by @kokes++. Also timeout on FreeBSD.
+* PR #29: "Use temp directory for tests, instead of relative" by @ches++.
+
+# Version v1.4.7-v1.4.8
+* Documentation updates.
+* Small linter cleanups.
+* Added example in test.
+
+# Version v1.4.6
+
+* Document the usage of Cleanup when re-reading a file (thanks to @lesovsky) for issue #18.
+* Add example directories with example and tests for issues.
+
+# Version v1.4.4-v1.4.5
 
 * Fix of checksum problem because of forced tag. No changes to the code.
 
