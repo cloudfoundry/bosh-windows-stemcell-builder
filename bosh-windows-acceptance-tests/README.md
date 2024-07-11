@@ -5,7 +5,7 @@ This repo houses tests used to verify Windows Stemcells function as expected.
 # Example configuration
 
 
-These tests are run in the [BOSH Windows Stemcells Pipeline](https://bosh-windows.ci.cf-app.com/).
+These tests are run in the [BOSH Windows 2019 Stemcells Pipeline](https://ci.bosh-ecosystem.cf-app.com/).
 
 You can create a `config.json` file, eg:
 
@@ -44,7 +44,7 @@ The timeout for BOSH commands can be overridden with the BWATS_BOSH_TIMEOUT envi
 
 ## Go
 
-- Download go version 1.12.7 from [Go's Downloads page](https://dl.google.com/go/go1.12.7.windows-amd64.zip)
+- Download the Go version specified in the `go.mod` file from the [Go releases page](https://go.dev/dl/)
 - Add file as a bosh blob locally `bosh add-blob <PATH TO DOWNLOAD LOCATION>/go1.12.7.windows-amd64.zip golang-windows/go1.12.7.windows-amd64.zip`
 
 
