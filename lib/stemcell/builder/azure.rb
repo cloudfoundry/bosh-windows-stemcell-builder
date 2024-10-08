@@ -81,7 +81,7 @@ module Stemcell
 
         def create_signed_url(url)
           one_month_from_now = Date.today + 30
-          output, status = Open3.capture2e('az', 'storage', 'blob', 'generate-sas', '--blob-url', url, '--expiry', "#{one_month_from_now.to_s}T00:00:00Z", '--permissions', 'r', '--account-name', 'unpublishedpremiumstore', '--full-uri', '-o', 'tsv', '--only-show-errors')
+          output, status = Open3.capture2e('az', 'storage', 'blob', 'generate-sas', '--blob-url', url, '--expiry', "#{one_month_from_now.to_s}T00:00:00Z", '--permissions', 'r', '--account-name', @storage_account, '--full-uri', '-o', 'tsv', '--only-show-errors')
           if !status.success?
             raise "Unable to sign URL #{url}:\n#{output}"
           end
