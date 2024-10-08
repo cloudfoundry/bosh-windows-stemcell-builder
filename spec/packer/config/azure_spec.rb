@@ -23,8 +23,8 @@ describe Packer::Config::Azure do
         location: 'some-location',
         vm_size: 'some-vm-size',
         output_directory: '',
-        os: os,
-        version: '',
+        os: 'test-os',
+        version: '2019.9999',
         vm_prefix: 'some-vm-prefix',
         mount_ephemeral_disk: false,
     ).builders }
@@ -39,8 +39,8 @@ describe Packer::Config::Azure do
         'resource_group_name' => 'some-resource-group-name',
         'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
         'storage_account' => 'some-storage-account',
-        'capture_container_name' => 'packer-stemcells',
-        'capture_name_prefix' => 'bosh-stemcell',
+        'capture_container_name' => 'test-os',
+        'capture_name_prefix' => 'bosh-stemcell-test-os-2019.9999',
         'image_publisher' => 'MicrosoftWindowsServer',
         'image_offer' => 'some-base-image-offer',
         'image_sku' => 'some-base-image',
@@ -55,8 +55,6 @@ describe Packer::Config::Azure do
     } }
 
     context 'all os versions' do
-      let(:os) { '' }
-
       it 'returns the expected builders' do
         expect(builders[0]).to include(expected_baseline)
       end
