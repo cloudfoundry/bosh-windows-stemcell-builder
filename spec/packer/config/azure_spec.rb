@@ -40,7 +40,7 @@ describe Packer::Config::Azure do
         'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
         'storage_account' => 'some-storage-account',
         'capture_container_name' => 'test-os',
-        'capture_name_prefix' => 'bosh-stemcell-test-os-2019.9999',
+        'capture_name_prefix' => '2019.9999',
         'image_publisher' => 'MicrosoftWindowsServer',
         'image_offer' => 'some-base-image-offer',
         'image_sku' => 'some-base-image',

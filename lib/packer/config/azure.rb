@@ -33,7 +33,7 @@ module Packer
                 'temp_resource_group_name' => "#{@vm_prefix}-#{Time.now.to_i}",
                 'storage_account' => @storage_account,
                 'capture_container_name' => @os,
-                'capture_name_prefix' => "bosh-stemcell-#{@os}-#{@version}",
+                'capture_name_prefix' => "#{@version}",
                 'image_publisher' => 'MicrosoftWindowsServer',
                 'image_offer' => ENV['BASE_IMAGE_OFFER'],
                 'image_sku' => ENV['BASE_IMAGE'],
