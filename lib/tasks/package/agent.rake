@@ -4,16 +4,6 @@ require 'json'
 require_relative '../../exec_command'
 require_relative '../../zip_file'
 
-def get_agent_version
-    semver = `git describe --tags`.chomp[1..-1]
-    go_ver=`go version`.split[2].chomp
-    git_rev = `git rev-parse --short HEAD`.chomp
-    timestamp = Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    "#{semver}-#{git_rev}-#{timestamp}-#{go_ver}"
-end
-
-
 namespace :package do
     desc 'Package BOSH Agent and dependencies into agent.zip'
     task :agent do
@@ -27,8 +17,6 @@ namespace :package do
 
         deps_dir = File.join(agent_dir_destination,'deps')
 
-        stemcell_builder_dir = File.expand_path('../../../../', __FILE__)
-
         FileUtils.mkdir_p(agent_dir_destination)
         FileUtils.mkdir_p(deps_dir)
 
@@ -38,18 +26,12 @@ namespace :package do
         FileUtils.cp(Dir.glob(File.join(ci_root_dir, 'windows-bsdtar', 'tar-*.exe')).first, File.join(deps_dir, 'tar.exe'))
         FileUtils.cp(File.join(ci_root_dir, 'windows-winsw', 'WinSW.NET461.exe'), File.join(deps_dir, 'job-service-wrapper.exe'))
         FileUtils.cp(File.join(ci_root_dir, 'windows-winsw', 'WinSW.NET461.exe'), File.join(agent_dir_destination, 'service_wrapper.exe'))
-        ENV['GOPATH'] = stemcell_builder_dir
-        Dir.chdir(File.join(stemcell_builder_dir, 'src', 'github.com', 'cloudfoundry' ,'bosh-agent')) do
-            ENV['GOOS'] = 'windows'
-            ENV['GOARCH'] = 'amd64'
 
-            FileUtils.cp(File.join(agent_dir_location,'bosh-agent.exe'), agent_dir_destination)
-            exec_command("go build -o #{File.join(deps_dir,'pipe.exe')} jobsupervisor/pipe/main.go")
-            exec_command("git rev-parse HEAD > #{File.join(agent_dir_destination,'sha')}")
-            fixtures = File.join(Dir.pwd, "integration","windows","fixtures")
-            #all the below files being copied out of bosh-agent should probably be auto-bumped.
-            FileUtils.cp(File.join(fixtures, 'service_wrapper.xml'), File.join(agent_dir_destination, 'service_wrapper.xml'))
-        end
+        FileUtils.cp(Dir.glob(File.join(agent_dir_location, 'bosh-agent*.exe')).first, File.join(agent_dir_destination, 'bosh-agent.exe'))
+        FileUtils.cp(Dir.glob(File.join(agent_dir_location, 'bosh-agent-pipe*.exe')).first, File.join(deps_dir, 'pipe.exe'))
+        FileUtils.cp(File.join(agent_dir_location, 'git-sha'), File.join(agent_dir_destination, 'sha'))
+        FileUtils.cp(File.join(agent_dir_location, 'service_wrapper.xml'), File.join(agent_dir_destination, 'service_wrapper.xml'))
+
         output = File.join(build_dir,"agent.zip")
         FileUtils.rm_rf(output)
         ZipFile::Generator.new(agent_dir_destination, output).write
