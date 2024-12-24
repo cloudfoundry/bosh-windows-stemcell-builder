@@ -19,7 +19,7 @@ module Packer
         [
             {
                 'type' => 'googlecompute',
-                'account_file' => @account_json,
+                'credentials_json' => @account_json,
                 'project_id' => @project_id,
                 'tags' => ['winrm'],
                 'source_image' => @source_image,

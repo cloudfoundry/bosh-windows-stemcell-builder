@@ -23,7 +23,7 @@ describe Packer::Config::Gcp do
 
     let (:baseline_builders) { {
             'type' => 'googlecompute',
-            'account_file' => 'some-account-json',
+            'credentials_json' => 'some-account-json',
             'project_id' => 'some-project-id',
             'tags' => ['winrm'],
             'source_image' => 'some-source-image',
