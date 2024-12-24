@@ -33,7 +33,6 @@ rake build:gcp                                                                 #
 rake build:vsphere                                                             # Build VSphere Stemcell
 rake build:vsphere_add_updates                                                 # Apply Windows Updates for VMX
 
-rake package:psmodules                                                         # Package BOSH psmodules into bosh-psmodules.zip
 rake package:vsphere_ova[ova_file_name,output_directory,version,updates_path]  # Package VSphere OVA files into Stemcells
 
 rake publish:staging:azure                                                     # Stage an image to the Azure marketplace
