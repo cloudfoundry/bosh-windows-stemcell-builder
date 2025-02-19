@@ -1,6 +1,6 @@
 module github.com/cloudfoundry-incubator/bosh-windows-acceptance-tests
 
-go 1.22.0
+go 1.23.0
 
 require (
 	github.com/onsi/ginkgo v1.16.5
