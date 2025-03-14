@@ -264,28 +264,18 @@ function Verify-InstalledFeatures {
       Write-Host "Found $feature feature"
     }
   }
-  function Assert-DefenderFeaturesDisabled {
-    Get-MpPreference |
-    Select -ExpandProperty CimInstanceProperties |
-    Where-Object { $_.Name -Like "Disable*" } |
-    ForEach-Object {
-      if ($_.Value -eq $false) {
-        if ($_.Name -eq "DisableFtpParsing") {
-          Write-Host "**************************"
-          Write-Host "Skipping $($_.Name); it's not settable. It was $($_.Value)"
-          Write-Host "<https://www.pivotaltracker.com/story/show/180628580/comments/228655194>"
-          Write-Host "**************************"
-        }
-        else {
-          Write-Error "Expected Windows Defender property $($_.Name) to be True, because all Defender features should be disabled, it was false"
-          Exit 1
-        }
-      }
-      else {
-        Write-Host "$($_.Name) property is correctly set to $($_.Value)"
-      }
+  function Assert-IsNotInstalled {
+    param (
+      [string] $feature= (Throw "feature param required")
+    )
+    If (!(Get-WindowsFeature $feature).Installed) {
+      Write-Host "Feature $feature is not installed"
+    } else {
+      Write-Error "Feature $feature is installed"
+      Exit 1
     }
   }
+
   $windowsVersion = Get-OSVersion
 
   if ($windowsVersion -Match "2012") {
@@ -297,13 +287,7 @@ function Verify-InstalledFeatures {
     Assert-IsInstalled "Web-ASP"
   } else {
     Assert-IsInstalled "Containers"
-    Assert-IsInstalled "Windows-Defender"
-
-    if ($windowsVersion -Match "1803") {
-      Assert-IsInstalled "Windows-Defender-Features"
-    }
-
-    Assert-DefenderFeaturesDisabled
+    Assert-IsNotInstalled "Windows-Defender"
   }
 }
 
