@@ -88,7 +88,7 @@ describe 'Aws' do
 
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq('1200.3.1-build.2')
-      expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
+      expect(stemcell_manifest['sha1']).to eq(Stemcell::Manifest::EMPTY_FILE_SHA)
       expect(stemcell_manifest['operating_system']).to eq(@os_version)
       expect(stemcell_manifest['api_version']).to eq(3)
       expect(stemcell_manifest['stemcell_formats']).to eq(['aws-light'])
@@ -263,7 +263,7 @@ describe 'Aws' do
       stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
       expect(stemcell_manifest['version']).to eq('1200.3')
       expect(stemcell_manifest['api_version']).to eq(2)
-      expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
+      expect(stemcell_manifest['sha1']).to eq(Stemcell::Manifest::EMPTY_FILE_SHA)
       expect(stemcell_manifest['operating_system']).to eq(@os_version)
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('aws')
       expect(stemcell_manifest['cloud_properties']['encrypted']).to eq(false)

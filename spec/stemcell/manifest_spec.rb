@@ -1,6 +1,14 @@
 require 'stemcell/manifest'
 
 describe Stemcell::Manifest do
+  describe 'EMPTY_FILE_SHA' do
+    let(:expected_empty_sha_value) { 'da39a3ee5e6b4b0d3255bfef95601890afd80709' }
+
+    it 'has the expected value' do
+      expect(Stemcell::Manifest::EMPTY_FILE_SHA).to eq(expected_empty_sha_value)
+    end
+  end
+
   describe 'Base' do
     describe 'dump' do
       it 'returns a valid stemcell manifest yaml string' do

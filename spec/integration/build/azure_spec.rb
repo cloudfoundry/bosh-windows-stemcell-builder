@@ -83,7 +83,7 @@ describe 'Azure' do
 
       expect(stemcell_manifest['api_version']).to eq(3)
 
-      expect(stemcell_manifest['sha1']).to eq(EMPTY_FILE_SHA)
+      expect(stemcell_manifest['sha1']).to eq(Stemcell::Manifest::EMPTY_FILE_SHA)
 
       expect(stemcell_manifest['operating_system']).to eq(os_version)
 
