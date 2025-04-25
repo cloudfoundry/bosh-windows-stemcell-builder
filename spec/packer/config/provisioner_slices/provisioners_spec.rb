@@ -123,40 +123,4 @@ describe 'provisioners' do
       end
     end
   end
-
-  context 'vsphere' do
-    standard_options = {
-        output_directory: 'output_directory',
-        num_vcpus: 1,
-        mem_size: 1000,
-        product_key: 'key',
-        organization: 'me',
-        owner: 'me',
-        administrator_password: 'password',
-        source_path: 'source_path',
-        version: '',
-        enable_rdp: false,
-        new_password: 'new-password',
-        http_proxy: nil,
-        https_proxy: nil,
-        bypass_list: nil,
-    }
-
-
-    context '2019' do
-      packer_config_vsphere_2019 = Packer::Config::VSphere.new(
-        **standard_options.merge(os: 'windows2019')
-      )
-      it_behaves_like 'a standard provisioner', packer_config_vsphere_2019
-
-      it_behaves_like "a 2019 provisioner", packer_config_vsphere_2019
-
-      it 'runs Set-InternetExplorerRegistries before Invoke-Sysprep is run' do
-        optimize_disk_provisioner = TestProvisioner.new_powershell_provisioner("Optimize-Disk")
-        internet_explorer_provisioner = TestProvisioner.new_powershell_provisioner("Set-InternetExplorerRegistries")
-
-        expect(packer_config_vsphere_2019.provisioners).to include_provisioner(optimize_disk_provisioner, after: [internet_explorer_provisioner])
-      end
-    end
-  end
 end

@@ -261,24 +261,6 @@
       "Set-InternetExplorerRegistries"
     ]
   },
-  <% if iaas == "vsphere" %>
-  {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
-      "Optimize-Disk"
-    ]
-  },
-  {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
-      "Compress-Disk"
-    ]
-  }
-  <% else %>
   {
     "type": "powershell",
     "inline": [
@@ -287,5 +269,4 @@
       "Invoke-Sysprep -IaaS <%= iaas %>"
     ]
   }
-  <% end %>
 ]

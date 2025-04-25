@@ -48,16 +48,6 @@ module Stemcell
       end
     end
 
-    class VSphere < Base
-      def initialize(version, sha, os)
-        super("bosh-vsphere-esxi-#{os}-go_agent", version, sha, os)
-        @contents['cloud_properties'] = {
-          'infrastructure' => 'vsphere',
-          'hypervisor' => 'esxi'
-        }
-      end
-    end
-
     class Azure < Base
       def initialize(version, os, publisher, offer, sku)
         super("bosh-azure-hyperv-#{os}-go_agent", version, EMPTY_FILE_SHA, os)

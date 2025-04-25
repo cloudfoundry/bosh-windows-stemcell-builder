@@ -80,26 +80,6 @@ describe Stemcell::Manifest do
     end
   end
 
-  describe 'VSphere' do
-    describe 'dump' do
-      it 'returns a valid stemcell manifest yaml string' do
-        manifest = Stemcell::Manifest::VSphere.new('1.0', 'sha',
-                                                   'some-os').dump
-        expect(YAML.load(manifest)).to eq(
-          'name' => 'bosh-vsphere-esxi-some-os-go_agent',
-          'version' => '1.0',
-          'api_version' => 3,
-          'sha1' => 'sha',
-          'operating_system' => 'some-os',
-          'cloud_properties' => {
-            'infrastructure' => 'vsphere',
-            'hypervisor' => 'esxi'
-          }
-        )
-      end
-    end
-  end
-
   describe 'Azure' do
     describe 'dump' do
       it 'returns a valid stemcell manifest yaml string with build of version removed' do

@@ -18,7 +18,7 @@ describe 'AWS Rake' do
       allow(Executor).to receive(:exec_command).and_return('{"Images":[{"ID":"ami-1475586e","State":"available"}]}')
 
       expect { task.invoke }.to output("Waiting for ami-1475586e to become available...\nAMI ami-1475586e is available\n").to_stdout
-                                    .and not_raise_error(FailedAMIValidationError)
+                                    .and not_raise_error
     end
 
     it 'should raise error when AWS fails to create ami' do
@@ -40,7 +40,7 @@ describe 'AWS Rake' do
       expect(Executor).to receive(:exec_command).exactly(4).times
 
       expect { task.invoke }.to output("Waiting for ami-1475586e to become available...\nAMI ami-1475586e is available\n").to_stdout
-                                    .and not_raise_error(FailedAMIValidationError)
+                                    .and not_raise_error
     end
   end
 end
