@@ -1,5 +1,4 @@
 require 'stemcell/builder'
-require 'downloader'
 
 describe Stemcell::Builder do
   output_directory = ''
