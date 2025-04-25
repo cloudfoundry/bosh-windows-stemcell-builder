@@ -11,12 +11,13 @@ describe 'build:azure' do
   before do
     Rake::Task.define_task(:environment)
 
+    allow(ENV).to receive(:fetch).and_call_original
+
     allow(Stemcell::Builder).to receive(:validate_env_dir)
       .and_return('version_dir')
-    allow(File).to receive(:expand_path).with(any_args).and_return('build_root')
     allow(File).to receive(:read).with('version_dir/number')
                                  .and_return('1709.10.43-build.1')
-    allow(File).to receive(:read).with('build_root/compiled-agent/sha')
+    allow(File).to receive(:read).with(File.join(REPO_ROOT, 'build/compiled-agent/sha'))
                                  .and_return('some_sha')
     allow(File).to receive(:absolute_path).with('bosh-windows-stemcell')
                                           .and_return('some_output_directory')
@@ -67,7 +68,6 @@ describe 'build:azure' do
       expect(azure_builder_instance).to receive(:build).with(no_args)
 
       task.invoke
-
     end
 
     it 'when environment variable set to false' do

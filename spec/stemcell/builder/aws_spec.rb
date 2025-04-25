@@ -17,7 +17,7 @@ describe Stemcell::Builder do
   describe 'Aws' do
     describe 'build' do
       it 'builds a stemcell tarball' do
-        os = 'windows2012R2'
+        os = 'windows2019'
         version = '1234.0'
         amis = 'some-amis'
         agent_commit = 'some-agent-commit'
@@ -88,7 +88,7 @@ describe Stemcell::Builder do
           aws_access_key = 'some-aws-access-key'
           aws_secret_key = 'some-aws-secret-key'
           packer_vars = 'some-packer-vars'
-          os = 'windows2012R2'
+          os = 'windows2019'
           vm_prefix = 'some-vm-prefix'
 
           packer_config = double(:packer_config)

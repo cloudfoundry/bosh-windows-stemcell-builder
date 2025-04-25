@@ -6,12 +6,12 @@ require 'tmpdir'
 require 'yaml'
 require 'zlib'
 
-load File.expand_path('../../../../lib/tasks/build/azure.rake', __FILE__)
+load File.join(REPO_ROOT, 'lib/tasks/build/azure.rake')
 
 describe 'Azure' do
   before(:each) do
     @original_env = ENV.to_hash
-    @build_dir = File.expand_path('../../../../build', __FILE__)
+    @build_dir = File.join(REPO_ROOT, 'build')
     @output_directory = 'bosh-windows-stemcell'
     @version_dir = Dir.mktmpdir('azure')
     @stemcell_deps_dir = Dir.mktmpdir('azure')
@@ -52,7 +52,7 @@ describe 'Azure' do
       ENV['SKU'] = 'some-sku'
       ENV['OS_VERSION'] = os_version
       ENV['VERSION_DIR'] = @version_dir
-      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'azure')}:#{ENV['PATH']}"
+      ENV['PATH'] = "#{fixture_path('azure')}:#{ENV['PATH']}"
       ENV['BASE_IMAGE'] = 'some-base-image'
       ENV['BASE_IMAGE_OFFER'] = 'some-base-image-offer'
       ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir

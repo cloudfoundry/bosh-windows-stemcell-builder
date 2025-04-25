@@ -4,7 +4,10 @@ require 'json'
 namespace :build do
   desc 'Build GCP Stemcell'
   task :gcp do
-    build_dir = File.expand_path("../../../../build", __FILE__)
+    base_dir_location = ENV.fetch('BUILD_BASE_DIR', '../../../../')
+    base_dir = File.expand_path(base_dir_location, __FILE__)
+
+    build_dir = File.join(base_dir, 'build')
 
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
     base_image_dir = Stemcell::Builder::validate_env_dir('BASE_IMAGE_DIR')

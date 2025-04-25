@@ -13,7 +13,7 @@ describe Stemcell::Builder do
   describe 'GCP' do
     describe 'build' do
       it 'builds a stemcell tarball' do
-        os = 'windows2012R2'
+        os = 'windows2019'
         version = '1234.0'
         agent_commit = 'some-agent-commit'
         config = 'some-packer-config'
@@ -90,7 +90,7 @@ describe Stemcell::Builder do
           source_image = "some-source-image"
           image_family = "some-family"
           packer_vars = 'some-packer-vars'
-          os = 'windows2012R2'
+          os = 'windows2019'
           vm_prefix = 'some-vm-prefix'
 
           packer_config = double(:packer_config)

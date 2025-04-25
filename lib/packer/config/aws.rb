@@ -18,11 +18,6 @@ module Packer
       def builders
         stemcell_builder_dir = File.expand_path('../../../../', __FILE__)
         packer_ci_private_key_location = ENV.fetch('PACKER_CI_PRIVATE_KEY_LOCATION', '../packer-ci-private-key/key')
-        #TODO deleteme. Added to resolve a winrm with newer source ami (ami-0060daada4a15ad8a)
-        source_ami = @region[:base_ami]
-        if @os == 'windows2012R2'
-          source_ami = "ami-067ff23da8261d1c7"
-        end
         [
           {
             name: "amazon-ebs-#{@region[:name]}",
@@ -30,7 +25,7 @@ module Packer
             access_key: @aws_access_key,
             secret_key: @aws_secret_key,
             region: @region[:name],
-            source_ami: source_ami,
+            source_ami:  @region[:base_ami],
             instance_type: instance_type,
             ami_name: "BOSH-#{SecureRandom.uuid}-#{@region[:name]}",
             vpc_id: @region[:vpc_id],
@@ -69,23 +64,14 @@ module Packer
       end
 
       def instance_type
-        type = 'm4.large'
-
-        if @os == 'windows2012R2'
-          type = 'm4.xlarge'
-        end
-
-        type
+        'm4.large'
       end
 
       def launch_block_device_mappings
-        volume_size = 30
-        volume_size = 128 if @os == 'windows2012R2'
-
         [
             {
                 'device_name': '/dev/sda1',
-                'volume_size': volume_size,
+                'volume_size': 30,
                 'volume_type': 'gp2',
                 'delete_on_termination': true,
             }

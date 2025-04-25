@@ -6,12 +6,12 @@ require 'tmpdir'
 require 'yaml'
 require 'zlib'
 
-load File.expand_path('../../../../lib/tasks/build/gcp.rake', __FILE__)
+load File.join(REPO_ROOT, 'lib/tasks/build/gcp.rake')
 
 describe 'Gcp' do
   before(:each) do
     @original_env = ENV.to_hash
-    @build_dir = File.expand_path('../../../../build', __FILE__)
+    @build_dir = File.join(REPO_ROOT, 'build')
     @output_directory = 'bosh-windows-stemcell'
     @version_dir = Dir.mktmpdir('gcp')
     @base_image_dir = Dir.mktmpdir('gcp')
@@ -37,7 +37,7 @@ describe 'Gcp' do
 
       ENV['ACCOUNT_JSON'] = {'project_id' => 'some-project-id'}.to_json
       ENV['OS_VERSION'] = os_version
-      ENV['PATH'] = "#{File.join(@build_dir, '..', 'spec', 'fixtures', 'gcp')}:#{ENV['PATH']}"
+      ENV['PATH'] = "#{fixture_path('gcp')}:#{ENV['PATH']}"
       ENV['VERSION_DIR'] = @version_dir
       ENV['BASE_IMAGE_DIR'] = @base_image_dir
       ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir

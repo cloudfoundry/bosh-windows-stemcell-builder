@@ -9,6 +9,13 @@ if ENV.fetch('COVERAGE', false)
   SimpleCov.start
 end
 
+SPEC_ROOT = File.dirname(__FILE__).freeze
+REPO_ROOT = Pathname(SPEC_ROOT).parent
+
+def fixture_path(*parts)
+  File.join(SPEC_ROOT, 'fixtures', *parts)
+end
+
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true

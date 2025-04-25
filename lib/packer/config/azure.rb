@@ -40,7 +40,7 @@ module Packer
                 'location' => @location,
                 'vm_size' => @vm_size,
                 'os_type' => 'Windows',
-                'os_disk_size_gb' => os_disk_size_gb,
+                'os_disk_size_gb' => 30,
                 'communicator' => 'winrm',
                 'winrm_use_ssl' => 'true',
                 'winrm_insecure' => 'true',
@@ -59,16 +59,6 @@ module Packer
             'builders' => builders,
             'provisioners' => provisioners
         )
-      end
-
-      private
-
-      def os_disk_size_gb
-        if @os == 'windows2012R2'
-          128
-        else
-          30
-        end
       end
     end
   end

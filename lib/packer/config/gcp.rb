@@ -25,7 +25,7 @@ module Packer
                 'source_image' => @source_image,
                 'image_family' => @image_family,
                 'zone' => 'us-east1-c',
-                'disk_size' => disk_size,
+                'disk_size' => 32,
                 'image_name' => "packer-#{Time.now.to_i}",
                 'machine_type' => 'n1-standard-4',
                 'omit_external_ip' => false,
@@ -51,16 +51,6 @@ module Packer
             'builders' => builders,
             'provisioners' => provisioners
         )
-      end
-
-      private
-
-      def disk_size
-        if @os == 'windows2012R2'
-          100
-        else
-          32
-        end
       end
     end
   end

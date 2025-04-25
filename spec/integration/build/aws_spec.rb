@@ -7,12 +7,12 @@ require 'yaml'
 require 'zlib'
 require 's3'
 
-load File.expand_path('../../../../lib/tasks/build/aws.rake', __FILE__)
+load File.join(REPO_ROOT, 'lib/tasks/build/aws.rake')
 
 describe 'Aws' do
   before(:each) do
     @original_env = ENV.to_hash
-    @build_dir = File.expand_path('../../../../build', __FILE__)
+    @build_dir = File.join(REPO_ROOT, 'build')
     @version_dir = Dir.mktmpdir('aws')
     @agent_dir = Dir.mktmpdir('aws')
     @base_amis_dir = Dir.mktmpdir('aws')
@@ -31,7 +31,7 @@ describe 'Aws' do
     ENV['PACKER_AWS_ACCESS_KEY'] = @aws_access_key = 'some-aws_access_key'
     ENV['PACKER_AWS_SECRET_KEY'] = @aws_secret_key = 'some-aws_secret_key'
     ENV['OS_VERSION'] = @os_version
-    ENV['PATH'] = "#{File.join(File.expand_path('../../../..', __FILE__), 'spec', 'fixtures', 'aws')}:#{ENV['PATH']}"
+    ENV['PATH'] = "#{fixture_path('aws')}:#{ENV['PATH']}"
     ENV['VERSION_DIR'] = @version_dir
     ENV['BASE_AMIS_DIR'] = @base_amis_dir
     ENV['OUTPUT_BUCKET_REGION'] = @output_bucket_region = 'some-output-bucket-region'
@@ -133,8 +133,7 @@ describe 'Aws' do
       )
 
       ENV['DEFAULT_STEMCELL_DIR'] = @default_stemcell_dir = Dir.mktmpdir
-      fixtures_dir = File.join('spec', 'fixtures', 'aws', 'amis')
-      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-us-east-1.tgz')].first, @default_stemcell_dir)
+      FileUtils.cp(Dir[fixture_path( 'aws', 'amis', '*1200*-us-east-1.tgz')].first, @default_stemcell_dir)
 
       ENV['REGIONS'] = 'us-east-2'
       @copied_stemcells_dir = 'copied-regional-stemcells'
@@ -236,12 +235,10 @@ describe 'Aws' do
           {'region' => 'us-east-1', 'ami_id' => 'ami-east1id'}.to_json
       )
 
-      fixtures_dir = File.join('spec', 'fixtures', 'aws', 'amis')
-
-      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-1.tgz')].first, @copied1)
-      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-2.tgz')].first, @copied2)
-      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-some-region-3.tgz')].first, @copied2)
-      FileUtils.cp(Dir[File.join(fixtures_dir, '*1200*-us-east-1.tgz')].first, @copied1)
+      FileUtils.cp(Dir[fixture_path('aws', 'amis', '*1200*-some-region-1.tgz')].first, @copied1)
+      FileUtils.cp(Dir[fixture_path('aws', 'amis', '*1200*-some-region-2.tgz')].first, @copied2)
+      FileUtils.cp(Dir[fixture_path('aws', 'amis', '*1200*-some-region-3.tgz')].first, @copied2)
+      FileUtils.cp(Dir[fixture_path('aws', 'amis', '*1200*-us-east-1.tgz')].first, @copied1)
     end
 
     after(:each) do
