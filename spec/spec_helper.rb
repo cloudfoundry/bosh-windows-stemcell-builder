@@ -1,11 +1,13 @@
-require 'simplecov'
-SimpleCov.start
-
 require 'zip'
 require 'timecop'
 
 require 'webmock/rspec'
 WebMock.disable_net_connect!(allow_localhost: true)
+
+if ENV.fetch('COVERAGE', false)
+  require 'simplecov'
+  SimpleCov.start
+end
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
