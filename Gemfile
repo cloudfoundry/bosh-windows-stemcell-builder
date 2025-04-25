@@ -8,6 +8,6 @@ gem 'rubyzip'
 gem 'activesupport'
 gem 'activemodel'
 gem 'rspec'
+gem 'simplecov', require: false
 gem 'timecop'
 gem 'webmock'
-gem 'simplecov', require: false, group: :test
