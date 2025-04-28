@@ -1,4 +1,5 @@
 require 'open3'
+require_relative 'output'
 
 class Executor
   def self.exec_command(cmd)
@@ -9,7 +10,7 @@ class Executor
     Open3.popen2(cmd) do |stdin, out, wait_thr|
       out.each_line do |line|
         ret += line
-        puts line
+        Output.say line
       end
       exit_status = wait_thr.value
       if exit_status != 0

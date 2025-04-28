@@ -34,11 +34,11 @@ module Stemcell
       end
 
       def stage_image(disk_uri)
-        puts 'TODO: stage azure disk image'
+        Output.say 'TODO: stage azure disk image'
       end
 
       def publish_image(disk_uri)
-        puts 'TODO: publish azure disk image'
+        Output.say 'TODO: publish azure disk image'
       end
 
       private
@@ -63,7 +63,7 @@ module Stemcell
         def parse_packer_output(packer_output)
           disk_uri = nil
           packer_output.each_line do |line|
-            puts line
+            Output.say line
             disk_uri ||= parse_disk_uri(line)
           end
           disk_uri

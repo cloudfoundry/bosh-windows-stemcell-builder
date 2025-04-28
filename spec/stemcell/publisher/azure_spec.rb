@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'stemcell/publisher/azure'
 
 describe Stemcell::Publisher::Azure do
@@ -29,10 +30,11 @@ describe Stemcell::Publisher::Azure do
     end
 
     it 'prints instructions for publishing azure image' do
+      allow(Output).to receive(:say).and_call_original
       expected_login_command = "az login --username #{@publisher.azure_client_id} --password #{@publisher.azure_client_secret} --service-principal --tenant #{@publisher.azure_tenant_id}"
-      validFrom = (Time.now.utc - 1.day).iso8601
-      validTo = (Time.now.utc + 2.year).iso8601
-      expected_sas_command = "az storage container generate-sas --name #{@publisher.container_name} --permissions rl --account-name #{@publisher.azure_storage_account} --account-key #{@publisher.azure_storage_access_key} --start #{validFrom} --expiry #{validTo}"
+      valid_from = (Time.now.utc - 1.day).iso8601
+      valid_to = (Time.now.utc + 2.year).iso8601
+      expected_sas_command = "az storage container generate-sas --name #{@publisher.container_name} --permissions rl --account-name #{@publisher.azure_storage_account} --account-key #{@publisher.azure_storage_access_key} --start #{valid_from} --expiry #{valid_to}"
       expected_url_command = "az storage blob url --container-name #{@publisher.container_name} --name #{@publisher.container_path} --account-name #{@publisher.azure_storage_account} --account-key #{@publisher.azure_storage_access_key}"
 
       expected_instructions = <<END

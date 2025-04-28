@@ -1,7 +1,4 @@
-# frozen_string_literal: true
-
-require 'rake'
-load File.expand_path('../../../lib/tasks/build/azure.rake', __dir__)
+require 'spec_helper'
 
 describe 'build:azure' do
   let(:task) { Rake::Task['build:azure'] }

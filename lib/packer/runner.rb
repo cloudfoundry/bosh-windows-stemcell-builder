@@ -2,6 +2,7 @@ require 'tempfile'
 require 'json'
 require 'English'
 require 'open3'
+require_relative '../output'
 
 module Packer
   class Runner
@@ -25,7 +26,7 @@ module Packer
       log_config(config_file.path)
 
       packer_command = "packer #{command} -machine-readable #{args_combined} #{config_file.path}"
-      puts packer_command
+      Output.say packer_command
 
       Open3.popen2e(packer_command) do |_stdin, out, wait_thr|
         yield(out) if block_given?
@@ -38,7 +39,7 @@ module Packer
       unless "#{ENV['NEW_PASSWORD']}".empty?
         config_contents.gsub! ENV['NEW_PASSWORD'], "( redacted )"
       end
-      puts "config file contents: #{config_contents}"
+      Output.say "config file contents: #{config_contents}"
     end
   end
 end

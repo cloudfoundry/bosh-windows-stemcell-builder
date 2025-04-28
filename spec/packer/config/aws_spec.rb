@@ -1,5 +1,4 @@
-require 'packer/config'
-require 'timecop'
+require 'spec_helper'
 
 describe Packer::Config::Aws do
   describe 'builders' do

@@ -1,4 +1,7 @@
-require_relative 'lib/stemcell/builder'
+$LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
+
+require 'output'
+require 'stemcell/builder'
 
 import 'lib/tasks/build/aws.rake'
 import 'lib/tasks/build/azure.rake'

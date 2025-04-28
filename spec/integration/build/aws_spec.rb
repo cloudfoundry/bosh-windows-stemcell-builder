@@ -1,11 +1,4 @@
-require 'fileutils'
-require 'json'
-require 'rake'
-require 'rubygems/package'
-require 'tmpdir'
-require 'yaml'
-require 'zlib'
-require 's3'
+require 'spec_helper'
 
 load File.join(REPO_ROOT, 'lib/tasks/build/aws.rake')
 
@@ -72,6 +65,7 @@ describe 'Aws' do
   describe 'Create an aws stemcell' do
     before(:each) do
       ENV['PACKER_REGION'] = @region = 'us-east-1'
+      allow(Output).to receive(:say).and_call_original
     end
 
     it 'should build an aws stemcell' do
@@ -198,9 +192,7 @@ describe 'Aws' do
         .with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
               '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2')
 
-      expect do
-        Rake::Task['build:aws_ami'].invoke
-      end.to raise_exception
+      expect { Rake::Task['build:aws_ami'].invoke }.to raise_exception(FailedAMICopyError)
     end
 
     it 'should wait to make aws stemcell public if copy still pending' do

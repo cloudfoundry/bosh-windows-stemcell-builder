@@ -42,7 +42,7 @@ module Stemcell
         def parse_packer_output(packer_output)
           image_name = nil
           packer_output.each_line do |line|
-            puts line
+            Output.say line
             image_name ||= parse_image_name(line)
           end
           get_image_url(image_name)

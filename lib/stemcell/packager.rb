@@ -1,5 +1,6 @@
 require 'zlib'
 require 'rubygems/package'
+require_relative '../output'
 
 module Stemcell
   class Packager
@@ -190,7 +191,7 @@ module Stemcell
       STDOUT.sync = true
       Open3.popen2(cmd) do |stdin, out, wait_thr|
         out.each_line do |line|
-          puts line
+          Output.say line
         end
         exit_status = wait_thr.value
         if exit_status != 0
@@ -198,6 +199,5 @@ module Stemcell
         end
       end
     end
-
   end
 end

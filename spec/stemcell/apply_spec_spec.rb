@@ -1,4 +1,4 @@
-require 'stemcell/apply_spec'
+require 'spec_helper'
 
 describe Stemcell::ApplySpec do
   describe 'dump' do

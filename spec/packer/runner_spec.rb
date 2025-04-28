@@ -1,4 +1,4 @@
-require 'packer/runner'
+require 'spec_helper'
 
 describe Packer::Runner do
   describe 'run' do

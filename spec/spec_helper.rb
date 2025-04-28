@@ -1,3 +1,7 @@
+SPEC_ROOT = File.dirname(__FILE__).freeze
+REPO_ROOT = Pathname(SPEC_ROOT).parent
+$LOAD_PATH.unshift("#{REPO_ROOT}/lib")
+
 require 'zip'
 require 'timecop'
 
@@ -9,8 +13,7 @@ if ENV.fetch('COVERAGE', false)
   SimpleCov.start
 end
 
-SPEC_ROOT = File.dirname(__FILE__).freeze
-REPO_ROOT = Pathname(SPEC_ROOT).parent
+require 'output'
 
 def fixture_path(*parts)
   File.join(SPEC_ROOT, 'fixtures', *parts)
@@ -27,6 +30,10 @@ RSpec.configure do |config|
 
   if config.files_to_run.one?
     config.default_formatter = 'doc'
+  end
+
+  config.before do
+    allow(Output).to receive(:say) # reduce output in specs
   end
 end
 

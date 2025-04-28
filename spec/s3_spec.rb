@@ -19,7 +19,10 @@ describe S3 do
       allow(Aws::S3::Client).to receive(:new).and_return(s3)
 
       @s3_client = S3::Client.new(endpoint: '')
+
+      allow(Output).to receive(:say).and_call_original
     end
+
     describe '#list' do
       context 'when bucket contains slashes' do
         let(:bucket) { 'bucket/with/slashes' }

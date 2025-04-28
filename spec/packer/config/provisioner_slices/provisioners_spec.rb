@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'rspec/expectations'
 require './spec/packer/config/provisioner_slices/provisioner_matcher'
 require './spec/packer/config/provisioner_slices/test_provisioner'

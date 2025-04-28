@@ -1,4 +1,5 @@
 require 'aws-sdk-s3'
+require_relative 'output'
 require_relative 'exec_command'
 
 module S3
@@ -15,23 +16,23 @@ module S3
     end
     def get(bucket,key,file_name)
       bucket, key = rationalize(bucket, key)
-      puts "Downloading the #{key} from #{bucket} to #{file_name}"
+      Output.say "Downloading the #{key} from #{bucket} to #{file_name}"
       path = File.dirname(file_name)
       FileUtils.mkdir_p(path)
       File.open(file_name, 'wb') do |file|
         @s3.get_object({ bucket:bucket , key:key, response_target: file })
       end
-      puts "Finished Downloading the #{key} from #{bucket} to #{file_name}"
+      Output.say "Finished Downloading the #{key} from #{bucket} to #{file_name}"
     end
     def put(bucket,key,file_name)
       bucket, key = rationalize(bucket, key)
-      puts "Uploading the #{file_name} to #{bucket}:#{key}"
+      Output.say "Uploading the #{file_name} to #{bucket}:#{key}"
       @s3_resource.bucket(bucket).object(key).upload_file(file_name)
-      puts "Finished uploading the #{file_name} to #{bucket}:#{key}"
+      Output.say "Finished uploading the #{file_name} to #{bucket}:#{key}"
     end
     def list(bucket)
       bucket, prefix = rationalize(bucket, '')
-      puts "Listing bucket #{bucket} with prefix #{prefix}"
+      Output.say "Listing bucket #{bucket} with prefix #{prefix}"
       resp = @s3.list_objects({
         bucket: bucket,
         delimiter: '/',
@@ -40,9 +41,9 @@ module S3
       resp.to_h[:contents].map { |x| x[:key] }
     end
     def clear(bucket)
-      puts "Clearing bucket #{bucket}"
+      Output.say "Clearing bucket #{bucket}"
       @s3_resource.bucket(bucket).clear!
-      puts "Finished: clearing bucket #{bucket}"
+      Output.puts "Finished: clearing bucket #{bucket}"
     end
     private
       # Our ci passes the bucket and key as bucket: bucket/path/to/file,
@@ -56,7 +57,7 @@ module S3
   end
 
   def self.test_upload_permissions(bucket, endpoint="")
-    puts "Testing upload permissions for #{bucket}"
+    Output.say "Testing upload permissions for #{bucket}"
     tempfile = Tempfile.new("stemcell-permissions-tempfile")
     s3_client = Client.new(endpoint: endpoint)
     s3_client.put(bucket, 'test-upload-permissions', tempfile.path)

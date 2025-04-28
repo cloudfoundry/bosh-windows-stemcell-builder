@@ -31,7 +31,7 @@ namespace :build do
       symbolize_names: true
     )
     raise "No ami information for #{region}" unless base_ami[:name] == region
-    puts "Found ami information for: #{region}"
+    Output.say "Found ami information for: #{region}"
 
     # Create stemcell
     aws_builder = get_aws_builder(output_directory, region, base_ami)
@@ -57,7 +57,7 @@ namespace :build do
     packer_output_ami = packer_output_data['ami_id']
     packer_output_region = packer_output_data['region']
 
-    puts "Waiting for #{packer_output_ami} to become available..."
+    Output.say "Waiting for #{packer_output_ami} to become available..."
 
     ami_pending = true
     while ami_pending do
@@ -69,9 +69,9 @@ namespace :build do
       if ami_description['Images'].count == 1
         ami_pending = false
         if ami_description['Images'][0]['State'] == "available"
-          puts "AMI #{packer_output_ami} is available"
+          Output.say "AMI #{packer_output_ami} is available"
         else
-          puts "AWS failed to create AMI #{packer_output_ami}"
+          Output.say "AWS failed to create AMI #{packer_output_ami}"
           raise FailedAMIValidationError.new("AWS failed to create AMI #{packer_output_ami}")
         end
       end
@@ -104,7 +104,7 @@ namespace :build do
     packer_image_name = packer_image_data['Images'][0]['Name']
 
     # Copy to each region
-    puts "destination_regions: #{destination_regions}"
+    Output.say "destination_regions: #{destination_regions}"
     destination_regions.each do |destination_region|
       new_image_name = packer_image_name.gsub(packer_output_region, destination_region)
 
@@ -133,12 +133,12 @@ namespace :build do
         if ami_description['Images'].count == 1
           if ami_description['Images'][0]['State'] == "available"
             #Make available ami public
-            puts "Making #{copied_ami['ami_id']} public"
+            Output.say "Making #{copied_ami['ami_id']} public"
             ec2_public_command = "aws ec2 modify-image-attribute --image-id #{copied_ami['ami_id']} " \
                 "--launch-permission '{\"Add\":[{\"Group\":\"all\"}]}' --region #{copied_ami['region']}"
             exec_command(ec2_public_command)
           else
-            puts "AMI #{copied_ami['ami_id']} has failed to be copied to region #{copied_ami['region']}"
+            Output.say "AMI #{copied_ami['ami_id']} has failed to be copied to region #{copied_ami['region']}"
             raise FailedAMICopyError.new("Failed to copy AMI #{copied_ami['ami_id']}")
           end
           true

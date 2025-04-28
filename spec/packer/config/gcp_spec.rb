@@ -1,4 +1,4 @@
-require 'packer/config'
+require 'spec_helper'
 
 describe Packer::Config::Gcp do
   describe 'builders' do

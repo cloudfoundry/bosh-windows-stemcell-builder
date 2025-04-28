@@ -1,3 +1,5 @@
+require_relative '../../output'
+
 module Stemcell
   class Builder
     class PackerFailure < RuntimeError
@@ -51,7 +53,7 @@ module Stemcell
           packer_artifact = parse_packer_output(stdout)
         end
         if exit_status != 0
-          puts "packer_artifact is: #{packer_artifact}"
+          Output.say "packer_artifact is: #{packer_artifact}"
           raise PackerFailure
         end
         packer_artifact
@@ -63,7 +65,7 @@ module Stemcell
         STDOUT.sync = true
         Open3.popen2(cmd) do |stdin, out, wait_thr|
           out.each_line do |line|
-            puts line
+            Output.say line
           end
           exit_status = wait_thr.value
           if exit_status != 0
@@ -74,7 +76,7 @@ module Stemcell
 
       def parse_packer_output(packer_output)
         packer_output.each_line do |line|
-          puts line
+          Output.say line
         end
       end
 
@@ -82,7 +84,7 @@ module Stemcell
         if File.exist?(File.join(@output_directory, 'updates.txt'))
           File.join(@output_directory, 'updates.txt')
         else
-          puts "'updates.txt' does not exist in #{@output_directory}"
+          Output.say "'updates.txt' does not exist in #{@output_directory}"
         end
       end
     end

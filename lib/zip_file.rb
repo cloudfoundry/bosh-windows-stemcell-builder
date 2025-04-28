@@ -1,4 +1,5 @@
 require 'zip'
+require_relative 'output'
 require_relative 'exec_command'
 
 module ZipFile
@@ -25,7 +26,7 @@ module ZipFile
       entries.each do |e|
         zip_file_path = path == '' ? e : File.join(path, e)
         disk_file_path = File.join(@input_dir, zip_file_path)
-        puts "Deflating #{disk_file_path}"
+        Output.puts "Deflating #{disk_file_path}"
 
         if File.directory? disk_file_path
           recursively_deflate_directory(disk_file_path, io, zip_file_path)

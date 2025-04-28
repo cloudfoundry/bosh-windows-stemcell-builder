@@ -1,4 +1,4 @@
-require 'stemcell/builder'
+require 'spec_helper'
 
 describe Stemcell::Builder do
   output_directory = ''

@@ -48,7 +48,7 @@ module Stemcell
         amis = []
         packer_output.each_line do |line|
           if !(line.include?('secret_key') || line.include?('access_key'))
-            puts line
+            Output.say line
           end
           ami = parse_ami(line)
           if !ami.nil?

@@ -1,5 +1,4 @@
-require 'stemcell/packager'
-require 'rubygems/package'
+require 'spec_helper'
 
 describe Stemcell::Packager do
   before(:each) do

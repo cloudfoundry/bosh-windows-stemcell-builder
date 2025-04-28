@@ -3,6 +3,7 @@ require 'tempfile'
 require 'uri'
 require 'json'
 
+require_relative '../../output'
 require_relative '../../exec_command'
 
 module Stemcell
@@ -20,7 +21,7 @@ module Stemcell
 					f.close
 					exec_command("gcloud auth activate-service-account --quiet #{account_email} --key-file #{f.path}")
 					uri = URI.parse("https://www.googleapis.com/compute/alpha/projects/#{project_id}/global/images/#{image_name}/setIamPolicy")
-					puts uri.inspect
+					Output.say uri.inspect
 					return post(uri, json())
 				end
 			end
@@ -46,7 +47,7 @@ module Stemcell
 				request.body = data.to_json
 
 				response = http.request(request)
-				puts "#{response.message}: #{response.body}"
+				Output.say "#{response.message}: #{response.body}"
 				exit (response.kind_of? Net::HTTPSuccess)
 			end
 		end

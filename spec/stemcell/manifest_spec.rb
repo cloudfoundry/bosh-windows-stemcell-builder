@@ -1,4 +1,4 @@
-require 'stemcell/manifest'
+require 'spec_helper'
 
 describe Stemcell::Manifest do
   describe 'EMPTY_FILE_SHA' do

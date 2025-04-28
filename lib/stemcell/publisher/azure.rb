@@ -5,6 +5,7 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'active_model'
 require 'azure_mgmt_resources'
+require_relative '../../output'
 require_relative '../../exec_command'
 
 module Stemcell
@@ -31,7 +32,7 @@ Please login to https://partner.microsoft.com/en-us/dashboard/commercial-marketp
 * "Save Draft" and click "Review and Publish"
 * Remember to come back to the "#{sku}" Plan in partner center and click Go Live after the certification process is complete
 END
-        puts instructions
+        Output.say instructions
       end
 
       def copy_from_storage_account(source_storage_account, source_storage_key)
@@ -44,7 +45,7 @@ END
           "--account-name \"#{azure_storage_account}\" "\
           "--destination-container \"system\" "\
           "--destination-blob \"#{container_path}\""
-        puts "running azure copy"
+        Output.say "running azure copy"
 
         Executor.exec_command_no_output(azure_copy_command)
       end
