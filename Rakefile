@@ -1,6 +1,7 @@
 $LOAD_PATH << File.join(File.dirname(__FILE__), 'lib')
 
 require 'output'
+require 's3'
 require 'stemcell/builder'
 
 import 'lib/tasks/build/aws.rake'
