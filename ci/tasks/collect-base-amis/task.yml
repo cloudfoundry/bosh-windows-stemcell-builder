@@ -1,0 +1,21 @@
+---
+platform: linux
+
+inputs:
+- name: bosh-windows-stemcell-builder-ci
+- name: version
+
+outputs:
+- name: base-amis
+
+params:
+  AWS_ACCESS_KEY_ID:
+  AWS_SECRET_ACCESS_KEY:
+  AWS_ROLE_ARN:
+  BASE_AMI:
+  BASE_AMI_NAME:
+  PACKER_REGION:
+
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/collect-base-amis/run

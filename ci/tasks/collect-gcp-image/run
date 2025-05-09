@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -eo pipefail
+
+ACCOUNT_EMAIL=$(echo $ACCOUNT_JSON | jq -r .client_email)
+PROJECT_ID=$(echo $ACCOUNT_JSON | jq -r .project_id)
+
+echo "$ACCOUNT_JSON" > /tmp/account_json
+gcloud auth activate-service-account --quiet $ACCOUNT_EMAIL --key-file /tmp/account_json
+gcloud config set project $PROJECT_ID
+
+set -x
+
+if [[ "$BASE_OS" != "windows2019" ]]; then
+    echo "Define BASE_OS environment variable (i.e. windows2019)" 1>&2
+	exit 1
+fi
+
+if [[ "$BASE_IMAGE_REGEX" == "" ]] || [[ "$IMAGE_FAMILY" == "" ]]; then
+    echo "Define BASE_IMAGE_REGEX and IMAGE_FAMILY variables" 1>&2
+    exit 1
+fi
+
+image_id=$(gcloud compute images list --filter="name~'${BASE_IMAGE_REGEX}'"  --format json | jq -r .[0].name)
+version=$(cat version/number)
+
+printf '{"base_image":"%s","image_family":"%s"}' "$image_id" "$IMAGE_FAMILY" > base-gcp-image/base-gcp-image-$BASE_OS-$version.json
+

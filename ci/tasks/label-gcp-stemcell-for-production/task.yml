@@ -1,0 +1,13 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stemcell-builder
+  - name: bosh-windows-stemcell
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/label-gcp-stemcell-for-production/run
+
+params:
+  ACCOUNT_JSON:

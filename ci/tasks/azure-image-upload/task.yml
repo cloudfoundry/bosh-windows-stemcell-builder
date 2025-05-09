@@ -1,0 +1,21 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stemcell-builder
+  - name: azure-base-vhd-uri
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/azure-image-upload/run
+
+params:
+  AZURE_STORAGE_ACCESS_KEY:
+  AZURE_STORAGE_ACCOUNT:
+  AZURE_PUBLISHED_STORAGE_ACCESS_KEY:
+  AZURE_PUBLISHED_STORAGE_ACCOUNT:
+  AZURE_CONTAINER_NAME:
+  AZURE_OFFER:
+  PARTNER_PORTAL_TENANT_ID:
+  PARTNER_PORTAL_CLIENT_ID:
+  PARTNER_PORTAL_CLIENT_SECRET:

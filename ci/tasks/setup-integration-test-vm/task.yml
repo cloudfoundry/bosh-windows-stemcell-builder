@@ -1,0 +1,23 @@
+---
+platform: linux
+
+inputs:
+- name: bosh-windows-stemcell-builder-ci
+- name: nimbus-ips
+
+outputs:
+- name: integration-vm-name
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/setup-integration-test-vm/run.sh
+
+params:
+  GOVC_INSECURE: 1
+  VCENTER_ADMIN_CREDENTIAL_URL:
+  OS_LINE:
+  BASE_VM_IPATH:
+  CLONE_DATASTORE:
+  CLONE_RESOURCE_POOL:
+  VM_CUSTOMIZATION_NAME: Bosh-Windows-Base
+  CLONE_FOLDER:
+  JOB_OS_NAME:             # linux or windows

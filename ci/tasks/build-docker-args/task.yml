@@ -1,0 +1,18 @@
+---
+platform: linux
+image_resource:
+  type: registry-image
+  source:
+    repository: ubuntu
+
+inputs:
+- name: bosh-windows-stemcell-builder-ci
+
+outputs:
+- name: docker-build-args
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/build-docker-args/run.sh
+
+params:
+  GITHUB_ACCESS_TOKEN:

@@ -1,0 +1,15 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stembuild-stemcell-tested
+  - name: aws-tested
+  - name: aws-govcloud-tested
+  - name: gcp-tested
+  - name: azure-tested
+  - name: stembuild-untested-linux
+  - name: stembuild-untested-windows
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/match-stemcell-versions/run

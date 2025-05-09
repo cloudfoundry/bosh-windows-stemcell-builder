@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -ex
+
+AWS_CREDS_FILE=~/.aws/credentials
+mkdir -p ~/.aws
+
+cat > ${AWS_CREDS_FILE} << EOF
+[default]
+aws_access_key_id = ${AWS_ACCESS_KEY}
+aws_secret_access_key = ${AWS_SECRET_KEY}
+EOF
+
+cd stemcell-builder
+bundle install
+rake build:aws_aggregate
+
+mv bosh-windows-stemcell/*.tgz ../bosh-windows-stemcell
+mv bosh-windows-stemcell/*.sha ../sha

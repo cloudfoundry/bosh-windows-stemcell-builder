@@ -1,0 +1,18 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stembuild
+  - name: open-ssh
+  - name: deps-file
+  - name: bosh-agent
+  - name: bosh-psmodules
+
+outputs:
+  - name: zip-file
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/zip-files/run.bash
+
+params:

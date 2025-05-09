@@ -1,0 +1,18 @@
+---
+platform: linux
+
+inputs:
+- name: version
+- name: bosh-windows-stemcell-builder-ci
+
+outputs:
+  - name: base-gcp-image
+
+params:
+  ACCOUNT_JSON:
+  BASE_OS:
+  BASE_IMAGE_REGEX:
+  IMAGE_FAMILY:
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/collect-gcp-image/run

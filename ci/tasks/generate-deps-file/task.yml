@@ -1,0 +1,19 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stembuild
+  - name: open-ssh
+  - name: lgpo-binary
+  - name: version
+  - name: bosh-agent
+  - name: bosh-psmodules
+
+outputs:
+  - name: deps-file
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/generate-deps-file/run.bash
+
+params:

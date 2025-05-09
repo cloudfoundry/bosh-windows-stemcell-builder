@@ -1,0 +1,20 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stemcell-builder
+  - name: bosh-windows-stemcell
+
+outputs:
+  - name: untested-stemcell
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/publish-gcp-stemcell/run
+
+params:
+  OS_VERSION:
+  ACCOUNT_JSON:
+
+  VERSION_DIR: ../version
+  BASE_IMAGE_DIR: ../base-gcp-image

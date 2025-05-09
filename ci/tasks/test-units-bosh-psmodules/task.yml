@@ -1,0 +1,15 @@
+---
+platform: windows
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: bosh-psmodules-repo
+  - name: pester
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-Command"
+  - bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/run.ps1

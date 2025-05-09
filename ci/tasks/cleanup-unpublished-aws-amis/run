@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -ex
+
+if [ -n "${AWS_ROLE_ARN}" ]; then
+  aws configure --profile creds_account set aws_access_key_id "${AWS_ACCESS_KEY}"
+  aws configure --profile creds_account set aws_secret_access_key "${AWS_SECRET_KEY}"
+  aws configure --profile resource_account set source_profile "creds_account"
+  aws configure --profile resource_account set role_arn "${AWS_ROLE_ARN}"
+  unset AWS_ACCESS_KEY
+  unset AWS_SECRET_KEY
+  export AWS_PROFILE=resource_account
+else
+  aws configure set aws_access_key_id "${AWS_ACCESS_KEY}"
+  aws configure set aws_secret_access_key "${AWS_SECRET_KEY}"
+fi
+
+AWS_OWNER=$(aws sts get-caller-identity | jq -r .Account)
+# We only delete AMIs older than three weeks to avoid deleting an AMI working its way through the pipeline
+THREE_WEEKS_AGO=`date --date='3 weeks ago' +%Y-%m-%d`
+# There's only one region where unpublished stemcells exist ($AWS_REGION)
+unpublished_amis=$(aws ec2 \
+  describe-images \
+  --region $AWS_REGION \
+  --owners $AWS_OWNER \
+  --filters "Name=tag:published,Values=false" \
+  --query='Images[?CreationDate<=`'$THREE_WEEKS_AGO'`]' \
+  | jq -r '.[].ImageId')
+
+for AMI in $unpublished_amis; do
+  snapshot_ids=$(aws ec2 --region $AWS_REGION describe-images --image-id $AMI | jq -r '.Images[].BlockDeviceMappings[].Ebs.SnapshotId | select(. != null)')
+  # We need to deregister before we delete, lest we error "The snapshot snap-xxx is currently in use by ami-yyy"
+  aws ec2 deregister-image --region $AWS_REGION --image-id $AMI
+  for SNAPSHOT_ID in $snapshot_ids; do
+    aws ec2 delete-snapshot --region $AWS_REGION --snapshot-id $SNAPSHOT_ID
+  done
+done

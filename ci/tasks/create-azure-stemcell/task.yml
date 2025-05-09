@@ -1,0 +1,45 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: version
+  - name: stemcell-builder
+  - name: lgpo-binary
+  - name: sshd
+  - name: bosh-agent-release
+  - name: bosh-psmodules-repo
+  - name: blobstore-dav-cli
+  - name: blobstore-s3-cli
+  - name: blobstore-gcs-cli
+  - name: windows-bsdtar
+  - name: windows-winsw
+
+
+outputs:
+  - name: bosh-windows-stemcell
+  - name: hotfix-log
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/create-azure-stemcell/run
+
+params:
+  OS_VERSION:
+  CLIENT_ID:
+  CLIENT_SECRET:
+  TENANT_ID:
+  SUBSCRIPTION_ID:
+  RESOURCE_GROUP_NAME:
+  STORAGE_ACCOUNT:
+  LOCATION:
+  VM_SIZE:
+  PUBLISHER:
+  OFFER:
+  SKU:
+  ADMIN_PASSWORD:
+  VERSION_DIR: ../version
+  BASE_IMAGE:
+  BASE_IMAGE_OFFER:
+  VM_PREFIX:
+  BOSH_AGENT_DIR: bosh-agent-release
+  BOSH_PSMODULES_DIR: bosh-psmodules-repo

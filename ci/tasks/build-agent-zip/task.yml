@@ -1,0 +1,22 @@
+---
+platform: linux
+
+inputs:
+- name: stemcell-builder
+- name: bosh-agent-release
+- name: bosh-windows-stemcell-builder-ci
+- name: blobstore-dav-cli
+- name: blobstore-s3-cli
+- name: blobstore-gcs-cli
+- name: windows-bsdtar
+- name: windows-winsw
+
+outputs:
+- name: bosh-agent
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/run.sh
+
+params:
+  BOSH_AGENT_DIR: bosh-agent-release
+  ZIP_OUTPUT_DIR: bosh-agent

@@ -1,0 +1,23 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: version
+  - name: stemcell-builder
+  - name: azure-base-vhd-uri
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/azure-start-publishing/run
+
+params:
+  AZURE_PUBLISHED_STORAGE_ACCESS_KEY:
+  AZURE_PUBLISHED_STORAGE_ACCOUNT:
+  AZURE_CONTAINER_NAME:
+  AZURE_SKU:
+  AZURE_PUBLISHER:
+  AZURE_OFFER:
+  PARTNER_PORTAL_TENANT_ID:
+  PARTNER_PORTAL_CLIENT_ID:
+  PARTNER_PORTAL_CLIENT_SECRET:
+  OFFER_NOTIFICATION_EMAIL:

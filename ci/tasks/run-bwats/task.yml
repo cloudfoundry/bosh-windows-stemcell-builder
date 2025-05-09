@@ -1,0 +1,38 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: bosh-windows-acceptance-tests
+  - name: stemcell
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/run
+
+params:
+  ACCOUNT_JSON:
+  AZ: z1
+  BOSH_CA_CERT:
+  BOSH_CLIENT:
+  BOSH_CLIENT_SECRET:
+  BOSH_ENVIRONMENT:
+  GINKGO_FOCUS:
+  GINKGO_SKIP:
+  IAAS:
+  NETWORK: default
+  SKIP_MS_UPDATE_TEST: false
+  SSH_DISABLED_BY_DEFAULT: false
+  SSH_TUNNEL_IP:
+  SSH_TUNNEL_PRIVATE_KEY:
+  SSH_TUNNEL_USER:
+  STEMCELL_OS:
+  STEMCELL_PATH:
+  VM_EXTENSIONS: ""
+  VM_TYPE: large
+  ROOT_EPHEMERAL_VM_TYPE:
+  BOSH_GW_USER:
+  BWATS_BOSH_TIMEOUT:
+  MOUNT_EPHEMERAL_DISK:
+  SECURITY_COMPLIANCE_APPLIED:
+  DEFAULT_USERNAME:
+  DEFAULT_PASSWORD:

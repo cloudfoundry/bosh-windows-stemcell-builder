@@ -1,0 +1,33 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stemcell-builder
+  - name: base-gcp-image
+  - name: version
+  - name: lgpo-binary
+  - name: sshd
+  - name: bosh-agent-release
+  - name: bosh-psmodules-repo
+  - name: blobstore-dav-cli
+  - name: blobstore-s3-cli
+  - name: blobstore-gcs-cli
+  - name: windows-bsdtar
+  - name: windows-winsw
+
+outputs:
+  - name: bosh-windows-stemcell
+  - name: hotfix-log
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/create-gcp-stemcell/run
+
+params:
+  ACCOUNT_JSON:
+  BASE_IMAGE_DIR: ../base-gcp-image
+  OS_VERSION:
+  VERSION_DIR: ../version
+  VM_PREFIX:
+  BOSH_AGENT_DIR: bosh-agent-release
+  BOSH_PSMODULES_DIR: bosh-psmodules-repo

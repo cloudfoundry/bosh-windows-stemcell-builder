@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+require 'yaml'
+require 'fileutils'
+
+stemcells = Dir.glob("*-{release-candidate,final,tested}/*.tgz")
+versions = stemcells.collect do |tarball|
+  File.basename(tarball.scan(/\d+\.\d+\.\d+/)[0])
+end
+
+stembuilds = Dir.glob("stembuild-untested-*/stembuild-{linux,windows}-*")
+stembuilds.collect do |stembuild|
+  versions << File.basename(stembuild.scan(/\d+\.\d+\.\d+/)[0])
+end
+
+puts "Comparing versions #{versions}"
+
+if versions.uniq.size > 1
+  abort "Unable to find the same major, minor, and patch version for the inputs #{stemcells} #{stembuilds}"
+end
+
+puts "All stemcells have the same major, minor, and patch version."

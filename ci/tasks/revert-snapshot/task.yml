@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/revert-snapshot/run.sh
+
+params:
+  GOVC_URL:
+  DATACENTER:
+  VM_TO_REVERT:
+  SNAPSHOT_NAME:

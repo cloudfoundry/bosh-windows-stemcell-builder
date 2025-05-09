@@ -1,0 +1,70 @@
+---
+#Common Variables
+AWS_LOCK: 'stemcells-aws'
+AZURE_LOCK: 'stemcells-azure'
+BASE_FOLDER_NAME: '2019'
+BASE_IMAGE_OS: 'windows2019'
+STEMCELL_OS_NAME: 'windows2019'
+GCP_LOCK: 'stemcells-gcp'
+ROOT_BUCKET: 'all-bosh-windows'
+STEMCELL_INITIAL_VERSION: '2019.1.0'
+VM_PREFIX: 'packer-2019-prod'
+VSPHERE_LOCK: 'vsphere-worker-lock'
+PATCHFILE_OS_VERSION: 2019
+
+SECURITY_COMPLIANCE_APPLIED: true
+
+VHD_VMDK_BUCKET: "all-bosh-windows/2019/untested/vsphere/diffcell/inputs"
+PATCH_OUTPUT_BUCKET: "all-bosh-windows/2019/untested/vsphere/diffcell/patchfiles"
+DOWNLOAD_TEXT: "Downloading bosh-stemcell-${VERSION}-vsphere-esxi-windows2019-go_agent.tgz"
+
+# concourse pool resources
+AWS_POOL_NAME: 'aws-wuts-2019'
+AZURE_POOL_NAME: 'azure-wuts-2019'
+GOOSE_POOL_NAME: 'goose-2019'
+GCP_POOL_NAME: 'gcp-wuts-2019'
+VSPHERE_POOL_NAME: 'vsphere-2019'
+
+#AWS Base Image Info
+BASE_AMI_NAME: 'Windows_Server-2019-English-Core-Base-*'
+#AWS Output Info
+AWS_REGIONAL_BUCKET: 'aws-regional-stemcells-2019'
+#AWS Packer Info
+AWS_PACKER_REGION: 'us-east-1'
+AWS_CHINA_PACKER_REGION: 'cn-north-1'
+AWS_GOVCLOUD_PACKER_REGION: 'us-gov-west-1'
+
+#GCP Base Image Info
+BASE_IMAGE_REGEX: 'windows-server-2019-dc-core-v.*'
+IMAGE_FAMILY: 'windows-2019-core'
+
+#Azure Create & Publish Variables
+AZURE_BASE_IMAGE: '2019-Datacenter-Core-smalldisk'
+AZURE_BASE_IMAGE_OFFER: 'WindowsServer'
+AZURE_CONTAINER_NAME: 'system'
+AZURE_LOCATION: 'East US'
+AZURE_OBJECT_ID: ((KOALA_OBJECT_ID))
+AZURE_OFFER: 'bosh-windows-server-2019'
+AZURE_OS_VERSION: windows2019
+AZURE_PUBLISHER: 'pivotal'
+AZURE_RESOURCE_GROUP_NAME: ((KOALA_RESOURCE_GROUP_NAME))
+AZURE_SKU: '2019-sku2'
+AZURE_PATCHFILE_CONTAINER_NAME: ((KOALA_PATCHFILE_CONTAINER_NAME))
+AZURE_PATCHFILE_STORAGE_ACCESS_KEY: ((KOALA_PATCHFILE_STORAGE_ACCESS_KEY))
+AZURE_PATCHFILE_STORAGE_ACCOUNT_NAME: ((KOALA_PATCHFILE_STORAGE_ACCOUNT_NAME))
+AZURE_SUBSCRIPTION_ID: ((KOALA_SUBSCRIPTION_ID))
+AZURE_VM_SIZE: Standard_DS2_v2
+
+#Azure Test Heavy Variables
+AZURE_HEAVY_AZ: z1
+AZURE_HEAVY_NETWORK: default
+AZURE_HEAVY_VM_TYPE: default
+
+# Promote Variables
+BOSHIO_OS_VERSION: '2019'
+
+# Stembuild Integration OVA Info
+OVA_SOURCE_S3_REGION: "us-east-1"
+OVA_SOURCE_S3_BUCKET: "all-bosh-windows"
+OVA_SOURCE_S3_FILENAME: "ova-for-stembuild-test/Windows2019_VMWTools10.3.10_NoPassExp.ova"
+

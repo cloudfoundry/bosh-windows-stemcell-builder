@@ -1,0 +1,21 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/delete-vms/run.sh
+
+params:
+  VM_PREFIX:
+  TENANT_ID:
+  CLIENT_ID:
+  CLIENT_SECRET:
+  REGIONS:
+  SUBSCRIPTION_ID:
+  AWS_ACCESS_KEY_ID:
+  AWS_ROLE_ARN:
+  AWS_SECRET_ACCESS_KEY:
+  IAAS:
+  ACCOUNT_JSON:

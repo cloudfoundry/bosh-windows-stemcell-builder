@@ -1,0 +1,18 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stemcell
+  - name: version
+  - name: boshio-input
+outputs:
+  - name: version-tag
+  - name: boshio-output
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/commit-meta4-file/run
+params:
+  IAAS:
+  OS_NAME:
+  OS_VERSION:
+

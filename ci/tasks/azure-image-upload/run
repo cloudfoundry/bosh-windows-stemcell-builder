@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+uri_filename='bosh-stemcell-*-azure-vhd-uri.txt'
+image_url=$(cat "azure-base-vhd-uri/${uri_filename}")
+vhd_path=$(echo "${image_url}" | sed -E 's/^.*(Microsoft\.Compute\/Images\/.*vhd).*$/\1/')
+
+create_microsoft_token() {
+    tenant_id=${PARTNER_PORTAL_TENANT_ID}
+    client_id=${PARTNER_PORTAL_CLIENT_ID}
+    client_secret=${PARTNER_PORTAL_CLIENT_SECRET}
+    grant_type="client_credentials"
+    resource="https://cloudpartner.azure.com"
+
+    microsoft_auth_endpoint="https://login.microsoftonline.com/${tenant_id}/oauth2/token"
+    token=$(curl --fail -X POST "${microsoft_auth_endpoint}" \
+      -F "client_id=${client_id}"  \
+      -F "client_secret=${client_secret}"  \
+      -F "grant_type=${grant_type}"  \
+      -F "resource=${resource}" | jq -r .access_token
+    )
+    echo "$token"
+}
+
+copy_blob_to_premiumstore() {
+  az storage blob copy start \
+    --source-account-key "${AZURE_STORAGE_ACCESS_KEY}" \
+    --source-account-name "${AZURE_STORAGE_ACCOUNT}" \
+    --source-container "${AZURE_CONTAINER_NAME}" \
+    --source-blob "${vhd_path}" \
+    --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
+    --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" \
+    --destination-container "${AZURE_CONTAINER_NAME}" \
+    --destination-blob "${vhd_path}"
+}
+
+wait_for_copy_blob_to_premiumstore() {
+  while true; do
+    copy_status="$(get_copy_blob_status)"
+    case "${copy_status}" in
+      failed | aborted)
+        echo "Copy ${copy_status}"
+        exit 1
+        ;;
+      success)
+        break
+        ;;
+      *)
+        sleep 5
+    esac
+  done
+}
+
+get_copy_blob_status() {
+  az storage blob show \
+    --container-name "${AZURE_CONTAINER_NAME}" \
+    --name "${vhd_path}" \
+    --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
+    --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" | jq -r ".properties.copy.status"
+}
+
+echo -n "Authenticating with Microsoft..."
+echo
+token=$(create_microsoft_token)
+echo OK
+
+echo
+echo "Copying Image from ${AZURE_STORAGE_ACCOUNT} to ${AZURE_PUBLISHED_STORAGE_ACCOUNT}"
+copy_blob_to_premiumstore
+echo OK
+
+echo
+echo "Waiting for copy to finish from ${AZURE_STORAGE_ACCOUNT} to ${AZURE_PUBLISHED_STORAGE_ACCOUNT}"
+wait_for_copy_blob_to_premiumstore
+echo OK

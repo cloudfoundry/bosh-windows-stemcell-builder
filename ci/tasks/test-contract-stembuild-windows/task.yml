@@ -1,0 +1,25 @@
+---
+platform: windows
+
+inputs:
+- name: stembuild
+- name: bosh-windows-stemcell-builder-ci
+
+run:
+  path: powershell
+  args:
+  - "-File"
+  - bosh-windows-stemcell-builder-ci/ci/tasks/test-contract-stembuild-windows/run.ps1
+
+params:
+  GOVC_INSECURE: 1
+  VCENTER_ADMIN_CREDENTIAL_URL:
+  VM_FOLDER:
+  PACKAGE_TEST_VM_NAME:
+  VCENTER_BASE_URL:
+  VCENTER_USERNAME:
+  VCENTER_PASSWORD:
+  VCENTER_CA_CERT:
+  CONTRACT_TEST_VM_NAME:
+  CONTRACT_TEST_VM_PASSWORD:
+  CONTRACT_TEST_VM_USERNAME:

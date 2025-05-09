@@ -1,0 +1,19 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: default-ami
+  - name: stemcell-builder
+  - name: version
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/label-aws-stemcell-for-production/run
+
+params:
+  AWS_ACCESS_KEY:
+  AWS_SECRET_KEY:
+  AWS_REGION:
+
+  VERSION_DIR: ../version
+  AMIS_DIR: ../default-ami

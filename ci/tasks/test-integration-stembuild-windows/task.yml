@@ -1,0 +1,34 @@
+---
+platform: windows
+
+inputs:
+- name: stembuild
+- name: bosh-windows-stemcell-builder-ci
+- name: version
+- name: nimbus-ips
+- name: integration-vm-name
+- name: bosh-psmodules-repo
+
+outputs:
+- name: output
+
+run:
+  path: powershell
+  args:
+  - "-File"
+  - bosh-windows-stemcell-builder-ci/ci/tasks/test-integration-stembuild-windows/run.ps1
+
+params:
+  VCENTER_BASE_URL:
+  GOVC_DATASTORE:
+  GOVC_NETWORK:
+  GOVC_RESOURCE_POOL:
+  VCENTER_ADMIN_CREDENTIAL_URL:
+  VCENTER_USERNAME:
+  VCENTER_PASSWORD:
+  VM_USERNAME:
+  VM_PASSWORD:
+  VM_FOLDER:
+  PACKAGE_TEST_BASE_VM_NAME:
+  OS_LINE:
+  SKIP_CLEANUP: false

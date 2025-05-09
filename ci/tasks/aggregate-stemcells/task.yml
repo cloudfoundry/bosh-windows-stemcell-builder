@@ -1,0 +1,27 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stemcell-builder
+  - name: version
+  - name: amis
+  - name: aws-public-stemcells
+  - name: aws-govcloud-stemcells
+    optional: true
+  - name: aws-china-stemcells
+    optional: true
+
+outputs:
+  - name: bosh-windows-stemcell
+  - name: sha
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/aggregate-stemcells/run
+
+params:
+  OS_VERSION:
+  COPIED_STEMCELL_DIRECTORIES:
+  VERSION_DIR: ../version
+  AMIS_DIR: ../amis
+

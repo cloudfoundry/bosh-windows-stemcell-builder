@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+require 'yaml'
+require 'fileutils'
+require 'digest'
+
+Dir.chdir File.join(File.dirname(__FILE__), '..', '..', '..')
+$stemcell = Dir.glob('bosh-windows-stemcell/*.tgz')
+$final_version = File.read('version/number').match(/\d+\.\d+/)[0]
+
+def new_stemcell_name(old_stemcell_path, final_version)
+  File.basename(old_stemcell_path).gsub(/\d+\.\d+\.\d+(-build\.\d+)?/, final_version)
+end
+
+def update_stemcell_filename
+  stemcell_name = new_stemcell_name($stemcell[0], $final_version)
+  FileUtils.mv $stemcell[0], File.join('final-stemcell', stemcell_name)
+
+  File.open(File.join('final-stemcell', 'version'), 'w') do |f|
+    f.write($final_version)
+  end
+end
+
+def update_stemcell_version
+  system('tar', '-xzf', $stemcell[0])
+
+  manifest = YAML.load_file('stemcell.MF')
+  manifest['version'] = $final_version
+
+  File.open('stemcell.MF', 'w') do |file|
+    file.write(YAML.dump(manifest))
+  end
+
+  system('tar', '-czf', $stemcell[0], 'image', 'stemcell.MF')
+end
+
+update_stemcell_version
+update_stemcell_filename

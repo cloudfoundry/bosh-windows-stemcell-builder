@@ -1,0 +1,15 @@
+---
+platform: linux
+image_resource:
+  type: registry-image
+  source:
+    repository: bosh/windows-stemcell-ci
+
+inputs:
+  - name: stembuild
+  - name: bosh-windows-stemcell-builder-ci
+  - name: version
+  - name: ovftool
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-linux/run.sh

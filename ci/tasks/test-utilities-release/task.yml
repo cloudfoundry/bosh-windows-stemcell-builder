@@ -1,0 +1,14 @@
+---
+platform: windows
+
+inputs:
+- name: bosh-windows-stemcell-builder-ci
+- name: windows-utilities-release
+
+run:
+  path: powershell
+  args:
+  - "-ExecutionPolicy"
+  - "Bypass"
+  - "-Command"
+  - bosh-windows-stemcell-builder-ci/ci/tasks/test-utilities-release/run.ps1

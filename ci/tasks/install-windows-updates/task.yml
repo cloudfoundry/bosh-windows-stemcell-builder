@@ -1,0 +1,18 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+
+outputs:
+  - name: hotfix-log
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/install-windows-updates/run.sh
+
+params:
+  GOVC_URL:
+  VCENTER_BASE_URL:
+  STEMBUILD_CONSTRUCT_TARGET_VM:
+  VM_USERNAME:
+  VM_PASSWORD:

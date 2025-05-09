@@ -1,0 +1,20 @@
+---
+platform: linux
+
+inputs:
+  - name: stembuild
+  - name: bosh-windows-stemcell-builder-ci
+  - name: version
+  - name: stemcell-automation-release
+    optional: true
+  - name: zip-file
+    optional: true
+
+outputs:
+  - name: output
+
+params:
+  STEMCELL_AUTOMATION_ZIP:
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/build-stembuild-linux/run.sh

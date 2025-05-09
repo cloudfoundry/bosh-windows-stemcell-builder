@@ -1,0 +1,50 @@
+#groups
+- type: remove
+  path: /groups/name=all/jobs/4
+- type: remove
+  path: /groups/name=all/jobs/4
+- type: remove
+  path: /groups/name=all/jobs/4
+- type: remove
+  path: /groups/name=aws-china
+
+#resources
+- type: remove
+  path: /resources/name=packer-output-china-ami
+- type: remove
+  path: /resources/name=aws-china-untested
+- type: remove
+  path: /resources/name=aws-china-tested
+- type: remove
+  path: /resources/name=base-china-ami
+
+#jobs
+- type: remove
+  path: /jobs/name=create-aws-china
+- type: remove
+  path: /jobs/name=test-aws-china
+- type: remove
+  path: /jobs/name=wuts-aws-china
+
+#build-job
+- type: remove
+  path: /jobs/name=build/plan/3/in_parallel/steps/task=collect-china-amis
+- type: remove
+  path: /jobs/name=build/plan/4/in_parallel/steps/put=base-china-ami
+
+#promote-job
+- type: remove
+  path: /jobs/name=promote/plan/0/in_parallel/steps/get=aws-china-tested
+- type: remove
+  path: /jobs/name=promote/plan/0/in_parallel/steps/get=packer-output-china-ami
+
+#promote-aws-job
+- type: remove
+  path: /jobs/name=promote-aws/plan/0/in_parallel/steps/get=aws-china-tested
+- type: remove
+  path: /jobs/name=promote-aws/plan/0/in_parallel/steps/get=china-ami
+- type: remove
+  path: /jobs/name=promote-aws/plan/task=copy-china-stemcells
+- type: replace
+  path: /jobs/name=promote-aws/plan/task=aggregate-stemcells/params/COPIED_STEMCELL_DIRECTORIES
+  value: '../aws-public-stemcells,../aws-govcloud-stemcells'

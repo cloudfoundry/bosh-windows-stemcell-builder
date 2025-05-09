@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+set -x
+
+pushd lgpo-binary
+  unzip LGPO.zip
+popd
+
+CONCOURSE_ROOT="$(pwd)"
+
+"${CONCOURSE_ROOT}/bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/run.sh"
+"${CONCOURSE_ROOT}/bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/run.sh"
+
+pushd stemcell-builder
+  bundle install --without test
+
+  rake build:azure
+
+  mv bosh-windows-stemcell/* ../bosh-windows-stemcell
+
+  mv hotfixes.log ../hotfix-log/
+popd

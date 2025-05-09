@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+create_microsoft_token() {
+  tenant_id=${PARTNER_PORTAL_TENANT_ID}
+  client_id=${PARTNER_PORTAL_CLIENT_ID}
+  client_secret=${PARTNER_PORTAL_CLIENT_SECRET}
+  grant_type="client_credentials"
+  resource="https://cloudpartner.azure.com"
+
+  microsoft_auth_endpoint="https://login.microsoftonline.com/$tenant_id/oauth2/token"
+  token=$(curl -X POST $microsoft_auth_endpoint \
+    -F "client_id=$client_id"  \
+    -F "client_secret=$client_secret"  \
+    -F "grant_type=$grant_type"  \
+    -F "resource=$resource" | jq -r .access_token
+  )
+  echo $token
+}
+
+retrieve_offer_status_json() {
+  curl -X GET $offer_status_endpoint \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $token"
+}
+
+checking_status() {
+  echo -n "authenticating with microsoft..."
+  token=$(create_microsoft_token)
+  retrieve_offer_status_json > offer_status_json
+  echo "Full offer status json response is: $(cat offer_status_json)"
+  original_publishing_version=$(jq -r ".publishingVersion" offer_status_json)
+  signoff_step_status=$(jq -r ".steps[] | select(.id == \"publisher-signoff\") | .status" offer_status_json)
+  while [[ $signoff_step_status != "waitingForPublisherReview" ]]; do
+    echo "At time $(date), offer is waiting for publisher sign off: ${signoff_step_status}"
+    if [[ "$signoff_step_status" == "complete" ]]; then
+      echo "Status is marked as 'complete'. We are expecting the status to become 'waitingForPublisherReview'. We may be trying to re-publish a previously published version."
+      exit 1
+    fi
+    sleep 30m
+    token=$(create_microsoft_token)
+    retrieve_offer_status_json > offer_status_json
+    publishing_version=$(jq -r ".publishingVersion" offer_status_json)
+    if [[ "${original_publishing_version}" -gt "${publishing_version}" ]]; then
+      echo "The offer no longer exists, it was probably rejected"
+      exit 1
+    fi
+    if [[ "${original_publishing_version}" -lt "${publishing_version}" ]]; then
+      echo "The offer has been superseded by a newer offer. We are now waiting for that offering to be successful"
+      original_publishing_version=${publishing_version}
+    fi
+    signoff_step_status=$(jq -r ".steps[] | select(.id == \"publisher-signoff\") | .status" offer_status_json)
+    echo "Full offer status json response is: $(cat offer_status_json)"
+  done
+}
+
+offer_status_endpoint="https://cloudpartner.azure.com/api/publishers/$AZURE_PUBLISHER/offers/$AZURE_OFFER/status?api-version=2017-10-31"
+
+echo "==============================================================================================="
+echo "This is a long running job that can run for up to 7 days before it reaches a Concourse timeout."
+echo "==============================================================================================="
+echo
+echo "Waiting for 'Go Live' to be available..."
+checking_status
+echo "The 'Go Live' is available."

@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+create_microsoft_token() {
+  tenant_id=${PARTNER_PORTAL_TENANT_ID}
+  client_id=${PARTNER_PORTAL_CLIENT_ID}
+  client_secret=${PARTNER_PORTAL_CLIENT_SECRET}
+  grant_type="client_credentials"
+  resource="https://cloudpartner.azure.com"
+
+  microsoft_auth_endpoint="https://login.microsoftonline.com/$tenant_id/oauth2/token"
+  token=$(curl -X POST $microsoft_auth_endpoint \
+    -F "client_id=$client_id"  \
+    -F "client_secret=$client_secret"  \
+    -F "grant_type=$grant_type"  \
+    -F "resource=$resource" | jq -r .access_token
+  )
+  echo $token
+}
+
+retrieve_offer_status_json() {
+  curl -X GET $offer_status_endpoint \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $token"
+}
+
+check_offer_is_live() {
+  echo -n "authenticating with microsoft..."
+  token=$(create_microsoft_token)
+  retrieve_offer_status_json > offer_status_json
+  offer_status=$(jq -r .status offer_status_json)
+  live_step_status=$(jq -r ".steps[] | select(.id == \"live\") | .status" offer_status_json)
+  while [[ $offer_status != "succeeded" || $live_step_status != "complete" ]]; do
+    echo "At time $(date), offer is not live yet"
+    sleep 1h
+    token=$(create_microsoft_token)
+    retrieve_offer_status_json > offer_status_json
+    offer_status=$(jq -r .status offer_status_json)
+    live_step_status=$(jq -r ".steps[] | select(.id == \"live\") | .status" offer_status_json)
+  done
+}
+
+offer_status_endpoint="https://cloudpartner.azure.com/api/publishers/$AZURE_PUBLISHER/offers/$AZURE_OFFER/status?api-version=2017-10-31"
+
+
+echo "==============================================================================================="
+echo "This is a long running job that can run for up to 5 days before it reaches a Concourse timeout."
+echo "==============================================================================================="
+echo
+echo "Checking to see if the Marketplace Offer is live..."
+check_offer_is_live
+echo "The publish step has completed. It can take up to 4 more hours for the offer to be visible in the marketplace..."
+sleep 4h
+echo "Offer is Live!"
+

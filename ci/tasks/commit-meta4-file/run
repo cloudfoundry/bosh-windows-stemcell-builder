@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+#==============================================================================
+# this is taken from: https://github.com/dpb587-pivotal/bosh-hub/blob/2da70613a62ece8384cfcd94f259aa5b0e1f5492/docs/publishing-stemcells.md
+#==============================================================================
+
+set -e
+
+CYAN='\033[1;32m'
+NC='\033[0m' # No Color
+
+function meta4-the-stemcell {
+    local iaas=$1
+    local candidate_build_number=$2
+    local metalink=$3
+    local stemcell_path=`ls stemcell/*.tgz`
+    local stemcell=`basename $stemcell_path`
+
+    # import the stemcell tarball (this automatically calculates checksums)
+    meta4 import-file --metalink="$metalink" \
+        --version="$candidate_build_number" \
+        $stemcell_path
+
+    # define where the stemcell can be downloaded
+    meta4 file-set-url --metalink="$metalink" --file=$stemcell \
+        https://bosh-windows-stemcells-production.s3.amazonaws.com/$OS_VERSION/${stemcell}
+}
+
+function create-meta4-file {
+    local filename=$1
+    local version=$2
+
+    local metalink=boshio-output/published/$OS_NAME-$OS_VERSION/$version/$filename.meta4
+
+    # create an empty metalink file for us to add the files
+    mkdir -p "$( dirname "$metalink" )"
+    meta4 create --metalink="$metalink"
+
+    echo $metalink
+}
+
+version=`cut -d'.' -f1-2 version/number`
+cp -r boshio-input/. boshio-output
+
+case "$IAAS" in
+    "aws")
+      filename='aws-xen-hvm-go_agent'
+      ;;
+
+    "gcp")
+      filename='google-kvm-go_agent'
+      ;;
+
+    "azure")
+      filename='azure-hyperv-go_agent'
+      ;;
+esac
+metalink=boshio-output/published/$OS_NAME-$OS_VERSION/$version/$filename.meta4
+
+if test -f $metalink; then
+  echo -e "Meta4 file for ${CYAN}${IAAS}${NC} already exists"
+else
+  echo -e "Creating meta4 file for ${CYAN}${IAAS}${NC}"
+  metalink=$(create-meta4-file $filename $version)
+  meta4-the-stemcell $IAAS $version $metalink
+
+  cd boshio-output
+  git add .
+  git config --global user.email "ci@localhost"
+  git config --global user.name "CI Bot"
+  git commit -m "publish: $OS_NAME-$OS_VERSION/$version"
+fi
+

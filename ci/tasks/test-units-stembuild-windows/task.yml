@@ -1,0 +1,13 @@
+---
+platform: windows
+
+inputs:
+  - name: stembuild
+  - name: bosh-windows-stemcell-builder-ci
+  - name: version
+
+run:
+  path: powershell
+  args:
+    - "-File"
+    - bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-windows/run.ps1

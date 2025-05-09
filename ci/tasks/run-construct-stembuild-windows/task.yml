@@ -1,0 +1,23 @@
+---
+platform: windows
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stembuild-untested-windows
+  - name: lgpo-binary
+
+run:
+  path: powershell
+  args:
+    - "-File"
+    - bosh-windows-stemcell-builder-ci/ci/tasks/run-construct-stembuild-windows/run.ps1
+
+params:
+  VCENTER_BASE_URL:
+  VCENTER_USERNAME:
+  VCENTER_PASSWORD:
+  VCENTER_VM_FOLDER:
+  STEMBUILD_BASE_VM_NAME:
+  STEMBUILD_BASE_VM_IP:
+  STEMBUILD_BASE_VM_USERNAME:
+  STEMBUILD_BASE_VM_PASSWORD:

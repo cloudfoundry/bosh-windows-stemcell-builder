@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/update-snapshot/run.sh
+
+params:
+  GOVC_URL:
+  DATACENTER:
+  VM_TO_SNAPSHOT:
+  SNAPSHOT_NAME:

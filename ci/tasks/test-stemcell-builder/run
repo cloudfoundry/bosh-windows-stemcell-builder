@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+set -x
+
+cd stemcell-builder
+bundle install
+bundle exec rspec

@@ -1,0 +1,20 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+
+params:
+  COMMERCIAL_AWS_ACCESS_KEY_ID:
+  COMMERCIAL_AWS_DEFAULT_REGION:
+  COMMERCIAL_AWS_ROLE_ARN:
+  COMMERCIAL_AWS_SECRET_ACCESS_KEY:
+  GOVCLOUD_AWS_ACCESS_KEY_ID:
+  GOVCLOUD_AWS_DEFAULT_REGION:
+  GOVCLOUD_AWS_SECRET_ACCESS_KEY:
+  CONCOURSE_GCP_CREDENTIALS_JSON:
+  CONCOURSE_GOOGLE_PROJECT_ID:
+  WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON:
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/firewall-rules/configure-windows-firewall-rules.sh

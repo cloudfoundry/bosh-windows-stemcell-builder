@@ -1,0 +1,14 @@
+---
+platform: linux
+
+inputs:
+- name: bosh-windows-stemcell-builder-ci
+
+params:
+  AWS_ACCESS_KEY:
+  AWS_ROLE_ARN:
+  AWS_REGION:
+  AWS_SECRET_KEY:
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/cleanup-unpublished-aws-amis/run

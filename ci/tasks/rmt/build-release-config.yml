@@ -1,0 +1,30 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: version
+  - name: aws-stemcell-final
+  - name: gcp-stemcell-final
+  - name: azure-stemcell-final
+  - name: final-stembuilds
+  - name: license-file
+
+outputs:
+  - name: release-config
+  - name: release-files
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/rmt/build-release-config.sh
+
+params:
+  RELEASE_CONTACT:
+  RELEASE_TITLE:
+  RELEASE_PRODUCT_NAME:
+  RELEASE_DISPLAY_GROUP:
+  RELEASE_TYPE:
+  RELEASE_STATUS:
+  RELEASE_END_OF_SUPPORT:
+  RELEASE_UPGRADE_SPECIFIER:
+  RELEASE_SKUS:
+  RELEASE_PRODUCT_SLUG:

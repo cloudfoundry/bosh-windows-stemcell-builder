@@ -1,0 +1,8 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+
+run: 
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/clean-up-pre-release-blobstore/run

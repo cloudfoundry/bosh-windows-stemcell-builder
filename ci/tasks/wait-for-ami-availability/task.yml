@@ -1,0 +1,20 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stemcell-builder
+  - name: version
+  - name: amis
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/wait-for-ami-availability/run
+
+params:
+  AWS_ACCESS_KEY:
+  AWS_SECRET_KEY:
+  AWS_REGION:
+  AWS_ROLE_ARN:
+
+  VERSION_DIR: ../version
+  AMIS_DIR: ../amis

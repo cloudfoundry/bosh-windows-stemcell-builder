@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+main_version=$(cat version/number)
+uri_filename='bosh-stemcell-*-azure-vhd-uri.txt'
+image_url=$(cat "azure-base-vhd-uri/${uri_filename}")
+vhd_path=$(echo "${image_url}" | sed -E 's/^.*(Microsoft\.Compute\/Images\/.*vhd).*$/\1/')
+
+retrieve_blob_url() {
+    retrieve_blob_url=$(
+      az storage blob url \
+      --container-name "${AZURE_CONTAINER_NAME}" \
+      --name "${vhd_path}" \
+      --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
+      --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}"
+    )
+
+    blob_url=$(echo "${retrieve_blob_url}"  | sed -E 's/"//g')
+
+    echo "${blob_url}"
+}
+
+create_azure_sas() {
+    iso8601_format='+%Y-%m-%dT%TZ'
+    yesterday=$(date -u --date="-1 day" ${iso8601_format})
+    in_two_years=$(date -u --date="+2 years" ${iso8601_format})
+
+    azure_sas=$(
+      az storage container generate-sas --name "${AZURE_CONTAINER_NAME}" \
+      --permissions rl \
+      --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
+      --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" \
+      --start "${yesterday}" --expiry "${in_two_years}"
+    )
+
+    sas_params=$(echo "${azure_sas}"  | sed -E 's/"//g')
+
+    echo "${sas_params}"
+}
+
+format_version() {
+  main_version=${1}
+  version_regex='([0-9]+)\.([0-9]+)\.([0-9]+)-build\.([0-9]+)'
+  version_number_tokens=$(echo "${main_version}" | sed -E  "s/^${version_regex}$/\1  \2  \3  \4/")
+  echo "${version_number_tokens}" | awk '{ printf("%d.%d.%03d%03d", $1, $2, $3, $4) } '
+}
+
+create_microsoft_token() {
+    tenant_id=${PARTNER_PORTAL_TENANT_ID}
+    client_id=${PARTNER_PORTAL_CLIENT_ID}
+    client_secret=${PARTNER_PORTAL_CLIENT_SECRET}
+    grant_type="client_credentials"
+    resource="https://cloudpartner.azure.com"
+
+    microsoft_auth_endpoint="https://login.microsoftonline.com/${tenant_id}/oauth2/token"
+    token=$(curl --fail -X POST "${microsoft_auth_endpoint}" \
+      -F "client_id=${client_id}"  \
+      -F "client_secret=${client_secret}"  \
+      -F "grant_type=${grant_type}"  \
+      -F "resource=${resource}" | jq -r .access_token
+    )
+    echo "${token}"
+}
+
+create_original_offer_json() {
+    curl -vv --fail -X GET "${offer_id_endpoint}" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${token}"
+}
+
+create_modified_offer_json() {
+
+    vm_image_path=".definition.plans[] | select(.planId == \"${AZURE_SKU}\") | .[\"microsoft-azure-virtualmachines.vmImages\"]"
+    new_vm_object="{\"${image_version}\": {\"osVhdUrl\":\"${vhd_url}\", \"lunVhdDetails\": []}}"
+    add_image_to_plan="(${vm_image_path}) |= . + ${new_vm_object}"
+    jq "${add_image_to_plan}" "${original_offer_json}"
+}
+
+update_offer() {
+    sleep 10
+    curl -vv --fail -X PUT -d "@${modified_offer_json}" "${offer_id_endpoint}" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${token}"
+}
+
+publish_offer() {
+  jq -n --arg email "${OFFER_NOTIFICATION_EMAIL}" \
+    '{ "metadata": { "notification-emails": $email } }' > offer_emails.json
+
+  publish_offer_endpoint="https://cloudpartner.azure.com/api/publishers/${AZURE_PUBLISHER}/offers/${AZURE_OFFER}/publish?api-version=2017-10-31"
+  curl -vv --fail -X POST -d "@offer_emails.json" "${publish_offer_endpoint}" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer ${token}"
+}
+
+echo -n "Authenticating with Microsoft..."
+echo
+token=$(create_microsoft_token)
+echo OK
+
+offer_id_endpoint="https://cloudpartner.azure.com/api/publishers/${AZURE_PUBLISHER}/offers/${AZURE_OFFER}?api-version=2017-10-31"
+
+echo
+echo "retrieving current offer details from the Partner Center API..."
+
+original_offer_json="${PWD}/original_offer.json"
+echo "to debug, 'fly intercept -u <this job run url>' and 'cat ${original_offer_json}'"
+
+create_original_offer_json > "${original_offer_json}"
+echo OK
+
+echo
+echo "adding image version and vhd url to offer json:"
+
+modified_offer_json="${PWD}/modified_offer.json"
+echo "to debug, 'fly intercept -u <this job run url>' and 'cat ${modified_offer_json}'"
+
+image_version=$(format_version "${main_version}")
+echo "setting image version: ${image_version}"
+
+vhd_url="$(retrieve_blob_url)?$(create_azure_sas)"
+echo "VHD URL: ${vhd_url}"
+
+create_modified_offer_json > "${modified_offer_json}"
+echo OK
+
+echo
+echo "modifying offer details by PUTting to Partner Center API..."
+echo "to debug, 'fly intercept -u <this job run url>' and 'cat endstate.json'"
+update_offer > "endstate.json"
+echo OK
+
+echo
+echo "Publishing offer, will notify ${OFFER_NOTIFICATION_EMAIL}"
+publish_offer
+echo OK

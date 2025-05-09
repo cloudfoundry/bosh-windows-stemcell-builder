@@ -1,0 +1,23 @@
+---
+platform: linux
+
+inputs:
+- name: azure-base-vhd-uri
+- name: azure-build-number
+- name: bosh-windows-stemcell-builder-ci
+
+outputs:
+  - name: heavy-stemcell
+
+run:
+  path: /bin/bash
+  args:
+  - -l
+  - -c
+  - |
+    pwsh -ExecutionPolicy Bypass -File bosh-windows-stemcell-builder-ci/ci/tasks/download-heavy-azure-stemcell/run.ps1
+
+params:
+  STEMCELL_OS:
+  WORKING_DIR: '/'
+  DESTINATION_DIR: heavy-stemcell

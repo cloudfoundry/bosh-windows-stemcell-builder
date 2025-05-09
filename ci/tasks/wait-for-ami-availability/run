@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+set -x
+
+if [ -n "${AWS_ROLE_ARN}" ]; then
+  aws configure --profile creds_account set aws_access_key_id "${AWS_ACCESS_KEY}"
+  aws configure --profile creds_account set aws_secret_access_key "${AWS_SECRET_KEY}"
+  aws configure --profile resource_account set source_profile "creds_account"
+  aws configure --profile resource_account set role_arn "${AWS_ROLE_ARN}"
+  aws configure --profile resource_account set region "${AWS_REGION}"
+  unset AWS_ACCESS_KEY
+  unset AWS_SECRET_KEY
+  unset AWS_REGION
+  export AWS_PROFILE=resource_account
+else
+  aws configure set aws_access_key_id "${AWS_ACCESS_KEY}"
+  aws configure set aws_secret_access_key "${AWS_SECRET_KEY}"
+fi
+
+cd stemcell-builder
+bundle install --without test
+rake build:validate_ami
+rake aws:label:for_test

@@ -1,0 +1,20 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stembuild-untested-linux
+  - name: build-number
+
+outputs:
+  - name: stembuild-built-stemcell
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/run-package-stembuild-linux/run.sh
+
+params:
+  VCENTER_BASE_URL:
+  VCENTER_USERNAME:
+  VCENTER_PASSWORD:
+  STEMBUILD_BASE_VM_NAME:
+  VCENTER_VM_FOLDER:

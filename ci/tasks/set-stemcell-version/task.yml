@@ -1,0 +1,13 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: bosh-windows-stemcell
+  - name: version
+
+outputs:
+  - name: final-stemcell
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/run

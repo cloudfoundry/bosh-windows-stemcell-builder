@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -ex
+
+sha=`git -C module-repo rev-parse HEAD`
+git -C source-repo/$SUBMODULE fetch --all
+git -C source-repo/$SUBMODULE reset --hard $sha
+git -C source-repo/$SUBMODULE submodule update --init --recursive
+
+pushd source-repo
+  if [ -n "$(git status --porcelain)" ]; then
+    git config user.email "pivotal-netgarden-eng@pivotal.io"
+    git config user.name "CI (Automated)"
+    git add -A .
+    git commit -m "Update $SUBMODULE submodule"
+  fi
+popd
+
+cp -r source-repo/. bumped-repo/

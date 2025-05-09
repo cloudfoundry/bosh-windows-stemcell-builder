@@ -1,0 +1,23 @@
+---
+platform: windows
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stembuild-untested-windows
+  - name: build-number
+
+outputs:
+  - name: stembuild-built-stemcell
+
+run:
+  path: powershell
+  args:
+    - "-File"
+    - bosh-windows-stemcell-builder-ci/ci/tasks/run-package-stembuild-windows/run.ps1
+
+params:
+  VCENTER_BASE_URL:
+  VCENTER_USERNAME:
+  VCENTER_PASSWORD:
+  STEMBUILD_BASE_VM_NAME:
+  VCENTER_VM_FOLDER:

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+
+create_microsoft_token() {
+  tenant_id=${PARTNER_PORTAL_TENANT_ID}
+  client_id=${PARTNER_PORTAL_CLIENT_ID}
+  client_secret=${PARTNER_PORTAL_CLIENT_SECRET}
+  grant_type="client_credentials"
+  resource="https://cloudpartner.azure.com"
+
+  microsoft_auth_endpoint="https://login.microsoftonline.com/$tenant_id/oauth2/token"
+  token=$(curl -X POST $microsoft_auth_endpoint \
+    -F "client_id=$client_id"  \
+    -F "client_secret=$client_secret"  \
+    -F "grant_type=$grant_type"  \
+    -F "resource=$resource" | jq -r .access_token
+  )
+  echo $token
+}
+
+go_live_endpoint="https://cloudpartner.azure.com/api/publishers/$AZURE_PUBLISHER/offers/$AZURE_OFFER/golive?api-version=2017-10-31"
+click_go_live() {
+  token=$(create_microsoft_token)
+  curl --fail -X POST $go_live_endpoint \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $token" \
+  -d ""
+}
+
+echo "Clicking 'Go Live'..."
+click_go_live
+echo OK
+

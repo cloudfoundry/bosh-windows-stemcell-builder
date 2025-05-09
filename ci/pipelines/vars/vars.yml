@@ -1,0 +1,3 @@
+---
+ROOT_EPHEMERAL_VM_TYPE: "use_root_disk_as_ephemeral"
+BOSH_AGENT_RELEASE_VERSION: '~2'

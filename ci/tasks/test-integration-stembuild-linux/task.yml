@@ -1,0 +1,29 @@
+---
+platform: linux
+
+inputs:
+- name: stembuild
+- name: bosh-windows-stemcell-builder-ci
+- name: version
+- name: ovftool
+- name: nimbus-ips
+- name: integration-vm-name
+- name: bosh-psmodules-repo
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/test-integration-stembuild-linux/run.sh
+
+params:
+  VCENTER_BASE_URL:
+  GOVC_DATASTORE:
+  GOVC_NETWORK:
+  GOVC_RESOURCE_POOL:
+  VCENTER_ADMIN_CREDENTIAL_URL:
+  VCENTER_USERNAME:
+  VCENTER_PASSWORD:
+  VM_USERNAME:
+  VM_PASSWORD:
+  VM_FOLDER:
+  PACKAGE_TEST_BASE_VM_NAME:
+  OS_LINE:
+  SKIP_CLEANUP: false

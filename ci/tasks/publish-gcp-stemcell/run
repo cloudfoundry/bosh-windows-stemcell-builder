@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+set -x
+
+cd stemcell-builder
+bundle install
+rake publish:gcp
+rake gcp:label:for_test
+cd ..
+
+mv bosh-windows-stemcell/*.tgz untested-stemcell

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -ex
+
+gcloud auth activate-service-account --quiet --key-file <(echo "$ACCOUNT_JSON")
+
+project_id=$(echo "$ACCOUNT_JSON" | jq -r .project_id)
+# We only delete GCP images older than two weeks to avoid deleting a GCP image working its way through the pipeline
+unpublished_images=$(gcloud compute images list \
+  --project $project_id \
+  --filter 'labels.published:false AND creationTimestamp<=-P2W' \
+  --format=json \
+  | jq -r '.[].name')
+
+for UNPUBLISHED_IMAGE in $unpublished_images; do
+  gcloud compute images delete $UNPUBLISHED_IMAGE --project $project_id --quiet
+done

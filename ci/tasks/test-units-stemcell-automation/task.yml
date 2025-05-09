@@ -1,0 +1,20 @@
+---
+platform: windows
+inputs:
+  - name: stembuild
+  - name: pester
+  - name: bosh-windows-stemcell-builder-ci
+run:
+  path: powershell
+  args:
+    - "-Command"
+    - "& {
+            Import-Module ./bosh-windows-stemcell-builder-ci/ci/common-scripts/setup-windows-container.psm1;
+            Set-TmpDir;
+            Import-Module ./Pester/pester.psm1;
+            pushd stembuild/stembuild/stemcell-automation;
+            $result=Invoke-Pester -PassThru;
+            popd;
+            Write-Host \"Failed Tests:\"$result.FailedCount;
+            exit $result.FailedCount
+          }"

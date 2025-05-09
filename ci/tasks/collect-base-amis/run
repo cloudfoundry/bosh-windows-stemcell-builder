@@ -1,0 +1,100 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+if ENV['AWS_ROLE_ARN'] && !ENV['AWS_ROLE_ARN'].empty?
+  aws_config_dir="#{ENV['HOME']}/.aws"
+  Dir.mkdir(aws_config_dir)
+  File.open("#{aws_config_dir}/credentials", mode: 'a') do |file|
+    file.write(<<~EOF
+      [service-credentials]
+      aws_access_key_id = #{ENV['AWS_ACCESS_KEY_ID']}
+      aws_secret_access_key = #{ENV['AWS_SECRET_ACCESS_KEY']}
+    EOF
+    )
+  end
+
+  File.open("#{aws_config_dir}/config", mode: 'a') do |file|
+    file.write(<<~EOF
+      [profile assume-role]
+      role_arn = #{ENV['AWS_ROLE_ARN']}
+      source_profile = service-credentials
+    EOF
+    )
+  end
+
+  ENV['AWS_PROFILE'] = 'assume-role'
+  ENV.delete('AWS_ACCESS_KEY_ID')
+  ENV.delete('AWS_SECRET_ACCESS_KEY')
+end
+
+supported_base_ami = %w[windows2019]
+
+# Helper method
+def get_ami_for(region, base_ami_name)
+  amis = JSON.parse(`aws ec2 describe-images \
+            --region #{region} \
+            --owners amazon \
+            --filters "Name=name,Values=#{base_ami_name}" "Name=state,Values=available"`)
+  base_ami = (amis['Images'].sort { |a, b| b['CreationDate'] <=> a['CreationDate'] }).first
+  puts "Base AMI Information:"
+  puts JSON.pretty_generate({name: base_ami['Name'], description: base_ami['Description'], creation_date: base_ami['CreationDate']})
+
+  base_ami['ImageId']
+end
+
+abort 'Error: no version number available' unless File.file?('version/number')
+version = File.read('version/number').chomp
+
+base_ami = ENV['BASE_AMI']
+unless supported_base_ami.include? base_ami
+  abort 'abort "Define BASE_AMI environment variable (i.e. windows2019)'
+end
+
+base_ami_name = ENV['BASE_AMI_NAME']
+abort 'Define BASE_AMI_NAME environment variable' if base_ami_name == ''
+
+region_name = ENV['PACKER_REGION']
+abort 'Error: No PACKER_REGION environment variable' if region_name == ''
+
+region_info = {}
+region_info['name'] = region_name
+
+ami_id = get_ami_for(region_name, base_ami_name)
+region_info['base_ami'] = ami_id
+
+vpcs = JSON.parse(`aws ec2 describe-vpcs \
+              --region #{region_name} \
+              --filters "Name=is-default, Values=true"`)
+vpc_id = vpcs['Vpcs'].first['VpcId']
+if vpc_id.nil? || vpc_id.empty?
+  raise "Error: no vpc id found for region '#{region_name}'"
+end
+region_info['vpc_id'] = vpc_id
+
+subnets = JSON.parse(`aws ec2 describe-subnets \
+                --region #{region_name} \
+                --filters "Name=vpc-id,Values=#{vpc_id}"`)
+subnet_id = subnets['Subnets'].first['SubnetId']
+if subnet_id.nil? || subnet_id.empty?
+  raise "Error: no subnet id found for vpc '#{vpc_id}' in region '#{region_name}'"
+end
+region_info['subnet_id'] = subnet_id
+
+sg_name = 'packer-aws-stemcell'
+sgs = JSON.parse(`aws ec2  describe-security-groups \
+              --region #{region_name} \
+              --group-names #{sg_name} \
+              --filters "Name=vpc-id,Values=#{vpc_id}"`)
+sg_id = sgs['SecurityGroups'].first['GroupId']
+if sg_id.nil? || sg_id.empty?
+  raise "Error: no security group found with name '#{sg_name}' for vpc '#{vpc_id}' in region '#{region_name}'"
+end
+region_info['security_group'] = sg_id
+
+puts JSON.pretty_generate(region_info)
+
+File.open(File.join('base-amis', "base-amis-#{base_ami}-#{version}.json"), 'w') do |f|
+  f.write(region_info.to_json)
+end
+
