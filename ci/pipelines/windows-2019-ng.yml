@@ -137,19 +137,23 @@ resources:
   source:
     uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
     branch: windows-2019
+    ignore_paths:
+      - ci/
     username: bosh-admin-bot
     password: ((github_public_repo_token))
 - name: bosh-windows-stemcell-builder-ci
   type: git
   source:
-    uri: https://github.com/cloudfoundry/greenhouse-ci.git
+    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
     branch: windows-2019
+    paths:
+      - ci/
     username: bosh-admin-bot
     password: ((github_public_repo_token))
 - name: bosh-windows-stemcell-builder-dockerfiles
   type: git
   source:
-    uri: https://github.com/cloudfoundry/greenhouse-ci.git
+    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
     branch: windows-2019
     paths:
     - ci/azstemcell

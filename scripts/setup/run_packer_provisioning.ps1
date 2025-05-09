@@ -18,7 +18,6 @@ function setup {
     New-Item "C:\working_directory\version" -type directory
     New-Item "C:\working_directory\version\number" -type file
     New-Item "C:\working_directory\stemcell-builder\build" -type directory
-    Copy-Item -Force -Recurse "Z:\workspace\greenhouse-ci\" "C:\working_directory\ci\"
     Copy-Item -Force -Recurse "Z:\workspace\bosh-windows-stemcell-builder\" "C:\working_directory\stemcell-builder\"
     Copy-Item -Force -Recurse "Z:\workspace\windows-stemcell-dependencies\" "C:\working_directory\windows-stemcell-dependencies\"
 }
@@ -40,7 +39,6 @@ $env:OUTPUT_DIR="../output_dir"
 
 Remove-Item "C:\working_directory\output_dir" -Force -Recurse
 Remove-Item "C:\working_directory\ci" -Force -Recurse
-Copy-Item -Force -Recurse "Z:\workspace\greenhouse-ci\" "C:\working_directory\ci\"
 
 Remove-Item "C:\working_directory\stemcell-builder\lib" -Force -Recurse
 Remove-Item "C:\working_directory\stemcell-builder\bosh-psmodules" -Force -Recurse
