@@ -13,7 +13,6 @@ $ROOT_DIR=Get-Location
 Write-Host "ROOT: $ROOT_DIR"
 
 $env:VM_NAME= cat $ROOT_DIR/integration-vm-name/name
-$env:BOSH_PSMODULES_REPO="$ROOT_DIR/bosh-psmodules-repo"
 
 $TMP_DIR=Join-Path $ROOT_DIR tmp
 

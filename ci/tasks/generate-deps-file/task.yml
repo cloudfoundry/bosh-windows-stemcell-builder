@@ -8,7 +8,7 @@ inputs:
   - name: lgpo-binary
   - name: version
   - name: bosh-agent
-  - name: bosh-psmodules
+  - name: psmodules-zip-output
 
 outputs:
   - name: deps-file

@@ -167,13 +167,6 @@ resources:
     branch: windows-2019
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-- name: bosh-psmodules-repo
-  type: git
-  source:
-    uri: https://github.com/cloudfoundry/bosh-psmodules.git
-    branch: windows-2019
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
 - name: bosh-stemcells-ci
   type: git
   source:
@@ -757,7 +750,7 @@ jobs:
         steps:
           - get: pester
           - get: bosh-windows-stemcell-builder-ci
-          - get: bosh-psmodules-repo
+          - get: stemcell-builder
             trigger: true
     - task: test-units-bosh-psmodules
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
@@ -790,10 +783,10 @@ jobs:
       - get: bosh-windows-stemcell-builder-ci-image
       - get: stemcell-builder
         trigger: true
-        passed: [test-stemcell-builder]
+        passed:
+        - test-stemcell-builder
+        - test-bosh-psmodules
       - get: stembuild
-      - get: bosh-psmodules-repo
-        passed: [test-bosh-psmodules]
       - get: lgpo-binary
       - get: version
         resource: main-version
@@ -902,8 +895,6 @@ jobs:
       - get: lgpo-binary
       - get: bosh-agent-release
         passed: [build]
-      - get: bosh-psmodules-repo
-        passed: [build]
       - get: stembuild
         passed: [build]
       - get: ovftool
@@ -927,10 +918,10 @@ jobs:
       - task: test-units-stemcell-automation
         file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stemcell-automation/task.yml
         tags: [windows-nimbus]
-      - task: build-agent
+      - task: build-agent-zip
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-      - task: build-psmodules
+      - task: build-psmodules-zip
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/task.yml
         image: bosh-windows-stemcell-builder-ci-image
       - task: unit-test
@@ -1016,8 +1007,6 @@ jobs:
       - get: lgpo-binary
       - get: bosh-agent-release
         passed: [build]
-      - get: bosh-psmodules-repo
-        passed: [build]
       - get: stembuild
         passed: [build]
       - get: ovftool
@@ -1042,10 +1031,10 @@ jobs:
       - task: test-units-stemcell-automation
         file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stemcell-automation/task.yml
         tags: [windows-nimbus]
-      - task: build-agent
+      - task: build-agent-zip
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-      - task: build-psmodules
+      - task: build-psmodules-zip
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/task.yml
         image: bosh-windows-stemcell-builder-ci-image
       - task: unit-test
@@ -1483,8 +1472,6 @@ jobs:
         resource: openssh-release
       - get: bosh-agent-release
         passed: [build]
-      - get: bosh-psmodules-repo
-        passed: [build]
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
@@ -1677,8 +1664,6 @@ jobs:
         resource: openssh-release
       - get: bosh-agent-release
         passed: [wuts-aws]
-      - get: bosh-psmodules-repo
-        passed: [build]
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
@@ -1843,8 +1828,6 @@ jobs:
       - get: sshd
         resource: openssh-release
       - get: bosh-agent-release
-        passed: [build]
-      - get: bosh-psmodules-repo
         passed: [build]
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
@@ -2038,8 +2021,6 @@ jobs:
       - get: sshd
         resource: openssh-release
       - get: bosh-agent-release
-        passed: [build]
-      - get: bosh-psmodules-repo
         passed: [build]
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
@@ -2239,8 +2220,6 @@ jobs:
         - wuts-gcp
         - wuts-aws-govcloud # implies => aws-build-number
         - wuts-azure
-      - get: bosh-psmodules-repo
-        passed: [build]
   - task: ensure-versions-match
     file: bosh-windows-stemcell-builder-ci/ci/tasks/match-stemcell-versions/task.yml
     image: bosh-windows-stemcell-builder-ci-image
@@ -2278,8 +2257,6 @@ jobs:
         resource: packer-output-govcloud-ami
       - get: bosh-windows-acceptance-tests
       - get: bosh-agent-release
-        passed: [promote]
-      - get: bosh-psmodules-repo
         passed: [promote]
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli

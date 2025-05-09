@@ -8,8 +8,8 @@ $startupType = Get-Service "wuauserv" | Select-Object -ExpandProperty StartType 
 "wuauserv status = * $status *"
 "wuauserv startuptype = * $startupType *"
 
-foreach ($module in (Get-ChildItem "./bosh-psmodules-repo/modules").Name) {
-  Push-Location "./bosh-psmodules-repo/modules/$module"
+foreach ($module in (Get-ChildItem "./stemcell-builder/modules").Name) {
+  Push-Location "./stemcell-builder/modules/$module"
     $results=Invoke-Pester -PassThru
     if ($results.FailedCount -gt 0) {
       $result += $results.FailedCount

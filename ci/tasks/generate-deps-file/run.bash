@@ -9,7 +9,7 @@ cat <<EOF > deps-file/deps.json
     "version": "$(cat open-ssh/version)"
   },
   "bosh-psmodules.zip": {
-    "sha": "$(shasum -a 256 bosh-psmodules/bosh-psmodules.zip | cut -d " " -f 1)",
+    "sha": "$(shasum -a 256 psmodules-zip-output/bosh-psmodules.zip | cut -d " " -f 1)",
     "version": "$(cat version/version)"
   },
   "agent.zip": {

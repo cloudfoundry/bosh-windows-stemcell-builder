@@ -9,7 +9,6 @@ inputs:
   - name: lgpo-binary
   - name: sshd
   - name: bosh-agent-release
-  - name: bosh-psmodules-repo
   - name: blobstore-dav-cli
   - name: blobstore-s3-cli
   - name: blobstore-gcs-cli
@@ -30,4 +29,3 @@ params:
   VERSION_DIR: ../version
   VM_PREFIX:
   BOSH_AGENT_DIR: bosh-agent-release
-  BOSH_PSMODULES_DIR: bosh-psmodules-repo

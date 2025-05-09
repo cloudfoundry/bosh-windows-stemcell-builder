@@ -14,7 +14,6 @@ echo '***Installing VMWare OVF Tools***'
 chmod +x ./ovftool/VMware-ovftool-4.2.0-5965791-lin.x86_64.bundle
 ./ovftool/VMware-ovftool-4.2.0-5965791-lin.x86_64.bundle --eulas-agreed --required
 
-export BOSH_PSMODULES_REPO="${ROOT_DIR}/bosh-psmodules-repo"
 export STEMBUILD_VERSION
 export TARGET_VM_IP
 export VM_NAME

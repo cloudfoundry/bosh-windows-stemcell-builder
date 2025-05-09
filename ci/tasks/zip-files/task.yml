@@ -7,7 +7,7 @@ inputs:
   - name: open-ssh
   - name: deps-file
   - name: bosh-agent
-  - name: bosh-psmodules
+  - name: psmodules-zip-output
 
 outputs:
   - name: zip-file

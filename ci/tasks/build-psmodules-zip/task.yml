@@ -2,16 +2,14 @@
 platform: linux
 
 inputs:
-- name: bosh-psmodules-repo
 - name: bosh-windows-stemcell-builder-ci
 - name: stemcell-builder
 
 outputs:
-- name: bosh-psmodules
+- name: psmodules-zip-output
 
 run:
   path: bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/run.sh
 
 params:
-  BOSH_PSMODULES_DIR: bosh-psmodules-repo
-  ZIP_OUTPUT_DIR: bosh-psmodules
+  ZIP_OUTPUT_DIR: psmodules-zip-output

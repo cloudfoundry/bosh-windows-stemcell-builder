@@ -7,7 +7,7 @@ inputs:
 - name: version
 - name: nimbus-ips
 - name: integration-vm-name
-- name: bosh-psmodules-repo
+- name: stemcell-builder
 
 outputs:
 - name: output

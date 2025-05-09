@@ -8,7 +8,7 @@ inputs:
 - name: ovftool
 - name: nimbus-ips
 - name: integration-vm-name
-- name: bosh-psmodules-repo
+- name: stemcell-builder
 
 run:
   path: bosh-windows-stemcell-builder-ci/ci/tasks/test-integration-stembuild-linux/run.sh
