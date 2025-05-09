@@ -1,0 +1,44 @@
+Computer
+SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications
+NoToastApplicationNotificationOnLockScreen
+DWORD:1
+
+Computer
+Software\Microsoft\Windows\CurrentVersion\Policies\Attachments
+SaveZoneInformation
+DWORD:2
+
+Computer
+Software\Microsoft\Windows\CurrentVersion\Policies\Attachments
+ScanWithAntiVirus
+DWORD:3
+
+Computer
+Software\Microsoft\Windows\CurrentVersion\Policies\Explorer
+NoInplaceSharing
+DWORD:1
+
+Computer
+Software\Policies\Microsoft\Windows\Control Panel\Desktop
+SCRNSAVE.EXE
+SZ:scrnsave.scr
+
+Computer
+Software\Policies\Microsoft\Windows\Control Panel\Desktop
+ScreenSaveActive
+SZ:1
+
+Computer
+Software\Policies\Microsoft\Windows\Control Panel\Desktop
+ScreenSaveTimeOut
+SZ:900
+
+Computer
+Software\Policies\Microsoft\Windows\Control Panel\Desktop
+ScreenSaverIsSecure
+SZ:1
+
+Computer
+Software\Policies\Microsoft\Windows\Installer
+AlwaysInstallElevated
+DWORD:0
