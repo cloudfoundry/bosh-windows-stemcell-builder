@@ -1,0 +1,368 @@
+# github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358
+## explicit
+github.com/Azure/go-ntlmssp
+# github.com/ChrisTrenkamp/goxpath v0.0.0-20210404020558-97928f7e12b6
+## explicit
+github.com/ChrisTrenkamp/goxpath
+github.com/ChrisTrenkamp/goxpath/internal/execxp
+github.com/ChrisTrenkamp/goxpath/internal/execxp/findutil
+github.com/ChrisTrenkamp/goxpath/internal/execxp/intfns
+github.com/ChrisTrenkamp/goxpath/internal/xsort
+github.com/ChrisTrenkamp/goxpath/lexer
+github.com/ChrisTrenkamp/goxpath/parser
+github.com/ChrisTrenkamp/goxpath/parser/pathexpr
+github.com/ChrisTrenkamp/goxpath/tree
+github.com/ChrisTrenkamp/goxpath/tree/xmltree
+github.com/ChrisTrenkamp/goxpath/tree/xmltree/xmlbuilder
+github.com/ChrisTrenkamp/goxpath/tree/xmltree/xmlele
+github.com/ChrisTrenkamp/goxpath/tree/xmltree/xmlnode
+github.com/ChrisTrenkamp/goxpath/xconst
+# github.com/a8m/tree v0.0.0-20240104212747-2c8764a5f17e
+## explicit; go 1.15
+github.com/a8m/tree
+# github.com/bodgit/ntlmssp v0.0.0-20240506230425-31973bb52d9b
+## explicit; go 1.18
+github.com/bodgit/ntlmssp
+github.com/bodgit/ntlmssp/http
+# github.com/bodgit/windows v1.0.1
+## explicit; go 1.13
+github.com/bodgit/windows
+# github.com/concourse/pool-resource v1.1.1
+## explicit
+github.com/concourse/pool-resource/out
+# github.com/dougm/pretty v0.0.0-20171025230240-2ee9d7453c02
+## explicit
+github.com/dougm/pretty
+# github.com/dylanmei/iso8601 v0.1.0
+## explicit
+github.com/dylanmei/iso8601
+# github.com/go-logr/logr v1.4.2
+## explicit; go 1.18
+github.com/go-logr/logr
+github.com/go-logr/logr/funcr
+# github.com/go-task/slim-sprig/v3 v3.0.0
+## explicit; go 1.20
+github.com/go-task/slim-sprig/v3
+# github.com/gofrs/uuid v4.4.0+incompatible
+## explicit
+github.com/gofrs/uuid
+# github.com/golang/mock v1.6.0
+## explicit; go 1.11
+github.com/golang/mock/gomock
+github.com/golang/mock/mockgen
+github.com/golang/mock/mockgen/model
+# github.com/google/go-cmp v0.7.0
+## explicit; go 1.21
+github.com/google/go-cmp/cmp
+github.com/google/go-cmp/cmp/internal/diff
+github.com/google/go-cmp/cmp/internal/flags
+github.com/google/go-cmp/cmp/internal/function
+github.com/google/go-cmp/cmp/internal/value
+# github.com/google/pprof v0.0.0-20250501235452-c0086092b71a
+## explicit; go 1.23.0
+github.com/google/pprof/profile
+# github.com/google/subcommands v1.2.0
+## explicit
+github.com/google/subcommands
+# github.com/google/uuid v1.6.0
+## explicit
+github.com/google/uuid
+# github.com/hashicorp/go-cleanhttp v0.5.2
+## explicit; go 1.13
+github.com/hashicorp/go-cleanhttp
+# github.com/hashicorp/go-uuid v1.0.3
+## explicit
+github.com/hashicorp/go-uuid
+# github.com/jcmturner/aescts/v2 v2.0.0
+## explicit; go 1.13
+github.com/jcmturner/aescts/v2
+# github.com/jcmturner/dnsutils/v2 v2.0.0
+## explicit; go 1.13
+github.com/jcmturner/dnsutils/v2
+# github.com/jcmturner/gofork v1.7.6
+## explicit; go 1.7
+github.com/jcmturner/gofork/encoding/asn1
+github.com/jcmturner/gofork/x/crypto/pbkdf2
+# github.com/jcmturner/goidentity/v6 v6.0.1
+## explicit; go 1.13
+github.com/jcmturner/goidentity/v6
+# github.com/jcmturner/gokrb5/v8 v8.4.4
+## explicit; go 1.16
+github.com/jcmturner/gokrb5/v8/asn1tools
+github.com/jcmturner/gokrb5/v8/client
+github.com/jcmturner/gokrb5/v8/config
+github.com/jcmturner/gokrb5/v8/credentials
+github.com/jcmturner/gokrb5/v8/crypto
+github.com/jcmturner/gokrb5/v8/crypto/common
+github.com/jcmturner/gokrb5/v8/crypto/etype
+github.com/jcmturner/gokrb5/v8/crypto/rfc3961
+github.com/jcmturner/gokrb5/v8/crypto/rfc3962
+github.com/jcmturner/gokrb5/v8/crypto/rfc4757
+github.com/jcmturner/gokrb5/v8/crypto/rfc8009
+github.com/jcmturner/gokrb5/v8/gssapi
+github.com/jcmturner/gokrb5/v8/iana
+github.com/jcmturner/gokrb5/v8/iana/addrtype
+github.com/jcmturner/gokrb5/v8/iana/adtype
+github.com/jcmturner/gokrb5/v8/iana/asnAppTag
+github.com/jcmturner/gokrb5/v8/iana/chksumtype
+github.com/jcmturner/gokrb5/v8/iana/errorcode
+github.com/jcmturner/gokrb5/v8/iana/etypeID
+github.com/jcmturner/gokrb5/v8/iana/flags
+github.com/jcmturner/gokrb5/v8/iana/keyusage
+github.com/jcmturner/gokrb5/v8/iana/msgtype
+github.com/jcmturner/gokrb5/v8/iana/nametype
+github.com/jcmturner/gokrb5/v8/iana/patype
+github.com/jcmturner/gokrb5/v8/kadmin
+github.com/jcmturner/gokrb5/v8/keytab
+github.com/jcmturner/gokrb5/v8/krberror
+github.com/jcmturner/gokrb5/v8/messages
+github.com/jcmturner/gokrb5/v8/pac
+github.com/jcmturner/gokrb5/v8/service
+github.com/jcmturner/gokrb5/v8/spnego
+github.com/jcmturner/gokrb5/v8/types
+# github.com/jcmturner/rpc/v2 v2.0.3
+## explicit; go 1.13
+github.com/jcmturner/rpc/v2/mstypes
+github.com/jcmturner/rpc/v2/ndr
+# github.com/kr/text v0.2.0
+## explicit
+github.com/kr/text
+# github.com/masterzen/simplexml v0.0.0-20190410153822-31eea3082786
+## explicit
+github.com/masterzen/simplexml/dom
+# github.com/masterzen/winrm v0.0.0-20240702205601-3fad6e106085 => github.com/bosh-dep-forks/winrm v0.0.0-20240321234108-df0e10ca9199
+## explicit; go 1.21
+github.com/masterzen/winrm
+github.com/masterzen/winrm/soap
+# github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
+## explicit; go 1.23
+github.com/maxbrunsfeld/counterfeiter/v6
+github.com/maxbrunsfeld/counterfeiter/v6/arguments
+github.com/maxbrunsfeld/counterfeiter/v6/command
+github.com/maxbrunsfeld/counterfeiter/v6/generator
+# github.com/mitchellh/mapstructure v1.3.0
+## explicit; go 1.14
+github.com/mitchellh/mapstructure
+# github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
+## explicit
+github.com/nu7hatch/gouuid
+# github.com/onsi/ginkgo v1.16.5
+## explicit; go 1.16
+# github.com/onsi/ginkgo/v2 v2.23.4
+## explicit; go 1.23.0
+github.com/onsi/ginkgo/v2
+github.com/onsi/ginkgo/v2/config
+github.com/onsi/ginkgo/v2/formatter
+github.com/onsi/ginkgo/v2/ginkgo
+github.com/onsi/ginkgo/v2/ginkgo/build
+github.com/onsi/ginkgo/v2/ginkgo/command
+github.com/onsi/ginkgo/v2/ginkgo/generators
+github.com/onsi/ginkgo/v2/ginkgo/internal
+github.com/onsi/ginkgo/v2/ginkgo/labels
+github.com/onsi/ginkgo/v2/ginkgo/outline
+github.com/onsi/ginkgo/v2/ginkgo/run
+github.com/onsi/ginkgo/v2/ginkgo/unfocus
+github.com/onsi/ginkgo/v2/ginkgo/watch
+github.com/onsi/ginkgo/v2/internal
+github.com/onsi/ginkgo/v2/internal/global
+github.com/onsi/ginkgo/v2/internal/interrupt_handler
+github.com/onsi/ginkgo/v2/internal/parallel_support
+github.com/onsi/ginkgo/v2/internal/testingtproxy
+github.com/onsi/ginkgo/v2/reporters
+github.com/onsi/ginkgo/v2/types
+# github.com/onsi/gomega v1.37.0
+## explicit; go 1.23.0
+github.com/onsi/gomega
+github.com/onsi/gomega/format
+github.com/onsi/gomega/gbytes
+github.com/onsi/gomega/gexec
+github.com/onsi/gomega/ghttp
+github.com/onsi/gomega/internal
+github.com/onsi/gomega/internal/gutil
+github.com/onsi/gomega/matchers
+github.com/onsi/gomega/matchers/internal/miter
+github.com/onsi/gomega/matchers/support/goraph/bipartitegraph
+github.com/onsi/gomega/matchers/support/goraph/edge
+github.com/onsi/gomega/matchers/support/goraph/node
+github.com/onsi/gomega/matchers/support/goraph/util
+github.com/onsi/gomega/types
+# github.com/packer-community/winrmcp v0.0.0-20221126162354-6e900dd2c68f => github.com/bosh-dep-forks/winrmcp v0.0.0-20240506194308-1105f7feefc7
+## explicit
+github.com/packer-community/winrmcp/winrmcp
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
+# github.com/rogpeppe/go-internal v1.14.1
+## explicit; go 1.23
+# github.com/tidwall/transform v0.0.0-20201103190739-32f242e2dbde
+## explicit
+github.com/tidwall/transform
+# github.com/vmware/govmomi v0.50.0
+## explicit; go 1.23.0
+github.com/vmware/govmomi
+github.com/vmware/govmomi/cli
+github.com/vmware/govmomi/cli/about
+github.com/vmware/govmomi/cli/device
+github.com/vmware/govmomi/cli/device/cdrom
+github.com/vmware/govmomi/cli/esx
+github.com/vmware/govmomi/cli/export
+github.com/vmware/govmomi/cli/flags
+github.com/vmware/govmomi/cli/importx
+github.com/vmware/govmomi/cli/object
+github.com/vmware/govmomi/cli/vm
+github.com/vmware/govmomi/cli/vm/guest
+github.com/vmware/govmomi/cli/vm/snapshot
+github.com/vmware/govmomi/cns
+github.com/vmware/govmomi/cns/methods
+github.com/vmware/govmomi/cns/types
+github.com/vmware/govmomi/fault
+github.com/vmware/govmomi/find
+github.com/vmware/govmomi/guest
+github.com/vmware/govmomi/guest/toolbox
+github.com/vmware/govmomi/history
+github.com/vmware/govmomi/internal
+github.com/vmware/govmomi/internal/version
+github.com/vmware/govmomi/list
+github.com/vmware/govmomi/nfc
+github.com/vmware/govmomi/object
+github.com/vmware/govmomi/ovf
+github.com/vmware/govmomi/ovf/importer
+github.com/vmware/govmomi/pbm
+github.com/vmware/govmomi/pbm/methods
+github.com/vmware/govmomi/pbm/types
+github.com/vmware/govmomi/property
+github.com/vmware/govmomi/session
+github.com/vmware/govmomi/session/cache
+github.com/vmware/govmomi/session/keepalive
+github.com/vmware/govmomi/task
+github.com/vmware/govmomi/units
+github.com/vmware/govmomi/vapi/internal
+github.com/vmware/govmomi/vapi/library
+github.com/vmware/govmomi/vapi/library/finder
+github.com/vmware/govmomi/vapi/rest
+github.com/vmware/govmomi/view
+github.com/vmware/govmomi/vim25
+github.com/vmware/govmomi/vim25/debug
+github.com/vmware/govmomi/vim25/json
+github.com/vmware/govmomi/vim25/methods
+github.com/vmware/govmomi/vim25/mo
+github.com/vmware/govmomi/vim25/progress
+github.com/vmware/govmomi/vim25/soap
+github.com/vmware/govmomi/vim25/types
+github.com/vmware/govmomi/vim25/xml
+github.com/vmware/govmomi/vmdk
+github.com/vmware/govmomi/vsan/vsanfs/types
+# go.uber.org/automaxprocs v1.6.0
+## explicit; go 1.20
+go.uber.org/automaxprocs
+go.uber.org/automaxprocs/internal/cgroups
+go.uber.org/automaxprocs/internal/runtime
+go.uber.org/automaxprocs/maxprocs
+# golang.org/x/crypto v0.38.0
+## explicit; go 1.23.0
+golang.org/x/crypto/md4
+golang.org/x/crypto/pbkdf2
+# golang.org/x/mod v0.24.0
+## explicit; go 1.23.0
+golang.org/x/mod/internal/lazyregexp
+golang.org/x/mod/modfile
+golang.org/x/mod/module
+golang.org/x/mod/semver
+# golang.org/x/net v0.40.0
+## explicit; go 1.23.0
+golang.org/x/net/html
+golang.org/x/net/html/atom
+golang.org/x/net/html/charset
+golang.org/x/net/http2/hpack
+# golang.org/x/sync v0.14.0
+## explicit; go 1.23.0
+golang.org/x/sync/errgroup
+# golang.org/x/sys v0.33.0
+## explicit; go 1.23.0
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+golang.org/x/sys/windows/registry
+# golang.org/x/text v0.25.0
+## explicit; go 1.23.0
+golang.org/x/text/cases
+golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/htmlindex
+golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/internal
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/language
+golang.org/x/text/runes
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
+# golang.org/x/tools v0.33.0
+## explicit; go 1.23.0
+golang.org/x/tools/cover
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/go/ast/inspector
+golang.org/x/tools/go/gcexportdata
+golang.org/x/tools/go/packages
+golang.org/x/tools/go/types/objectpath
+golang.org/x/tools/go/types/typeutil
+golang.org/x/tools/imports
+golang.org/x/tools/internal/aliases
+golang.org/x/tools/internal/astutil/edge
+golang.org/x/tools/internal/event
+golang.org/x/tools/internal/event/core
+golang.org/x/tools/internal/event/keys
+golang.org/x/tools/internal/event/label
+golang.org/x/tools/internal/gcimporter
+golang.org/x/tools/internal/gocommand
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/imports
+golang.org/x/tools/internal/modindex
+golang.org/x/tools/internal/packagesinternal
+golang.org/x/tools/internal/pkgbits
+golang.org/x/tools/internal/stdlib
+golang.org/x/tools/internal/typeparams
+golang.org/x/tools/internal/typesinternal
+golang.org/x/tools/internal/versions
+# google.golang.org/protobuf v1.36.5
+## explicit; go 1.21
+google.golang.org/protobuf/encoding/prototext
+google.golang.org/protobuf/encoding/protowire
+google.golang.org/protobuf/internal/descfmt
+google.golang.org/protobuf/internal/descopts
+google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/editiondefaults
+google.golang.org/protobuf/internal/encoding/defval
+google.golang.org/protobuf/internal/encoding/messageset
+google.golang.org/protobuf/internal/encoding/tag
+google.golang.org/protobuf/internal/encoding/text
+google.golang.org/protobuf/internal/errors
+google.golang.org/protobuf/internal/filedesc
+google.golang.org/protobuf/internal/filetype
+google.golang.org/protobuf/internal/flags
+google.golang.org/protobuf/internal/genid
+google.golang.org/protobuf/internal/impl
+google.golang.org/protobuf/internal/order
+google.golang.org/protobuf/internal/pragma
+google.golang.org/protobuf/internal/protolazy
+google.golang.org/protobuf/internal/set
+google.golang.org/protobuf/internal/strs
+google.golang.org/protobuf/internal/version
+google.golang.org/protobuf/proto
+google.golang.org/protobuf/protoadapt
+google.golang.org/protobuf/reflect/protoreflect
+google.golang.org/protobuf/reflect/protoregistry
+google.golang.org/protobuf/runtime/protoiface
+google.golang.org/protobuf/runtime/protoimpl
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3
+# github.com/masterzen/winrm => github.com/bosh-dep-forks/winrm v0.0.0-20240321234108-df0e10ca9199
+# github.com/packer-community/winrmcp => github.com/bosh-dep-forks/winrmcp v0.0.0-20240506194308-1105f7feefc7
