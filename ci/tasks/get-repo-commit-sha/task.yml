@@ -1,0 +1,19 @@
+---
+platform: linux
+
+inputs:
+- name: stemcell-builder
+
+outputs:
+- name: stemcell-builder-commit
+
+run:
+  path: bash
+  args:
+  - "-c"
+  - |
+    set -eu -o pipefail
+    set -x
+    ROOT="$(pwd)"
+    cd stemcell-builder
+    git rev-parse HEAD > ${ROOT}/stemcell-builder-commit/sha"

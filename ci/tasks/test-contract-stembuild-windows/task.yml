@@ -2,8 +2,8 @@
 platform: windows
 
 inputs:
-- name: stembuild
 - name: bosh-windows-stemcell-builder-ci
+- name: stemcell-builder
 
 run:
   path: powershell
