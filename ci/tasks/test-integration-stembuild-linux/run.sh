@@ -5,7 +5,6 @@ set -x
 ROOT_DIR=$(pwd)
 
 VERSION=$(cat version/version)
-STEMBUILD_DIR="${ROOT_DIR}/stembuild/stembuild"
 OUTPUT_DIR="${ROOT_DIR}/output"
 
 source "bosh-windows-stemcell-builder-ci/ci/common-scripts/update_nimbus_urls_and_cert.sh"
@@ -24,7 +23,7 @@ VM_NAME=$(cat integration-vm-name/name)
 
 echo "Using Existing VM IP/Name: ${TARGET_VM_IP}/${VM_NAME}"
 
-pushd "${STEMBUILD_DIR}"
+pushd "${ROOT_DIR}/stemcell-builder/stembuild"
   echo '***Test Stembuild Code***'
   make integration
 popd

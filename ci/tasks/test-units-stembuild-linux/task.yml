@@ -6,8 +6,8 @@ image_resource:
     repository: bosh/windows-stemcell-ci
 
 inputs:
-  - name: stembuild
   - name: bosh-windows-stemcell-builder-ci
+  - name: stemcell-builder
   - name: version
   - name: ovftool
 

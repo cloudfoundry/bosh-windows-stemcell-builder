@@ -160,13 +160,6 @@ resources:
     - ci/docker/Dockerfile
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-- name: stembuild
-  type: git
-  source:
-    uri: https://github.com/cloudfoundry/stembuild.git
-    branch: windows-2019
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
 - name: bosh-stemcells-ci
   type: git
   source:
@@ -270,11 +263,11 @@ resources:
     repository: Win32-OpenSSH
     access_token: ((github_public_repo_token))
     tag_filter: v([^v].*)
-- name: post-stembuild-release
+- name: stemcell-builder-github-release
   type: github-release
   source:
     owner: cloudfoundry
-    repository: stembuild
+    repository: bosh-windows-stemcell-builder
     access_token: ((github_public_repo_token))
 
 - name: bosh-agent-release
@@ -690,23 +683,23 @@ jobs:
   plan:
   - in_parallel:
     - get: bosh-windows-stemcell-builder-ci-image
-    - get: bosh-windows-acceptance-tests
     - get: bosh-windows-stemcell-builder-ci
+    - get: stemcell-builder
+    - get: bosh-windows-acceptance-tests
     - get: golang-release
     - get: ovftool
-    - get: stembuild
     - get: version
       resource: main-version
     - get: weekly
       trigger: true
-  - task: bump-stembuild-deps
+  - task: bump-golang-deps
     file: golang-release/ci/tasks/shared/bump-deps.yml
     params:
       SOURCE_PATH: stembuild
     input_mapping:
-      input_repo: stembuild
+      input_repo: stemcell-builder
     output_mapping:
-      output_repo: stembuild
+      output_repo: stemcell-builder
   - in_parallel:
     - task: unit-test-on-linux
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-linux/task.yml
@@ -714,10 +707,10 @@ jobs:
     - task: unit-test-on-windows
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-windows/task.yml
       tags: [windows-nimbus]
-  - put: stembuild
+  - put: stemcell-builder
     params:
       rebase: true
-      repository: stembuild
+      repository: stemcell-builder
   - task: bump-bosh-windows-acceptance-tests-deps
     file: golang-release/ci/tasks/shared/bump-deps.yml
     input_mapping:
@@ -786,7 +779,6 @@ jobs:
         passed:
         - test-stemcell-builder
         - test-bosh-psmodules
-      - get: stembuild
       - get: lgpo-binary
       - get: version
         resource: main-version
@@ -894,8 +886,6 @@ jobs:
         passed: [build]
       - get: lgpo-binary
       - get: bosh-agent-release
-        passed: [build]
-      - get: stembuild
         passed: [build]
       - get: ovftool
       - put: nimbus-ips
@@ -1006,8 +996,6 @@ jobs:
         passed: [build]
       - get: lgpo-binary
       - get: bosh-agent-release
-        passed: [build]
-      - get: stembuild
         passed: [build]
       - get: ovftool
       - put: nimbus-ips
@@ -2193,16 +2181,14 @@ jobs:
         - wuts-gcp
         - wuts-aws-govcloud # implies => aws-build-number
         - wuts-azure
+        - stembuild-linux
+        - stembuild-windows
       - get: stembuild-untested-linux
         passed: [ wuts-stembuild-linux-stemcell ]
       - get: stembuild-linux-stemcell
         passed: [ wuts-stembuild-linux-stemcell ]
       - get: stembuild-untested-windows
         passed: [ wuts-stembuild-windows-stemcell ]
-      - get: stembuild
-        passed:
-        - stembuild-linux
-        - stembuild-windows
       - get: main-version
         passed:
         - wuts-gcp
@@ -2609,7 +2595,7 @@ jobs:
         passed: [promote-azure]
       - get: gcp-stemcell-final
         passed: [promote-gcp]
-      - get: stembuild
+      - get: stemcell-builder
         passed: [promote]
       - get: stembuild-untested-windows
         passed: [promote-stembuild]
@@ -2618,14 +2604,14 @@ jobs:
   - task: set-stembuild-version
     file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stembuild-version/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-  - task: get-stembuild-commit-sha
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/get-stembuild-commit-sha/task.yml
+  - task: get-repo-commit-sha
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/get-repo-commit-sha/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-  - put: post-stembuild-release
+  - put: stemcell-builder-github-release
     params:
       name: final-stembuilds/tag
       tag: final-stembuilds/tag
-      commitish: stembuild-commit/sha
+      commitish: stemcell-builder-commit/sha
       globs:
         - final-stembuilds/stembuild*
 

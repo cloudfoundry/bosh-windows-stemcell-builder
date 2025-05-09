@@ -13,7 +13,7 @@ export PATH=${GOPATH}/bin:$PATH
 # install vcsim for vCenter manager and client contract integration tests
 go -C govmomi/vcsim install
 
-pushd "${ROOT_DIR}/stembuild/stembuild"
+pushd "${ROOT_DIR}/stemcell-builder/stembuild"
   echo ***Test Stembuild Code***
 
   make contract

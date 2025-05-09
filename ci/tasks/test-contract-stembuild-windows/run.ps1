@@ -10,7 +10,7 @@ $ROOT_DIR=Get-Location
 
 Write-Host ***Test Stembuild Code***
 
-Set-Location stembuild\stembuild
+Set-Location stemcell-builder\stembuild
 
 make contract
 if ($lastexitcode -ne 0)

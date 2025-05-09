@@ -2,8 +2,8 @@
 platform: linux
 
 inputs:
-- name: stembuild
 - name: bosh-windows-stemcell-builder-ci
+- name: stemcell-builder
 - name: govmomi
 
 run:

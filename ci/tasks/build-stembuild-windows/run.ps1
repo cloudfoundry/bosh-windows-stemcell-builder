@@ -11,7 +11,7 @@ $env:PATH += ";c:\var\vcap\packages\git\usr\bin"
 
 Write-Host ***Building Stembuild***
 
-Set-Location stembuild\stembuild
+Set-Location stemcell-builder\stembuild
 
 $INPUT_ZIP_GLOB=Join-Path $ROOT_DIR $env:STEMCELL_AUTOMATION_ZIP
 

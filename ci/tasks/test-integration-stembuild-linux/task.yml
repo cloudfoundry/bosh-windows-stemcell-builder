@@ -2,13 +2,12 @@
 platform: linux
 
 inputs:
-- name: stembuild
 - name: bosh-windows-stemcell-builder-ci
+- name: stemcell-builder
 - name: version
 - name: ovftool
 - name: nimbus-ips
 - name: integration-vm-name
-- name: stemcell-builder
 
 run:
   path: bosh-windows-stemcell-builder-ci/ci/tasks/test-integration-stembuild-linux/run.sh
