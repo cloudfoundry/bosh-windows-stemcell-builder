@@ -35,7 +35,7 @@ jobs:
       run: |
         make generate-fake-stemcell-automation
       working-directory: stembuild
-    # skip specs for "packager", "ovftool" because "ovftool" be installed
+    # skip specs for packager,ovftool because `ovftool` binary is required
     - run: |
         go run github.com/onsi/ginkgo/v2/ginkgo run -r --keep-going --randomize-all --randomize-suites --skip-package integration,iaas_cli,ovftool,packager
       working-directory: stembuild
