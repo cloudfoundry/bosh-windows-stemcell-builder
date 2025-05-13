@@ -2648,21 +2648,17 @@ jobs:
     file: bosh-windows-stemcell-builder-ci/ci/tasks/rmt/build-release-config.yml
     image: bosh-ecosystem-docker-image
     params:
-      RELEASE_CONTACT: "maya.rosecrance@broadcom.com"
+      RELEASE_PRODUCT_SLUG: stemcells-windows-server
       RELEASE_TITLE: Stemcells (Windows)
-      RELEASE_PRODUCT_NAME: Stemcells (Windows)
-      RELEASE_DISPLAY_GROUP: Stemcells (Windows)
       RELEASE_TYPE: Release Update / MP
       RELEASE_STATUS: Dev/Internal
       RELEASE_END_OF_SUPPORT: "03/31/2027"
       RELEASE_UPGRADE_SPECIFIER: "2019.*"
-      RELEASE_PRODUCT_SLUG: stemcells-windows-server
-      RELEASE_SKUS: "CF4-TKG-VS7-KUBC-1Y-C,CNA-NXT-PKS-C,CNA-PKSC-3P-TLSS-C,CNA-PKSC-8-3P-TLSS-C,CNA-PKSC-8-P-TLSS-C,CNA-PKSC-AK-P-TLSS-C,CNA-PKSC-P-TLSS-A,CNA-PKSC-P-TLSS-C,CNA-PKSC-TLSS-C,CNA-PKSP-50-P-TLSS-C,CNA-PKS-P-TLSS-C,NFR-TNZ-PLAT,NFR-TNZ-PLAT-SM,PKS-ENCFA-50P-P-TLSS-C,PKS-ENCFA-8C-P-TLSS-C,PKS-ENCFC-3P-TLSS-A,PKS-ENCFC-P-TLSS-C,PKS-ENCFS-100C-P-TLSS-C,PKS-ENCFS-100P-P-TLSS-C,PKS-ENS-100C-3P-TLSS-C,PKS-ENS-100C-P-TLSS-A,PKS-ENS-100C-P-TLSS-C,PKS-ENS-100P-P-TLSS-C,PKS-ESC-SUB-500AD-C,PKS-ESC-SUB-8AD-C,PKS-ESP-SUB-500AD-C,PV-CFERS-3P-TLSS-C,PV-CFERS-P-TLSS-C,PV-CFERS-P-TLSS-F,PV-TAS-CR-P-TLSS-C,TNZ-CLD-FOUNDRY-SM,TNZ-KUBERNETES-SM,TNZ-PLAT"
   - task: create-rmt-release
     image: bosh-ecosystem-docker-image
     file: gormt-repo/concourse_examples/tasks/create-release.yml
     params: &rmt_params
-      RMT_RMT_EMAIL: "maya.rosecrance@broadcom.com"
+      RMT_RMT_EMAIL: "tanzu.tas-ecosystem@broadcom.com"
       RMT_RMT_HOST: ((rmt-prod-host))
       RMT_RMT_USERNAME: ((rmt-prod-user.username))
       RMT_RMT_PASSWORD: ((rmt-prod-user.password))

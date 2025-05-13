@@ -10,22 +10,16 @@ today="$(date '+%m/%d/%Y')"
 
 cat <<-EOF >./release-config/release.yml
 ---
-business_unit: Tanzu and Cloud Health
-contact: ${RELEASE_CONTACT}
+product_slug: ${RELEASE_PRODUCT_SLUG}
 title: ${RELEASE_TITLE}
-product_name: ${RELEASE_PRODUCT_NAME}
-display_group: ${RELEASE_DISPLAY_GROUP}
 version: ${version}
 type: ${RELEASE_TYPE}
 status: ${RELEASE_STATUS}
 third_party_classification: N
 oct_request_id: 3930 # https://docs.google.com/spreadsheets/d/1xLPEyngkFvDnAA3RwMw61V3zjNF2YKxTiF_VcRweY2g/
-lang: EN
 docs_link: "${docs_link}"
 ga_date_mm/dd/yyyy: ${today}
 end_of_support_date_mm/dd/yyyy: ${RELEASE_END_OF_SUPPORT}
-export_control_status: ENTITLEMENT_REQUIRED
-product_slug: ${RELEASE_PRODUCT_SLUG}
 upgrade_specifiers:
 - specifier: ${RELEASE_UPGRADE_SPECIFIER}
 EOF
@@ -66,17 +60,6 @@ cat <<EOF >>./release-config/release.yml
 - file: "../release-files/$(basename "license-file"/*.txt)"
   description: "Stemcells for PCF (Windows) License"
 EOF
-
-if [ -n "$RELEASE_SKUS" ]; then
-  cat <<SKUS >>./release-config/release.yml
-skus:
-SKUS
-  IFS=',' ;for i in ${RELEASE_SKUS}; do
-  cat >> "${ROOT_DIR}/release-config/release.yml" <<SKU_CODE
-- code: "${i}"
-SKU_CODE
-  done
-fi
 
 echo "RMT release file:"
 cat release-config/release.yml
