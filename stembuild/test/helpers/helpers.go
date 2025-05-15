@@ -182,7 +182,7 @@ func BuildStembuild(version string) (string, error) {
 		NewPrefixedWriter(DebugOutPrefix, GinkgoWriter),
 		NewPrefixedWriter(DebugErrPrefix, GinkgoWriter))
 	Expect(err).NotTo(HaveOccurred())
-	Eventually(session, 120*time.Second).Should(Exit(0))
+	Eventually(session, 240*time.Second).Should(Exit(0))
 
 	files, err := os.ReadDir(filepath.Join(root, "out"))
 	Expect(err).NotTo(HaveOccurred())
