@@ -44,7 +44,6 @@ groups:
   - github-release-stembuild
   - upload-dev-internal-to-rmt
   - bump-minor
-  - notify-rn-to-docs-team
 - name: aws
   jobs:
   - create-aws
@@ -88,7 +87,6 @@ groups:
   - publish-azure-offer
   - bump-minor
   - upload-dev-internal-to-rmt
-  - notify-rn-to-docs-team
 - name: images
   jobs:
     - build-windows-stemcell-ci-image
@@ -114,14 +112,6 @@ resource_types:
     tag: 1.6
     username: ((docker.username))
     password: ((docker.password))
-- name: gchat-notification
-  type: registry-image
-  check_every: 168h
-  source:
-    repository: springio/google-chat-notify-resource
-    username: ((docker.username))
-    password: ((docker.password))
-    tag: 0.0.1-SNAPSHOT
 - name: artifactory-path-version-resource
   type: registry-image
   source:
@@ -633,11 +623,6 @@ resources:
     start: 3:00 -0700
     stop: 4:30 -0700
     days: [Wednesday]
-
-- name: tas-docs-team-gchat-message
-  type: gchat-notification
-  source:
-    url: ((gchat-webhook-url-tas-docs-team))
 
 jobs:
 - name: build-windows-stemcell-ci-image
@@ -2695,15 +2680,3 @@ jobs:
   - put: main-version
     params:
       bump: minor
-
-- name: notify-rn-to-docs-team
-  serial: true
-  plan:
-  - get: main-version
-    passed: [upload-dev-internal-to-rmt]
-    trigger: true
-  - put: tas-docs-team-gchat-message
-    params:
-      text: |
-        :windows: Hi <users/115311248591248242920> <users/100963210707072263034> ! A new *Windows* Stemcell is about to be released in the next hour. The Robots are building the release notes which should be available for publishing at about the same time. Thank you! :windows:
-    attempts: 3
