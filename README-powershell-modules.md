@@ -1,14 +1,5 @@
-# bosh-psmodules
-
-The recommended approach for creating local BOSH Windows stemcells which can be deployed on [Cloud Foundry BOSH](https://bosh.io), is [`stembuild`](https://github.com/cloudfoundry-incubator/stembuild).
-
-[Documentation on how to use `stembuild` can be found here.](https://bosh.io/docs/windows-stemcell-create/)
-
----
-
+# BOSH Powershell Modules
 Powershell scripts to set up a Windows VM in a manner appropriate for a BOSH Stemcell.
-
-Used by [stembuild](https://github.com/cloudfoundry-incubator/stembuild) and [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder)
 
 ## Testing
 
@@ -18,8 +9,13 @@ The test suite for each module currently assumes that the tests are being run wi
 
 This requires iterating through the module directories to run all the tests:
 
-```
-cd bosh-psmodules
+Two copies of BOSH Powershell Modules exist in this repo:
+- `stembuild/modules`
+- `modules`
+
+```powershell
+# Where MODULES_DIR is ""ci/tasks/delete-vms/delete-vms.iml, or "modules"
+cd $MODULES_DIR
 foreach ($module in (Get-ChildItem "./modules").Name) {
   Push-Location "modules/$module"
     $results=Invoke-Pester -PassThru
@@ -33,16 +29,16 @@ echo "Failed Tests: $result"
 
 If you just need to test a single module, you could do this:
 
-```
-cd "bosh-psmodules\module\BOSH.<module>"
+```powershell
+cd "$MODULES_DIR\BOSH.<module>"
 Invoke-Pester
 ```
 
-## Running a subset of tests on MacOS
+## Running a subset of tests on macOS
 
-You can use Powershell and MacOS to run the tests that do not require Windows system calls:
+You can use Powershell and macOS to run the tests that do not require Windows system calls:
 
-```
+```shell
 cd ~/workspace
 brew install powershell
 git clone --depth 1 --branch 4.4.0 git@github.com:pester/Pester.git

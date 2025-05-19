@@ -39,3 +39,13 @@ bundle exec rspec
 ```
 
 Acceptance testing for stemcells should be done with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry/bosh-windows-acceptance-tests)
+
+## Relocated Documentation
+- azure-light-stemcell.md
+  - https://github.com/cloudfoundry/bosh-windows-stemcell-builder/wiki/Using-the-Azure-Light-Stemcell
+- create-manual-openstack-stemcells.md
+  - https://github.com/cloudfoundry/bosh-windows-stemcell-builder/wiki/Create-Manual-OpenStack-Stemcells
+- manual-stemcell-dotnet-version-guide.md
+  - https://github.com/cloudfoundry/bosh-windows-stemcell-builder/wiki/Manual-Stemcell-DotNet-Version-Guide
+- with-concourse.md
+  - https://github.com/cloudfoundry/bosh-windows-stemcell-builder/wiki/Windows-Worker-and-Concourse-Setup
