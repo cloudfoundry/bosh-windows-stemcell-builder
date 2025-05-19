@@ -1,5 +1,12 @@
+.DS_Store
 .idea
+.envrc
 .vscode
+
+stembuild/stembuild
+stembuild/stembuild.exe
+stembuild/StemcellAutomation.zip
+stembuild/LGPO.zip
 
 # Stemcell Builder
 packer_cache
@@ -13,3 +20,4 @@ compiled-agent
 # BWATS
 bin
 pkg
+

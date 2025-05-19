@@ -1,0 +1,34 @@
+{
+  "DiskProvisioning": "thin",
+  "MarkAsTemplate": false,
+  "Name": "{{.VMName}}",
+  "IPAllocationPolicy": "fixedPolicy",
+  "IPProtocol": "IPv4",
+  "NetworkMapping": [
+    {
+      "Name": "custom",
+      "Network": "{{.VMNetwork}}"
+    }
+  ],
+  "PropertyMapping": [
+    {
+      "Key": "ip0",
+      "Value": "{{.TargetIP}}"
+    },
+    {
+      "Key": "cidr",
+      "Value": "{{.SubnetMask}}"
+    },
+    {
+      "Key": "gateway",
+      "Value": "{{.NetworkGateway}}"
+    },
+    {
+      "Key":"DNS",
+      "Value":"8.8.8.8"
+    }
+  ],
+  "PowerOn": true,
+  "InjectOvfEnv": false,
+  "WaitForIP": false
+}
