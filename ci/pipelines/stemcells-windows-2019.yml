@@ -192,6 +192,7 @@ resources:
     password: ((github_public_repo_token))
 - name: gormt-repo
   type: git
+  tags: [broadcom]
   source:
     uri: https://github.gwd.broadcom.net/TNZ/gormt.git
     branch: main
@@ -2641,6 +2642,7 @@ jobs:
       RELEASE_UPGRADE_SPECIFIER: "2019.*"
   - task: create-rmt-release
     image: bosh-ecosystem-docker-image
+    tags: [broadcom]
     file: gormt-repo/concourse_examples/tasks/create-release.yml
     params: &rmt_params
       RMT_RMT_EMAIL: "tanzu.tas-ecosystem@broadcom.com"
@@ -2667,6 +2669,7 @@ jobs:
     image: bosh-ecosystem-docker-image
     input_mapping:
       release-update-config: release-config
+    tags: [broadcom]
     file: gormt-repo/concourse_examples/tasks/release-file-update.yml
     params:
       <<: *rmt_params

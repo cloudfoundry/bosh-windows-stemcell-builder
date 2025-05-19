@@ -2,7 +2,6 @@
 set -eu -o pipefail
 
 export GOVC_URL="${VCENTER_ADMIN_CREDENTIAL_URL}"
-set -x
 
 ROOT_DIR=$(pwd)
 export OUTPUT_DIR=${ROOT_DIR}/output
