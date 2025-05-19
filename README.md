@@ -1,13 +1,10 @@
-# BOSH Windows Stemcell Builder  [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
+# BOSH Windows Stemcell Builder
 
 This repository contains Rake tasks for creating BOSH Windows stemcells for AWS, Azure, GCP, and Openstack
 
 The recommended approach for creating BOSH Windows stemcells for vSphere which can be deployed on [Cloud Foundry BOSH](https://bosh.io), is [`stembuild`](https://github.com/cloudfoundry/stembuild).
 
 [Documentation on how to use `stembuild` can be found here.](https://bosh.io/docs/windows-stemcell-create/)
-
-#### Contributing
-Please submit PR's to the `develop` branch
 
 #### Dependencies
 
@@ -25,15 +22,15 @@ bundle install
 
 #### Commands
 ```
-rake build:aws                                                                 # Build AWS Stemcell
-rake build:azure                                                               # Build Azure Stemcell
-rake build:gcp                                                                 # Build GCP Stemcell
+rake build:aws                  # Build AWS Stemcell
+rake build:azure                # Build Azure Stemcell
+rake build:gcp                  # Build GCP Stemcell
 
-rake publish:staging:azure                                                     # Stage an image to the Azure marketplace
-rake publish:production:azure                                                  # Publish an image to the Azure marketplace
-rake publish:finalize:azure                                                    # Wait for finalizing an image to the Azure marketplace
+rake publish:staging:azure      # Stage an image to the Azure marketplace
+rake publish:production:azure   # Publish an image to the Azure marketplace
+rake publish:finalize:azure     # Wait for finalizing an image to the Azure marketplace
 
-rake publish:gcp                                                               # Publish an image to GCP
+rake publish:gcp                # Publish an image to GCP
 ```
 
 #### Running the tests
@@ -42,4 +39,3 @@ bundle exec rspec
 ```
 
 Acceptance testing for stemcells should be done with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry/bosh-windows-acceptance-tests)
-
