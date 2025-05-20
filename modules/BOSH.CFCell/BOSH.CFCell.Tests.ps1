@@ -62,7 +62,6 @@ Describe "Protect-CFCell" {
 
 Describe "Install-CFFeatures" {
     It "restarts computer on Microsoft server 2016 and later" {
-
         Mock -ModuleName BOSH.CFCell Install-CFFeatures2012 { }
         Mock -ModuleName BOSH.CFCell Install-CFFeatures2016 { }
         Mock -ModuleName BOSH.CFCell Write-Error { }
@@ -83,7 +82,6 @@ Describe "Install-CFFeatures2016" {
         Mock Uninstall-WindowsFeature { }
         Mock -ModuleName BOSH.CFCell Uninstall-WindowsFeature { }
         Mock -ModuleName BOSH.CFCell Set-Service { }
-        # Mock Set-Service { }
         Mock -ModuleName BOSH.CFCell Restart-Computer { }
         Mock -ModuleName BOSH.CFCell Get-OSVersionString { "10.0.1803" }
     }

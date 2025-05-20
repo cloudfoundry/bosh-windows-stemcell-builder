@@ -23,6 +23,7 @@ FunctionsToExport = @(
     'Disable-3DES',
     'Disable-DCOM',
     'Get-OSVersion',
+    'Get-OSVersionString',
     'Get-WinRMConfig',
     'Get-WUCerts',
     'New-VersionFile',
