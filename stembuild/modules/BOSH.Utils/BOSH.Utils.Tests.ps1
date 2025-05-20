@@ -1,32 +1,43 @@
-#We remove multiple module that import BOSH.Utils
-Remove-Module -Name BOSH.WinRM -ErrorAction Ignore
-Remove-Module -Name BOSH.CFCell -ErrorAction Ignore
-Remove-Module -Name BOSH.AutoLogon -ErrorAction Ignore
+BeforeAll {
+    Remove-Module -Name BOSH.Utils -ErrorAction Ignore
+    Import-Module ./BOSH.Utils.psm1
 
-Remove-Module -Name BOSH.Utils -ErrorAction Ignore
-Import-Module ./BOSH.Utils.psm1
-Remove-Module -Name AbsolutePathChroot -ErrorAction Ignore
-Import-Module ./AbsolutePathChroot.psm1
+    Remove-Module -Name AbsolutePathChroot -ErrorAction Ignore
+    Import-Module ./AbsolutePathChroot.psm1
 
-
-#As of now, this function only supports DWords and Strings.
-function Restore-RegistryState {
-    param(
-        [bool]$KeyExists,
-        [String]$KeyPath,
-        [String]$ValueName,
-        [PSObject]$ValueData
-    )
-    if ($KeyExists) {
-        if ($ValueData -eq $null) {
-            Remove-ItemProperty -path $KeyPath -Name $ValueName
+    # As of now, this function only supports DWords and Strings.
+    function Restore-RegistryState {
+        param(
+            [bool]$KeyExists,
+            [String]$KeyPath,
+            [String]$ValueName,
+            [PSObject]$ValueData
+        )
+        if ($KeyExists) {
+            if ($ValueData -eq $null) {
+                Remove-ItemProperty -path $KeyPath -Name $ValueName
+            } else {
+                Set-ItemProperty -path $KeyPath -Name $ValueName -Value $ValueData
+            }
         } else {
-            Set-ItemProperty -path $KeyPath -Name $ValueName -Value $ValueData
+            Remove-Item -Path $KeyPath -ErrorAction SilentlyContinue
         }
-    } else {
-        Remove-Item -Path $KeyPath -ErrorAction SilentlyContinue
+    }
+
+    function New-TempDir {
+        $parent = [System.IO.Path]::GetTempPath()
+        [string] $name = [System.Guid]::NewGuid()
+        (New-Item -ItemType Directory -Path (Join-Path $parent $name)).FullName
+    }
+
+    function getWindowsOptionalFeatureState {
+        param([string] $featureName)
+        sleep -Milliseconds 500
+        $obj = Get-WindowsOptionalFeature -Online -FeatureName $featureName
+        return $obj.State
     }
 }
+
 
 Describe "Restore-RegistryState" {
     BeforeEach {
@@ -61,12 +72,6 @@ Describe "Restore-RegistryState" {
     }
 }
 
-function New-TempDir {
-    $parent = [System.IO.Path]::GetTempPath()
-    [string] $name = [System.Guid]::NewGuid()
-    (New-Item -ItemType Directory -Path (Join-Path $parent $name)).FullName
-}
-
 Describe "Open-Zip" {
     BeforeEach {
         $outPath=(New-TempDir)
@@ -78,25 +83,25 @@ Describe "Open-Zip" {
 
     Context "when zipFile is not provided" {
         It "throws" {
-            { Open-Zip } | Should Throw "Provide a ZipFile to extract"
+            { Open-Zip } | Should -Throw "Provide a ZipFile to extract"
         }
     }
     Context "when output file already exists" {
         It "does not throw" {
             New-Item -Path $outPath -Name "file.txt" -ItemType "file" -Value "Hello"
-            { Open-Zip -ZipFile "./example.zip" -OutPath $outPath } | Should Not Throw
-            Get-Content (Join-Path $outPath "file.txt") | Should Be "file"
+            { Open-Zip -ZipFile "./example.zip" -OutPath $outPath } | Should -Not -Throw
+            Get-Content (Join-Path $outPath "file.txt") | Should -Be "file"
         }
     }
     Context "when OutPath is not provided" {
         It "throws" {
-            { Open-Zip -ZipFile "./example.zip" } | Should Throw "Provide an OutPath for extract"
+            { Open-Zip -ZipFile "./example.zip" } | Should -Throw "Provide an OutPath for extract"
         }
     }
     It "extracts Zip file" {
         Open-Zip -ZipFile "./example.zip" -OutPath $outPath
         $file = (Join-Path $outPath "file.txt")
-        Test-Path $file | Should be $True
+        Test-Path $file | Should -Be $True
     }
 }
 
@@ -105,7 +110,7 @@ Describe "Get-Log" {
         It "throws" {
             $dir = (New-TempDir)
             $logFile = (Join-Path $dir "log.log")
-            { Get-Log -LogFile $logFile } | Should Throw "Missing log file: $logFile"
+            { Get-Log -LogFile $logFile } | Should -Throw "Missing log file: $logFile"
         }
     }
 }
@@ -116,9 +121,9 @@ Describe  "Protect-Dir" {
         New-Item -Path $aclDir -ItemType Directory -Force
 
         cacls.exe $aclDir /T /E /P "BUILTIN\Users:F"
-        $LASTEXITCODE | Should Be 0
+        $LASTEXITCODE | Should -Be 0
         cacls.exe $aclDir /T /E /P "BUILTIN\IIS_IUSRS:F"
-        $LASTEXITCODE | Should Be 0
+        $LASTEXITCODE | Should -Be 0
     }
 
     AfterEach {
@@ -127,27 +132,27 @@ Describe  "Protect-Dir" {
 
     Context "when not provided a directory" {
         It "throws" {
-            { Protect-Dir } | Should Throw "Provide a directory to set ACL on"
+            { Protect-Dir } | Should -Throw "Provide a directory to set ACL on"
         }
     }
 
     It "sets the correct ACLs on the provided directory" {
-        { Protect-Dir -path $aclDir } | Should Not Throw
+        { Protect-Dir -path $aclDir } | Should -Not -Throw
 
         $acl = (Get-Acl $aclDir)
-        $acl.Owner | Should Be "BUILTIN\Administrators"
-        $acl.Access | where { $_.IdentityReference -eq "BUILTIN\Users" } | Should BeNullOrEmpty
-        $acl.Access | where { $_.IdentityReference -eq "BUILTIN\IIS_IUSRS" } | Should BeNullOrEmpty
+        $acl.Owner | Should -Be "BUILTIN\Administrators"
+        $acl.Access | where { $_.IdentityReference -eq "BUILTIN\Users" } | Should -BeNullOrEmpty
+        $acl.Access | where { $_.IdentityReference -eq "BUILTIN\IIS_IUSRS" } | Should -BeNullOrEmpty
         $adminAccess = ($acl.Access | where { $_.IdentityReference -eq "BUILTIN\Administrators" })
-        $adminAccess | Should Not BeNullOrEmpty
-        $adminAccess.FileSystemRights | Should Be "FullControl"
+        $adminAccess | Should -Not -BeNullOrEmpty
+        $adminAccess.FileSystemRights | Should -Be "FullControl"
     }
 
     Context "when inheritance is disabled" {
         It "disables ACL inheritance on the provided directory " {
-            { Protect-Dir -path $aclDir -disableInheritance $True } | Should Not Throw
+            { Protect-Dir -path $aclDir -disableInheritance $True } | Should -Not -Throw
 
-            (Get-Acl $aclDir).AreAccessRulesProtected | Should Be $True
+            (Get-Acl $aclDir).AreAccessRulesProtected | Should -Be $True
         }
     }
 }
@@ -166,11 +171,11 @@ Describe "Disable-RC4" {
         $rc4_56PathExists = Test-Path -Path $rc4_56Path
         $oldRC4_56Value = (Get-ItemProperty -path $rc4_56Path -ErrorAction SilentlyContinue).'Enabled'
 
-        { Disable-RC4 } | Should Not Throw
+        { Disable-RC4 } | Should -Not -Throw
 
-        (Get-ItemProperty -Path $rc4_128Path).'Enabled' | Should Be "0"
-        (Get-ItemProperty -Path $rc4_40Path).'Enabled' | Should Be "0"
-        (Get-ItemProperty -Path $rc4_56Path).'Enabled' | Should Be "0"
+        (Get-ItemProperty -Path $rc4_128Path).'Enabled' | Should -Be "0"
+        (Get-ItemProperty -Path $rc4_40Path).'Enabled' | Should -Be "0"
+        (Get-ItemProperty -Path $rc4_56Path).'Enabled' | Should -Be "0"
 
         Restore-RegistryState -KeyExists $rc4_128PathExists -KeyPath $rc4_128Path -ValueName 'Enabled' -ValueData $oldRC4_128Value
         Restore-RegistryState -KeyExists $rc4_40PathExists -KeyPath $rc4_40Path -ValueName 'Enabled' -ValueData $oldRC4_40Value
@@ -192,13 +197,13 @@ Describe "Disable-TLS1" {
         $oldClientEnabledValue = (Get-ItemProperty -path $clientPath -ErrorAction SilentlyContinue).'Enabled'
         $oldClientDisabledValue = (Get-ItemProperty -path $clientPath -ErrorAction SilentlyContinue).'DisabledByDefault'
 
-        { Disable-TLS1 } | Should Not Throw
+        { Disable-TLS1 } | Should -Not -Throw
 
-        (Get-ItemProperty -Path $serverPath).'Enabled' | Should Be "0"
-        (Get-ItemProperty -Path $serverPath).'DisabledByDefault' | Should Be "1"
+        (Get-ItemProperty -Path $serverPath).'Enabled' | Should -Be "0"
+        (Get-ItemProperty -Path $serverPath).'DisabledByDefault' | Should -Be "1"
 
-        (Get-ItemProperty -Path $clientPath).'Enabled' | Should Be "0"
-        (Get-ItemProperty -Path $clientPath).'DisabledByDefault' | Should Be "1"
+        (Get-ItemProperty -Path $clientPath).'Enabled' | Should -Be "0"
+        (Get-ItemProperty -Path $clientPath).'DisabledByDefault' | Should -Be "1"
 
         Restore-RegistryState -KeyExists $serverPathExists -KeyPath $serverPath -ValueName 'Enabled' -ValueData $oldServerValue
         Restore-RegistryState -KeyExists $serverPathExists -KeyPath $serverPath -ValueName 'DisabledByDefault' -ValueData $oldServerDisabledValue
@@ -222,13 +227,13 @@ Describe "Disable-TLS11" {
         $oldClientEnabledValue = (Get-ItemProperty -path $clientPath -ErrorAction SilentlyContinue).'Enabled'
         $oldClientDisabledValue = (Get-ItemProperty -path $clientPath -ErrorAction SilentlyContinue).'DisabledByDefault'
 
-        { Disable-TLS11 } | Should Not Throw
+        { Disable-TLS11 } | Should -Not -Throw
 
-        (Get-ItemProperty -Path $serverPath).'Enabled' | Should Be "0"
-        (Get-ItemProperty -Path $serverPath).'DisabledByDefault' | Should Be "1"
+        (Get-ItemProperty -Path $serverPath).'Enabled' | Should -Be "0"
+        (Get-ItemProperty -Path $serverPath).'DisabledByDefault' | Should -Be "1"
 
-        (Get-ItemProperty -Path $clientPath).'Enabled' | Should Be "0"
-        (Get-ItemProperty -Path $clientPath).'DisabledByDefault' | Should Be "1"
+        (Get-ItemProperty -Path $clientPath).'Enabled' | Should -Be "0"
+        (Get-ItemProperty -Path $clientPath).'DisabledByDefault' | Should -Be "1"
 
         Restore-RegistryState -KeyExists $serverPathExists -KeyPath $serverPath -ValueName 'Enabled' -ValueData $oldServerValue
         Restore-RegistryState -KeyExists $serverPathExists -KeyPath $serverPath -ValueName 'DisabledByDefault' -ValueData $oldServerDisabledValue
@@ -250,11 +255,11 @@ Describe "Enable-TLS12" {
 
         $oldClientEnabledValue = (Get-ItemProperty -path $clientPath -ErrorAction SilentlyContinue).'Enabled'
 
-        { Enable-TLS12 } | Should Not Throw
+        { Enable-TLS12 } | Should -Not -Throw
 
-        (Get-ItemProperty -Path $serverPath).'Enabled' | Should Be "1"
+        (Get-ItemProperty -Path $serverPath).'Enabled' | Should -Be "1"
 
-        (Get-ItemProperty -Path $clientPath).'Enabled' | Should Be "1"
+        (Get-ItemProperty -Path $clientPath).'Enabled' | Should -Be "1"
 
         Restore-RegistryState -KeyExists $serverPathExists -KeyPath $serverPath -ValueName 'Enabled' -ValueData $oldServerValue
 
@@ -268,9 +273,9 @@ Describe "Disable-3DES" {
         $tripleDESPathExists = Test-Path $registryPath
         $oldDESValue = (Get-ItemProperty -path $registryPath -ErrorAction SilentlyContinue).'Enabled'
 
-        { Disable-3DES } | Should Not Throw
+        { Disable-3DES } | Should -Not -Throw
 
-        (Get-ItemProperty -path $registryPath).'Enabled' | Should Be "0"
+        (Get-ItemProperty -path $registryPath).'Enabled' | Should -Be "0"
 
         Restore-RegistryState -KeyExists $tripleDESPathExists -KeyPath $registryPath -ValueName 'Enabled' -ValueData $oldDESValue
     }
@@ -281,9 +286,9 @@ Describe "Disable-DCOM" -Tag 'Focused' {
         $DCOMPath = 'HKLM:\Software\Microsoft\OLE'
         $oldDCOMValue = (Get-ItemProperty -Path $DCOMPath).'EnableDCOM'
 
-        { Disable-DCOM } | Should Not Throw
+        { Disable-DCOM } | Should -Not -Throw
 
-        (Get-ItemProperty -Path $DCOMPath).'EnableDCOM' | Should Be "N"
+        (Get-ItemProperty -Path $DCOMPath).'EnableDCOM' | Should -Be "N"
         Set-ItemProperty -Path $DCOMPath -Name 'EnableDCOM' -Value $oldDCOMValue
 
         Restore-RegistryState -KeyExists $true -KeyPath $DCOMPath -ValueName 'EnableDCOM' -ValueData $oldDCOMValue
@@ -292,11 +297,11 @@ Describe "Disable-DCOM" -Tag 'Focused' {
 
 Describe "Get-OSVersion" {
     BeforeEach {
-        Mock Write-Log { } -ModuleName BOSH.Utils
+        Mock -ModuleName BOSH.Utils Write-Log { }
     }
 
     It "Correctly detects Windows 2012R2" {
-        Mock Get-OSVersionString { "6.3.9600.68" } -ModuleName BOSH.Utils
+        Mock -ModuleName BOSH.Utils Get-OSVersionString { "6.3.9600.68" }
         $actualOSVersion = $null
 
         { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
@@ -307,7 +312,7 @@ Describe "Get-OSVersion" {
     }
 
     It "Correctly detects Windows 1709" {
-        Mock Get-OSVersionString { "10.0.16299.233" } -ModuleName BOSH.Utils
+        Mock -ModuleName BOSH.Utils Get-OSVersionString { "10.0.16299.233" }
         $actualOSVersion = $null
 
         { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
@@ -318,7 +323,7 @@ Describe "Get-OSVersion" {
     }
 
     It "Correctly detects Windows 1803" {
-        Mock Get-OSVersionString { "10.0.17134.420" } -ModuleName BOSH.Utils
+        Mock -ModuleName BOSH.Utils Get-OSVersionString { "10.0.17134.420" }
         $actualOSVersion = $null
 
         { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
@@ -329,7 +334,7 @@ Describe "Get-OSVersion" {
     }
 
     It "Correctly detects Windows 2019" {
-        Mock Get-OSVersionString { "10.0.17763.410" } -ModuleName BOSH.Utils
+        Mock -ModuleName BOSH.Utils Get-OSVersionString { "10.0.17763.410" }
         $actualOSVersion = $null
 
         { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
@@ -340,7 +345,7 @@ Describe "Get-OSVersion" {
     }
 
     It "Throws an exception if a valid OS is not detected" {
-        Mock Get-OSVersionString { "01.23.456.789" } -ModuleName BOSH.Utils
+        Mock -ModuleName BOSH.Utils Get-OSVersionString { "01.23.456.789" }
 
         { Get-OSVersion } | Should -Throw "invalid OS detected"
 
@@ -351,9 +356,9 @@ Describe "Get-OSVersion" {
 
 Describe "Get-WinRMConfig" {
     It "makes a request for winrm config, returns stdout" {
-        Mock Invoke-Expression {
+        Mock -ModuleName BOSH.Utils Invoke-Expression {
             "Lots of winrm config"
-        } -ModuleName BOSH.Utils
+        }
 
         $output = ""
         { Get-WinRMConfig | Set-Variable -Name "output" -Scope 1 } | Should -Not -Throw
@@ -365,9 +370,9 @@ Describe "Get-WinRMConfig" {
     }
 
     It "throws a descriptive failure when winrm config is unavailable" {
-        Mock Invoke-Expression {
+        Mock -ModuleName BOSH.Utils Invoke-Expression {
             Write-Error "Some error output"
-        } -ModuleName BOSH.Utils
+        }
 
         $output = ""
         { Get-WinRMConfig | Set-Variable -Name "output" -Scope 1 } | `
@@ -387,7 +392,7 @@ Describe "Set-ProxySettings" {
             "Property set"
         } -ModuleName BOSH.Utils
 
-        { Set-ProxySettings "http-proxy" "https-proxy" "bypass-list" } | Should Not Throw
+        { Set-ProxySettings "http-proxy" "https-proxy" "bypass-list" } | Should -Not -Throw
 
         [string] $start =  [System.Text.Encoding]::ASCII.GetString([byte[]](70, 0, 0, 0, 25, 0, 0, 0, 3, 0, 0, 0, 29, 0, 0, 0 ), 0, 16);
         [string] $endproxy = [System.Text.Encoding]::ASCII.GetString([byte[]]( 233, 0, 0, 0 ), 0, 4);
@@ -430,7 +435,7 @@ Describe "Clear-ProxySettings"  {
         $item=Get-Item $regKeyConnections
 
         #DefaultConnectionSettings is actually added to a "Property" object
-        $item.Property | Should Be $null
+        $item.Property | Should -Be $null
 
         #We need to pipe the netsh command through Out-String in order to convert its output into a proper string
         $output= (netsh winhttp show proxy) | Out-String
@@ -464,12 +469,12 @@ Describe "Get-WUCerts" {
 
     It "throws if the certfile cannot be generated" {
         Mock Invoke-Certutil { throw 'some error' } -ModuleName BOSH.Utils
-        { Get-WUCerts } | Should Throw "some error"
+        { Get-WUCerts } | Should -Throw "some error"
     }
 
     It "throws if the certfile cannot be imported" {
         Mock Invoke-Import-Certificate { throw 'some error' } -ModuleName BOSH.Utils
-        { Get-WUCerts } | Should Throw "some error"
+        { Get-WUCerts } | Should -Throw "some error"
     }
 }
 
@@ -496,15 +501,8 @@ Describe "New-VersionFile" {
     }
 
     It "throws if the version parameter is not specified" {
-        { New-VersionFile } | Should Throw "-Version parameter must be specified as major.minor[.whatever]"
+        { New-VersionFile } | Should -Throw '-Version parameter must be specified as major.minor`[.whatever`]'
     }
-}
-
-function getWindowsOptionalFeatureState {
-    param([string] $featureName)
-    sleep -Milliseconds 500
-    $obj = Get-WindowsOptionalFeature -Online -FeatureName $featureName
-    return $obj.State
 }
 
 Describe "Enable-Hyper-V" {
@@ -522,6 +520,3 @@ Describe "Enable-Hyper-V" {
     }
 
 }
-
-
-Remove-Module -Name BOSH.Utils -ErrorAction Ignore

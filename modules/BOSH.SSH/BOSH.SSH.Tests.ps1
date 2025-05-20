@@ -1,8 +1,7 @@
 BeforeAll {
     Import-Module ./BOSH.SSH.psm1
 
-    function Get-FileEncoding
-    {
+    function Get-FileEncoding {
         [CmdletBinding()]
         param (
             [Alias("PSPath")]

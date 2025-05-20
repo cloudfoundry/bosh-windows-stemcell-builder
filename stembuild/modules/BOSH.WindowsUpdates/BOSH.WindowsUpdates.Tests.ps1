@@ -1,17 +1,18 @@
-Remove-Module -Name BOSH.WindowsUpdates -ErrorAction Ignore
-Import-Module ./BOSH.WindowsUpdates.psm1
+BeforeAll {
+    Remove-Module -Name BOSH.WindowsUpdates -ErrorAction Ignore
+    Import-Module ./BOSH.WindowsUpdates.psm1
 
-Remove-Module -Name BOSH.Utils -ErrorAction Ignore
-Import-Module ../BOSH.Utils/BOSH.Utils.psm1
+    Remove-Module -Name BOSH.Utils -ErrorAction Ignore
+    Import-Module ../BOSH.Utils/BOSH.Utils.psm1
+}
 
 Describe "Disable-AutomaticUpdates" {
-
     BeforeEach {
         $oldWuauStatus = (Get-Service wuauserv).Status
         $oldWuauStartMode = ( Get-Service wuauserv ).StartType
 
-        { Set-Service -Name wuauserv -StartupType "Manual" } | Should Not Throw
-        { Set-Service -Name wuauserv -Status "Running" } | Should Not Throw
+        { Set-Service -Name wuauserv -StartupType "Manual" } | Should -Not -Throw
+        { Set-Service -Name wuauserv -Status "Running" } | Should -Not -Throw
 
 
         $oldAUOptions = (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update').AUOptions
@@ -21,7 +22,7 @@ Describe "Disable-AutomaticUpdates" {
         Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 2 -Name 'EnableFeaturedSoftware'
         Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 2 -Name 'IncludeRecommendedUpdates'
 
-        { Disable-AutomaticUpdates } | Should Not Throw
+        { Disable-AutomaticUpdates } | Should -Not -Throw
     }
 
     AfterEach {
@@ -43,23 +44,23 @@ Describe "Disable-AutomaticUpdates" {
             Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value $oldAUOptions -Name 'IncludeRecommendedUpdates'
         }
 
-        { Set-Service -Name wuauserv -StartupType $oldWuauStartMode } | Should Not Throw
+        { Set-Service -Name wuauserv -StartupType $oldWuauStartMode } | Should -Not -Throw
         if ($oldWuauStatus -eq "Stopped") {
             Stop-Service wuauserv
         } else {
-            { Set-Service -Name wuauserv -Status $oldWuauStatus } | Should Not Throw
+            { Set-Service -Name wuauserv -Status $oldWuauStatus } | Should -Not -Throw
         }
     }
 
     It "stops and disables the Windows Updates service" {
-        (Get-Service -Name "wuauserv").Status | Should Be "Stopped"
-        (Get-WmiObject -Class Win32_Service -Property StartMode -Filter "Name='wuauserv'").StartMode | Should Be "Disabled"
+        (Get-Service -Name "wuauserv").Status | Should -Be "Stopped"
+        (Get-WmiObject -Class Win32_Service -Property StartMode -Filter "Name='wuauserv'").StartMode | Should -Be "Disabled"
     }
 
     It "sets registry keys to stop automatically installing updates" {
-        (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update').AUOptions | Should Be "1"
-        (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update').EnableFeaturedSoftware | Should Be "0"
-        (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update').IncludeRecommendedUpdates | Should Be "0"
+        (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update').AUOptions | Should -Be "1"
+        (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update').EnableFeaturedSoftware | Should -Be "0"
+        (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update').IncludeRecommendedUpdates | Should -Be "0"
     }
 }
 
@@ -79,10 +80,10 @@ Describe "Enable-SecurityPatches" {
             $oldIExplore64 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe'
         }
 
-        { Enable-CVE-2015-6161 } | Should Not Throw
+        { Enable-CVE-2015-6161 } | Should -Not -Throw
 
-        (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe' | Should Be "1"
-        (Get-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe' | Should Be "1"
+        (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe' | Should -Be "1"
+        (Get-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING").'iexplore.exe' | Should -Be "1"
 
         if ($handlerHardeningPath32Exists) {
             if ($oldIExplore32 -eq "")
@@ -122,10 +123,10 @@ Describe "Enable-SecurityPatches" {
             $oldIExplore64 = (Get-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe'
         }
 
-        { Enable-CVE-2017-8529 } | Should Not Throw
+        { Enable-CVE-2017-8529 } | Should -Not -Throw
 
-        (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe' | Should Be "1"
-        (Get-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe' | Should Be "1"
+        (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe' | Should -Be "1"
+        (Get-ItemProperty -Path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX").'iexplore.exe' | Should -Be "1"
 
         if ($disclosureFixPathExists32) {
             if ($oldIExplore32 -eq "")
@@ -163,9 +164,9 @@ Describe "Enable-SecurityPatches" {
             }
         }
 
-        { Enable-CredSSP } | Should Not Throw
+        { Enable-CredSSP } | Should -Not -Throw
 
-        (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters").AllowEncryptionOracle | Should Be "1"
+        (Get-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters").AllowEncryptionOracle | Should -Be "1"
 
         if ($credSSPPathExists) {
             if ( $credSSPParamPathExists ) {
@@ -187,11 +188,11 @@ Describe "Enable-SecurityPatches" {
 
 Describe "Upgrade-PSVersion" {
     It "Only installs if powershell 5.1 or above is not installed" {
-        Mock Test-PSVersion { $true } -ModuleName BOSH.WindowsUpdates
-        Mock Invoke-WebRequest { } -ModuleName BOSH.WindowsUpdates
-        Mock Start-Process { } -ModuleName BOSH.WindowsUpdates
+        Mock -ModuleName BOSH.WindowsUpdates Test-PSVersion { $true }
+        Mock -ModuleName BOSH.WindowsUpdates Invoke-WebRequest { }
+        Mock -ModuleName BOSH.WindowsUpdates Start-Process { }
 
-        { Upgrade-PSVersion } | Should Not Throw
+        { Upgrade-PSVersion } | Should -Not -Throw
 
         Assert-MockCalled Test-PSVersion -Times 1 -Scope It -ModuleName BOSH.WindowsUpdates
         Assert-MockCalled Invoke-WebRequest -Times 0 -Scope It -ModuleName BOSH.WindowsUpdates
@@ -199,17 +200,14 @@ Describe "Upgrade-PSVersion" {
     }
 
     It "Only installs if powershell 5.1 or above is not installed" {
-        Mock Test-PSVersion { $false } -ModuleName BOSH.WindowsUpdates
-        Mock Invoke-WebRequest { } -ModuleName BOSH.WindowsUpdates
-        Mock Start-Process { } -ModuleName BOSH.WindowsUpdates
+        Mock -ModuleName BOSH.WindowsUpdates Test-PSVersion { $false }
+        Mock -ModuleName BOSH.WindowsUpdates Invoke-WebRequest { }
+        Mock -ModuleName BOSH.WindowsUpdates Start-Process { }
 
-        { Upgrade-PSVersion } | Should Not Throw
+        { Upgrade-PSVersion } | Should -Not -Throw
 
         Assert-MockCalled Test-PSVersion -Times 1 -Scope It -ModuleName BOSH.WindowsUpdates
         Assert-MockCalled Invoke-WebRequest -Times 1 -Scope It -ParameterFilter { $Uri -eq "https://go.microsoft.com/fwlink/?linkid=839516" -and $Outfile -eq "C:\provision\PS51.msu" -and $UseBasicParsing.IsPresent } -ModuleName BOSH.WindowsUpdates
         Assert-MockCalled Start-Process -Times 1 -Scope It -ParameterFilter { $FilePath -eq "C:\provision\PS51.msu" -and $ArgumentList -eq '/quiet /norestart /log:"C:\provision\psupgrade.log"' -and $Wait.IsPresent -and $Passthru.IsPresent } -ModuleName BOSH.WindowsUpdates
     }
 }
-
-Remove-Module -Name BOSH.WindowsUpdates -ErrorAction Ignore
-Remove-Module -Name BOSH.Utils -ErrorAction Ignore
