@@ -48,23 +48,23 @@ function Set-InternetExplorerRegistries {
 
         $MachineDir="$IePolicyPath\DomainSysvol\GPO\Machine"
 
-        New-Item -ItemType Directory -Path $MachineDir -Force -ErrorAction "Stop"
+        New-Item -ItemType Directory -Path "$MachineDir" -Force -ErrorAction "Stop"
         $machinePolicyExitCode = Invoke-LGPO-Build-Pol-From-Text -LGPOTextReadPath "$IePolicyPath\machine.txt" -RegistryPolWritePath "$MachineDir\registry.pol"
         if ($machinePolicyExitCode -ne 0) {
-            Throw "Generating IE policy: Machine"
+            throw "Generating IE policy: Machine"
         }
 
         $UserDir="$IePolicyPath\DomainSysvol\GPO\User"
-        New-Item -ItemType Directory -Path $UserDir -Force -ErrorAction "Stop"
+        New-Item -ItemType Directory -Path "$UserDir" -Force -ErrorAction "Stop"
         $userPolicyExitCode = Invoke-LGPO-Build-Pol-From-Text -LGPOTextReadPath "$IePolicyPath\user.txt" -RegistryPolWritePath "$UserDir\registry.pol"
         if ($userPolicyExitCode -ne 0) {
-            Throw "Generating IE policy: User"
+            throw "Generating IE policy: User"
         }
 
         # Apply policies
         $policyApplicationExitCode = Invoke-LGPO-Apply-Policies -RegistryPolPath $IePolicyPath
         if ($policyApplicationExitCode -ne 0) {
-            Throw "Error Applying IE policy: $IePolicyPath"
+            throw "Error Applying IE policy: $IePolicyPath"
         }
     }
 }

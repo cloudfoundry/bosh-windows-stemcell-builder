@@ -1,60 +1,69 @@
-Remove-Module -Name BOSH.SSH -ErrorAction Ignore
-Import-Module ./BOSH.SSH.psm1
+BeforeAll {
+    Import-Module ./BOSH.SSH.psm1
 
-function Get-FileEncoding {
-    [CmdletBinding()]
-    param (
-        [Alias("PSPath")]
-        [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $True)]
-        [String]$Path
+    function Get-FileEncoding
+    {
+        [CmdletBinding()]
+        param (
+            [Alias("PSPath")]
+            [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $True)]
+            [String]$Path
         ,
-        [Parameter(Mandatory = $False)]
-        [System.Text.Encoding]$DefaultEncoding = [System.Text.Encoding]::ASCII
-    )
+            [Parameter(Mandatory = $False)]
+            [System.Text.Encoding]$DefaultEncoding = [System.Text.Encoding]::ASCII
+        )
 
-    process {
-        [Byte[]]$bom = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 -Path $Path
+        process {
+            [Byte[]]$bom = Get-Content -Encoding Byte -ReadCount 4 -TotalCount 4 -Path $Path
 
-        $encoding_found = $false
+            $encoding_found = $false
 
-        foreach ($encoding in [System.Text.Encoding]::GetEncodings().GetEncoding()) {
-            $preamble = $encoding.GetPreamble()
-            if ($preamble) {
-                foreach ($i in 0..$preamble.Length) {
-                    if ($preamble[$i] -ne $bom[$i]) {
-                        break
-                    } elseif ($i -eq $preable.Length) {
-                        $encoding_found = $encoding
+            foreach ($encoding in [System.Text.Encoding]::GetEncodings().GetEncoding())
+            {
+                $preamble = $encoding.GetPreamble()
+                if ($preamble)
+                {
+                    foreach ($i in 0..$preamble.Length)
+                    {
+                        if ($preamble[$i] -ne $bom[$i])
+                        {
+                            break
+                        }
+                        elseif ($i -eq $preable.Length)
+                        {
+                            $encoding_found = $encoding
+                        }
                     }
                 }
             }
-        }
 
-        if (!$encoding_found) {
-            $encoding_found = $DefaultEncoding
-        }
+            if (!$encoding_found)
+            {
+                $encoding_found = $DefaultEncoding
+            }
 
-        $encoding_found
+            $encoding_found
+        }
     }
-}
 
-function CreateFakeOpenSSHZip
-{
-    param([string]$dir, [string]$installScriptSpyStatus, [string]$fakeZipPath)
+    function CreateFakeOpenSSHZip
+    {
+        param([string]$dir, [string]$installScriptSpyStatus, [string]$fakeZipPath)
 
-    mkdir "$dir\OpenSSH-Win64"
-    $installSpyBehavior = "echo installed > $installScriptSpyStatus"
-    echo $installSpyBehavior > "$dir\OpenSSH-Win64\install-sshd.ps1"
-    echo "fake sshd" > "$dir\OpenSSH-Win64\sshd.exe"
-    echo "fake config" > "$dir\OpenSSH-Win64\sshd_config_default"
+        mkdir "$dir\OpenSSH-Win64"
+        $installSpyBehavior = "echo installed > $installScriptSpyStatus"
+        echo $installSpyBehavior > "$dir\OpenSSH-Win64\install-sshd.ps1"
+        echo "fake sshd" > "$dir\OpenSSH-Win64\sshd.exe"
+        echo "fake config" > "$dir\OpenSSH-Win64\sshd_config_default"
 
-    Compress-Archive -Force -Path "$dir\OpenSSH-Win64" -DestinationPath $fakeZipPath
+        Compress-Archive -Force -Path "$dir\OpenSSH-Win64" -DestinationPath $fakeZipPath
+    }
 }
 
 Describe "Enable-SSHD" {
     BeforeEach {
-        Mock Set-Service { } -ModuleName BOSH.SSH
-        Mock Run-LGPO { } -ModuleName BOSH.SSH
+        Mock -ModuleName BOSH.SSH Set-Service { }
+        Mock -ModuleName BOSH.SSH Run-LGPO { }
 
         $guid = $( New-Guid ).Guid
         $TMP_DIR = "$env:TEMP\BOSH.SSH.Tests-$guid"
@@ -81,7 +90,7 @@ Describe "Enable-SSHD" {
     }
 
     It "sets the startup type of sshd to automatic" {
-        Mock Set-Service { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $Name -eq "sshd" -and $StartupType -eq "Automatic" }
+        Mock -ModuleName BOSH.SSH Set-Service { } -Verifiable -ParameterFilter { $Name -eq "sshd" -and $StartupType -eq "Automatic" }
 
         Enable-SSHD -SSHZipFile $FAKE_ZIP
 
@@ -89,7 +98,7 @@ Describe "Enable-SSHD" {
     }
 
     It "sets the startup type of ssh-agent to automatic" {
-        Mock Set-Service { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $Name -eq "ssh-agent" -and $StartupType -eq "Automatic" }
+        Mock -ModuleName BOSH.SSH Set-Service { } -Verifiable -ParameterFilter { $Name -eq "ssh-agent" -and $StartupType -eq "Automatic" }
 
         Enable-SSHD -SSHZipFile $FAKE_ZIP
 
@@ -121,7 +130,7 @@ Describe "Enable-SSHD" {
             }
         } -ModuleName BOSH.SSH
 
-        Mock New-NetFirewallRule { } -ModuleName BOSH.SSH
+        Mock -ModuleName BOSH.SSH New-NetFirewallRule { }
         Enable-SSHD -SSHZipFile $FAKE_ZIP
         Assert-MockCalled New-NetFirewallRule -Times 1 -ModuleName BOSH.SSH -Scope It
     }
@@ -151,13 +160,13 @@ Describe "Enable-SSHD" {
             }
         } -ModuleName BOSH.SSH
 
-        Mock New-NetFirewallRule { } -ModuleName BOSH.SSH
+        Mock -ModuleName BOSH.SSH New-NetFirewallRule { }
         Enable-SSHD -SSHZipFile $FAKE_ZIP
         Assert-MockCalled New-NetFirewallRule -Times 0 -ModuleName BOSH.SSH -Scope It
     }
 
     It "Generates inf and invokes LGPO if LGPO exists" {
-        Mock Run-LGPO -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
+        Mock -ModuleName BOSH.SSH Run-LGPO -Verifiable -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
 
         Enable-SSHD -SSHZipFile $FAKE_ZIP
 
@@ -175,7 +184,7 @@ Describe "Enable-SSHD" {
     Context "When LGPO executable fails" {
         It "Throws an appropriate error" {
             Mock Run-LGPO { throw "some error" } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Throw "LGPO.exe failed with: some error"
+            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Throw "LGPO.exe failed with: some error*"
         }
     }
 

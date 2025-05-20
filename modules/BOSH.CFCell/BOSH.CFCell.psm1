@@ -1,12 +1,16 @@
-﻿<#
+﻿# function Get-OSVersionStringg {
+#   return [System.Environment]::OSVersion.Version.ToString()
+# }
+
+<#
 .Synopsis
     Install CloudFoundry Cell components for either 2012R2 or 2016
 .Description
     This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows 2012R2 or Windows 2016
 #>
 function Install-CFFeatures {
-  $OS = Get-WmiObject Win32_OperatingSystem
-  switch -Wildcard ($OS.Version) {
+  $VERSION = Get-OSVersionString
+  switch -Wildcard ($VERSION) {
     "6.3.*" {
       Install-CFFeatures2012
     }
@@ -14,7 +18,7 @@ function Install-CFFeatures {
       Install-CFFeatures2016 -ForceReboot
     }
     default {
-      Write-Error "Unsupported Windows version $($OS.Version)"
+      Write-Error "Unsupported Windows version $($VERSION)"
     }
   }
 }
