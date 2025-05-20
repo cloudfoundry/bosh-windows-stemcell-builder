@@ -1,8 +1,4 @@
-﻿# function Get-OSVersionStringg {
-#   return [System.Environment]::OSVersion.Version.ToString()
-# }
-
-<#
+﻿<#
 .Synopsis
     Install CloudFoundry Cell components for either 2012R2 or 2016
 .Description

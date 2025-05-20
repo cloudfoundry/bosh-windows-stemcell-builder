@@ -311,7 +311,7 @@ function Get-OSVersion {
 function New-VersionFile {
     param([string]$Version)
 
-    if (!$Version) {
+    if ($Version -eq "") {
         throw "-Version parameter must be specified as major.minor[.whatever]"
     }
 

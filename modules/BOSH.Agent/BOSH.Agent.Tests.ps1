@@ -12,7 +12,6 @@ BeforeAll {
     }
 }
 
-
 Describe "Copy-Agent" {
     BeforeEach {
         $installDir=(New-TempDir)
