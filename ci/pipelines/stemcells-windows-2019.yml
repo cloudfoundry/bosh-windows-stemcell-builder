@@ -26,7 +26,6 @@ groups:
   - promote
   - promote-gcp
   - promote-aws
-  - promote-vsphere
   - promote-azure
   - promote-stembuild
   - submit-azure-offer
@@ -42,7 +41,6 @@ groups:
   - test-bosh-psmodules
   - test-stemcell-builder
   - github-release-stembuild
-  - upload-dev-internal-to-rmt
   - bump-minor
 - name: aws
   jobs:
@@ -79,14 +77,12 @@ groups:
   - promote
   - promote-gcp
   - promote-aws
-  - promote-vsphere
   - promote-azure
   - promote-stembuild
   - github-release-stembuild
   - submit-azure-offer
   - publish-azure-offer
   - bump-minor
-  - upload-dev-internal-to-rmt
 - name: images
   jobs:
     - build-windows-stemcell-ci-image
@@ -112,13 +108,6 @@ resource_types:
     tag: 1.6
     username: ((docker.username))
     password: ((docker.password))
-- name: artifactory-path-version-resource
-  type: registry-image
-  source:
-    repository: tas-ecosystem-docker-virtual.usw1.packages.broadcom.com/artifactory-path-version-resource
-    username: svc.bosh-ecosystem
-    password: ((broadcom_artifactory_api_key))
-  tags: [broadcom]
 
 resources:
 # type: git
@@ -190,14 +179,6 @@ resources:
     uri: https://github.com/cloudfoundry/bosh-windows-acceptance-tests.git
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-- name: gormt-repo
-  type: git
-  tags: [broadcom]
-  source:
-    uri: https://github.gwd.broadcom.net/TNZ/gormt.git
-    branch: main
-    username: svc.bosh-ecosystem@broadcom.net
-    password: ((svc-bosh-ecosystem-ghe-personal-access-token))
 - name: govmomi
   type: git
   source:
@@ -231,12 +212,6 @@ resources:
   type: registry-image
   source:
     repository: bosh/golang-release
-    username: ((docker.username))
-    password: ((docker.password))
-- name: bosh-ecosystem-docker-image
-  type: registry-image
-  source:
-    repository: bosh/bosh-ecosystem-concourse
     username: ((docker.username))
     password: ((docker.password))
 - name: bosh-integration-registry-image
@@ -434,17 +409,6 @@ resources:
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
 
-- name: stembuild-linux-stemcell-final-artifactory
-  type: artifactory-path-version-resource
-  source:
-    url: https://usw1.packages.broadcom.com/
-    user: svc.bosh-ecosystem
-    api_key: ((broadcom_artifactory_api_key))
-    repository: tas-bosh-generic-prod-local
-    path: vsphere-windows-stemcells
-    path_pattern: bosh-stemcell-(?P<version>\d+\.\d+)-vsphere-esxi-windows2019-go_agent.tgz
-  tags: [broadcom]
-
 - name: azure-stemcell-final
   type: s3
   source:
@@ -605,14 +569,6 @@ resources:
   source:
     bucket: ((ROOT_BUCKET))
     regexp: stembuild/untested/stembuild-windows-x86_64-(((BOSHIO_OS_VERSION)).*).exe
-    access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
-    secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
-    aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
-- name: license-file
-  type: s3
-  source:
-    bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/license/open_source_license_stemcells-windows-server-(((BOSHIO_OS_VERSION)).*).txt
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -2370,31 +2326,6 @@ jobs:
     params:
       ACCOUNT_JSON: ((cff-bosh-windows-stemcells_bosh-153_gcp_credentials_json))
 
-- name: promote-vsphere
-  serial_groups: [vsphere]
-  serial: true
-  plan:
-  - in_parallel:
-      fail_fast: true
-      steps:
-      - get: bosh-windows-stemcell-builder-ci
-      - get: bosh-windows-stemcell-builder-ci-image
-      - get: stembuild-linux-stemcell
-        passed: [ promote ]
-        trigger: true
-      - get: version
-        resource: main-version
-        passed: [promote]
-  - task: vsphere-set-stemcell-filename-version
-    input_mapping: { bosh-windows-stemcell: stembuild-linux-stemcell }
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/task.yml # this is what moves the stemcell into a folder called final-stemcell
-    image: bosh-windows-stemcell-builder-ci-image
-  - put: stembuild-linux-stemcell-final-artifactory
-    params:
-      file_pattern: final-stemcell/bosh-stemcell-*-vsphere-esxi-((STEMCELL_OS_NAME))-go_agent.tgz
-      strip_path_prefix: final-stemcell
-    tags: [broadcom]
-
 - name: submit-azure-offer
   old_name: print-azure-publishing-instructions
   serial: true
@@ -2601,84 +2532,11 @@ jobs:
       globs:
         - final-stembuilds/stembuild*
 
-- name: upload-dev-internal-to-rmt
-  old_name: upload-to-rmt
-  serial: true
-  plan:
-  - in_parallel:
-      fail_fast: true
-      steps:
-      - get: bosh-windows-stemcell-builder-ci
-      - get: gormt-repo
-      - get: bosh-ecosystem-docker-image
-      - get: bosh-windows-stemcell-builder-ci-image
-      - get: version
-        resource: main-version
-        passed: [github-release-stembuild]
-        trigger: true
-      - get: aws-stemcell-final
-        passed: [github-release-stembuild]
-      - get: azure-stemcell-final
-        passed: [github-release-stembuild]
-      - get: gcp-stemcell-final
-        passed: [github-release-stembuild]
-      - get: stembuild-untested-windows
-        passed: [github-release-stembuild]
-      - get: stembuild-untested-linux
-        passed: [github-release-stembuild]
-      - get: license-file
-  - task: set-stembuild-version
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stembuild-version/task.yml
-    image: bosh-windows-stemcell-builder-ci-image
-  - task: build-release-config
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/rmt/build-release-config.yml
-    image: bosh-ecosystem-docker-image
-    params:
-      RELEASE_PRODUCT_SLUG: stemcells-windows-server
-      RELEASE_TITLE: Stemcells (Windows)
-      RELEASE_TYPE: Release Update / MP
-      RELEASE_STATUS: Dev/Internal
-      RELEASE_END_OF_SUPPORT: "03/31/2027"
-      RELEASE_UPGRADE_SPECIFIER: "2019.*"
-  - task: create-rmt-release
-    image: bosh-ecosystem-docker-image
-    tags: [broadcom]
-    file: gormt-repo/concourse_examples/tasks/create-release.yml
-    params: &rmt_params
-      RMT_RMT_EMAIL: "tanzu.tas-ecosystem@broadcom.com"
-      RMT_RMT_HOST: ((rmt-prod-host))
-      RMT_RMT_USERNAME: ((rmt-prod-user.username))
-      RMT_RMT_PASSWORD: ((rmt-prod-user.password))
-      RMT_SFTP_HOST: ((sftp-prod-host))
-      RMT_SFTP_USERNAME: ((sftp-prod-user.username))
-      RMT_SFTP_PASSWORD: ((sftp-prod-user.password))
-      RMT_VERBOSE: true
-    on_failure:
-      task: cleanup-rmt-please-instructions
-      config:
-        platform: linux
-        image: bosh-windows-stemcell-builder-ci-image
-        run:
-          path: bash
-          args:
-            - -exc
-            - |
-              echo "Make sure any failed releases in RMT are cleaned up!"
-  - task: release-file-update
-    attempts: 5
-    image: bosh-ecosystem-docker-image
-    input_mapping:
-      release-update-config: release-config
-    tags: [broadcom]
-    file: gormt-repo/concourse_examples/tasks/release-file-update.yml
-    params:
-      <<: *rmt_params
-
 - name: bump-minor
   serial: true
   plan:
   - get: main-version
-    passed: [upload-dev-internal-to-rmt]
+    passed: [github-release-stembuild]
     trigger: true
   - put: main-version
     params:
