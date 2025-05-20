@@ -1,18 +1,14 @@
-Remove-Module -Name BOSH.Sysprep -ErrorAction Ignore
-Import-Module ./BOSH.Sysprep.psm1
+BeforeAll {
 
-#We remove WinRM as it imports BOSH.Utils
-Remove-Module -Name BOSH.WinRM -ErrorAction Ignore
+    Import-Module ./BOSH.Sysprep.psm1
+    Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 
-Remove-Module -Name BOSH.Utils -ErrorAction Ignore
-Import-Module ../BOSH.Utils/BOSH.Utils.psm1
-
-
-function New-TempDir
-{
-    $parent = [System.IO.Path]::GetTempPath()
-    [string]$name = [System.Guid]::NewGuid()
-    (New-Item -ItemType Directory -Path (Join-Path $parent $name)).FullName
+    function New-TempDir
+    {
+        $parent = [System.IO.Path]::GetTempPath()
+        [string]$name = [System.Guid]::NewGuid()
+        (New-Item -ItemType Directory -Path (Join-Path $parent $name)).FullName
+    }
 }
 
 Describe "Remove-WasPassProcessed" {
@@ -80,7 +76,7 @@ Describe "Remove-WasPassProcessed" {
 
             foreach ($specializeBlock in $content.unattend.settings)
             {
-                $specializeBlock.HasAttribute("wasPassProcessed") | Should Be False
+                $specializeBlock.HasAttribute("wasPassProcessed") | Should -Be False
             }
         }
     }
@@ -107,7 +103,7 @@ Describe "Remove-WasPassProcessed" {
             $content = [xml](Get-Content $GoodAnswerFilePath)
             $mwdBlock = ((($content.unattend.settings|where { $_.pass -eq 'specialize' }).component|where { $_.name -eq "Microsoft-Windows-Deployment" }))
             $specializeBlock = $mwdBlock.ParentNode
-            $specializeBlock.hasAttribute("wasPassProcessed") | Should Be False
+            $specializeBlock.hasAttribute("wasPassProcessed") | Should -Be False
         }
     }
 }
@@ -185,7 +181,7 @@ Describe "Remove-UserAccounts" {
             Remove-UserAccounts -AnswerFilePath $GoodAnswerFilePath
             $content = [xml](Get-Content $GoodAnswerFilePath)
             $userAccountsBlock = (($content.unattend.settings|where { $_.pass -eq 'oobeSystem' }).component|where { $_.name -eq "Microsoft-Windows-Shell-Setup" }).UserAccounts
-            $userAccountsBlock | Should Be $Null
+            $userAccountsBlock | Should -Be $Null
         }
     }
 
@@ -215,7 +211,7 @@ Describe "Remove-UserAccounts" {
             Remove-UserAccounts -AnswerFilePath $GoodAnswerFilePath
             $content = [xml](Get-Content $GoodAnswerFilePath)
             $userAccountsBlock = (($content.unattend.settings|where { $_.pass -eq 'oobeSystem' }).component|where { $_.name -eq "Microsoft-Windows-Shell-Setup" }).UserAccounts
-            $userAccountsBlock | Should Be $Null
+            $userAccountsBlock | Should -Be $Null
         }
     }
 }
@@ -235,29 +231,30 @@ Describe "Invoke-Sysprep" {
 
     Context "handles OS version differences" {
         BeforeEach {
-            Mock Get-ItemProperty { } -ModuleName BOSH.Sysprep
-            Mock Stop-Computer { } -ModuleName BOSH.Sysprep
-            Mock Start-Process { } -ModuleName BOSH.Sysprep
-            Mock Test-Path { $True } -ParameterFilter { $Path -cmatch "C:\\Windows\\LGPO.exe" } -ModuleName BOSH.Sysprep
+            Mock -ModuleName BOSH.Sysprep Get-ItemProperty { }
+            Mock -ModuleName BOSH.Sysprep Stop-Computer { }
+            Mock -ModuleName BOSH.Sysprep Start-Process { }
+            Mock -ModuleName BOSH.Sysprep Test-Path { $True } -ParameterFilter { $Path -cmatch "C:\\Windows\\LGPO.exe" }
 
-            Mock Write-Log { } -ModuleName BOSH.Sysprep
+            Mock -ModuleName BOSH.Sysprep Write-Log { }
 
-            Mock Allow-NTPSync { } -ModuleName BOSH.Sysprep
-            Mock Enable-LocalSecurityPolicy { } -ModuleName BOSH.Sysprep
-            Mock Update-AWS2016Config { } -ModuleName BOSH.Sysprep
-            Mock Enable-AWS2016Sysprep { } -ModuleName BOSH.Sysprep
+            Mock -ModuleName BOSH.Sysprep Allow-NTPSync { }
+            Mock -ModuleName BOSH.Sysprep Enable-LocalSecurityPolicy { }
+            Mock -ModuleName BOSH.Sysprep Update-AWS2016Config { }
+            Mock -ModuleName BOSH.Sysprep Enable-AWS2016Sysprep { }
 
-            Mock Create-Unattend { } -ModuleName BOSH.Sysprep
-            Mock Create-Unattend-AWS { } -ModuleName BOSH.Sysprep
-            Mock Create-Unattend-GCP { } -ModuleName BOSH.Sysprep
+            Mock -ModuleName BOSH.Sysprep Create-Unattend { }
+            Mock -ModuleName BOSH.Sysprep Create-Unattend-AWS { }
+            Mock -ModuleName BOSH.Sysprep Create-Unattend-GCP { }
 
-            function Disable-AgentService {}
-            Mock Disable-AgentService { } -ModuleName BOSH.Sysprep
+            InModuleScope BOSH.Sysprep {
+                function Disable-AgentService {}
+                function GCESysprep {}
+                Mock Disable-AgentService { }
+                Mock GCESysprep {}
+            }
 
-            function GCESysprep {}
-            Mock GCESysprep {} -ModuleName BOSH.Sysprep
-
-            Mock Invoke-Expression { } -ModuleName BOSH.Sysprep
+            Mock -ModuleName BOSH.Sysprep Invoke-Expression { }
         }
 
         Context "for AWS" {
@@ -413,7 +410,7 @@ Describe "ModifyInfFile" {
 
         $actual = (Get-Content $InfFilePath) -join "`n"
 
-        $actual | Should Be "something=something`nkey=value`nx=x"
+        $actual | Should -Be "something=something`nkey=value`nx=x"
     }
 }
 
@@ -438,7 +435,7 @@ Describe "Create-Unattend" {
                 -Organization $Organization `
                 -Owner $Owner
         } | Should -Not -Throw
-        Test-Path (Join-Path $UnattendDestination "unattend.xml") | Should Be $True
+        Test-Path (Join-Path $UnattendDestination "unattend.xml") | Should -Be $True
     }
 
     It "handles special chars in passwords" {
@@ -455,7 +452,7 @@ Describe "Create-Unattend" {
         [xml]$unattendXML = Get-Content -Path $unattendPath
 
         $encodedPassword = $unattendXML.unattend.settings.component.UserAccounts.AdministratorPassword.Value
-        [system.text.encoding]::Unicode.GetString([system.convert]::Frombase64string($encodedPassword)) | Should Be ($NewPassword + "AdministratorPassword")
+        [system.text.encoding]::Unicode.GetString([system.convert]::Frombase64string($encodedPassword)) | Should -Be ($NewPassword + "AdministratorPassword")
     }
 
     It "handles null for NewPassword" {
@@ -472,7 +469,7 @@ Describe "Create-Unattend" {
 
         $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
         $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
-        $unattendXML.SelectSingleNode("//ns:UserAccounts", $ns) | Should Be $Null
+        $unattendXML.SelectSingleNode("//ns:UserAccounts", $ns) | Should -Be $Null
     }
 
     It "handles empty string for NewPassword" {
@@ -489,7 +486,7 @@ Describe "Create-Unattend" {
 
         $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
         $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
-        $unattendXML.SelectSingleNode("//ns:UserAccounts", $ns) | Should Be $Null
+        $unattendXML.SelectSingleNode("//ns:UserAccounts", $ns) | Should -Be $Null
     }
 
     It "handles not providing NewPassword" {
@@ -505,7 +502,7 @@ Describe "Create-Unattend" {
 
         $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
         $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
-        $unattendXML.SelectSingleNode("//ns:UserAccounts", $ns) | Should Be $Null
+        $unattendXML.SelectSingleNode("//ns:UserAccounts", $ns) | Should -Be $Null
     }
 
     Context "the generated Unattend file" {
@@ -524,9 +521,9 @@ Describe "Create-Unattend" {
         }
 
         It "contains a Product Key, Organization, and Owner when Product Key is provided" {
-            $unattendXML.SelectSingleNode("//ns:ProductKey", $ns).'#text' | Should Be $ProductKey
-            $unattendXML.SelectSingleNode("//ns:RegisteredOrganization", $ns).'#text' | Should Be $Organization
-            $unattendXML.SelectSingleNode("//ns:RegisteredOwner", $ns).'#text' | Should Be $Owner
+            $unattendXML.SelectSingleNode("//ns:ProductKey", $ns).'#text' | Should -Be $ProductKey
+            $unattendXML.SelectSingleNode("//ns:RegisteredOrganization", $ns).'#text' | Should -Be $Organization
+            $unattendXML.SelectSingleNode("//ns:RegisteredOwner", $ns).'#text' | Should -Be $Owner
         }
 
         It "when Product Key is not provided, there is no Product Key, Organization, or Owner" {
@@ -537,7 +534,7 @@ Describe "Create-Unattend" {
             [xml]$unattendXML = Get-Content -Path $unattendPath
             $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
             $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
-            $unattendXML.SelectSingleNode("//ns:ProductKey", $ns).'#text' | Should Be $Null
+            $unattendXML.SelectSingleNode("//ns:ProductKey", $ns).'#text' | Should -Be $Null
         }
 
         It "when Product Key is not provided: Organization and Owner are not removed" {
@@ -548,8 +545,8 @@ Describe "Create-Unattend" {
             [xml]$unattendXML = Get-Content -Path $unattendPath
             $ns = New-Object System.Xml.XmlNamespaceManager($unattendXML.NameTable)
             $ns.AddNamespace("ns", $unattendXML.DocumentElement.NamespaceURI)
-            $unattendXML.SelectSingleNode("//ns:RegisteredOrganization", $ns).'#text' | Should Be 'Test-Org'
-            $unattendXML.SelectSingleNode("//ns:RegisteredOwner", $ns).'#text' | Should Be 'Test-Owner'
+            $unattendXML.SelectSingleNode("//ns:RegisteredOrganization", $ns).'#text' | Should -Be 'Test-Org'
+            $unattendXML.SelectSingleNode("//ns:RegisteredOwner", $ns).'#text' | Should -Be 'Test-Owner'
         }
     }
 }
@@ -567,7 +564,7 @@ Describe "Create-Unattend-GCP" {
             Create-Unattend-GCP -UnattendDestination $UnattendDestination
         } | Should -Not -Throw
 
-        Test-Path (Join-Path $UnattendDestination "unattended.xml") | Should Be $True
+        Test-Path (Join-Path $UnattendDestination "unattended.xml") | Should -Be $True
     }
 
     It "sets the timezone to UTC" {
@@ -593,13 +590,10 @@ Describe "Allow-NTPSync" {
         { Allow-NTPSync } | Should -Not -Throw
 
         $maxValue = [uint32]::MaxValue
-        (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection' | Should Be $maxValue
-        (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxPosPhaseCorrection' | Should Be $maxValue
+        (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection' | Should -Be $maxValue
+        (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxPosPhaseCorrection' | Should -Be $maxValue
 
         Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxNegPhaseCorrection' -Value $oldMaxNegPhaseCorrection
         Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxPosPhaseCorrection' -Value $oldMaxPosPhaseCorrection
     }
 }
-
-Remove-Module -Name BOSH.Sysprep -ErrorAction Ignore
-Remove-Module -Name BOSH.Utils -ErrorAction Ignore
