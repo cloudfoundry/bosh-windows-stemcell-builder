@@ -9,12 +9,8 @@ The test suite for each module currently assumes that the tests are being run wi
 
 This requires iterating through the module directories to run all the tests:
 
-Two copies of BOSH Powershell Modules exist in this repo:
-- `stembuild/modules`
-- `modules`
-
 ```powershell
-# Where MODULES_DIR is ""ci/tasks/delete-vms/delete-vms.iml, or "modules"
+# Where MODULES_DIR is "stembuild/modules", or "modules"
 cd $MODULES_DIR
 foreach ($module in (Get-ChildItem "./modules").Name) {
   Push-Location "modules/$module"
@@ -30,20 +26,71 @@ echo "Failed Tests: $result"
 If you just need to test a single module, you could do this:
 
 ```powershell
-cd "$MODULES_DIR\BOSH.<module>"
+# Where MODULES_DIR is "stembuild/modules", or "modules"
+cd "${MODULES_DIR}/BOSH.<module>"
+Install-Module -Name Pester -Force
 Invoke-Pester
 ```
 
-## Running a subset of tests on macOS
+### Running tests via Concourse
+
+```shell
+# Where MODULES_DIR is "stembuild/modules", or "modules"
+export MODULES_DIR="${MODULES_DIR}"
+
+WINDOWS_STEMCELL_BUILDER=${WINDOWS_STEMCELL_BUILDER:-~/workspace/bosh-windows-stemcell-builder}
+
+fly -t "${CONCOURSE_TARGET:-bosh-ecosystem}" \
+    --tag="${WINDOWS_TAG:-windows-nimbus}" \
+    --input=stemcell-builder="${WINDOWS_STEMCELL_BUILDER}" \
+    --input-mapping="bosh-windows-stemcell-builder-ci=stemcell-builder" \
+    --inputs-from=stemcells-windows-2019/test-bosh-psmodules \
+    --config "${WINDOWS_STEMCELL_BUILDER}/ci/tasks/test-units-bosh-psmodules/task.yml"
+```
+
+### Running a subset of tests on macOS
 
 You can use Powershell and macOS to run the tests that do not require Windows system calls:
 
 ```shell
 cd ~/workspace
 brew install powershell
-git clone --depth 1 --branch 4.4.0 git@github.com:pester/Pester.git
 pwsh
-Import-Module ./Pester/Pester.psm1
+```
+
+Then from within `pwsh`:
+
+```powershell
+Install-Module -Name Pester -Force
 cd stembuild/module/BOSH.<module>
 Invoke-Pester
 ```
+
+## Debugging
+
+You can debug powershell scripts using VSCode. It has some dependencies:
+- dotnet runtime `brew install dotnet`
+- powershell binary `brew install powershell`
+- vscode extensions: `Powershell`, `C#` and `C# Dev Kit` (the latter may not be required)
+
+You can create a launch.json file like:
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "PowerShell: Run Pester Tests",
+            "type": "PowerShell",
+            "request": "launch",
+            "script": "Invoke-Pester",
+            "createTemporaryIntegratedConsole": true,
+            "attachDotnetDebugger": true,
+            "cwd": "${file}"
+        }
+    ]
+}
+```
+
+And you should be able to run tests for a single file using the debug view. If you're missing extensions
+you'll see odd failures such as the wrong CWD leading to import failures.
