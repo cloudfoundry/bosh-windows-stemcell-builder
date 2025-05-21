@@ -5,6 +5,9 @@ inputs:
   - name: bosh-windows-stemcell-builder-ci
   - name: stemcell-builder
 
+params:
+  MODULES_DIR:
+
 run:
   path: powershell
   args:

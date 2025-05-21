@@ -3,19 +3,37 @@ platform: windows
 inputs:
   - name: bosh-windows-stemcell-builder-ci
   - name: stemcell-builder
-  - name: pester
+
+params:
+  STEMCELL_AUTOMATION_DIR: stemcell-builder/stembuild/stemcell-automation/
 
 run:
   path: powershell
   args:
     - "-Command"
-    - "& {
-            Import-Module ./bosh-windows-stemcell-builder-ci/ci/common-scripts/setup-windows-container.psm1;
-            Set-TmpDir;
-            Import-Module ./Pester/pester.psm1;
-            pushd stemcell-builder/stembuild/stemcell-automation;
-            $result=Invoke-Pester -PassThru;
-            popd;
-            Write-Host \"Failed Tests:\"$result.FailedCount;
-            exit $result.FailedCount
-          }"
+    - |
+      & {
+          function New-TemporaryDirectory {
+            $tmp = [System.IO.Path]::GetTempPath() # Not $env:TEMP, see https://stackoverflow.com/a/946017
+            $name = (New-Guid).ToString("N")
+            New-Item -ItemType Directory -Path (Join-Path $tmp $name)
+          }
+          $moduleDir = New-TemporaryDirectory
+          $pesterModule = Find-Module -Name Pester -MaximumVersion "5.9999" -MinimumVersion "5.0"
+          $pesterModule | Save-Module -Path $moduleDir
+          Import-Module "$moduleDir\Pester\$($pesterModule.Version)\Pester.psm1"
+
+          Import-Module ./bosh-windows-stemcell-builder-ci/ci/common-scripts/setup-windows-container.psm1
+
+          Set-TmpDir
+          pushd $env:STEMCELL_AUTOMATION_DIR
+          # NOTE: uncomment the lines below to see full stack trace
+          # $configuration = New-PesterConfiguration
+          # $configuration.Output.StackTraceVerbosity = "Full"
+          # $result=Invoke-Pester -Configuration $configuration
+          $result=Invoke-Pester -PassThru
+          popd;
+
+          Write-Host "Failed Test Count:"$result.FailedCount
+          exit $result.FailedCount
+        }

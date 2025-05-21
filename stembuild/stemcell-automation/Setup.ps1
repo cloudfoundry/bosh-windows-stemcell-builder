@@ -5,7 +5,7 @@ param(
 
 Push-Location $PSScriptRoot
 
-. ./AutomationHelpers.ps1
+Import-Module ./AutomationHelpers.psm1
 
 try
 {

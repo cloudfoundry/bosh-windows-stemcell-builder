@@ -160,11 +160,6 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
-- name: pester
-  type: git
-  source:
-    uri: https://github.com/pester/Pester.git
-    tag_filter: 4.4.0
 - name: bosh-windows-acceptance-tests-src-out
   type: git
   source:
@@ -686,9 +681,17 @@ jobs:
           - get: bosh-windows-stemcell-builder-ci
           - get: stemcell-builder
             trigger: true
-    - task: test-units-bosh-psmodules
-      file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
-      tags: [windows-nimbus]
+    - in_parallel:
+      - task: test-units-bosh-psmodules
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
+        tags: [windows-nimbus]
+        params:
+          MODULES_DIR: modules
+      - task: test-units-bosh-psmodules-stembuild
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
+        tags: [windows-nimbus]
+        params:
+          MODULES_DIR: stembuild/modules
 - name: test-stemcell-builder
   serial: true
   plan:
@@ -822,7 +825,6 @@ jobs:
       steps:
       - get: bosh-windows-stemcell-builder-ci
       - get: bosh-windows-stemcell-builder-ci-image
-      - get: pester
       - get: open-ssh
         resource: openssh-release
       - get: stemcell-builder
@@ -932,7 +934,6 @@ jobs:
       steps:
       - get: bosh-windows-stemcell-builder-ci
       - get: bosh-windows-stemcell-builder-ci-image
-      - get: pester
       - get: open-ssh
         resource: openssh-release
       - get: stemcell-builder
