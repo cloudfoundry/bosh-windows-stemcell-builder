@@ -8,7 +8,7 @@ $postRebootExceptionExitCode = 2
 
 Push-Location $PSScriptRoot
 
-. ./AutomationHelpers.ps1
+Import-Module ./AutomationHelpers.psm1
 
 try {
     PostReboot -Organization $Organization -Owner $Owner -SkipRandomPassword $SkipRandomPassword

@@ -3,11 +3,9 @@ function New-TemporaryDirectory {
   $name = (New-Guid).ToString("N")
   New-Item -ItemType Directory -Path (Join-Path $tmp $name)
 }
-
 $moduleDir = New-TemporaryDirectory
 $pesterModule = Find-Module -Name Pester -MaximumVersion "5.9999" -MinimumVersion "5.0"
 $pesterModule | Save-Module -Path $moduleDir
-
 Import-Module "$moduleDir\Pester\$($pesterModule.Version)\Pester.psm1"
 
 $status = (Get-Service -Name "wuauserv").Status
@@ -17,7 +15,7 @@ $startupType = Get-Service "wuauserv" | Select-Object -ExpandProperty StartType 
 
 $result = 0
 
-$testModules =  Get-ChildItem "./bosh-psmodules-repo/modules/" -recurse | where {$_.name -match ".*.Tests.ps1"} | foreach {$_.DirectoryName}
+$testModules = Get-ChildItem "./stemcell-builder/$env:MODULES_DIR" -recurse | where {$_.name -match ".*.Tests.ps1"} | foreach {$_.DirectoryName}
 foreach ($module in $testModules) {
     Write-Host "Testing: $module"
     Push-Location "$module"
@@ -33,6 +31,5 @@ foreach ($module in $testModules) {
     Pop-Location
 }
 
-echo "Failed Tests: $result"
+echo "Failed Test Count: $result"
 exit $result
-
