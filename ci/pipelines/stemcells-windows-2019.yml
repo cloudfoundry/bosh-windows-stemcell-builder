@@ -683,7 +683,6 @@ jobs:
     - in_parallel:
         fail_fast: true
         steps:
-          - get: pester
           - get: bosh-windows-stemcell-builder-ci
           - get: stemcell-builder
             trigger: true
