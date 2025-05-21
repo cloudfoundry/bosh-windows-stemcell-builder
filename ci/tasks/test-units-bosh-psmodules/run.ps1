@@ -1,20 +1,38 @@
-$ErrorActionPreference = "Stop"
-# Do not set error action preference let Pester handle it instead
-$result = 0
+function New-TemporaryDirectory {
+  $tmp = [System.IO.Path]::GetTempPath() # Not $env:TEMP, see https://stackoverflow.com/a/946017
+  $name = (New-Guid).ToString("N")
+  New-Item -ItemType Directory -Path (Join-Path $tmp $name)
+}
 
-Import-Module ./Pester/pester.psm1;
+$moduleDir = New-TemporaryDirectory
+$pesterModule = Find-Module -Name Pester -MaximumVersion "5.9999" -MinimumVersion "5.0"
+$pesterModule | Save-Module -Path $moduleDir
+
+Import-Module "$moduleDir\Pester\$($pesterModule.Version)\Pester.psm1"
+
 $status = (Get-Service -Name "wuauserv").Status
 $startupType = Get-Service "wuauserv" | Select-Object -ExpandProperty StartType | Out-String
 "wuauserv status = * $status *"
 "wuauserv startuptype = * $startupType *"
 
-foreach ($module in (Get-ChildItem "./stemcell-builder/modules").Name) {
-  Push-Location "./stemcell-builder/modules/$module"
+$result = 0
+
+$testModules =  Get-ChildItem "./bosh-psmodules-repo/modules/" -recurse | where {$_.name -match ".*.Tests.ps1"} | foreach {$_.DirectoryName}
+foreach ($module in $testModules) {
+    Write-Host "Testing: $module"
+    Push-Location "$module"
+
+    # Do not set $ErrorActionPreference and let Pester handle it nativetly; setting it to Stop globally will
+    # break the tests since they are written with the assumption non zero exit codes will not fail a test
+    # See: https://github.com/pester/Pester/issues/1404#issuecomment-568659518 for details
     $results=Invoke-Pester -PassThru
     if ($results.FailedCount -gt 0) {
       $result += $results.FailedCount
     }
-  Pop-Location
+
+    Pop-Location
 }
+
 echo "Failed Tests: $result"
 exit $result
+
