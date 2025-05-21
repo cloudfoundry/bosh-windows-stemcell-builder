@@ -4,7 +4,6 @@ platform: windows
 inputs:
   - name: bosh-windows-stemcell-builder-ci
   - name: stemcell-builder
-  - name: pester
 
 run:
   path: powershell
