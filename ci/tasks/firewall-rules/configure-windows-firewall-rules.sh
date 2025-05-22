@@ -3,27 +3,11 @@ set -eu -o pipefail
 set -x
 
 # We have firewall rules that are necessary when creating Windows stemcells in AWS and GCP.
-# This script gets the IPs of our Concourse workers and ensures that they have access on the
+# This script ensures that the concourse worker egress IPs have access on the
 # WinRM port (5985).
-
-set +x
-echo "${CONCOURSE_GCP_CREDENTIALS_JSON}" | gcloud auth activate-service-account --key-file - --project "${CONCOURSE_GOOGLE_PROJECT_ID}"
-set -x
-concourse_worker_external_ips=$( \
-  gcloud compute instances list \
-  --project "${CONCOURSE_GOOGLE_PROJECT_ID}" \
-  --filter="labels.instance_group:worker AND networkInterfaces.network:bosh-ecosystem-concourse" \
-  --format="value(networkInterfaces[0].accessConfigs[0].natIP)" \
-)
-
-if [ -z "${concourse_worker_external_ips}" ]; then
-  echo "Unable to find Concourse worker IP addresses"
-  exit 1
-fi
-
 # Set firewall rules in the GCP project
 comma_separated_external_ips=""
-for external_ip in $concourse_worker_external_ips; do
+for external_ip in $ALLOWED_IP_ADDRESSES; do
   comma_separated_external_ips="${external_ip}/32,${comma_separated_external_ips}"
 done
 comma_separated_external_ips="${comma_separated_external_ips%,}"
@@ -35,7 +19,7 @@ gcloud compute firewall-rules update default-allow-winrm --project cff-bosh-wind
 
 # Set firewall rules in the AWS project
 aws_ip_ranges=""
-for external_ip in $concourse_worker_external_ips; do
+for external_ip in $ALLOWED_IP_ADDRESSES; do
   aws_ip_ranges="{CidrIp=${external_ip}/32},${aws_ip_ranges}"
 done
 aws_ip_ranges="${aws_ip_ranges%,}"

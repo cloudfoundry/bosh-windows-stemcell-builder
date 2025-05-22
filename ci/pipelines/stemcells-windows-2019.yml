@@ -737,12 +737,11 @@ jobs:
       COMMERCIAL_AWS_DEFAULT_REGION: ((AWS_PACKER_REGION))
       COMMERCIAL_AWS_ROLE_ARN: ((aws-stemcells_aws_access_key.role_arn))
       COMMERCIAL_AWS_SECRET_ACCESS_KEY: ((aws-stemcells_aws_access_key.password))
-      CONCOURSE_GCP_CREDENTIALS_JSON: ((gcp_credentials_json))
-      CONCOURSE_GOOGLE_PROJECT_ID: cf-bosh-concourse
       GOVCLOUD_AWS_ACCESS_KEY_ID: ((packer_user_gov_aws_access_key.username))
       GOVCLOUD_AWS_DEFAULT_REGION: ((AWS_GOVCLOUD_PACKER_REGION))
       GOVCLOUD_AWS_SECRET_ACCESS_KEY: ((packer_user_gov_aws_access_key.password))
       WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON: ((cff-bosh-windows-stemcells_bosh-153_gcp_credentials_json))
+      ALLOWED_IP_ADDRESSES: 35.197.92.68 34.169.1.255 34.82.52.87 34.168.69.249 34.82.182.73
   - put: main-version
     params:
       file: version/number
@@ -1868,6 +1867,7 @@ jobs:
   - put: azure-tested
     params:
       file: bosh-windows-stemcell/light-bosh-stemcell-*-azure-hyperv-((STEMCELL_OS_NAME))-go_agent.tgz
+
 - name: wuts-azure
   serial: true
   plan:
@@ -1927,6 +1927,7 @@ jobs:
       params:
         release: azure-lock
       tags: [broadcom]
+
 - name: create-gcp
   serial: true
   serial_groups: [gcp-version]

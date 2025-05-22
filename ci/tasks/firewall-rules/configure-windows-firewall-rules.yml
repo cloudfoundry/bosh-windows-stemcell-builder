@@ -12,9 +12,8 @@ params:
   GOVCLOUD_AWS_ACCESS_KEY_ID:
   GOVCLOUD_AWS_DEFAULT_REGION:
   GOVCLOUD_AWS_SECRET_ACCESS_KEY:
-  CONCOURSE_GCP_CREDENTIALS_JSON:
-  CONCOURSE_GOOGLE_PROJECT_ID:
   WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON:
+  ALLOWED_IP_ADDRESSES:
 
 run:
   path: bosh-windows-stemcell-builder-ci/ci/tasks/firewall-rules/configure-windows-firewall-rules.sh
