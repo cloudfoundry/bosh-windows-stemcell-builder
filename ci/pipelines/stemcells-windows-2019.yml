@@ -743,21 +743,27 @@ jobs:
       WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON: ((cff-bosh-windows-stemcells_bosh-153_gcp_credentials_json))
       ALLOWED_IP_ADDRESSES: 35.197.92.68 34.169.1.255 34.82.52.87 34.168.69.249 34.82.182.73
   - put: main-version
+    inputs: detect
     params:
       file: version/number
   - put: aws-build-number
+    inputs: detect
     params:
       file: version/number
   - put: gcp-build-number
+    inputs: detect
     params:
       file: version/number
   - put: azure-build-number
+    inputs: detect
     params:
       file: version/number
   - put: stembuild-windows-build-number
+    inputs: detect
     params:
       file: version/number
   - put: stembuild-linux-build-number
+    inputs: detect
     params:
       file: version/number
   - in_parallel:
@@ -797,12 +803,15 @@ jobs:
       fail_fast: true
       steps:
       - put: base-windows-ami
+        inputs: detect
         params:
           file: windows-amis/base-amis-((BASE_IMAGE_OS))-*.json
       - put: base-govcloud-ami
+        inputs: detect
         params:
           file: govcloud-amis/base-amis-((BASE_IMAGE_OS))-*.json
       - put: base-gcp-image
+        inputs: detect
         params:
           file: windows-gcp-image/base-gcp-image-((BASE_IMAGE_OS))-*.json
 
