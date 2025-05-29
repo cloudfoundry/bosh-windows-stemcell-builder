@@ -1,5 +1,8 @@
 ---
-#Common Variables
+ROOT_EPHEMERAL_VM_TYPE: "use_root_disk_as_ephemeral"
+BOSH_AGENT_RELEASE_VERSION: "~2"
+
+# Common Variables
 AWS_LOCK: 'stemcells-aws'
 AZURE_LOCK: 'stemcells-azure'
 BASE_FOLDER_NAME: '2019'
@@ -25,20 +28,20 @@ GOOSE_POOL_NAME: 'goose-2019'
 GCP_POOL_NAME: 'gcp-wuts-2019'
 VSPHERE_POOL_NAME: 'vsphere-2019'
 
-#AWS Base Image Info
+# AWS Base Image Info
 BASE_AMI_NAME: 'Windows_Server-2019-English-Core-Base-*'
-#AWS Output Info
+# AWS Output Info
 AWS_REGIONAL_BUCKET: 'aws-regional-stemcells-2019'
-#AWS Packer Info
+# AWS Packer Info
 AWS_PACKER_REGION: 'us-east-1'
 AWS_CHINA_PACKER_REGION: 'cn-north-1'
 AWS_GOVCLOUD_PACKER_REGION: 'us-gov-west-1'
 
-#GCP Base Image Info
+# GCP Base Image Info
 BASE_IMAGE_REGEX: 'windows-server-2019-dc-core-v.*'
 IMAGE_FAMILY: 'windows-2019-core'
 
-#Azure Create & Publish Variables
+# Azure Create & Publish Variables
 AZURE_BASE_IMAGE: '2019-Datacenter-Core-smalldisk'
 AZURE_BASE_IMAGE_OFFER: 'WindowsServer'
 AZURE_CONTAINER_NAME: 'system'
@@ -67,4 +70,3 @@ BOSHIO_OS_VERSION: '2019'
 OVA_SOURCE_S3_REGION: "us-east-1"
 OVA_SOURCE_S3_BUCKET: "all-bosh-windows"
 OVA_SOURCE_S3_FILENAME: "ova-for-stembuild-test/Windows2019_VMWTools10.3.10_NoPassExp.ova"
-
