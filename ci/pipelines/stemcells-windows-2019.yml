@@ -2033,7 +2033,7 @@ jobs:
       image: bosh-windows-stemcell-builder-ci-image
       input_mapping: { stemcell: bosh-windows-stemcell }
       params:
-        ACCOUNT_JSON: ((cf-bosh-windows-swan_gcp-bwats-1_gcp_credentials_json))
+        ACCOUNT_JSON: ((broadcom_labs_gcp_credentials_json))
         AZ: az1
         BOSH_CA_CERT: ((iaas_directors_gcp-director_bosh_ca_cert.ca))
         BOSH_CLIENT: ((iaas_directors_gcp-director_bosh_client.username))
