@@ -6,7 +6,7 @@ REPO_ROOT="$( cd "$( dirname "${0}" )/.." && pwd )"
 fly="${FLY_CLI:-fly}"
 concourse_target="${CONCOURSE_TARGET:-bosh-ecosystem}"
 
-until "${fly}" -t "${concourse_target}" status;do
+until "${fly}" -t "${concourse_target}" status; do
   "${fly}" -t "${concourse_target}" login
   sleep 1
 done

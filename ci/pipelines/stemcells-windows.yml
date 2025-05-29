@@ -240,7 +240,7 @@ resources:
   type: metalink-repository
   source:
     uri: git+https://github.com/cloudfoundry/bosh-agent-index.git//
-    version: ((BOSH_AGENT_RELEASE_VERSION))
+    version: "~2"
 
 - name: lgpo-binary
   type: file-url
@@ -258,7 +258,7 @@ resources:
     password: ((github_public_repo_token))
     branch: semver
     file: aws-2019
-    initial_version: ((STEMCELL_INITIAL_VERSION))
+    initial_version: "((BASE_OS_VERSION)).1.0"
 - name: azure-build-number
   type: semver
   source:
@@ -268,7 +268,7 @@ resources:
     password: ((github_public_repo_token))
     branch: semver
     file: azure-2019
-    initial_version: ((STEMCELL_INITIAL_VERSION))
+    initial_version: "((BASE_OS_VERSION)).1.0"
 - name: gcp-build-number
   type: semver
   source:
@@ -278,7 +278,7 @@ resources:
     password: ((github_public_repo_token))
     branch: semver
     file: gcp-2019
-    initial_version: ((STEMCELL_INITIAL_VERSION))
+    initial_version: "((BASE_OS_VERSION)).1.0"
 - name: stembuild-linux-build-number
   type: semver
   source:
@@ -288,7 +288,7 @@ resources:
     password: ((github_public_repo_token))
     branch: semver
     file: stembuild-linux-2019
-    initial_version: ((STEMCELL_INITIAL_VERSION))
+    initial_version: "((BASE_OS_VERSION)).1.0"
 - name: stembuild-windows-build-number
   type: semver
   source:
@@ -298,7 +298,7 @@ resources:
     password: ((github_public_repo_token))
     branch: semver
     file: stembuild-windows-2019
-    initial_version: ((STEMCELL_INITIAL_VERSION))
+    initial_version: "((BASE_OS_VERSION)).1.0"
 - name: main-version
   type: semver
   source:
@@ -308,7 +308,7 @@ resources:
     password: ((github_public_repo_token))
     branch: semver
     file: main-2019
-    initial_version: ((STEMCELL_INITIAL_VERSION))
+    initial_version: "((BASE_OS_VERSION)).1.0"
 
 # type: pool
 - name: aws-lock
@@ -316,7 +316,7 @@ resources:
   tags: [broadcom]
   source:
     branch: master
-    pool: ((AWS_POOL_NAME))
+    pool: aws-wuts-((BASE_OS_VERSION))
     private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
     uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
 - name: azure-lock
@@ -324,7 +324,7 @@ resources:
   tags: [broadcom]
   source:
     branch: master
-    pool: ((AZURE_POOL_NAME))
+    pool: azure-wuts-((BASE_OS_VERSION))
     private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
     uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
 - name: goose-lock
@@ -332,7 +332,7 @@ resources:
   tags: [broadcom]
   source:
     branch: master
-    pool: ((GOOSE_POOL_NAME))
+    pool: goose-((BASE_OS_VERSION))
     private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
     uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
 - name: gcp-lock
@@ -340,7 +340,7 @@ resources:
   tags: [broadcom]
   source:
     branch: master
-    pool: ((GCP_POOL_NAME))
+    pool: gcp-wuts-((BASE_OS_VERSION))
     private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
     uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
 - name: vsphere-director-lock
@@ -348,7 +348,7 @@ resources:
   tags: [broadcom]
   source:
     branch: master
-    pool: ((VSPHERE_POOL_NAME))
+    pool: vsphere-((BASE_OS_VERSION))
     private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
     uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
 - name: nimbus-ips
@@ -396,7 +396,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/stembuild-linux-stemcells/bosh-stemcell-(.*)-vsphere-esxi-((STEMCELL_OS_NAME))-go_agent.tgz
+    regexp: ((BASE_OS_VERSION))/stembuild-linux-stemcells/bosh-stemcell-(.*)-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -404,7 +404,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/stembuild-windows-stemcells/bosh-stemcell-(.*)-vsphere-esxi-((STEMCELL_OS_NAME))-go_agent.tgz
+    regexp: ((BASE_OS_VERSION))/stembuild-windows-stemcells/bosh-stemcell-(.*)-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -414,7 +414,7 @@ resources:
   source:
     bucket: bosh-windows-stemcells-production
     region_name: us-east-2
-    regexp: ((BASE_FOLDER_NAME))/light-bosh-stemcell-(.*)-azure-hyperv-((STEMCELL_OS_NAME))-go_agent.tgz
+    regexp: ((BASE_OS_VERSION))/light-bosh-stemcell-(.*)-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -422,7 +422,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/aws/inputs/packer-output-ami-(.*).txt
+    regexp: ((BASE_OS_VERSION))/untested/aws/inputs/packer-output-ami-(.*).txt
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -430,7 +430,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/aws/inputs/packer-output-ami-(.*).txt
+    regexp: ((BASE_OS_VERSION))/untested/aws/inputs/packer-output-ami-(.*).txt
     access_key_id: ((packer_user_gov_aws_access_key.username))
     secret_access_key: ((packer_user_gov_aws_access_key.password))
     region_name: ((AWS_GOVCLOUD_PACKER_REGION))
@@ -438,7 +438,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/aws/light-bosh-stemcell-(.*)-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_PACKER_REGION)).tgz
+    regexp: ((BASE_OS_VERSION))/untested/aws/light-bosh-stemcell-(.*)-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_PACKER_REGION)).tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -446,7 +446,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/aws/light-bosh-stemcell-(.*)-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
+    regexp: ((BASE_OS_VERSION))/untested/aws/light-bosh-stemcell-(.*)-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
     access_key_id: ((packer_user_gov_aws_access_key.username))
     secret_access_key: ((packer_user_gov_aws_access_key.password))
     region_name: ((AWS_GOVCLOUD_PACKER_REGION))
@@ -454,7 +454,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/tested/aws/light-bosh-stemcell-(.*)-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_PACKER_REGION)).tgz
+    regexp: ((BASE_OS_VERSION))/tested/aws/light-bosh-stemcell-(.*)-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_PACKER_REGION)).tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -462,7 +462,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/tested/aws/light-bosh-stemcell-(.*)-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
+    regexp: ((BASE_OS_VERSION))/tested/aws/light-bosh-stemcell-(.*)-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
     region_name: ((AWS_GOVCLOUD_PACKER_REGION))
     access_key_id: ((packer_user_gov_aws_access_key.username))
     secret_access_key: ((packer_user_gov_aws_access_key.password))
@@ -471,7 +471,7 @@ resources:
   source:
     bucket: bosh-windows-stemcells-production
     region_name: us-east-2
-    regexp: ((BASE_FOLDER_NAME))/light-bosh-stemcell-(.*)-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent.tgz
+    regexp: ((BASE_OS_VERSION))/light-bosh-stemcell-(.*)-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent.tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -479,7 +479,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/aws/inputs/base-amis-((BASE_IMAGE_OS))-(.*).json
+    regexp: ((BASE_OS_VERSION))/untested/aws/inputs/base-amis-windows((BASE_OS_VERSION))-(.*).json
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -487,7 +487,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/aws/inputs/base-amis-((BASE_IMAGE_OS))-(.*).json
+    regexp: ((BASE_OS_VERSION))/untested/aws/inputs/base-amis-windows((BASE_OS_VERSION))-(.*).json
     access_key_id: ((packer_user_gov_aws_access_key.username))
     secret_access_key: ((packer_user_gov_aws_access_key.password))
     region_name: ((AWS_GOVCLOUD_PACKER_REGION))
@@ -495,7 +495,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/gcp/inputs/base-gcp-image-((BASE_IMAGE_OS))-(.*).json
+    regexp: ((BASE_OS_VERSION))/untested/gcp/inputs/base-gcp-image-windows((BASE_OS_VERSION))-(.*).json
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -503,7 +503,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/gcp/light-bosh-stemcell-(.*)-google-kvm-((STEMCELL_OS_NAME))-go_agent.tgz
+    regexp: ((BASE_OS_VERSION))/untested/gcp/light-bosh-stemcell-(.*)-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -511,7 +511,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/tested/gcp/light-bosh-stemcell-(.*)-google-kvm-((STEMCELL_OS_NAME))-go_agent.tgz
+    regexp: ((BASE_OS_VERSION))/tested/gcp/light-bosh-stemcell-(.*)-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -520,7 +520,7 @@ resources:
   source:
     bucket: bosh-windows-stemcells-production
     region_name: us-east-2
-    regexp: ((BASE_FOLDER_NAME))/light-bosh-stemcell-(.*)-google-kvm-((STEMCELL_OS_NAME))-go_agent.tgz
+    regexp: ((BASE_OS_VERSION))/light-bosh-stemcell-(.*)-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -528,7 +528,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/azure/light-bosh-stemcell-(.*)-azure-hyperv-((STEMCELL_OS_NAME))-go_agent.tgz
+    regexp: ((BASE_OS_VERSION))/untested/azure/light-bosh-stemcell-(.*)-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -536,7 +536,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/untested/azure/inputs/bosh-stemcell-(.*)-azure-vhd-uri.txt
+    regexp: ((BASE_OS_VERSION))/untested/azure/inputs/bosh-stemcell-(.*)-azure-vhd-uri.txt
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -544,7 +544,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: ((BASE_FOLDER_NAME))/tested/azure/light-bosh-stemcell-(.*)-azure-hyperv-((STEMCELL_OS_NAME))-go_agent.tgz
+    regexp: ((BASE_OS_VERSION))/tested/azure/light-bosh-stemcell-(.*)-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -560,7 +560,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: stembuild/untested/stembuild-linux-x86_64-(((BOSHIO_OS_VERSION)).*)
+    regexp: stembuild/untested/stembuild-linux-x86_64-(((BASE_OS_VERSION)).*)
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -568,7 +568,7 @@ resources:
   type: s3
   source:
     bucket: ((ROOT_BUCKET))
-    regexp: stembuild/untested/stembuild-windows-x86_64-(((BOSHIO_OS_VERSION)).*).exe
+    regexp: stembuild/untested/stembuild-windows-x86_64-(((BASE_OS_VERSION)).*).exe
     access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
     secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
     aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
@@ -777,8 +777,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ((read-vpc-ec2_aws_access_key.username))
           AWS_SECRET_ACCESS_KEY: ((read-vpc-ec2_aws_access_key.password))
           AWS_ROLE_ARN: ((read-vpc-ec2_aws_access_key.role_arn))
-          BASE_AMI: ((BASE_IMAGE_OS))
-          BASE_AMI_NAME: ((BASE_AMI_NAME))
+          BASE_AMI: windows((BASE_OS_VERSION))
+          BASE_AMI_NAME: ((AWS_BASE_AMI_NAME))
           PACKER_REGION: ((AWS_PACKER_REGION))
       - task: collect-govcloud-amis
         file: bosh-windows-stemcell-builder-ci/ci/tasks/collect-base-amis/task.yml
@@ -787,8 +787,8 @@ jobs:
         params:
           AWS_ACCESS_KEY_ID: ((packer_user_gov_aws_access_key.username))
           AWS_SECRET_ACCESS_KEY: ((packer_user_gov_aws_access_key.password))
-          BASE_AMI: ((BASE_IMAGE_OS))
-          BASE_AMI_NAME: ((BASE_AMI_NAME))
+          BASE_AMI: windows((BASE_OS_VERSION))
+          BASE_AMI_NAME: ((AWS_BASE_AMI_NAME))
           PACKER_REGION: ((AWS_GOVCLOUD_PACKER_REGION))
       - task: collect-gcp-image
         file: bosh-windows-stemcell-builder-ci/ci/tasks/collect-gcp-image/task.yml
@@ -796,24 +796,24 @@ jobs:
         output_mapping: { base-gcp-image: windows-gcp-image }
         params:
           ACCOUNT_JSON: ((cff-bosh-windows-stemcells_bosh-153_gcp_credentials_json))
-          BASE_OS: ((BASE_IMAGE_OS))
-          BASE_IMAGE_REGEX: ((BASE_IMAGE_REGEX))
-          IMAGE_FAMILY: ((IMAGE_FAMILY))
+          BASE_OS: windows((BASE_OS_VERSION))
+          BASE_IMAGE_REGEX: ((GCP_BASE_IMAGE_REGEX))
+          IMAGE_FAMILY: ((GCP_IMAGE_FAMILY))
   - in_parallel:
       fail_fast: true
       steps:
       - put: base-windows-ami
         inputs: detect
         params:
-          file: windows-amis/base-amis-((BASE_IMAGE_OS))-*.json
+          file: windows-amis/base-amis-windows((BASE_OS_VERSION))-*.json
       - put: base-govcloud-ami
         inputs: detect
         params:
-          file: govcloud-amis/base-amis-((BASE_IMAGE_OS))-*.json
+          file: govcloud-amis/base-amis-windows((BASE_OS_VERSION))-*.json
       - put: base-gcp-image
         inputs: detect
         params:
-          file: windows-gcp-image/base-gcp-image-((BASE_IMAGE_OS))-*.json
+          file: windows-gcp-image/base-gcp-image-windows((BASE_OS_VERSION))-*.json
 
 - name: stembuild-windows
   serial: true
@@ -1128,7 +1128,7 @@ jobs:
         args: ["hotfix-log/hotfixes.log"]
   - put: stembuild-linux-stemcell
     params:
-      file: stembuild-built-stemcell/bosh-stemcell-*-vsphere-esxi-((STEMCELL_OS_NAME))-go_agent.tgz
+      file: stembuild-built-stemcell/bosh-stemcell-*-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
 
 - name: test-stembuild-linux-stemcell
   serial: true
@@ -1164,12 +1164,12 @@ jobs:
         SSH_TUNNEL_IP: ((nimbus_windows-demo_bosh_jumpbox_ip))
         SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
         SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
-        STEMCELL_OS: ((STEMCELL_OS_NAME)) # this should be whatever the os listed in stemcell.MF says
-        STEMCELL_PATH: stemcell/bosh-stemcell-*-vsphere-esxi-((STEMCELL_OS_NAME))-go_agent.tgz
+        STEMCELL_OS: windows((BASE_OS_VERSION)) # this should be whatever the os listed in stemcell.MF says
+        STEMCELL_PATH: stemcell/bosh-stemcell-*-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
         VM_TYPE: large # WARN: This is Cloud Config specific!!!
         VM_EXTENSIONS: 10GB_ephemeral_disk
         MOUNT_EPHEMERAL_DISK: true
-        SECURITY_COMPLIANCE_APPLIED: ((SECURITY_COMPLIANCE_APPLIED))
+        SECURITY_COMPLIANCE_APPLIED: true
         DEFAULT_USERNAME: ((stembuild_vm_user.username))
         DEFAULT_PASSWORD: ((stembuild_vm_user.password))
     ensure:
@@ -1290,7 +1290,7 @@ jobs:
     - *print-updates
     - put: stembuild-windows-stemcell
       params:
-        file: stembuild-built-stemcell/bosh-stemcell-*-vsphere-esxi-((STEMCELL_OS_NAME))-go_agent.tgz
+        file: stembuild-built-stemcell/bosh-stemcell-*-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
 
 - name: test-stembuild-windows-stemcell
   serial: true
@@ -1326,12 +1326,12 @@ jobs:
             SSH_TUNNEL_IP: ((nimbus_windows-demo_bosh_jumpbox_ip))
             SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
             SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
-            STEMCELL_OS: ((STEMCELL_OS_NAME)) # this should be whatever the os listed in stemcell.MF says
-            STEMCELL_PATH: stemcell/bosh-stemcell-*-vsphere-esxi-((STEMCELL_OS_NAME))-go_agent.tgz
+            STEMCELL_OS: windows((BASE_OS_VERSION)) # this should be whatever the os listed in stemcell.MF says
+            STEMCELL_PATH: stemcell/bosh-stemcell-*-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
             VM_TYPE: large # WARN: This is Cloud Config specific!!!
             VM_EXTENSIONS: 10GB_ephemeral_disk
             MOUNT_EPHEMERAL_DISK: true
-            SECURITY_COMPLIANCE_APPLIED: ((SECURITY_COMPLIANCE_APPLIED))
+            SECURITY_COMPLIANCE_APPLIED: true
             DEFAULT_USERNAME: ((stembuild_vm_user.username))
             DEFAULT_PASSWORD: ((stembuild_vm_user.password))
       ensure:
@@ -1444,9 +1444,9 @@ jobs:
       PACKER_AWS_ACCESS_KEY: ((aws-stemcells_aws_access_key.username))
       PACKER_AWS_SECRET_KEY: ((aws-stemcells_aws_access_key.password))
       PACKER_REGION: ((AWS_PACKER_REGION))
-      OS_VERSION: ((STEMCELL_OS_NAME))
-      OUTPUT_BUCKET_NAME: ((AWS_REGIONAL_BUCKET))
-      VM_PREFIX: ((VM_PREFIX))
+      OS_VERSION: windows((BASE_OS_VERSION))
+      OUTPUT_BUCKET_NAME: aws-regional-stemcells-((BASE_OS_VERSION))
+      VM_PREFIX: packer-prod-((BASE_OS_VERSION))
       MOUNT_EPHEMERAL_DISK: true
     ensure:
       task: delete-orphan-vms
@@ -1458,7 +1458,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ((aws-stemcells_aws_access_key.password))
         IAAS: aws
         REGIONS: "us-east-1,us-east-2,us-west-1,us-west-2,ca-central-1,ap-south-1,ap-northeast-1,ap-northeast-2,ap-southeast-1,ap-southeast-2,eu-central-1,eu-west-1,eu-west-2,sa-east-1"
-        VM_PREFIX: ((VM_PREFIX))
+        VM_PREFIX: packer-prod-((BASE_OS_VERSION))
   - *print-updates
   - task: wait-for-ami-availability
     file: bosh-windows-stemcell-builder-ci/ci/tasks/wait-for-ami-availability/task.yml
@@ -1473,7 +1473,7 @@ jobs:
       steps:
       - put: aws-untested
         params:
-          file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_PACKER_REGION)).tgz
+          file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_PACKER_REGION)).tgz
       - put: packer-output-ami
         params:
           file: amis/packer-output-ami-*.txt
@@ -1515,16 +1515,16 @@ jobs:
       SSH_TUNNEL_IP: ((iaas_directors_aws-director_bosh_jumpbox_ip))
       SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_aws-director_bosh_jumpbox_ssh.private_key))
       SSH_TUNNEL_USER: ((iaas_directors_aws-director_bosh_jumpbox_username))
-      STEMCELL_OS: ((STEMCELL_OS_NAME))
-      STEMCELL_PATH: stemcell/light-bosh-stemcell-*-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_PACKER_REGION)).tgz
+      STEMCELL_OS: windows((BASE_OS_VERSION))
+      STEMCELL_PATH: stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_PACKER_REGION)).tgz
       MOUNT_EPHEMERAL_DISK: true
       VM_EXTENSIONS: 50GB_ephemeral_disk
-      SECURITY_COMPLIANCE_APPLIED: ((SECURITY_COMPLIANCE_APPLIED))
+      SECURITY_COMPLIANCE_APPLIED: true
       DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
       DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
   - put: aws-tested
     params:
-      file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_PACKER_REGION)).tgz
+      file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_PACKER_REGION)).tgz
 
 - name: wuts-aws
   serial: true
@@ -1631,9 +1631,9 @@ jobs:
       AWS_REGION: us-gov-west-1
       PACKER_AWS_SECRET_KEY: ((packer_user_gov_aws_access_key.password))
       PACKER_REGION: ((AWS_GOVCLOUD_PACKER_REGION))
-      OS_VERSION: ((STEMCELL_OS_NAME))
-      OUTPUT_BUCKET_NAME: ((AWS_REGIONAL_BUCKET))
-      VM_PREFIX: ((VM_PREFIX))
+      OS_VERSION: windows((BASE_OS_VERSION))
+      OUTPUT_BUCKET_NAME: aws-regional-stemcells-((BASE_OS_VERSION))
+      VM_PREFIX: packer-prod-((BASE_OS_VERSION))
       MOUNT_EPHEMERAL_DISK: true
     ensure:
       task: delete-orphan-vms
@@ -1644,14 +1644,14 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ((packer_user_gov_aws_access_key.password))
         IAAS: aws
         REGIONS: "us-gov-west-1"
-        VM_PREFIX: ((VM_PREFIX))
+        VM_PREFIX: packer-prod-((BASE_OS_VERSION))
   - *print-updates
   - in_parallel:
       fail_fast: true
       steps:
       - put: aws-govcloud-untested
         params:
-          file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
+          file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
       - put: packer-output-govcloud-ami
         params:
           file: amis/packer-output-ami-*.txt
@@ -1693,16 +1693,16 @@ jobs:
       SSH_TUNNEL_IP: ((iaas_directors_aws-govcloud-director_bosh_jumpbox_ip))
       SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_aws-govcloud-director_bosh_jumpbox_ssh.private_key))
       SSH_TUNNEL_USER: ((iaas_directors_aws-govcloud-director_bosh_jumpbox_username))
-      STEMCELL_OS: ((STEMCELL_OS_NAME))
-      STEMCELL_PATH: stemcell/light-bosh-stemcell-*-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
+      STEMCELL_OS: windows((BASE_OS_VERSION))
+      STEMCELL_PATH: stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
       MOUNT_EPHEMERAL_DISK: true
       VM_EXTENSIONS: 50GB_ephemeral_disk
-      SECURITY_COMPLIANCE_APPLIED: ((SECURITY_COMPLIANCE_APPLIED))
+      SECURITY_COMPLIANCE_APPLIED: true
       DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
       DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
   - put: aws-govcloud-tested
     params:
-      file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
+      file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
 
 - name: wuts-aws-govcloud
   serial: true
@@ -1787,16 +1787,16 @@ jobs:
       CLIENT_ID: ((koala_azure_credentials_json.client_id))
       CLIENT_SECRET: ((koala_azure_credentials_json.client_secret))
       LOCATION: ((AZURE_LOCATION))
-      OFFER: ((AZURE_OFFER))
-      OS_VERSION: ((AZURE_OS_VERSION))
+      OFFER: bosh-windows-server-((BASE_OS_VERSION))
+      OS_VERSION: windows((BASE_OS_VERSION))
       PUBLISHER: ((AZURE_PUBLISHER))
       RESOURCE_GROUP_NAME: ((koala_azure_credentials_json.resource_group_name))
       SKU: ((AZURE_SKU))
       STORAGE_ACCOUNT: unpublishedstemcells
       SUBSCRIPTION_ID: ((koala_azure_credentials_json.subscription_id))
       TENANT_ID: ((koala_azure_credentials_json.tenant_id))
-      VM_SIZE: ((AZURE_VM_SIZE))
-      VM_PREFIX: ((VM_PREFIX))
+      VM_SIZE: Standard_DS2_v2
+      VM_PREFIX: packer-prod-((BASE_OS_VERSION))
       MOUNT_EPHEMERAL_DISK: true
     ensure:
       task: delete-orphan-vms
@@ -1808,11 +1808,11 @@ jobs:
         IAAS: azure
         SUBSCRIPTION_ID: ((koala_azure_credentials_json.subscription_id))
         TENANT_ID: ((koala_azure_credentials_json.tenant_id))
-        VM_PREFIX: ((VM_PREFIX))
+        VM_PREFIX: packer-prod-((BASE_OS_VERSION))
   - *print-updates
   - put: azure-untested
     params:
-      file: bosh-windows-stemcell/light-bosh-stemcell-*-azure-hyperv-((STEMCELL_OS_NAME))-go_agent.tgz
+      file: bosh-windows-stemcell/light-bosh-stemcell-*-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
   - put: azure-base-vhd-uri
     params:
       file: bosh-windows-stemcell/bosh-stemcell-*-azure-vhd-uri.txt
@@ -1848,7 +1848,7 @@ jobs:
     image: bosh-windows-stemcell-builder-ci-image
     timeout: 6h
     params:
-      STEMCELL_OS: ((AZURE_OS_VERSION))
+      STEMCELL_OS: windows((BASE_OS_VERSION))
       DESTINATION_DIR: heavy-stemcell
       WORKING_DIR: '.'
   - task: run-bwats-azure-stemcell
@@ -1864,18 +1864,18 @@ jobs:
       SSH_TUNNEL_IP: ((iaas_directors_azure-director_bosh_jumpbox_ip))
       SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_azure-director_bosh_jumpbox_ssh.private_key))
       SSH_TUNNEL_USER: ((iaas_directors_azure-director_bosh_jumpbox_username))
-      STEMCELL_OS: ((AZURE_OS_VERSION))
+      STEMCELL_OS: windows((BASE_OS_VERSION))
       STEMCELL_PATH: stemcell/*.tgz
       VM_TYPE: ((AZURE_HEAVY_VM_TYPE))
-      ROOT_EPHEMERAL_VM_TYPE: ((ROOT_EPHEMERAL_VM_TYPE))
+      ROOT_EPHEMERAL_VM_TYPE: use_root_disk_as_ephemeral
       MOUNT_EPHEMERAL_DISK: true
       VM_EXTENSIONS: "50GB_ephemeral_disk"
-      SECURITY_COMPLIANCE_APPLIED: ((SECURITY_COMPLIANCE_APPLIED))
+      SECURITY_COMPLIANCE_APPLIED: true
       DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
       DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
   - put: azure-tested
     params:
-      file: bosh-windows-stemcell/light-bosh-stemcell-*-azure-hyperv-((STEMCELL_OS_NAME))-go_agent.tgz
+      file: bosh-windows-stemcell/light-bosh-stemcell-*-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
 
 - name: wuts-azure
   serial: true
@@ -1906,7 +1906,7 @@ jobs:
     image: bosh-windows-stemcell-builder-ci-image
     timeout: 6h
     params:
-      STEMCELL_OS: ((AZURE_OS_VERSION))
+      STEMCELL_OS: windows((BASE_OS_VERSION))
       DESTINATION_DIR: heavy-stemcell
   - put: azure-lock
     inputs: detect
@@ -1977,9 +1977,9 @@ jobs:
     file: bosh-windows-stemcell-builder-ci/ci/tasks/create-gcp-stemcell/task.yml
     image: bosh-windows-stemcell-builder-ci-image
     params:
-      OS_VERSION: ((STEMCELL_OS_NAME))
+      OS_VERSION: windows((BASE_OS_VERSION))
       ACCOUNT_JSON: ((cff-bosh-windows-stemcells_bosh-153_gcp_credentials_json))
-      VM_PREFIX: ((VM_PREFIX))
+      VM_PREFIX: packer-prod-((BASE_OS_VERSION))
       MOUNT_EPHEMERAL_DISK: true
     ensure:
       task: delete-orphan-vms
@@ -1988,17 +1988,17 @@ jobs:
       params:
         ACCOUNT_JSON: ((cff-bosh-windows-stemcells_bosh-153_gcp_credentials_json))
         IAAS: gcp
-        VM_PREFIX: ((VM_PREFIX))
+        VM_PREFIX: packer-prod-((BASE_OS_VERSION))
   - *print-updates
   - task: publish-gcp-stemcell
     file: bosh-windows-stemcell-builder-ci/ci/tasks/publish-gcp-stemcell/task.yml
     image: bosh-windows-stemcell-builder-ci-image
     params:
-      OS_VERSION: ((STEMCELL_OS_NAME))
+      OS_VERSION: windows((BASE_OS_VERSION))
       ACCOUNT_JSON: ((cff-bosh-windows-stemcells_bosh-153_gcp_credentials_json))
   - put: gcp-untested
     params:
-      file: bosh-windows-stemcell/light-bosh-stemcell-*-google-kvm-((STEMCELL_OS_NAME))-go_agent.tgz
+      file: bosh-windows-stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
 
 - name: test-gcp
   serial: true
@@ -2043,11 +2043,11 @@ jobs:
         SSH_TUNNEL_IP: ((iaas_directors_gcp-director_bosh_jumpbox_ip))
         SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_gcp-director_bosh_jumpbox_ssh.private_key))
         SSH_TUNNEL_USER: ((iaas_directors_gcp-director_bosh_jumpbox_username))
-        STEMCELL_OS: ((STEMCELL_OS_NAME))
-        STEMCELL_PATH: stemcell/light-bosh-stemcell-*-google-kvm-((STEMCELL_OS_NAME))-go_agent.tgz
+        STEMCELL_OS: windows((BASE_OS_VERSION))
+        STEMCELL_PATH: stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
         VM_EXTENSIONS: "50GB_ephemeral_disk" # WARN: Cloud Config specific
         MOUNT_EPHEMERAL_DISK: true
-        SECURITY_COMPLIANCE_APPLIED: ((SECURITY_COMPLIANCE_APPLIED))
+        SECURITY_COMPLIANCE_APPLIED: true
         DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
         DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
     ensure:
@@ -2058,7 +2058,7 @@ jobs:
       tags: [broadcom]
   - put: gcp-tested
     params:
-      file: bosh-windows-stemcell/light-bosh-stemcell-*-google-kvm-((STEMCELL_OS_NAME))-go_agent.tgz
+      file: bosh-windows-stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
 
 - name: wuts-gcp
   serial: true
@@ -2209,7 +2209,7 @@ jobs:
     file: bosh-windows-stemcell-builder-ci/ci/tasks/copy-aws-stemcell/task.yml
     image: bosh-windows-stemcell-builder-ci-image
     params:
-      OS_VERSION: ((STEMCELL_OS_NAME))
+      OS_VERSION: windows((BASE_OS_VERSION))
       AWS_ACCESS_KEY: ((aws-stemcells_aws_access_key.username))
       AWS_ROLE_ARN: ((aws-stemcells_aws_access_key.role_arn))
       AWS_SECRET_KEY: ((aws-stemcells_aws_access_key.password))
@@ -2222,7 +2222,7 @@ jobs:
     file: bosh-windows-stemcell-builder-ci/ci/tasks/copy-aws-stemcell/task.yml
     image: bosh-windows-stemcell-builder-ci-image
     params:
-      OS_VERSION: ((STEMCELL_OS_NAME))
+      OS_VERSION: windows((BASE_OS_VERSION))
       AWS_ACCESS_KEY: ((packer_user_gov_aws_access_key.username))
       AWS_SECRET_KEY: ((packer_user_gov_aws_access_key.password))
       REGIONS: "us-gov-east-1"
@@ -2232,7 +2232,7 @@ jobs:
     input_mapping: { version: aws-build-number, amis: default-ami }
     params:
       COPIED_STEMCELL_DIRECTORIES: '../aws-public-stemcells,../aws-govcloud-stemcells'
-      OS_VERSION: ((STEMCELL_OS_NAME))
+      OS_VERSION: windows((BASE_OS_VERSION))
   - task: aws-set-stemcell-filename-version
     file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/task.yml
     image: bosh-windows-stemcell-builder-ci-image
@@ -2263,12 +2263,12 @@ jobs:
       params:
         IAAS: aws
         OS_NAME: windows
-        OS_VERSION: ((BOSHIO_OS_VERSION))
+        OS_VERSION: ((BASE_OS_VERSION))
   - in_parallel:
     - put: aws-stemcell-final-s3
       resource: aws-stemcell-final
       params:
-        file: final-stemcell/light-bosh-stemcell-*-aws-xen-hvm-((STEMCELL_OS_NAME))-go_agent.tgz
+        file: final-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent.tgz
     - put: boshio
       params:
         repository: boshio-output
@@ -2320,12 +2320,12 @@ jobs:
       params:
         IAAS: gcp
         OS_NAME: windows
-        OS_VERSION: ((BOSHIO_OS_VERSION))
+        OS_VERSION: ((BASE_OS_VERSION))
   - in_parallel:
     - put: gcp-stemcell-final-s3
       resource: gcp-stemcell-final
       params:
-        file: final-stemcell/light-bosh-stemcell-*-google-kvm-((STEMCELL_OS_NAME))-go_agent.tgz
+        file: final-stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
     - put: boshio
       params:
         repository: boshio-output
@@ -2369,7 +2369,7 @@ jobs:
       AZURE_CONTAINER_NAME: ((AZURE_CONTAINER_NAME))
       AZURE_SKU: ((AZURE_SKU))
       AZURE_PUBLISHER: ((AZURE_PUBLISHER))
-      AZURE_OFFER: ((AZURE_OFFER))
+      AZURE_OFFER: bosh-windows-server-((BASE_OS_VERSION))
       PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
       PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
       PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
@@ -2384,7 +2384,7 @@ jobs:
 #      AZURE_PUBLISHED_STORAGE_ACCESS_KEY: ((azure_published_storage_access_key))
 #      AZURE_PUBLISHED_STORAGE_ACCOUNT: publishedstemcells
 #      AZURE_CONTAINER_NAME: ((AZURE_CONTAINER_NAME))
-#      AZURE_OFFER: ((AZURE_OFFER))
+#      AZURE_OFFER: bosh-windows-server-((BASE_OS_VERSION))
 #      PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
 #      PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
 #      PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
@@ -2397,7 +2397,7 @@ jobs:
 #      AZURE_CONTAINER_NAME: ((AZURE_CONTAINER_NAME))
 #      AZURE_SKU: ((AZURE_SKU))
 #      AZURE_PUBLISHER: ((AZURE_PUBLISHER))
-#      AZURE_OFFER: ((AZURE_OFFER))
+#      AZURE_OFFER: bosh-windows-server-((BASE_OS_VERSION))
 #      PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
 #      PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
 #      PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
@@ -2422,7 +2422,7 @@ jobs:
     timeout: 168h # 7 days
     params: &azure_publisher_information
       AZURE_PUBLISHER: ((AZURE_PUBLISHER))
-      AZURE_OFFER: ((AZURE_OFFER))
+      AZURE_OFFER: bosh-windows-server-((BASE_OS_VERSION))
       PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
       PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
       PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
@@ -2467,12 +2467,12 @@ jobs:
       params:
         IAAS: azure
         OS_NAME: windows
-        OS_VERSION: ((BOSHIO_OS_VERSION))
+        OS_VERSION: ((BASE_OS_VERSION))
   - in_parallel:
     - put: azure-stemcell-final-s3
       resource: azure-stemcell-final
       params:
-        file: azure-stemcell-final/light-bosh-stemcell-*-azure-hyperv-((STEMCELL_OS_NAME))-go_agent.tgz
+        file: azure-stemcell-final/light-bosh-stemcell-*-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
     - put: boshio
       params:
         repository: boshio-output
