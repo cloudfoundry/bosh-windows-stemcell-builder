@@ -681,17 +681,16 @@ jobs:
           - get: bosh-windows-stemcell-builder-ci
           - get: stemcell-builder
             trigger: true
-    - in_parallel:
-      - task: test-units-bosh-psmodules
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
-        tags: [windows-nimbus]
-        params:
-          MODULES_DIR: modules
-      - task: test-units-bosh-psmodules-stembuild
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
-        tags: [windows-nimbus]
-        params:
-          MODULES_DIR: stembuild/modules
+    - task: test-units-bosh-psmodules
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
+      tags: [windows-nimbus]
+      params:
+        MODULES_DIR: modules
+    - task: test-units-bosh-psmodules-stembuild
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
+      tags: [windows-nimbus]
+      params:
+        MODULES_DIR: stembuild/modules
 - name: test-stemcell-builder
   serial: true
   plan:
