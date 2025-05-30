@@ -8,6 +8,8 @@ BeforeAll {
 
 Describe "Protect-CFCell" {
     BeforeEach {
+        Mock -ModuleName BOSH.CFCell Write-Log { }
+
         $oldWinRMStatus = (Get-Service winrm).Status
         $oldWinRMStartMode = ( Get-Service winrm ).StartType
 

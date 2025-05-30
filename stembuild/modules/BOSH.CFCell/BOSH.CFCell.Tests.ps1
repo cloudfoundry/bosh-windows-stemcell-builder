@@ -144,7 +144,6 @@ Describe "Install-CFFeatures2016" {
 
         Assert-MockCalled Write-Log -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Installed CloudFoundry Cell Windows Features" }
     }
-
 }
 
 Describe "Remove-DockerPackage" {
