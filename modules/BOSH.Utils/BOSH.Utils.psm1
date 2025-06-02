@@ -209,7 +209,7 @@ function Clear-ProxySettings {
     }
 }
 
-function Disable-RC4() {
+function Disable-RC4 {
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers' -Name 'RC4 128/128' -Force
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers' -Name 'RC4 40/128' -Force
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers' -Name 'RC4 56/128' -Force
@@ -219,7 +219,7 @@ function Disable-RC4() {
     Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers\RC4 56/128' -Value 0 -Name 'Enabled' -Type DWORD
 }
 
-function Disable-TLS1() {
+function Disable-TLS1 {
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\' -Name 'TLS 1.0' -Force
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0' -Name 'Server' -Force
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0' -Name 'Client' -Force
@@ -231,7 +231,7 @@ function Disable-TLS1() {
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Client" -Value 1 -Name 'DisabledByDefault' -Type DWORD
 }
 
-function Disable-TLS11() {
+function Disable-TLS11 {
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\' -Name 'TLS 1.1' -Force
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1' -Name 'Server' -Force
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1' -Name 'Client' -Force
@@ -244,7 +244,7 @@ function Disable-TLS11() {
 }
 
 
-function Enable-TLS12() {
+function Enable-TLS12 {
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\' -Name 'TLS 1.2' -Force
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2' -Name 'Server' -Force
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2' -Name 'Client' -Force
@@ -254,13 +254,13 @@ function Enable-TLS12() {
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client" -Value 1 -Name 'Enabled' -Type DWORD
 }
 
-function Disable-3DES() {
+function Disable-3DES {
     New-Item -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers\' -Name 'Triple DES 168' -Force
 
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers\Triple DES 168" -Value 0 -Name 'Enabled' -Type DWORD
 }
 
-function Disable-DCOM() {
+function Disable-DCOM {
     Set-ItemProperty -Path "HKLM:\Software\Microsoft\OLE" -Value 'N' -Name 'EnableDCOM'
 }
 
@@ -272,22 +272,7 @@ function Get-OSVersion {
     try
     {
         $osVersion = Get-OSVersionString
-        if ($osVersion -match "6\.3\.9600\..+")
-        {
-            Write-Log "Found OS version: Windows 2012R2"
-            "windows2012R2"
-        }
-        elseif ($osVersion -match "10\.0\.16299\..+")
-        {
-            Write-Log "Found OS version: Windows 1709"
-            "windows2016"
-        }
-        elseif ($osVersion -match "10\.0\.17134\..+")
-        {
-            Write-Log "Found OS version: Windows 1803"
-            "windows1803"
-        }
-        elseif ($osVersion -match "10\.0\.17763\..+")
+        if ($osVersion -match "10\.0\.17763\..+")
         {
             Write-Log "Found OS version: Windows 2019"
             "windows2019"

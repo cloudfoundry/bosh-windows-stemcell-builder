@@ -12,8 +12,8 @@ import (
 var _ = Describe("Factory", func() {
 
 	outputConfig := config.OutputConfig{
-		Os:              "2012R2",
-		StemcellVersion: "1200.00",
+		Os:              "2019",
+		StemcellVersion: "2019.00",
 		OutputDir:       "/tmp/outputDir",
 	}
 

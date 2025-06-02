@@ -40,10 +40,6 @@ func (v *VersionGetter) GetOs() string {
 	stringArr := strings.Split(v.Version, ".")
 	os := stringArr[0]
 
-	if os == "1200" {
-		return "2012R2"
-	}
-
 	return os
 }
 

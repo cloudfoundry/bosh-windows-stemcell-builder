@@ -96,20 +96,6 @@ Describe "Protect-CFCell" {
 }
 
 Describe "Install-CFFeatures" {
-    It "restarts computer on Microsoft server 2016 and later" {
-        Mock -ModuleName BOSH.CFCell Install-CFFeatures2012 { }
-        Mock -ModuleName BOSH.CFCell Install-CFFeatures2016 { }
-        Mock -ModuleName BOSH.CFCell Write-Error { }
-        Mock -ModuleName BOSH.CFCell Get-OSVersionString { "10.0.1803" }
-
-        { Install-CFFeatures } | Should -Not -Throw
-
-        Assert-MockCalled Install-CFFeatures2016 -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $ForceReboot }
-        Assert-MockCalled Install-CFFeatures2012 -Times 0 -Scope It -ModuleName BOSH.CFCell
-    }
-}
-
-Describe "Install-CFFeatures2016" {
     BeforeEach {
         Mock -ModuleName BOSH.CFCell Write-Log { }
         Mock -ModuleName BOSH.CFCell Get-WinRMConfig { "Some config" }
@@ -122,25 +108,25 @@ Describe "Install-CFFeatures2016" {
     }
 
     It "triggers a machine restart when the -ForceReboot flag is set" {
-        { Install-CFFeatures2016 -ForceReboot } | Should -Not -Throw
+        { Install-CFFeatures -ForceReboot } | Should -Not -Throw
 
         Assert-MockCalled Restart-Computer -Times 1 -Scope It -ModuleName BOSH.CFCell
     }
 
     It "doesn't trigger a machine restart if -ForceReboot flag not set" {
-        { Install-CFFeatures2016 } | Should -Not -Throw
+        { Install-CFFeatures } | Should -Not -Throw
 
         Assert-MockCalled Restart-Computer -Times 0 -Scope It -ModuleName BOSH.CFCell
     }
 
     It "logs Installing CloudFoundry Cell Windows Features" {
-        { Install-CFFeatures2016 } | Should -Not -Throw
+        { Install-CFFeatures } | Should -Not -Throw
 
         Assert-MockCalled Write-Log -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Installing CloudFoundry Cell Windows Features" }
     }
 
     It "logs Installed CloudFoundry Cell Windows Features after installation" {
-        { Install-CFFeatures2016 } | Should -Not -Throw
+        { Install-CFFeatures } | Should -Not -Throw
 
         Assert-MockCalled Write-Log -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Installed CloudFoundry Cell Windows Features" }
     }

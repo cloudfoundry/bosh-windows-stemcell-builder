@@ -219,13 +219,13 @@ Describe "Remove-UserAccounts" {
 Describe "Invoke-Sysprep" {
     Context "when not provided an IaaS" {
         It "throws" {
-            { Invoke-Sysprep -OsVersion "windows2012R2" } | Should -Throw "Provide the IaaS this stemcell will be used for"
+            { Invoke-Sysprep -OsVersion "windows2019" } | Should -Throw "Provide the IaaS this stemcell will be used for"
         }
     }
 
     Context "when provided an invalid Iaas" {
         It "throws" {
-            { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO -OsVersion "windows2012R2" } | Should -Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
+            { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO -OsVersion "windows2019" } | Should -Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
         }
     }
 
@@ -258,32 +258,6 @@ Describe "Invoke-Sysprep" {
         }
 
         Context "for AWS" {
-            It "handles Windows 1709" {
-                Mock Get-OSVersion { "windows2016" } -ModuleName BOSH.Sysprep
-
-                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
-
-                Assert-MockCalled Update-AWS2016Config -Times 1 -Scope It -ModuleName BOSH.Sysprep
-                Assert-MockCalled Enable-AWS2016Sysprep -Times 1 -Scope It -ModuleName BOSH.Sysprep
-
-                Assert-MockCalled Get-OSVersion -Times 1 -Scope It -ModuleName BOSH.Sysprep
-
-                Assert-MockCalled Start-Process -Times 0 -Scope It -ParameterFilter { $FilePath -eq "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -and $ArgumentList -eq "-sysprep" } -ModuleName BOSH.Sysprep
-            }
-
-            It "handles Windows 1803" {
-                Mock Get-OSVersion { "windows1803" } -ModuleName Bosh.Sysprep
-
-                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
-
-                Assert-MockCalled Update-AWS2016Config -Times 1 -Scope It -ModuleName BOSH.Sysprep
-                Assert-MockCalled Enable-AWS2016Sysprep -Times 1 -Scope It -ModuleName BOSH.Sysprep
-
-                Assert-MockCalled Get-OSVersion -Times 1 -Scope It -ModuleName BOSH.Sysprep
-
-                Assert-MockCalled Start-Process -Times 0 -Scope It -ParameterFilter { $FilePath -eq "C:\Program Files\Amazon\Ec2ConfigService\Ec2Config.exe" -and $ArgumentList -eq "-sysprep" } -ModuleName BOSH.Sysprep
-            }
-
             It "handles other OS'" {
                 Mock Get-OSVersion { Throw "invalid OS detected" } -ModuleName Bosh.Sysprep
 
@@ -342,30 +316,6 @@ Describe "Invoke-Sysprep" {
         Context "for LGPO" {
             # We use AWS as the IaaS as it is the only IaaS that is fully mocked right now
             # We don't want to trigger Sysprep during our test
-            It "handles Windows 2012R2" {
-                Mock Get-OSVersion { "windows2012R2" } -ModuleName Bosh.Sysprep
-                $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-2012R2"
-                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
-
-                Assert-MockCalled Enable-LocalSecurityPolicy -ParameterFilter { $PolicySource -eq $ExpectedPath } -Times 1 -Scope It -ModuleName BOSH.Sysprep
-            }
-
-            It "handles Windows 1709" {
-                Mock Get-OSVersion { "windows2016" } -ModuleName Bosh.Sysprep
-
-                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
-
-                Assert-MockCalled Enable-LocalSecurityPolicy -Times 0 -Scope It -ModuleName BOSH.Sysprep
-            }
-
-            It "handles Windows 1803" {
-                Mock Get-OSVersion { "windows1803" } -ModuleName Bosh.Sysprep
-                $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-1803"
-                { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
-
-                Assert-MockCalled Enable-LocalSecurityPolicy -ParameterFilter { $PolicySource -eq $ExpectedPath } -Times 1 -Scope It -ModuleName BOSH.Sysprep
-            }
-
             It "handles Windows 2019" {
                 Mock Get-OSVersion { "windows2019" } -ModuleName Bosh.Sysprep
                 $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-2019"
@@ -375,7 +325,7 @@ Describe "Invoke-Sysprep" {
             }
 
             It "skips local policy update if -SkipLGPO is set" {
-                Mock Get-OSVersion { "windows2012R2" } -ModuleName Bosh.Sysprep
+                Mock Get-OSVersion { "windows2019" } -ModuleName Bosh.Sysprep
 
                 { Invoke-Sysprep -Iaas "aws" -SkipLGPO } | Should -Not -Throw
 

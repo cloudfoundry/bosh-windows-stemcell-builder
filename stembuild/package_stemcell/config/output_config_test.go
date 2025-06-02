@@ -20,21 +20,6 @@ var _ = Describe("OutputConfig", func() {
 		})
 
 		Context("a supported os is specified", func() {
-			It("2016 should be valid", func() {
-				valid := config.IsValidOS("2016")
-				Expect(valid).To(BeTrue())
-			})
-
-			It("2012R2 should be valid", func() {
-				valid := config.IsValidOS("2012R2")
-				Expect(valid).To(BeTrue())
-			})
-
-			It("1803 should be valid", func() {
-				valid := config.IsValidOS("1803")
-				Expect(valid).To(BeTrue())
-			})
-
 			It("2019 should be valid", func() {
 				valid := config.IsValidOS("2019")
 				Expect(valid).To(BeTrue())

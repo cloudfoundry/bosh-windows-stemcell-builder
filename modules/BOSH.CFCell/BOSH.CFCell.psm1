@@ -1,56 +1,10 @@
 ﻿<#
 .Synopsis
-    Install CloudFoundry Cell components for either 2012R2 or 2016
+    Install Windows CloudFoundry Cell components
 .Description
-    This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows 2012R2 or Windows 2016
+    This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows
 #>
 function Install-CFFeatures {
-  $VERSION = Get-OSVersionString
-  switch -Wildcard ($VERSION) {
-    "6.3.*" {
-      Install-CFFeatures2012
-    }
-    "10.0.*" {
-      Install-CFFeatures2016 -ForceReboot
-    }
-    default {
-      Write-Error "Unsupported Windows version $($VERSION)"
-    }
-  }
-}
-
-<#
-.Synopsis
-    Install Windows 2012 CloudFoundry Cell components
-.Description
-    This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows 2012R2
-#>
-function Install-CFFeatures2012 {
-  Write-Log "Getting WinRM config"
-  $winrm_config = Get-WinRMConfig
-  Write-Log "$winrm_config"
-
-  Write-Log "Installing CloudFoundry Cell Windows 2012 Features"
-  $ErrorActionPreference = "Stop";
-  trap { $host.SetShouldExit(1) }
-
-  WindowsFeatureInstall("Web-Webserver")
-  WindowsFeatureInstall("Web-WebSockets")
-  WindowsFeatureInstall("AS-Web-Support")
-  WindowsFeatureInstall("AS-NET-Framework")
-  WindowsFeatureInstall("Web-WHC")
-  WindowsFeatureInstall("Web-ASP")
-
-  Write-Log "Installed CloudFoundry Cell Windows 2012 Features"
-}
-
-<#
-.Synopsis
-    Install Windows 2016 CloudFoundry Cell components
-.Description
-    This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows 2016
-#>
-function Install-CFFeatures2016 {
   param([switch]$ForceReboot)
 
   Write-Log "Getting WinRM config"
@@ -75,7 +29,7 @@ function Install-CFFeatures2016 {
   }
 }
 
-function Wait-ForNewIfaces() {
+function Wait-ForNewIfaces {
     param([string]$ifaces)
     $max = 20
     $try = 0
@@ -175,21 +129,21 @@ function set-firewall {
 }
 
 function get-firewall {
-  param([string] $profile)
+  param([string] $profileName)
 
-  $firewall = (Get-NetFirewallProfile -Name $profile)
-  $result = "{0},{1},{2}" -f $profile,$firewall.DefaultInboundAction,$firewall.DefaultOutboundAction
+  $firewall = (Get-NetFirewallProfile -Name $profileName)
+  $result = "{0},{1},{2}" -f $profileName,$firewall.DefaultInboundAction,$firewall.DefaultOutboundAction
   return $result
 }
 
 function check-firewall {
-  param([string] $profile)
+  param([string] $profileName)
 
-  $firewall = (get-firewall $profile)
+  $firewall = (get-firewall $profileName)
   Write-Log $firewall
-  if ($firewall -ne "$profile,Block,Allow") {
+  if ($firewall -ne "$profileName,Block,Allow") {
     Write-Log $firewall
-    Throw "Unable to set $profile Profile"
+    Throw "Unable to set $profileName Profile"
   }
 }
 

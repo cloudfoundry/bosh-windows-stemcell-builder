@@ -115,8 +115,8 @@ stemcell_formats:
 
 	Context("StemcellFileName", func() {
 		It("formats a file name appropriately", func() {
-			expectedName := "bosh-stemcell-1200.1-vsphere-esxi-windows2012R2-go_agent.tgz"
-			Expect(StemcellFilename("1200.1", "2012R2")).To(Equal(expectedName))
+			expectedName := "bosh-stemcell-2019.00-vsphere-esxi-windows2019-go_agent.tgz"
+			Expect(StemcellFilename("2019.00", "2019")).To(Equal(expectedName))
 		})
 	})
 })

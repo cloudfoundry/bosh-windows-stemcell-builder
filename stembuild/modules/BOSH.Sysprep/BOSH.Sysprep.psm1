@@ -157,7 +157,7 @@ function Create-Unattend {
 .Description
   Sanity check that the unattend.xml shipped with GCP has not changed.
 #>
-function Check-Default-GCP-Unattend() {
+function Check-Default-GCP-Unattend {
 
   [xml]$Expected = @'
 <?xml version="1.0" encoding="utf-8"?>
@@ -221,7 +221,7 @@ function Check-Default-GCP-Unattend() {
   }
 }
 
-function Create-Unattend-GCP() {
+function Create-Unattend-GCP {
   Param (
     [string]$UnattendDestination = "C:\Program Files\Google\Compute Engine\sysprep"
   )
@@ -420,14 +420,6 @@ function Invoke-Sysprep()
 
     switch ($OsVersion)
     {
-      "windows2012R2" {
-        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-2012R2")
-      }
-
-      "windows1803" {
-        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-1803")
-      }
-
       "windows2019" {
         Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-2019")
       }
@@ -460,7 +452,7 @@ function Invoke-Sysprep()
   }
 }
 
-function ModifyInfFile() {
+function ModifyInfFile {
   Param(
     [string]$InfFilePath = $(Throw "inf file path missing"),
     [string]$KeyName = $(Throw "keyname missing"),
@@ -481,7 +473,7 @@ function ModifyInfFile() {
   Move-Item -Path $TempFile -Destination $InfFilePath -Force
 }
 
-function Allow-NTPSync() {
+function Allow-NTPSync {
       Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxNegPhaseCorrection' -Value 0xFFFFFFFF -Type dword
       Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxPosPhaseCorrection' -Value 0xFFFFFFFF -Type dword
 }

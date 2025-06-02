@@ -110,7 +110,7 @@ function InstallCFFeatures
 {
     try
     {
-        Install-CFFeatures2016
+        Install-CFFeatures
         Write-Log "Successfully installed CF features"
     }
     catch [Exception]

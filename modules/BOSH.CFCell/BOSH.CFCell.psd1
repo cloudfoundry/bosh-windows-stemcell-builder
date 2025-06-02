@@ -9,8 +9,6 @@ PowerShellVersion = '4.0'
 RequiredModules = @('BOSH.Utils')
 FunctionsToExport = @('disable-service',
 'Install-CFFeatures',
-'Install-CFFeatures2012',
-'Install-CFFeatures2016',
 'Remove-DockerPackage',
 'Protect-CFCell')
 CmdletsToExport = @()

@@ -8,18 +8,18 @@ import (
 )
 
 func TestCreateManifest(t *testing.T) {
-	const winOS = "2012R2"
+	const winOS = "2019"
 	const sha1 = "478da1732dba66e67e6a657fdf03b5614c513b04"
-	const version = "1200.1"
+	const version = "10.0.17763.410"
 	const expected = `---
-name: bosh-azure-hyperv-windows2012R2-go_agent
-version: '1200.1'
+name: bosh-azure-hyperv-windows2019-go_agent
+version: '10.0.17763.410'
 bosh_protocol: 1
 sha1: 478da1732dba66e67e6a657fdf03b5614c513b04
-operating_system: windows2012R2
+operating_system: windows2019
 cloud_properties:
-  name: bosh-azure-hyperv-windows2012R2-go_agent
-  version: 1200.1
+  name: bosh-azure-hyperv-windows2019-go_agent
+  version: 10.0.17763.410
   infrastructure: azure
   hypervisor: hyperv
   disk: 40000
@@ -41,7 +41,7 @@ cloud_properties:
 	if err := CreateManifest(name, version, winOS, sha1); err != nil {
 		t.Error(err)
 	}
-	src, err := ioutil.ReadFile(name)
+	src, err := os.ReadFile(name)
 	if err != nil {
 		t.Error(err)
 	}

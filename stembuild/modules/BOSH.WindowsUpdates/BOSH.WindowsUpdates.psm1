@@ -89,7 +89,7 @@ function Install-WindowsUpdates {
     }
 }
 
-function Invoke-RebootOrComplete() {
+function Invoke-RebootOrComplete {
     $RegistryEntry = "InstallWindowsUpdates"
     switch ($script:RestartRequired) {
         0 {
@@ -133,7 +133,7 @@ function Invoke-RebootOrComplete() {
     }
 }
 
-function Install-UpdateBatch() {
+function Install-UpdateBatch {
     $script:Cycles++
     Write-Log "Evaluating Available Updates with limit of $($script:MaxUpdatesPerCycle):"
     $UpdatesToDownload = New-Object -ComObject 'Microsoft.Update.UpdateColl'
@@ -247,7 +247,7 @@ function Install-UpdateBatch() {
     Invoke-RebootOrComplete
 }
 
-function Get-UpdateBatch() {
+function Get-UpdateBatch {
     Write-Log "Checking For Windows Updates"
     $Username = $env:USERDOMAIN + "\" + $env:USERNAME
 
@@ -301,13 +301,13 @@ function Get-UpdateBatch() {
     }
 }
 
-function Search-InstalledUpdates() {
+function Search-InstalledUpdates {
     $Session = New-Object -ComObject Microsoft.Update.Session
     $Searcher = $Session.CreateUpdateSearcher()
     $Searcher.Search("IsInstalled=1").Updates | Sort-Object LastDeploymentChangeTime | ForEach-Object { "KB$($_.KBArticleIDs) | $($_.Title)" }
 }
 
-function Test-InstalledUpdates() {
+function Test-InstalledUpdates {
     Write-Host "Running Get-HotFix:"
     Get-HotFix
     $Session = New-Object -ComObject Microsoft.Update.Session
@@ -330,7 +330,7 @@ function Test-InstalledUpdates() {
 .Description
     This cmdlet disables automatic Windows Updates
 #>
-function Disable-AutomaticUpdates() {
+function Disable-AutomaticUpdates {
     Stop-Service -Name wuauserv
     Set-Service -Name wuauserv -StartupType Disabled
 
@@ -339,26 +339,26 @@ function Disable-AutomaticUpdates() {
     Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'IncludeRecommendedUpdates'
 }
 
-function Enable-CVE-2015-6161() {
+function Enable-CVE-2015-6161 {
     #Enable MS15-124 - Internet Explorer ASLR Bypass fix - CVE-2015-6161
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
 }
 
-function Enable-CVE-2017-8529() {
+function Enable-CVE-2017-8529 {
     #Enable Microsoft Browser Information Disclosure Vulnerability - CVE-2017-8529
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" /v iexplore.exe /t REG_DWORD /d 1 /f
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" /v iexplore.exe /t REG_DWORD /d 1 /f
 
 }
 
-function Enable-CredSSP() {
+function Enable-CredSSP {
     #Enable CredSSP  updates - CVE-2018-0886
     #Policy set to "mitigated"
     reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" /v AllowEncryptionOracle /t REG_DWORD /d 1 /f
 }
 
-function Upgrade-PSVersion () {
+function Upgrade-PSVersion  {
     if (Test-PSVersion) {
         Write-Log "Upgrade-PSVersion: No need to upgrade. PSVersion is 5 or above"
         return

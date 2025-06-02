@@ -25,8 +25,8 @@ var _ = Describe("VmdkPackager", func() {
 
 	BeforeEach(func() {
 		stembuildConfig = config.VmdkOptions{
-			OSVersion: "2012R2",
-			Version:   "1200.1",
+			OSVersion: "2019",
+			Version:   "2019.1",
 		}
 
 		vmdkPackager = packager.VmdkPackager{

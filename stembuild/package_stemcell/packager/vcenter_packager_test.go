@@ -34,7 +34,7 @@ var _ = Describe("VcenterPackager", func() {
 		outputDir, _ = os.MkdirTemp(os.TempDir(), "vcenter-test-output-dir") //nolint:errcheck
 
 		sourceConfig = config.SourceConfig{Password: "password", URL: "url", Username: "username", VmInventoryPath: "path/valid-vm-name"}
-		outputConfig = config.OutputConfig{Os: "2012R2", StemcellVersion: "1200.2", OutputDir: outputDir}
+		outputConfig = config.OutputConfig{Os: "2019", StemcellVersion: "2019.00", OutputDir: outputDir}
 		fakeVcenterClient = &packagerfakes.FakeIaasClient{}
 	})
 
@@ -129,11 +129,11 @@ var _ = Describe("VcenterPackager", func() {
 			Expect(err).NotTo(HaveOccurred())
 			var actualStemcellManifestContent string
 			expectedManifestContent := `---
-name: bosh-vsphere-esxi-windows2012R2-go_agent
-version: '1200.2'
+name: bosh-vsphere-esxi-windows2019-go_agent
+version: '2019.00'
 api_version: 3
 sha1: %x
-operating_system: windows2012R2
+operating_system: windows2019
 cloud_properties:
   infrastructure: vsphere
   hypervisor: esxi

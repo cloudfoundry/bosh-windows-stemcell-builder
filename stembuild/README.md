@@ -1,6 +1,6 @@
 # Stembuild
 
-The stembuild binary is used to build BOSH stemcells for **Windows 2012R2**,**Windows Server, version v1709**, **Windows Server, version 1803**, **Windows Server 2019** on **vSphere**. 
+The stembuild binary is used to build BOSH stemcells for **Windows Server 2019** on **vSphere**. 
 
 **Instructions**: See [here](https://bosh.io/docs/windows-stemcell-create/) for instructions to build Windows stemcells for vSphere.
 

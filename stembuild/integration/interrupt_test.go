@@ -20,7 +20,7 @@ var _ = Describe("Interrupts", func() {
 
 		It("cleans up on one interrupt", func() {
 			var err error
-			stembuildExecutable, err = helpers.BuildStembuild("1200.0.0")
+			stembuildExecutable, err = helpers.BuildStembuild("2019.0.0")
 			Expect(err).ToNot(HaveOccurred())
 
 			inputVmdk := filepath.Join("..", "test", "data", "expected.vmdk")

@@ -29,7 +29,7 @@ function killallpacker {
 killallpacker
 
 $env:ADMINISTRATOR_PASSWORD="Password123!"
-$env:OS_VERSION="windows2012R2"
+$env:OS_VERSION="windows2019"
 $env:PRODUCT_KEY="D2N9P-3P6X9-2R39C-7RTCD-MDVJX"
 $env:ORGANIZATION="Pivotal_Dev"
 $env:OWNER="the world"

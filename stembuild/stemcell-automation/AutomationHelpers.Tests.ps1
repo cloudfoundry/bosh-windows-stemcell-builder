@@ -243,20 +243,20 @@ Describe "CopyPSModules" {
 }
 
 Describe "InstallCFFeatures" {
-    It "executes the Install-CFFeatures2016 powershell cmdlet" {
-        Mock -ModuleName AutomationHelpers -CommandName Install-CFFeatures2016 { }
+    It "executes the Install-CFFeatures powershell cmdlet" {
+        Mock -ModuleName AutomationHelpers -CommandName Install-CFFeatures { }
         Mock -ModuleName AutomationHelpers -CommandName Write-Log { }
 
         { InstallCFFeatures } | Should -Not -Throw
 
-        Should -Invoke -ModuleName AutomationHelpers -CommandName Install-CFFeatures2016 -Times 1
+        Should -Invoke -ModuleName AutomationHelpers -CommandName Install-CFFeatures -Times 1
         Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
             $Message -eq "Successfully installed CF features"
         }
     }
 
     It "fails gracefully when installing CF Features" {
-        Mock -ModuleName AutomationHelpers -CommandName Install-CFFeatures2016 {
+        Mock -ModuleName AutomationHelpers -CommandName Install-CFFeatures {
             throw "Something terrible happened while attempting to install a CF feature"
         }
         Mock -ModuleName AutomationHelpers -CommandName Write-Log { }

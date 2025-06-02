@@ -14,10 +14,6 @@ function Install-Agent {
         [switch]$EnableEphemeralDiskMounting = $true
     )
 
-    $OsVersion = Get-OSVersion
-
-    if ($OSVersion -eq "windows2012R2") { $EnableEphemeralDiskMounting = $false }
-
     Write-Log "Install-Agent: Started"
 
     Copy-Agent -InstallDir "C:\" -agentZipPath $agentZipPath
