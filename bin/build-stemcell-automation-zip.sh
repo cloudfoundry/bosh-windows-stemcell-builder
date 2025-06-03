@@ -14,7 +14,7 @@ cp "${OPENSSH_ZIP}" "${TEMP_DIR}/OpenSSH-Win64.zip"
 cp "${BOSH_PSMODULES_ZIP}" "${TEMP_DIR}/bosh-psmodules.zip"
 cp "${AGENT_ZIP}" "${TEMP_DIR}/agent.zip"
 cp "${DEPS_JSON}" "${TEMP_DIR}/deps.json"
-for file in "${REPO_ROOT}"/stembuild/stemcell-automation/*ps1; do
+for file in "${REPO_ROOT}"/stembuild/stemcell-automation/*.ps*; do
   if ! [[ "${file}" =~ .*\.Tests\.ps1 ]]; then
     cp "${file}" "${TEMP_DIR}"
   fi
