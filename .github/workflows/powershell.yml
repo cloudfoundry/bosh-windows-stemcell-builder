@@ -1,0 +1,30 @@
+name: powershell
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-modules:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          MODULES_DIR: modules
+        shell: pwsh
+        run: .\ci\tasks\test-units-bosh-psmodules\run.ps1
+  test-stembuild-modules:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          MODULES_DIR: stembuild/modules
+        shell: pwsh
+        run: .\ci\tasks\test-units-bosh-psmodules\run.ps1
+  test-stembuild-automation:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          MODULES_DIR: stembuild/stemcell-automation
+        shell: pwsh
+        run: .\ci\tasks\test-units-bosh-psmodules\run.ps1
