@@ -4,6 +4,7 @@
 BeforeAll {
     Import-Module ../modules/BOSH.SSH
     Import-Module ../modules/BOSH.Utils
+    Import-Module ../modules/BOSH.CFCell
     Import-Module ../modules/BOSH.Agent
     Import-Module ./AutomationHelpers.psm1
 
