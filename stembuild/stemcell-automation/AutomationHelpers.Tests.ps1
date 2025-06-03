@@ -6,6 +6,7 @@ BeforeAll {
     Import-Module ../modules/BOSH.Utils
     Import-Module ../modules/BOSH.CFCell
     Import-Module ../modules/BOSH.Agent
+    Import-Module ../modules/BOSH.CFCell
     Import-Module ./AutomationHelpers.psm1
 
     function Get-WuCerts { }
@@ -250,7 +251,9 @@ Describe "InstallCFFeatures" {
 
         { InstallCFFeatures } | Should -Not -Throw
 
-        Should -Invoke -ModuleName AutomationHelpers -CommandName Install-CFFeatures -Times 1
+        Should -Invoke -ModuleName AutomationHelpers -CommandName Install-CFFeatures -Times 1 -ParameterFilter {
+            $IaaS -eq "vsphere"
+        }
         Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
             $Message -eq "Successfully installed CF features"
         }
@@ -280,7 +283,9 @@ Describe "InstallCFCell" {
 
         { InstallCFCell } | Should -Not -Throw
 
-        Should -Invoke -ModuleName AutomationHelpers -CommandName Protect-CFCell -Times 1
+        Should -Invoke -ModuleName AutomationHelpers -CommandName Protect-CFCell -Times 1 -ParameterFilter {
+            $IaaS -eq "vsphere"
+        }
         Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
             $Message -eq "Succesfully ran Protect-CFCell"
         }
