@@ -696,6 +696,7 @@ jobs:
       tags: [windows-nimbus]
       params:
         MODULES_DIR: stembuild/stemcell-automation
+
 - name: test-stemcell-builder
   serial: true
   plan:
@@ -713,6 +714,7 @@ jobs:
       - get: windows-winsw
   - task: test-stemcell-builder
     file: bosh-windows-stemcell-builder-ci/ci/tasks/test-stemcell-builder/task.yml
+
 - name: build
   serial: true
   serial_groups: [aws-version, azure-version, gcp-version]
@@ -1057,6 +1059,8 @@ jobs:
     - get: bosh-windows-stemcell-builder-ci
     - get: bosh-windows-stemcell-builder-ci-image
     - get: lgpo-binary
+    - get: stemcell-builder
+      passed: [stembuild-linux]
     - get: stembuild-untested-linux
       passed: [stembuild-linux]
       trigger: true
@@ -1138,6 +1142,8 @@ jobs:
       - get: bosh-windows-stemcell-builder-ci
       - get: bosh-windows-stemcell-builder-ci-image
       - get: bosh-windows-acceptance-tests
+      - get: stemcell-builder
+        passed: [create-stembuild-linux-stemcell]
       - get: stembuild-untested-linux
         passed: [create-stembuild-linux-stemcell]
       - get: stembuild-linux-stemcell
@@ -1186,6 +1192,8 @@ jobs:
       steps:
         - get: bosh-windows-stemcell-builder-ci
         - get: windows-utilities-release
+        - get: stemcell-builder
+          passed: [test-stembuild-linux-stemcell]
         - get: stembuild-untested-linux
           passed: [test-stembuild-linux-stemcell]
         - get: stembuild-linux-stemcell
@@ -1230,6 +1238,8 @@ jobs:
         - get: bosh-windows-stemcell-builder-ci
         - get: bosh-windows-stemcell-builder-ci-image
         - get: lgpo-binary
+        - get: stemcell-builder
+          passed: [stembuild-windows]
         - get: stembuild-untested-windows
           passed: [stembuild-windows]
           trigger: true
@@ -1300,6 +1310,8 @@ jobs:
           - get: bosh-windows-stemcell-builder-ci
           - get: bosh-windows-stemcell-builder-ci-image
           - get: bosh-windows-acceptance-tests
+          - get: stemcell-builder
+            passed: [create-stembuild-windows-stemcell]
           - get: stembuild-untested-windows
             passed: [create-stembuild-windows-stemcell]
           - get: stembuild-windows-stemcell
@@ -1348,6 +1360,8 @@ jobs:
         steps:
           - get: bosh-windows-stemcell-builder-ci
           - get: windows-utilities-release
+          - get: stemcell-builder
+            passed: [test-stembuild-windows-stemcell]
           - get: stembuild-untested-windows
             passed: [test-stembuild-windows-stemcell]
           - get: stembuild-windows-stemcell
@@ -2131,8 +2145,8 @@ jobs:
         - wuts-gcp
         - wuts-aws-govcloud # implies => aws-build-number
         - wuts-azure
-        - stembuild-linux
-        - stembuild-windows
+        - wuts-stembuild-linux-stemcell
+        - wuts-stembuild-windows-stemcell
       - get: stembuild-untested-linux
         passed: [ wuts-stembuild-linux-stemcell ]
       - get: stembuild-linux-stemcell
@@ -2409,6 +2423,8 @@ jobs:
       steps:
       - get: bosh-windows-stemcell-builder-ci
       - get: bosh-windows-stemcell-builder-ci-image
+      - get: stemcell-builder
+        passed: [submit-azure-offer]
       - get: main-version
         passed: [submit-azure-offer]
       - get: azure-tested
@@ -2444,6 +2460,8 @@ jobs:
       steps:
       - get: bosh-windows-stemcell-builder-ci
       - get: bosh-windows-stemcell-builder-ci-image
+      - get: stemcell-builder
+        passed: [publish-azure-offer]
       - get: azure-tested
         passed: [publish-azure-offer]
         trigger: true
@@ -2484,6 +2502,8 @@ jobs:
         steps:
         - get: bosh-windows-stemcell-builder-ci
         - get: bosh-windows-stemcell-builder-ci-image
+        - get: stemcell-builder
+          passed: [promote]
         - get: stembuild-untested-linux
           trigger: true
           passed: [ promote ]
@@ -2508,20 +2528,25 @@ jobs:
       steps:
       - get: bosh-windows-stemcell-builder-ci
       - get: bosh-windows-stemcell-builder-ci-image
-      - get: main-version
+      - get: stemcell-builder
         passed:
         - promote-aws
         - promote-azure
         - promote-gcp
+        - promote-stembuild
+      - get: main-version
         trigger: true
+        passed:
+        - promote-aws
+        - promote-azure
+        - promote-gcp
+        - promote-stembuild
       - get: aws-stemcell-final
         passed: [promote-aws]
       - get: azure-stemcell-final
         passed: [promote-azure]
       - get: gcp-stemcell-final
         passed: [promote-gcp]
-      - get: stemcell-builder
-        passed: [promote]
       - get: stembuild-untested-windows
         passed: [promote-stembuild]
       - get: stembuild-untested-linux
