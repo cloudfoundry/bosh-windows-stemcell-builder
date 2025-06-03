@@ -20,8 +20,9 @@ function Install-CFFeatures {
 
   WindowsFeatureInstall("FS-Resource-Manager")
   WindowsFeatureInstall("Containers")
-  Get-WindowsFeature | Where-Object -FilterScript { $_.Name -like '*Defender*' } | Uninstall-WindowsFeature -Remove
-
+  if ($IaaS -ne "vsphere") {
+      Get-WindowsFeature | Where-Object -FilterScript { $_.Name -like '*Defender*' } | Uninstall-WindowsFeature -Remove
+  }
   Write-Log "Installed CloudFoundry Cell Windows Features"
 
   Write-Log "Setting WinRM startup type to automatic"
