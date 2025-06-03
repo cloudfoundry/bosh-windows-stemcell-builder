@@ -33,7 +33,7 @@ Describe "Protect-CFCell" {
        Get-Service "Termservice" | Set-Service -StartupType "Automatic"
        netstat /p tcp /a | findstr ":3389 " | Should -Not -BeNullOrEmpty
 
-       Protect-CFCell -IaaS "ignored"
+       Protect-CFCell -IaaS "not-vsphere"
 
        Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" | select -exp fDenyTSConnections | Should -Be 1
        netstat /p tcp /a | findstr ":3389 " | Should -BeNullOrEmpty
@@ -44,7 +44,7 @@ Describe "Protect-CFCell" {
     It "disables the services" {
        Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
        Get-Service | Where-Object {$_.Name -eq "W3Svc" } | Set-Service -StartupType Automatic
-       Protect-CFCell -IaaS "ignored"
+       Protect-CFCell -IaaS "not-vsphere"
        (Get-Service | Where-Object {$_.Name -eq "WinRM" } ).StartType| Should -Be "Disabled"
        $w3svcStartType = (Get-Service | Where-Object {$_.Name -eq "W3Svc" } ).StartType
        "Disabled", $null -contains $w3svcStartType | Should -Be $true
@@ -55,10 +55,53 @@ Describe "Protect-CFCell" {
         get-firewall "public" | Should -Be "public,Allow,Allow"
         get-firewall "private" | Should -Be "private,Allow,Allow"
         get-firewall "domain" | Should -Be "domain,Allow,Allow"
-        Protect-CFCell -IaaS "ignored"
+        Protect-CFCell -IaaS "not-vsphere"
         get-firewall "public" | Should -Be "public,Block,Allow"
         get-firewall "private" | Should -Be "private,Block,Allow"
         get-firewall "domain" | Should -Be "domain,Block,Allow"
+    }
+
+    It "does not call 'Disable-WindowsDefenderFeatures'" {
+        Mock -ModuleName BOSH.CFCell Disable-WindowsDefenderFeatures { }
+
+        { Protect-CFCell -IaaS "not-vsphere" } | Should -Not -Throw
+
+        Should -Not -Invoke -ModuleName BOSH.CFCell -CommandName Disable-WindowsDefenderFeatures
+    }
+
+    Context "when -IaaS is 'vsphere'" {
+        It "sets all Windows Defender `disable` settings to true" {
+            Mock -ModuleName BOSH.CFCell Get-Command {
+                [hashtable]@{
+                    ParameterSets = [hashtable]@{
+                        Parameters = @(
+                            @{ Name = "DisableBehaviorMonitoring" },
+                            @{ Name = "OtherThing" }
+                        )
+                    }
+                }
+            }
+            Mock -ModuleName BOSH.CFCell Set-MpPreference { }
+
+            Protect-CFCell -IaaS "vsphere"
+
+            Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Disabling Windows Defender Features" }
+
+            Assert-MockCalled Set-MpPreference -Exactly 1 -Scope It -ParameterFilter { $DisableBehaviorMonitoring -eq $true } -ModuleName BOSH.CFCell
+            Assert-MockCalled Set-MpPreference -Exactly 0 -Scope It -ParameterFilter { $OtherThing -eq $true } -ModuleName BOSH.CFCell
+
+            Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Setting Defender preference DisableBehaviorMonitoring to True" }
+        }
+
+        It "does not attempt to change Windows Defender settings if Windows Defender is not installed" {
+            Mock -ModuleName BOSH.CFCell Get-Command { $false }
+            Mock -ModuleName BOSH.CFCell Set-MpPreference { }
+
+            Protect-CFCell -IaaS "vsphere"
+
+            Assert-MockCalled Write-Log -Exactly 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Set-MpPreference command not found, assuming Windows Defender is not installed" }
+            Assert-MockCalled Set-MpPreference -Scope It -Exactly 0 -ModuleName BOSH.CFCell
+        }
     }
 }
 
