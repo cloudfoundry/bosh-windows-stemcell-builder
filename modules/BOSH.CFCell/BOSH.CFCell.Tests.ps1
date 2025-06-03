@@ -67,35 +67,47 @@ Describe "Install-CFFeatures" {
         Mock -ModuleName BOSH.CFCell Write-Log { }
         Mock -ModuleName BOSH.CFCell Get-WinRMConfig { "Some config" }
         Mock -ModuleName BOSH.CFCell WindowsFeatureInstall { }
-        Mock Uninstall-WindowsFeature { }
         Mock -ModuleName BOSH.CFCell Uninstall-WindowsFeature { }
         Mock -ModuleName BOSH.CFCell Set-Service { }
         Mock -ModuleName BOSH.CFCell Restart-Computer { }
-        Mock -ModuleName BOSH.CFCell Get-OSVersionString { "10.0.1803" }
     }
 
     It "triggers a machine restart when the -ForceReboot flag is set" {
-        { Install-CFFeatures -IaaS "ignored" -ForceReboot } | Should -Not -Throw
+        { Install-CFFeatures -IaaS "not-vsphere" -ForceReboot } | Should -Not -Throw
 
         Assert-MockCalled Restart-Computer -Times 1 -Scope It -ModuleName BOSH.CFCell
     }
 
     It "doesn't trigger a machine restart if -ForceReboot flag not set" {
-        { Install-CFFeatures -IaaS "ignored" } | Should -Not -Throw
+        { Install-CFFeatures -IaaS "not-vsphere" } | Should -Not -Throw
 
         Assert-MockCalled Restart-Computer -Times 0 -Scope It -ModuleName BOSH.CFCell
     }
 
     It "logs Installing CloudFoundry Cell Windows Features" {
-        { Install-CFFeatures -IaaS "ignored" } | Should -Not -Throw
+        { Install-CFFeatures -IaaS "not-vsphere" } | Should -Not -Throw
 
         Assert-MockCalled Write-Log -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Installing CloudFoundry Cell Windows Features" }
     }
 
     It "logs Installed CloudFoundry Cell Windows Features after installation" {
-        { Install-CFFeatures -IaaS "ignored" } | Should -Not -Throw
+        { Install-CFFeatures -IaaS "not-vsphere" } | Should -Not -Throw
 
         Assert-MockCalled Write-Log -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Installed CloudFoundry Cell Windows Features" }
+    }
+
+    It "calls Uninstall-WindowsFeature (for '*Defender')" {
+        { Install-CFFeatures -IaaS "not-vsphere" } | Should -Not -Throw
+
+        Should -Invoke -ModuleName BOSH.CFCell -CommandName Uninstall-WindowsFeature
+    }
+
+    Context "when -IaaS is 'vsphere'" {
+        It "does not call Uninstall-WindowsFeature (for '*Defender')" {
+            { Install-CFFeatures -IaaS "vsphere" } | Should -Not -Throw
+
+            Should -Not -Invoke -ModuleName BOSH.CFCell -CommandName Uninstall-WindowsFeature
+        }
     }
 }
 
