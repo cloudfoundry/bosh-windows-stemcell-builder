@@ -15,7 +15,9 @@ $startupType = Get-Service "wuauserv" | Select-Object -ExpandProperty StartType 
 
 $result = 0
 
-$testModules = Get-ChildItem "./stemcell-builder/$env:MODULES_DIR" -recurse | where {$_.name -match ".*.Tests.ps1"} | foreach {$_.DirectoryName}
+$repoRoot = "$PSScriptRoot\..\..\..\"
+
+$testModules = Get-ChildItem "$repoRoot\$env:MODULES_DIR" -recurse | where {$_.name -match ".*.Tests.ps1"} | foreach {$_.DirectoryName}
 foreach ($module in $testModules) {
     Write-Host "Testing: $module"
     Push-Location "$module"
