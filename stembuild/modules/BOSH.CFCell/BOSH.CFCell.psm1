@@ -78,7 +78,9 @@ function Protect-CFCell {
   Write-Log "Disabling NetBIOS over TCP"
   Disable-NetBIOS
 
-  Disable-WindowsDefenderFeatures
+  if ($IaaS -eq "vsphere") {
+      Disable-WindowsDefenderFeatures
+  }
 }
 
 function Disable-WindowsDefenderFeatures {
