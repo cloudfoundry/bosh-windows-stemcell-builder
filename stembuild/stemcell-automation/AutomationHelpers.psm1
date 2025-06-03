@@ -110,7 +110,7 @@ function InstallCFFeatures
 {
     try
     {
-        Install-CFFeatures
+        Install-CFFeatures -IaaS "vsphere"
         Write-Log "Successfully installed CF features"
     }
     catch [Exception]
@@ -131,7 +131,7 @@ function InstallCFCell
 {
     try
     {
-        Protect-CFCell
+        Protect-CFCell -IaaS "vsphere"
         Write-Log "Succesfully ran Protect-CFCell"
     }
     catch [Exception]
@@ -146,7 +146,7 @@ function InstallBoshAgent
 {
     try
     {
-        Install-Agent -Iaas "vsphere" -agentZipPath ".\agent.zip"
+        Install-Agent -IaaS "vsphere" -agentZipPath ".\agent.zip"
         Write-Log "Bosh agent successfully installed"
     }
     catch [Exception]

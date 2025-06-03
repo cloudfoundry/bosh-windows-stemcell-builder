@@ -55,7 +55,7 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "Install-CFFeatures"
+      "Install-CFFeatures -IaaS <%= iaas %>"
     ]
   },
   {
@@ -129,7 +129,7 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "Protect-CFCell"
+      "Protect-CFCell -IaaS <%= iaas %>"
     ]
   },
   {

@@ -33,7 +33,7 @@ Describe "Protect-CFCell" {
        Get-Service "Termservice" | Set-Service -StartupType "Automatic"
        netstat /p tcp /a | findstr ":3389 " | Should -Not -BeNullOrEmpty
 
-       Protect-CFCell
+       Protect-CFCell -IaaS "ignored"
 
        Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" | select -exp fDenyTSConnections | Should -Be 1
        netstat /p tcp /a | findstr ":3389 " | Should -BeNullOrEmpty
@@ -44,7 +44,7 @@ Describe "Protect-CFCell" {
     It "disables the services" {
        Get-Service | Where-Object {$_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
        Get-Service | Where-Object {$_.Name -eq "W3Svc" } | Set-Service -StartupType Automatic
-       Protect-CFCell
+       Protect-CFCell -IaaS "ignored"
        (Get-Service | Where-Object {$_.Name -eq "WinRM" } ).StartType| Should -Be "Disabled"
        $w3svcStartType = (Get-Service | Where-Object {$_.Name -eq "W3Svc" } ).StartType
        "Disabled", $null -contains $w3svcStartType | Should -Be $true
@@ -55,7 +55,7 @@ Describe "Protect-CFCell" {
         get-firewall "public" | Should -Be "public,Allow,Allow"
         get-firewall "private" | Should -Be "private,Allow,Allow"
         get-firewall "domain" | Should -Be "domain,Allow,Allow"
-        Protect-CFCell
+        Protect-CFCell -IaaS "ignored"
         get-firewall "public" | Should -Be "public,Block,Allow"
         get-firewall "private" | Should -Be "private,Block,Allow"
         get-firewall "domain" | Should -Be "domain,Block,Allow"
@@ -75,25 +75,25 @@ Describe "Install-CFFeatures" {
     }
 
     It "triggers a machine restart when the -ForceReboot flag is set" {
-        { Install-CFFeatures -ForceReboot } | Should -Not -Throw
+        { Install-CFFeatures -IaaS "ignored" -ForceReboot } | Should -Not -Throw
 
         Assert-MockCalled Restart-Computer -Times 1 -Scope It -ModuleName BOSH.CFCell
     }
 
     It "doesn't trigger a machine restart if -ForceReboot flag not set" {
-        { Install-CFFeatures } | Should -Not -Throw
+        { Install-CFFeatures -IaaS "ignored" } | Should -Not -Throw
 
         Assert-MockCalled Restart-Computer -Times 0 -Scope It -ModuleName BOSH.CFCell
     }
 
     It "logs Installing CloudFoundry Cell Windows Features" {
-        { Install-CFFeatures } | Should -Not -Throw
+        { Install-CFFeatures -IaaS "ignored" } | Should -Not -Throw
 
         Assert-MockCalled Write-Log -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Installing CloudFoundry Cell Windows Features" }
     }
 
     It "logs Installed CloudFoundry Cell Windows Features after installation" {
-        { Install-CFFeatures } | Should -Not -Throw
+        { Install-CFFeatures -IaaS "ignored" } | Should -Not -Throw
 
         Assert-MockCalled Write-Log -Times 1 -Scope It -ModuleName BOSH.CFCell -ParameterFilter { $Message -eq "Installed CloudFoundry Cell Windows Features" }
     }

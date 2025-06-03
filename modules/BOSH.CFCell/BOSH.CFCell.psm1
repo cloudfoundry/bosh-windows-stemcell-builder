@@ -5,7 +5,10 @@
     This cmdlet installs the minimum set of features for a CloudFoundry Cell on Windows
 #>
 function Install-CFFeatures {
-  param([switch]$ForceReboot)
+  param(
+      [string]$IaaS = $(Throw "Provide the IaaS of your VM"),
+      [switch]$ForceReboot
+  )
 
   Write-Log "Getting WinRM config"
   $winrm_config = Get-WinRMConfig
@@ -53,6 +56,10 @@ function Wait-ForNewIfaces {
 }
 
 function Protect-CFCell {
+  param(
+    [string]$IaaS = $(Throw "Provide the IaaS of your VM")
+  )
+
   Write-Log "Getting WinRM config"
   $winrm_config = Get-WinRMConfig
   Write-Log "$winrm_config"
