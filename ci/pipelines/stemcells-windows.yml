@@ -681,16 +681,21 @@ jobs:
           - get: bosh-windows-stemcell-builder-ci
           - get: stemcell-builder
             trigger: true
-    - task: test-units-bosh-psmodules
+    - task: test-units-psmodules
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
       tags: [windows-nimbus]
       params:
         MODULES_DIR: modules
-    - task: test-units-bosh-psmodules-stembuild
+    - task: test-units-stembuild-psmodules
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
       tags: [windows-nimbus]
       params:
         MODULES_DIR: stembuild/modules
+    - task: test-units-stembuild-stemcell-automation-psmodules
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
+      tags: [windows-nimbus]
+      params:
+        MODULES_DIR: stembuild/stemcell-automation
 - name: test-stemcell-builder
   serial: true
   plan:
@@ -855,9 +860,6 @@ jobs:
   - in_parallel:
       fail_fast: true
       steps:
-      - task: test-units-stemcell-automation
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stemcell-automation/task.yml
-        tags: [windows-nimbus]
       - task: build-agent-zip
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -965,9 +967,6 @@ jobs:
   - in_parallel:
       fail_fast: true
       steps:
-      - task: test-units-stemcell-automation
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stemcell-automation/task.yml
-        tags: [windows-nimbus]
       - task: build-agent-zip
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
         image: bosh-windows-stemcell-builder-ci-image
