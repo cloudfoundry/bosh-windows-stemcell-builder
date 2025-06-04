@@ -11,7 +11,6 @@ namespace :build do
     version_dir = Stemcell::Builder::validate_env_dir('VERSION_DIR')
 
     version = File.read(File.join(version_dir, 'number')).chomp
-    agent_commit = File.read(File.join(build_dir, 'compiled-agent', 'sha')).chomp
 
     output_directory = File.absolute_path('bosh-windows-stemcell')
     FileUtils.mkdir_p(output_directory)
@@ -29,7 +28,6 @@ namespace :build do
     azure_builder = Stemcell::Builder::Azure.new(
       packer_vars: {},
       version: version,
-      agent_commit: agent_commit,
       os: Stemcell::Builder::validate_env('OS_VERSION'),
       output_directory: output_directory,
       client_id: Stemcell::Builder::validate_env('CLIENT_ID'),

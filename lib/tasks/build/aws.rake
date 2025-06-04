@@ -184,10 +184,8 @@ def get_aws_builder(output_directory, region, base_ami = '')
   build_dir = File.join(base_dir, 'build')
   agent_dir = File.join(build_dir,'compiled-agent')
   version = File.read(File.join(version_dir, 'number')).chomp
-  agent_commit = File.read(File.join(agent_dir, 'sha')).chomp
 
   Stemcell::Builder::Aws.new(
-    agent_commit: agent_commit,
     ami: base_ami,
     aws_access_key: ENV['PACKER_AWS_ACCESS_KEY'] || ENV['AWS_ACCESS_KEY'],
     aws_secret_key: ENV['PACKER_AWS_SECRET_KEY'] || ENV['AWS_SECRET_KEY'],

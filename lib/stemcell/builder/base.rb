@@ -20,18 +20,16 @@ module Stemcell
     end
 
     class Base
-      def initialize(os:, output_directory:, version:, agent_commit:, packer_vars:, region: nil, mount_ephemeral_disk: 'false')
+      def initialize(os:, output_directory:, version:, packer_vars:, region: nil, mount_ephemeral_disk: 'false')
         @os = os
         @output_directory = output_directory
         @version = version
-        @agent_commit = agent_commit
         @packer_vars = packer_vars
         @region = region
         @mount_ephemeral_disk = mount_ephemeral_disk == 'true'
       end
 
       def build(iaas:, is_light:, image_path:, manifest:, update_list:)
-        apply_spec = ApplySpec.new(@agent_commit).dump
         Packager.package(
           iaas: iaas,
           os: @os,
@@ -39,7 +37,6 @@ module Stemcell
           version: @version,
           image_path: image_path,
           manifest: manifest,
-          apply_spec: apply_spec,
           output_directory: @output_directory,
           update_list: update_list,
           region: @region

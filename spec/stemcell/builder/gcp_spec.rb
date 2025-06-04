@@ -15,11 +15,9 @@ describe Stemcell::Builder do
       it 'builds a stemcell tarball' do
         os = 'windows2019'
         version = '1234.0'
-        agent_commit = 'some-agent-commit'
         config = 'some-packer-config'
         command = 'build'
         manifest_contents = 'manifest_contents'
-        apply_spec_contents = 'apply_spec_contents'
         packer_vars = {some_var: 'some-value'}
         image_name = 'some-image-name'
         project_id = 'some-project-id'
@@ -51,18 +49,14 @@ describe Stemcell::Builder do
 
         gcp_manifest = double(:gcp_manifest)
         allow(gcp_manifest).to receive(:dump).and_return(manifest_contents)
-        gcp_apply = double(:gcp_apply)
-        allow(gcp_apply).to receive(:dump).and_return(apply_spec_contents)
 
         allow(Stemcell::Manifest::Gcp).to receive(:new).with(version, os, image_url).and_return(gcp_manifest)
-        allow(Stemcell::ApplySpec).to receive(:new).with(agent_commit).and_return(gcp_apply)
         allow(Stemcell::Packager).to receive(:package).with(iaas: 'google-kvm',
                                                             os: os,
                                                             is_light: true,
                                                             version: version,
                                                             image_path: '',
                                                             manifest: manifest_contents,
-                                                            apply_spec: apply_spec_contents,
                                                             output_directory: output_directory,
                                                             update_list: nil,
                                                             region: nil
@@ -72,7 +66,6 @@ describe Stemcell::Builder do
           os: os,
           output_directory: output_directory,
           version: version,
-          agent_commit: agent_commit,
           packer_vars: packer_vars,
           account_json: account_json,
           source_image: source_image,
@@ -116,7 +109,6 @@ describe Stemcell::Builder do
               os: os,
               output_directory: output_directory,
               version: '',
-              agent_commit: '',
               packer_vars: packer_vars,
               account_json: account_json,
               source_image: source_image,
