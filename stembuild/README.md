@@ -263,13 +263,13 @@ You will need to construct `assets/StemcellAutomation.zip`. This file represents
 ```json
 {
   "OpenSSH-Win64.zip": {
-    "sha": "SOME-SHA256",
+    "sha": "SOME-SHA256"
   },
   "bosh-psmodules.zip": {
-    "sha": "SOME-SHA256",
+    "sha": "SOME-SHA256"
   },
   "agent.zip": {
-    "sha": "SOME-SHA256",
+    "sha": "SOME-SHA256"
   },
   "LGPO.zip": {
     "sha": "SOME-SHA256",
@@ -278,13 +278,14 @@ You will need to construct `assets/StemcellAutomation.zip`. This file represents
 }
 ```
 
-Once you have these files, run `./bin/build-stemcell-automation-zip.sh`:
+Once you have these files, run:
 ```bash
-OPENSSH_ZIP=OpenSSH-Win64.zip \
+OPENSSH_ZIP="OpenSSH-Win64.zip" \
 BOSH_PSMODULES_ZIP="bosh-psmodules.zip" \
 AGENT_ZIP="agent.zip" \
 DEPS_JSON="deps.json" \
-./bin/build-stemcell-automation-zip.sh
+ZIP_FILE_DESTINATION="stembuild/assets/StemcellAutomation.zip" \
+./ci/tasks/zip-files/run.bash
 ```
 
 Use `make build` to build stembuild, providing the corresponding values for the stemcell version you
