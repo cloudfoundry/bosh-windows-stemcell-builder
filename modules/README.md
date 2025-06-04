@@ -10,8 +10,7 @@ The test suite for each module currently assumes that the tests are being run wi
 This requires iterating through the module directories to run all the tests:
 
 ```powershell
-# Where MODULES_DIR is "stembuild/modules", or "modules"
-cd $MODULES_DIR
+cd modules
 foreach ($module in (Get-ChildItem "./modules").Name) {
   Push-Location "modules/$module"
     $results=Invoke-Pester -PassThru
@@ -26,8 +25,7 @@ echo "Failed Tests: $result"
 If you just need to test a single module, you could do this:
 
 ```powershell
-# Where MODULES_DIR is "stembuild/modules", or "modules"
-cd "${MODULES_DIR}/BOSH.<module>"
+cd "modules/BOSH.<module>"
 Install-Module -Name Pester -Force
 Invoke-Pester
 ```
@@ -35,12 +33,9 @@ Invoke-Pester
 ### Running tests via Concourse
 
 ```shell
-# Where MODULES_DIR is "stembuild/modules", or "modules"
-export MODULES_DIR="${MODULES_DIR}"
-
 WINDOWS_STEMCELL_BUILDER=${WINDOWS_STEMCELL_BUILDER:-~/workspace/bosh-windows-stemcell-builder}
 
-fly -t "${CONCOURSE_TARGET:-bosh-ecosystem}" \
+MODULES_DIR="${DIR_WITH_PESTER_TESTS}" fly -t "${CONCOURSE_TARGET:-bosh-ecosystem}" \
     --tag="${WINDOWS_TAG:-windows-nimbus}" \
     --input=stemcell-builder="${WINDOWS_STEMCELL_BUILDER}" \
     --input-mapping="bosh-windows-stemcell-builder-ci=stemcell-builder" \

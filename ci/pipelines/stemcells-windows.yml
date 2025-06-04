@@ -681,11 +681,6 @@ jobs:
       tags: [windows-nimbus]
       params:
         MODULES_DIR: modules
-    - task: test-units-stembuild-psmodules
-      file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
-      tags: [windows-nimbus]
-      params:
-        MODULES_DIR: stembuild/modules
     - task: test-units-stembuild-stemcell-automation-psmodules
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
       tags: [windows-nimbus]
