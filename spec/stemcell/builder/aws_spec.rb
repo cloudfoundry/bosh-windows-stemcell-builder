@@ -20,7 +20,6 @@ describe Stemcell::Builder do
         os = 'windows2019'
         version = '1234.0'
         amis = 'some-amis'
-        agent_commit = 'some-agent-commit'
         packer_output = ",artifact,0,id,some-region-id:some-ami-id"
         parsed_packer_amis = [{'region' => 'some-region-id', 'ami_id' => 'some-ami-id'}]
         aws_access_key = 'some-aws-access-key'
@@ -53,14 +52,12 @@ describe Stemcell::Builder do
         aws_apply = double(:aws_apply)
         allow(aws_apply).to receive(:dump).and_return('apply-spec-contents')
         allow(Stemcell::Manifest::Aws).to receive(:new).with(version, os, parsed_packer_amis).and_return(aws_manifest)
-        allow(Stemcell::ApplySpec).to receive(:new).with(agent_commit).and_return(aws_apply)
         allow(Stemcell::Packager).to receive(:package).with(iaas: 'aws-xen-hvm',
                                                             os: os,
                                                             is_light: true,
                                                             version: version,
                                                             image_path: '',
                                                             manifest: 'manifest-contents',
-                                                            apply_spec: 'apply-spec-contents',
                                                             output_directory: output_directory,
                                                             update_list: nil,
                                                             region: region
@@ -73,7 +70,6 @@ describe Stemcell::Builder do
           ami: amis,
           aws_access_key: aws_access_key,
           aws_secret_key: aws_secret_key,
-          agent_commit: agent_commit,
           packer_vars: packer_vars,
           region: region,
           vm_prefix: vm_prefix,
@@ -118,7 +114,6 @@ describe Stemcell::Builder do
               ami: amis,
               aws_access_key: aws_access_key,
               aws_secret_key: aws_secret_key,
-              agent_commit: '',
               packer_vars: packer_vars,
               vm_prefix: vm_prefix
             ).build_from_packer(ami_output_directory)

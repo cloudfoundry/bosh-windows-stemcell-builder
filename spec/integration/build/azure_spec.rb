@@ -37,7 +37,6 @@ describe 'Azure' do
     Dir.mktmpdir('azure-stemcell-test') do |tmpdir|
       os_version = 'windows2019'
       version = '1200.0.1-build.7'
-      agent_commit = 'some-agent-commit'
 
       ENV['CLIENT_ID'] = 'some-azure_access_key'
       ENV['CLIENT_SECRET'] = 'some-azure_secret_key'
@@ -63,10 +62,6 @@ describe 'Azure' do
       )
 
       FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
-      File.write(
-        File.join(@build_dir, 'compiled-agent', 'sha'),
-        agent_commit
-      )
 
       # This allows the task to be ran multiple times by different tests
       Rake::Task['build:azure'].reenable
@@ -94,11 +89,6 @@ describe 'Azure' do
       expect(stemcell_manifest['cloud_properties']['image']['publisher']).to eq('some-publisher')
       expect(stemcell_manifest['cloud_properties']['image']['sku']).to eq('some-sku')
       expect(stemcell_manifest['cloud_properties']['image']['version']).to eq('1200.0.001007')
-
-      apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
-      expect(apply_spec['agent_commit']).to eq(agent_commit)
-
-      # expect(read_from_tgz(stemcell, 'updates.txt')).to eq('some-updates')
 
       expect(read_from_tgz(stemcell, 'image')).to be_empty
       expect(File.read(stemcell_sha)).to eq(Digest::SHA1.hexdigest(File.read(stemcell)))

@@ -33,7 +33,6 @@ describe 'Gcp' do
     Dir.mktmpdir('gcp-stemcell-test') do |tmpdir|
       os_version = 'windows2019'
       version = '1200.3.1-build.2'
-      agent_commit = 'some-agent-commit'
 
       ENV['ACCOUNT_JSON'] = {'project_id' => 'some-project-id'}.to_json
       ENV['OS_VERSION'] = os_version
@@ -48,10 +47,6 @@ describe 'Gcp' do
       )
 
       FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
-      File.write(
-        File.join(@build_dir, 'compiled-agent', 'sha'),
-        agent_commit
-      )
 
       File.write(
         File.join(@base_image_dir, 'base-gcp-image-1.json'),
@@ -69,9 +64,6 @@ describe 'Gcp' do
       expect(stemcell_manifest['stemcell_formats']).to eq(['google-light'])
       expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('google')
       expect(stemcell_manifest['cloud_properties']['image_url']).to eq('https://www.googleapis.com/compute/v1/projects/some-project-id/global/images/packer-1234')
-
-      apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
-      expect(apply_spec['agent_commit']).to eq(agent_commit)
 
       expect(read_from_tgz(stemcell, 'image')).to be_empty
     end

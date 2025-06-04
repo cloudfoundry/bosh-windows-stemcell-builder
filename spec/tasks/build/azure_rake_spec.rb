@@ -44,7 +44,6 @@ describe 'build:azure' do
       expect(azure_builder_class).to receive(:new).with(
         packer_vars: {},
         version: '1709.10.43-build.1',
-        agent_commit: 'some_sha',
         os: env_var,
         output_directory: 'some_output_directory',
         client_id: env_var,
@@ -74,7 +73,6 @@ describe 'build:azure' do
       expect(azure_builder_class).to receive(:new).with(
         packer_vars: {},
         version: '1709.10.43-build.1',
-        agent_commit: 'some_sha',
         os: env_var,
         output_directory: 'some_output_directory',
         client_id: env_var,
@@ -104,7 +102,6 @@ describe 'build:azure' do
       expect(azure_builder_class).to receive(:new).with(
         packer_vars: {},
         version: '1709.10.43-build.1',
-        agent_commit: 'some_sha',
         os: env_var,
         output_directory: 'some_output_directory',
         client_id: env_var,

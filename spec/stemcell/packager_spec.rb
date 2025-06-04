@@ -116,7 +116,6 @@ describe Stemcell::Packager do
                                    image_path:  @image.path,
                                    update_list:  @update_list.path,
                                    manifest:  'some-manifest',
-                                   apply_spec:  'some-apply-spec',
                                    output_directory:  @output_directory)
       }.not_to raise_error
 
@@ -134,7 +133,7 @@ describe Stemcell::Packager do
       expect { tgz_extract(tgz_file, @untar_dir) }.not_to raise_error
 
       stemcell_files = Dir[File.join(@untar_dir, '*')]
-      expect(stemcell_files.length).to eq(4)
+      expect(stemcell_files.length).to eq(3)
 
       expect(File.read(File.join(@untar_dir, 'stemcell.MF'))).to eq('some-manifest')
       expect(FileUtils.compare_file(@image.path,
@@ -143,7 +142,6 @@ describe Stemcell::Packager do
       expect(FileUtils.compare_file(@update_list.path,
                                     File.join(@untar_dir,
                                               'updates.txt'))).to be_truthy
-      expect(File.read(File.join(@untar_dir, 'apply_spec.yml'))).to eq('some-apply-spec')
     end
 
     context 'when a light stemcell is specified' do
@@ -155,7 +153,6 @@ describe Stemcell::Packager do
                                      version: '',
                                      image_path: @image.path,
                                      manifest:  'some-manifest',
-                                     apply_spec:  'some-apply-spec',
                                      output_directory: @output_directory,
                                      update_list: @update_list.path)
         }.not_to raise_error
@@ -175,7 +172,6 @@ describe Stemcell::Packager do
                                      version: '',
                                      image_path: 'invalid_path',
                                      manifest:  'some-manifest',
-                                     apply_spec:  'some-apply-spec',
                                      output_directory: @output_directory,
                                      update_list: @update_list.path)
         }.not_to raise_error
@@ -186,7 +182,7 @@ describe Stemcell::Packager do
         expect { tgz_extract(tgz_file, @untar_dir) }.not_to raise_error
 
         stemcell_files = Dir[File.join(@untar_dir, '*')]
-        expect(stemcell_files.length).to eq(4)
+        expect(stemcell_files.length).to eq(3)
 
         expect(File.size(File.join(@untar_dir, 'image'))).to eq(0)
       end
@@ -199,7 +195,6 @@ describe Stemcell::Packager do
                                      version: '',
                                      image_path: 'invalid_path',
                                      manifest:  'some-manifest',
-                                     apply_spec:  'some-apply-spec',
                                      output_directory: @output_directory,
                                      update_list: @update_list.path)
         }.not_to raise_error
@@ -221,7 +216,6 @@ describe Stemcell::Packager do
                                      version: '',
                                      image_path: 'invalid_path',
                                      manifest:  'some-manifest',
-                                     apply_spec:  'some-apply-spec',
                                      output_directory: @output_directory,
                                      update_list: @update_list.path)
         }.to raise_error(Stemcell::Packager::InvalidImagePathError)
@@ -237,7 +231,6 @@ describe Stemcell::Packager do
                                      version: '',
                                      image_path: @image.path,
                                      manifest:  'some-manifest',
-                                     apply_spec:  'some-apply-spec',
                                      output_directory: @output_directory,
                                      update_list: nil)
         }.not_to raise_error
@@ -259,7 +252,6 @@ describe Stemcell::Packager do
                                      version: '',
                                      image_path: @image.path,
                                      manifest:  'some-manifest',
-                                     apply_spec:  'some-apply-spec',
                                      output_directory: 'invalid_path',
                                      update_list: @update_list.path)
         }.to raise_error(Stemcell::Packager::InvalidOutputDirError)

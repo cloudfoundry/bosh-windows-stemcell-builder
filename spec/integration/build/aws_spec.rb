@@ -18,7 +18,6 @@ describe 'Aws' do
 
     @os_version = 'windows2019'
     @version = '1200.3.1-build.2'
-    @agent_commit = 'some-agent-commit'
 
     ENV['AMIS_DIR'] = @amis_dir
     ENV['PACKER_AWS_ACCESS_KEY'] = @aws_access_key = 'some-aws_access_key'
@@ -37,10 +36,6 @@ describe 'Aws' do
     )
 
     FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
-    File.write(
-      File.join(@build_dir, 'compiled-agent', 'sha'),
-      @agent_commit
-    )
 
     File.write(
       File.join(@base_amis_dir, 'base-amis-1.json'),
@@ -90,9 +85,6 @@ describe 'Aws' do
       expect(stemcell_manifest['cloud_properties']['encrypted']).to eq(false)
       expect(stemcell_manifest['cloud_properties']['ami']['us-east-1']).to eq('ami-east1id')
       expect(stemcell_manifest['cloud_properties']['ami']['us-east-2']).to be_nil
-
-      apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
-      expect(apply_spec['agent_commit']).to eq(@agent_commit)
 
       expect(read_from_tgz(stemcell, 'image')).to be_empty
       expect(File.read(stemcell_sha)).to eq(Digest::SHA1.hexdigest(File.read(stemcell)))
@@ -262,9 +254,6 @@ describe 'Aws' do
       expect(stemcell_manifest['cloud_properties']['ami']['some-region-3']).to eq('some-ami-3')
 
       expect(read_from_tgz(stemcell, 'updates.txt')).not_to be_nil
-
-      apply_spec = JSON.parse(read_from_tgz(stemcell, 'apply_spec.yml'))
-      expect(apply_spec['agent_commit']).to eq(@agent_commit)
 
       expect(read_from_tgz(stemcell, 'image')).to be_empty
       expect(File.read(stemcell_sha)).to eq(Digest::SHA1.hexdigest(File.read(stemcell)))

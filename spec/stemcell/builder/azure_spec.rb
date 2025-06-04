@@ -15,11 +15,9 @@ describe Stemcell::Builder do
       it 'builds a stemcell tarball' do
         os = 'windows2019'
         version = '1234.0'
-        agent_commit = 'some-agent-commit'
         config = 'some-packer-config'
         command = 'build'
         manifest_contents = 'manifest_contents'
-        apply_spec_contents = 'apply_spec_contents'
         packer_vars = {some_var: 'some-value'}
         disk_image_url = 'some-disk-image-url'
         client_id = 'some-client-id'
@@ -61,22 +59,18 @@ describe Stemcell::Builder do
 
         azure_manifest = double(:azure_manifest)
         allow(azure_manifest).to receive(:dump).and_return(manifest_contents)
-        azure_apply = double(:azure_apply)
-        allow(azure_apply).to receive(:dump).and_return(apply_spec_contents)
 
         allow(Stemcell::Manifest::Azure).to receive(:new).with(version,
                                                                os,
                                                                publisher,
                                                                offer,
                                                                sku).and_return(azure_manifest)
-        allow(Stemcell::ApplySpec).to receive(:new).with(agent_commit).and_return(azure_apply)
         allow(Stemcell::Packager).to receive(:package).with(iaas: 'azure-hyperv',
                                                             os: os,
                                                             is_light: true,
                                                             version: version,
                                                             image_path: '',
                                                             manifest: manifest_contents,
-                                                            apply_spec: apply_spec_contents,
                                                             output_directory: output_directory,
                                                             update_list: nil,
                                                             region: nil
@@ -87,7 +81,6 @@ describe Stemcell::Builder do
           os: os,
           output_directory: output_directory,
           version: version,
-          agent_commit: agent_commit,
           packer_vars: packer_vars,
           client_id: client_id,
           client_secret: client_secret,
@@ -126,7 +119,6 @@ describe Stemcell::Builder do
         os: '',
         output_directory: '',
         version: '',
-        agent_commit: '',
         packer_vars: '',
         mount_ephemeral_disk: 'true'
       )
@@ -151,7 +143,6 @@ describe Stemcell::Builder do
         os: '',
         output_directory: '',
         version: '',
-        agent_commit: '',
         packer_vars: '',
         mount_ephemeral_disk: 'false'
       )
@@ -176,7 +167,6 @@ describe Stemcell::Builder do
         os: '',
         output_directory: '',
         version: '',
-        agent_commit: '',
         packer_vars: ''
       )
 

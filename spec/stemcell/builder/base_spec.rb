@@ -50,7 +50,6 @@ describe Stemcell::Builder do
           os: '',
           output_directory: '',
           version: '',
-          agent_commit: '',
           packer_vars: '',
           mount_ephemeral_disk: 'true'
         )
@@ -62,7 +61,6 @@ describe Stemcell::Builder do
           os: '',
           output_directory: '',
           version: '',
-          agent_commit: '',
           packer_vars: '',
           mount_ephemeral_disk: 'false'
         )
@@ -74,7 +72,6 @@ describe Stemcell::Builder do
           os: '',
           output_directory: '',
           version: '',
-          agent_commit: '',
           packer_vars: ''
         )
         expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(false)
