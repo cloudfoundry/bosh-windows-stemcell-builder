@@ -1,15 +1,15 @@
-# To configure this pipeline: pipelines/configure.sh windows-2019
+# To configure this pipeline: pipelines/configure.sh windows-2025
 
 anchors:
-- &gcp_account_json ((cff-bosh-windows-stemcells_bosh-153_gcp_credentials_json))
-- &bosh_windows_stemcell_builder_branch windows-2019
-- &bosh_windows_stemcell_builder_semver_branch semver-2019
+- &gcp_account_json ((broadcom_demo_gcp_credentials_json))
+- &bosh_windows_stemcell_builder_branch windows-2025
+- &bosh_windows_stemcell_builder_semver_branch semver-2025
 - &windows_stemcell_ci_image bosh/windows-stemcell-ci
-- &windows_stemcell_ci_tag windows-2019
-- &windows_os_version windows2019
-- &windows_os_line "2019"
+- &windows_stemcell_ci_tag windows-2025
+- &windows_os_version windows2025
+- &windows_os_line "2025"
 - &internal_worker_tag broadcom
-- &worker_tag
+- &worker_tag broadcom
 
 groups:
 - name: all
@@ -122,45 +122,40 @@ resources:
   type: git
   tags: [*worker_tag]
   source:
-    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
+    uri: git@github.gwd.broadcom.net:TNZ/bosh-windows-stemcell-builder.git
+    private_key: ((github_deploy_key_bosh_windows_stemcell_builder))
     branch: *bosh_windows_stemcell_builder_branch
     ignore_paths:
       - ci/
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
 - name: bosh-windows-stemcell-builder-ci
   type: git
   tags: [*worker_tag]
   source:
-    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
+    uri: git@github.gwd.broadcom.net:TNZ/bosh-windows-stemcell-builder.git
+    private_key: ((github_deploy_key_bosh_windows_stemcell_builder))
     branch: *bosh_windows_stemcell_builder_branch
     paths:
       - ci/
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
 - name: bosh-windows-stemcell-builder-dockerfiles
   type: git
   tags: [*worker_tag]
   source:
-    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
+    uri: git@github.gwd.broadcom.net:TNZ/bosh-windows-stemcell-builder.git
+    private_key: ((github_deploy_key_bosh_windows_stemcell_builder))
     branch: *bosh_windows_stemcell_builder_branch
     paths:
     - ci/azstemcell
     - ci/docker/Dockerfile
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
+- name: bosh-stemcells-ci
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/bosh-stemcells-ci
 - name: golang-release
   type: git
   source:
     uri: https://github.com/cloudfoundry/bosh-package-golang-release.git
     branch: main
-- name: boshio
-  type: git
-  source:
-    branch: main
-    uri: https://github.com/cloudfoundry/bosh-io-stemcells-windows-index.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
 - name: windows-utilities-release
   type: git
   source:
@@ -240,9 +235,8 @@ resources:
   tags: [*worker_tag]
   source:
     driver: git
-    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
+    uri: git@github.gwd.broadcom.net:TNZ/bosh-windows-stemcell-builder.git
+    private_key: ((github_deploy_key_bosh_windows_stemcell_builder))
     branch: *bosh_windows_stemcell_builder_semver_branch
     file: aws
     initial_version: "((BASE_OS_VERSION)).1.0"
@@ -251,20 +245,19 @@ resources:
   tags: [*worker_tag]
   source:
     driver: git
-    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
+    uri: git@github.gwd.broadcom.net:TNZ/bosh-windows-stemcell-builder.git
+    private_key: ((github_deploy_key_bosh_windows_stemcell_builder))
     branch: *bosh_windows_stemcell_builder_semver_branch
     file: azure
+    file: azure-2025
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: gcp-build-number
   type: semver
   tags: [*worker_tag]
   source:
     driver: git
-    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
+    uri: git@github.gwd.broadcom.net:TNZ/bosh-windows-stemcell-builder.git
+    private_key: ((github_deploy_key_bosh_windows_stemcell_builder))
     branch: *bosh_windows_stemcell_builder_semver_branch
     file: gcp
     initial_version: "((BASE_OS_VERSION)).1.0"
@@ -273,9 +266,8 @@ resources:
   tags: [*worker_tag]
   source:
     driver: git
-    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
+    uri: git@github.gwd.broadcom.net:TNZ/bosh-windows-stemcell-builder.git
+    private_key: ((github_deploy_key_bosh_windows_stemcell_builder))
     branch: *bosh_windows_stemcell_builder_semver_branch
     file: stembuild-linux
     initial_version: "((BASE_OS_VERSION)).1.0"
@@ -284,9 +276,8 @@ resources:
   tags: [*worker_tag]
   source:
     driver: git
-    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
+    uri: git@github.gwd.broadcom.net:TNZ/bosh-windows-stemcell-builder.git
+    private_key: ((github_deploy_key_bosh_windows_stemcell_builder))
     branch: *bosh_windows_stemcell_builder_semver_branch
     file: stembuild-windows
     initial_version: "((BASE_OS_VERSION)).1.0"
@@ -295,9 +286,8 @@ resources:
   tags: [*worker_tag]
   source:
     driver: git
-    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
+    uri: git@github.gwd.broadcom.net:TNZ/bosh-windows-stemcell-builder.git
+    private_key: ((github_deploy_key_bosh_windows_stemcell_builder))
     branch: *bosh_windows_stemcell_builder_semver_branch
     file: main
     initial_version: "((BASE_OS_VERSION)).1.0"
@@ -848,7 +838,7 @@ jobs:
         params:
           VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
           OS_LINE: *windows_os_line
-          BASE_VM_IPATH: /dc0/vm/bosh-windows-ci-vms-and-templates/stembuild_base_vm_2019_
+          BASE_VM_IPATH: /dc0/vm/bosh-windows-ci-vms-and-templates/stembuild_base_vm_2025_
           CLONE_DATASTORE: ((nimbus_windows-demo_ds))
           CLONE_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
           CLONE_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
@@ -965,7 +955,7 @@ jobs:
           VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
           VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
           VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
-          CONTRACT_TEST_VM_NAME: stembuild_base_vm_2019_
+          CONTRACT_TEST_VM_NAME: stembuild_base_vm_2025_
           CONTRACT_TEST_VM_PASSWORD: ((stembuild_vm_user.password))
           CONTRACT_TEST_VM_USERNAME: ((stembuild_vm_user.username))
       - task: setup-integration-test-vm
@@ -975,7 +965,7 @@ jobs:
         params:
           VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
           OS_LINE: *windows_os_line
-          BASE_VM_IPATH: /dc0/vm/bosh-windows-ci-vms-and-templates/stembuild_base_vm_2019_
+          BASE_VM_IPATH: /dc0/vm/bosh-windows-ci-vms-and-templates/stembuild_base_vm_2025_
           CLONE_DATASTORE: ((nimbus_windows-demo_ds))
           CLONE_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
           CLONE_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
@@ -1054,7 +1044,7 @@ jobs:
     params:
       GOVC_URL: ((nimbus_windows-demo_auth_url))
       DATACENTER: dc0
-      VM_TO_REVERT: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2019-base-vm-linux
+      VM_TO_REVERT: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2025-base-vm-linux
       SNAPSHOT_NAME: "stembuild-ready-power-on"
   - task: install-windows-updates
     file: bosh-windows-stemcell-builder-ci/ci/tasks/install-windows-updates/task.yml
@@ -1063,7 +1053,7 @@ jobs:
     params:
       GOVC_URL: ((nimbus_windows-demo_auth_url))
       VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-      STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2019-base-vm-linux
+      STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2025-base-vm-linux
       VM_USERNAME: ((stembuild_vm_user.username))
       VM_PASSWORD: ((stembuild_vm_user.password))
   - task: update-snapshot
@@ -1073,7 +1063,7 @@ jobs:
     params:
       GOVC_URL: ((nimbus_windows-demo_auth_url))
       DATACENTER: dc0
-      VM_TO_SNAPSHOT: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2019-base-vm-linux
+      VM_TO_SNAPSHOT: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2025-base-vm-linux
       SNAPSHOT_NAME: "stembuild-ready-power-on"
   - task: run-stembuild-construct
     file: bosh-windows-stemcell-builder-ci/ci/tasks/run-construct-stembuild-linux/task.yml
@@ -1084,7 +1074,7 @@ jobs:
       VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
       VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
       VCENTER_VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
-      STEMBUILD_BASE_VM_NAME: windows-server-2019-base-vm-linux
+      STEMBUILD_BASE_VM_NAME: windows-server-2025-base-vm-linux
       STEMBUILD_BASE_VM_IP: 192.168.111.31
       STEMBUILD_BASE_VM_USERNAME: ((stembuild_vm_user.username))
       STEMBUILD_BASE_VM_PASSWORD: ((stembuild_vm_user.password))
@@ -1096,7 +1086,7 @@ jobs:
       VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
       VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
       VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
-      STEMBUILD_BASE_VM_NAME: windows-server-2019-base-vm-linux
+      STEMBUILD_BASE_VM_NAME: windows-server-2025-base-vm-linux
       VCENTER_VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
   - &print-updates
     task: print-updates
@@ -1221,7 +1211,7 @@ jobs:
       params:
         GOVC_URL: ((nimbus_windows-demo_auth_url))
         DATACENTER: dc0
-        VM_TO_REVERT: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2019-base-vm-windows
+        VM_TO_REVERT: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2025-base-vm-windows
         SNAPSHOT_NAME: "stembuild-ready-power-on"
     - task: install-windows-updates
       file: bosh-windows-stemcell-builder-ci/ci/tasks/install-windows-updates/task.yml
@@ -1230,7 +1220,7 @@ jobs:
       params:
         GOVC_URL: ((nimbus_windows-demo_auth_url))
         VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-        STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2019-base-vm-windows
+        STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2025-base-vm-windows
         VM_USERNAME: ((stembuild_vm_user.username))
         VM_PASSWORD: ((stembuild_vm_user.password))
     - task: update-snapshot
@@ -1240,7 +1230,7 @@ jobs:
       params:
         GOVC_URL: ((nimbus_windows-demo_auth_url))
         DATACENTER: dc0
-        VM_TO_SNAPSHOT: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2019-base-vm-windows
+        VM_TO_SNAPSHOT: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2025-base-vm-windows
         SNAPSHOT_NAME: "stembuild-ready-power-on"
     - task: run-stembuild-construct
       file: bosh-windows-stemcell-builder-ci/ci/tasks/run-construct-stembuild-windows/task.yml
@@ -1250,7 +1240,7 @@ jobs:
         VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
         VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
         VCENTER_VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
-        STEMBUILD_BASE_VM_NAME: windows-server-2019-base-vm-windows
+        STEMBUILD_BASE_VM_NAME: windows-server-2025-base-vm-windows
         STEMBUILD_BASE_VM_IP: 192.168.111.32
         STEMBUILD_BASE_VM_USERNAME: ((stembuild_vm_user.username))
         STEMBUILD_BASE_VM_PASSWORD: ((stembuild_vm_user.password))
@@ -1261,7 +1251,7 @@ jobs:
         VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
         VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
         VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
-        STEMBUILD_BASE_VM_NAME: windows-server-2019-base-vm-windows
+        STEMBUILD_BASE_VM_NAME: windows-server-2025-base-vm-windows
         VCENTER_VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
     - *print-updates
     - put: stembuild-windows-stemcell
@@ -2167,8 +2157,8 @@ jobs:
       - get: blobstore-gcs-cli
       - get: windows-bsdtar
       - get: windows-winsw
-      - get: boshio-input
-        resource: boshio
+#      - get: boshio-input
+#        resource: boshio
   - task: copy-public-stemcells
     timeout: 1h30m
     attempts: 3
@@ -2223,23 +2213,23 @@ jobs:
       AWS_ACCESS_KEY_ID: ((packer_user_gov_aws_access_key.username))
       AWS_SECRET_ACCESS_KEY: ((packer_user_gov_aws_access_key.password))
       GREP_PATTERN: grep 'gov-'
-  - task: commit-dev-meta4-file
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/commit-meta4-file/task.yml
-    image: bosh-windows-stemcell-builder-ci-image
-    input_mapping: { stemcell: final-stemcell }
-    params:
-      IAAS: aws
-      OS_NAME: windows
-      OS_VERSION: ((BASE_OS_VERSION))
+#  - task: commit-dev-meta4-file
+#    file: bosh-windows-stemcell-builder-ci/ci/tasks/commit-meta4-file/task.yml
+#    image: bosh-windows-stemcell-builder-ci-image
+#    input_mapping: { stemcell: final-stemcell }
+#    params:
+#      IAAS: aws
+#      OS_NAME: windows
+#      OS_VERSION: ((BASE_OS_VERSION))
   - in_parallel:
     - put: aws-stemcell-final-s3
       resource: aws-stemcell-final
       params:
         file: final-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent.tgz
-    - put: boshio
-      params:
-        repository: boshio-output
-        rebase: true
+#    - put: boshio
+#      params:
+#        repository: boshio-output
+#        rebase: true
   - try:
       task: cleanup-unpublished-aws-amis
       file: bosh-windows-stemcell-builder-ci/ci/tasks/cleanup-unpublished-aws-amis/task.yml
@@ -2271,8 +2261,8 @@ jobs:
       - get: stemcell-builder
         passed: [promote]
         tags: [*worker_tag]
-      - get: boshio-input
-        resource: boshio
+#      - get: boshio-input
+#        resource: boshio
   - task: gcp-set-stemcell-filename-version
     input_mapping: { bosh-windows-stemcell: gcp-tested }
     file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/task.yml
@@ -2283,23 +2273,23 @@ jobs:
     input_mapping: { bosh-windows-stemcell: gcp-tested }
     params:
       ACCOUNT_JSON: *gcp_account_json
-  - task: commit-meta4-dev-file
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/commit-meta4-file/task.yml
-    image: bosh-windows-stemcell-builder-ci-image
-    input_mapping: { stemcell: final-stemcell }
-    params:
-      IAAS: gcp
-      OS_NAME: windows
-      OS_VERSION: ((BASE_OS_VERSION))
+#  - task: commit-meta4-dev-file
+#    file: bosh-windows-stemcell-builder-ci/ci/tasks/commit-meta4-file/task.yml
+#    image: bosh-windows-stemcell-builder-ci-image
+#    input_mapping: { stemcell: final-stemcell }
+#    params:
+#      IAAS: gcp
+#      OS_NAME: windows
+#      OS_VERSION: ((BASE_OS_VERSION))
   - in_parallel:
     - put: gcp-stemcell-final-s3
       resource: gcp-stemcell-final
       params:
         file: final-stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
-    - put: boshio
-      params:
-        repository: boshio-output
-        rebase: true
+#    - put: boshio
+#      params:
+#        repository: boshio-output
+#        rebase: true
   - task: cleanup-unpublished-gcp-images
     file: bosh-windows-stemcell-builder-ci/ci/tasks/cleanup-unpublished-gcp-images/task.yml
     image: bosh-windows-stemcell-builder-ci-image
@@ -2439,30 +2429,30 @@ jobs:
         resource: main-version
         passed: [publish-azure-offer]
         tags: [*worker_tag]
-      - get: boshio-input
-        resource: boshio
+#      - get: boshio-input
+#        resource: boshio
   - task: azure-set-stemcell-filename-version
     input_mapping: { bosh-windows-stemcell: azure-tested }
     output_mapping: { final-stemcell: azure-stemcell-final }
     file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-  - task: commit-meta4-file
-    input_mapping: { stemcell: azure-stemcell-final }
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/commit-meta4-file/task.yml
-    image: bosh-windows-stemcell-builder-ci-image
-    params:
-      IAAS: azure
-      OS_NAME: windows
-      OS_VERSION: ((BASE_OS_VERSION))
+#  - task: commit-meta4-file
+#    input_mapping: { stemcell: azure-stemcell-final }
+#    file: bosh-windows-stemcell-builder-ci/ci/tasks/commit-meta4-file/task.yml
+#    image: bosh-windows-stemcell-builder-ci-image
+#    params:
+#      IAAS: azure
+#      OS_NAME: windows
+#      OS_VERSION: ((BASE_OS_VERSION))
   - in_parallel:
     - put: azure-stemcell-final-s3
       resource: azure-stemcell-final
       params:
         file: azure-stemcell-final/light-bosh-stemcell-*-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
-    - put: boshio
-      params:
-        repository: boshio-output
-        rebase: true
+#    - put: boshio
+#      params:
+#        repository: boshio-output
+#        rebase: true
 
 - name: promote-stembuild
   serial: true

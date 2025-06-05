@@ -28,7 +28,7 @@ if ENV['AWS_ROLE_ARN'] && !ENV['AWS_ROLE_ARN'].empty?
   ENV.delete('AWS_SECRET_ACCESS_KEY')
 end
 
-supported_base_ami = %w[windows2019]
+supported_base_ami = %w[windows2019 windows2025]
 
 # Helper method
 def get_ami_for(region, base_ami_name)

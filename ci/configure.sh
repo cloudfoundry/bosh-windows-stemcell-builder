@@ -12,6 +12,6 @@ until "${fly}" -t "${concourse_target}" status; do
 done
 
 "${fly}" -t "${concourse_target}" set-pipeline \
-  -p "stemcells-windows-2019" \
+  -p "stemcells-windows-2025" \
   -c "${REPO_ROOT}/ci/pipelines/stemcells-windows.yml" \
   -l "${REPO_ROOT}/ci/pipelines/vars.yml"
