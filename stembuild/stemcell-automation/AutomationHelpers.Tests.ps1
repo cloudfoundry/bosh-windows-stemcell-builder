@@ -2,11 +2,11 @@
 # OpenSSH 9.1, there is a conflicting install-sshd.ps1 script that takes precedence instead if you do
 # not load the module.
 BeforeAll {
-    Import-Module ../modules/BOSH.SSH
-    Import-Module ../modules/BOSH.Utils
-    Import-Module ../modules/BOSH.CFCell
-    Import-Module ../modules/BOSH.Agent
-    Import-Module ../modules/BOSH.CFCell
+    Import-Module ../../modules/BOSH.SSH
+    Import-Module ../../modules/BOSH.Utils
+    Import-Module ../../modules/BOSH.CFCell
+    Import-Module ../../modules/BOSH.Agent
+    Import-Module ../../modules/BOSH.CFCell
     Import-Module ./AutomationHelpers.psm1
 
     function Get-WuCerts { }
