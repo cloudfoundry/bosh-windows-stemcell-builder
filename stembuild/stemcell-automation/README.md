@@ -1,13 +1,13 @@
 ## Prerequisites
 The following need to be downloaded:
 * Local Group Policy Object Utility v3 - [LGPO.exe](https://www.microsoft.com/en-us/download/details.aspx?id=55319)
-* The appropriate BOSH Windows stemcell automation release for the desired Windows stemcell version - [StemcellAutomation.zip](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-automation/releases)
+* The appropriate BOSH Windows stemcell automation release for the desired Windows stemcell version - [StemcellAutomation.zip](https://github.com/cloudfoundry/bosh-windows-stemcell-automation/releases)
 
 ## Creating a BOSH Windows stemcell
 ### 1. Preparing the VM
 The following steps are used to prepare the base VM image that will be used to create the final stemcell.
 
-1. Refer to [Creating a vSphere Windows Stemcell](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/wiki/Creating-a-vSphere-Windows-Stemcell)
+1. Refer to [Creating a vSphere Windows Stemcell](https://github.com/cloudfoundry/bosh-windows-stemcell-builder/wiki/Creating-a-vSphere-Windows-Stemcell)
     1. Review the **Quick Overview** section
 1. Follow steps 1 through 3 of the guide
 
@@ -28,4 +28,4 @@ The following steps installs the binaries, as well as modify Windows settings an
 ### 3. Finalizing the stemcell creation process
 This steps converts the VM image into a stemcell package.
 
-1. Follow steps 6 and onward from [Creating a vSphere Windows Stemcell](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/wiki/Creating-a-vSphere-Windows-Stemcell) guide.
+1. Follow steps 6 and onward from [Creating a vSphere Windows Stemcell](https://github.com/cloudfoundry/bosh-windows-stemcell-builder/wiki/Creating-a-vSphere-Windows-Stemcell) guide.

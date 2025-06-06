@@ -14,8 +14,8 @@ AliasesToExport = @()
 PrivateData = @{
     PSData = @{
         Tags = @('BOSH')
-        LicenseUri = 'https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder/blob/master/LICENSE'
-        ProjectUri = 'https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder'
+        LicenseUri = 'https://github.com/cloudfoundry/bosh-windows-stemcell-builder/blob/master/LICENSE'
+        ProjectUri = 'https://github.com/cloudfoundry/bosh-windows-stemcell-builder'
     }
 }
 }
