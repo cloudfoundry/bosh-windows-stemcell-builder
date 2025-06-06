@@ -139,11 +139,6 @@ resources:
     - ci/docker/Dockerfile
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-- name: bosh-stemcells-ci
-  type: git
-  source:
-    branch: master
-    uri: https://github.com/cloudfoundry/bosh-stemcells-ci
 - name: golang-release
   type: git
   source:
@@ -2188,7 +2183,6 @@ jobs:
         passed: [promote]
       - get: aws-govcloud-tested
         passed: [promote]
-      - get: bosh-stemcells-ci
       - get: stemcell-builder
         passed: [promote]
       - get: version
@@ -2249,7 +2243,7 @@ jobs:
     file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/task.yml
     image: bosh-windows-stemcell-builder-ci-image
   - task: tag-published-aws-ami-light-stemcells
-    file: bosh-stemcells-ci/tasks/light-aws/tag-aws-ami-light.yml
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/aws-tag-image/task.yml
     image: bosh-windows-stemcell-builder-ci-image
     input_mapping:
       candidate-aws-light-stemcell: final-stemcell
@@ -2259,7 +2253,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ((aws-stemcells_aws_access_key.password))
       GREP_PATTERN: grep -v 'gov-\|cn-'
   - task: tag-gov-published-aws-ami-light-stemcells
-    file: bosh-stemcells-ci/tasks/light-aws/tag-aws-ami-light.yml
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/aws-tag-image/task.yml
     image: bosh-windows-stemcell-builder-ci-image
     input_mapping:
       candidate-aws-light-stemcell: final-stemcell

@@ -1,0 +1,15 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: candidate-aws-light-stemcell
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/aws-tag-image/run.sh
+
+params:
+  AWS_ROLE_ARN:
+  AWS_ACCESS_KEY_ID:
+  AWS_SECRET_ACCESS_KEY:
+  GREP_PATTERN:
