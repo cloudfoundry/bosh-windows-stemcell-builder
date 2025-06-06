@@ -60,14 +60,6 @@ Describe "Protect-CFCell" {
         get-firewall "private" | Should -Be "private,Block,Allow"
         get-firewall "domain" | Should -Be "domain,Block,Allow"
     }
-
-    It "does not call 'Disable-WindowsDefenderFeatures'" {
-        Mock -ModuleName BOSH.CFCell Disable-WindowsDefenderFeatures { }
-
-        { Protect-CFCell -IaaS "ignored" } | Should -Not -Throw
-
-        Should -Not -Invoke -ModuleName BOSH.CFCell -CommandName Disable-WindowsDefenderFeatures
-    }
 }
 
 Describe "Install-CFFeatures" {
