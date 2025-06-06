@@ -1124,6 +1124,7 @@ jobs:
         path: cat
         args: ["hotfix-log/hotfixes.log"]
   - put: stembuild-linux-stemcell
+    attempts: 3 # <- to address nimbus network issues # <- to address nimbus network issues
     params:
       file: stembuild-built-stemcell/bosh-stemcell-*-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
 
@@ -1292,6 +1293,7 @@ jobs:
         VCENTER_VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
     - *print-updates
     - put: stembuild-windows-stemcell
+      attempts: 3 # <- to address nimbus network issues
       params:
         file: stembuild-built-stemcell/bosh-stemcell-*-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
 
