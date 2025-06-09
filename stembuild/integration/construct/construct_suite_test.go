@@ -222,11 +222,11 @@ func envMustExist(variableName string) string {
 }
 
 func enableWinRM() {
-	_, b, _, _ := runtime.Caller(0)
-	root := filepath.Dir(filepath.Dir(filepath.Dir(filepath.Dir(b))))
+	_, currentFile, _, _ := runtime.Caller(0)
+	repositoryRoot := filepath.Dir(filepath.Dir(filepath.Dir(filepath.Dir(currentFile))))
 
 	By("Enabling WinRM on the base image before integration tests...")
-	winRMPowershellModule := filepath.Join(root, "modules", "BOSH.WinRM", "BOSH.WinRM.psm1")
+	winRMPowershellModule := filepath.Join(repositoryRoot, "modules", "BOSH.WinRM", "BOSH.WinRM.psm1")
 	uploadCommand := []string{
 		"guest.upload",
 		fmt.Sprintf("-vm.ipath=%s", conf.VMInventoryPath),
@@ -257,6 +257,9 @@ func enableWinRM() {
 }
 
 func createVMSnapshot(snapshotName string) {
+	const vmSnapshotCreateTimeout = 30 * time.Second
+
+	By(fmt.Sprintf("VM snapshot.create: '-vm.ipath=%s' 'name=%s'", conf.VMInventoryPath, snapshotName))
 	snapshotCommand := []string{
 		"snapshot.create",
 		fmt.Sprintf("-vm.ipath=%s", conf.VMInventoryPath),
@@ -264,15 +267,12 @@ func createVMSnapshot(snapshotName string) {
 		fmt.Sprintf("-tls-ca-certs=%s", pathToCACert),
 		snapshotName,
 	}
-	By(fmt.Sprintf("Creating VM Snapshot: %s on VM: %s\n", snapshotName, conf.VMInventoryPath))
 	exitCode := cli.Run(snapshotCommand)
-	Expect(exitCode).To(Equal(0), "Creating the snapshot failed")
+	Expect(exitCode).To(Equal(0), "VM snapshot.create failed")
 
-	By("Snapshot command started.")
-	timeout := 30 * time.Second
-	By(fmt.Sprintf("Waiting '%s' for snapshot to finish...", timeout))
-	time.Sleep(timeout)
-	By("done.\n")
+	By(fmt.Sprintf("VM snapshot.create started, waiting '%s'", vmSnapshotCreateTimeout))
+	time.Sleep(vmSnapshotCreateTimeout)
+	By(fmt.Sprintf("VM snapshot.create started, waiting '%s' ... DONE", vmSnapshotCreateTimeout))
 }
 
 func powerOnVM() {
@@ -283,7 +283,8 @@ func powerOnVM() {
 		fmt.Sprintf("-tls-ca-certs=%s", pathToCACert),
 		"-on",
 	}
-	runIgnoringOutput(powerOnCommand)
+	powerOnExitCode := runIgnoringOutput(powerOnCommand)
+	Expect(powerOnExitCode).To(Equal(0), "VM power-on failed")
 }
 
 func runIgnoringOutput(args []string) int {
