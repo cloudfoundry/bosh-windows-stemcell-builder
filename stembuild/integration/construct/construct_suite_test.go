@@ -171,6 +171,8 @@ var _ = SynchronizedAfterSuite(func() {
 })
 
 func revertSnapshot(vmIpath string, snapshotName string) {
+	By(fmt.Sprintf("Starting VM snapshot.revert: %s\n", snapshotName))
+
 	snapshotCommand := []string{
 		"snapshot.revert",
 		fmt.Sprintf("-vm.ipath=%s", vmIpath),
@@ -178,20 +180,17 @@ func revertSnapshot(vmIpath string, snapshotName string) {
 		fmt.Sprintf("-tls-ca-certs=%s", pathToCACert),
 		snapshotName,
 	}
-	By(fmt.Sprintf("Reverting VM Snapshot: %s\n", snapshotName))
-	exitCode := runIgnoringOutput(snapshotCommand)
-	if exitCode != 0 {
-		By("There was an error reverting the snapshot.")
-	} else {
-		By("Revert started.")
-	}
+	revertExitCode := runIgnoringOutput(snapshotCommand)
+	Expect(revertExitCode).To(Equal(0), "Starting VM snapshot.revert failed")
+
+	By("Started VM snapshot.revert")
 }
 
 func waitForVmToBeReady(vmIp string, vmUsername string, vmPassword string) {
 	const vmReadyTimeout = 15 * time.Minute
 	const vmReadySleepInterval = 1 * time.Minute
 
-	By("Waiting for reverting snapshot to finish...")
+	By("Waiting for VM snapshot.revert ...")
 	clientFactory := remotemanager.NewWinRmClientFactory(vmIp, vmUsername, vmPassword)
 	rm := remotemanager.NewWinRM(vmIp, vmUsername, vmPassword, clientFactory)
 	Expect(rm).ToNot(BeNil())
@@ -209,7 +208,8 @@ func waitForVmToBeReady(vmIp string, vmUsername string, vmPassword string) {
 		}
 		vmReady = err == nil
 	}
-	By("done.")
+
+	By("VM snapshot.revert finished")
 }
 
 func envMustExist(variableName string) string {
@@ -223,23 +223,23 @@ func envMustExist(variableName string) string {
 
 func enableWinRM() {
 	_, b, _, _ := runtime.Caller(0)
-	root := filepath.Dir(filepath.Dir(filepath.Dir(b)))
+	root := filepath.Dir(filepath.Dir(filepath.Dir(filepath.Dir(b))))
 
 	By("Enabling WinRM on the base image before integration tests...")
+	winRMPowershellModule := filepath.Join(root, "modules", "BOSH.WinRM", "BOSH.WinRM.psm1")
 	uploadCommand := []string{
 		"guest.upload",
 		fmt.Sprintf("-vm.ipath=%s", conf.VMInventoryPath),
 		fmt.Sprintf("-u=%s", vcenterAdminCredentialUrl),
 		fmt.Sprintf("-l=%s:%s", conf.VMUsername, conf.VMPassword),
 		fmt.Sprintf("-tls-ca-certs=%s", pathToCACert),
-		filepath.Join(root, "modules", "BOSH.WinRM", "BOSH.WinRM.psm1"),
+		winRMPowershellModule,
 		"C:\\Windows\\Temp\\BOSH.WinRM.psm1",
 	}
 
-	exitCode := runIgnoringOutput(uploadCommand)
-	if exitCode != 0 {
-		By("There was an error uploading WinRM psmodule.")
-	}
+	uploadExitCode := runIgnoringOutput(uploadCommand)
+	Expect(uploadExitCode).To(Equal(0), fmt.Sprintf("There was an error uploading %s", winRMPowershellModule))
+	By(fmt.Sprintf("WinRM '%s' uploaded", winRMPowershellModule))
 
 	enableCommand := []string{
 		"guest.start",
@@ -251,12 +251,9 @@ func enableWinRM() {
 		`-command`,
 		`&{Import-Module C:\Windows\Temp\BOSH.WinRM.psm1; Enable-WinRM}`,
 	}
-	exitCode = runIgnoringOutput(enableCommand)
-	if exitCode != 0 {
-		By("There was an error enabling WinRM.")
-	} else {
-		By("WinRM enabled.")
-	}
+	enableExitCode := runIgnoringOutput(enableCommand)
+	Expect(enableExitCode).To(Equal(0), "There was an error enabling WinRM.")
+	By("WinRM enabled.")
 }
 
 func createVMSnapshot(snapshotName string) {
