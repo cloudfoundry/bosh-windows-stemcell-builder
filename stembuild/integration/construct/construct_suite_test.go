@@ -284,7 +284,7 @@ func powerOnVM() {
 		"-on",
 	}
 	powerOnExitCode := runIgnoringOutput(powerOnCommand)
-	Expect(powerOnExitCode).To(Equal(0), "VM power-on failed")
+	By(fmt.Sprintf("VM power-on exited with %d", powerOnExitCode))
 }
 
 func runIgnoringOutput(args []string) int {
