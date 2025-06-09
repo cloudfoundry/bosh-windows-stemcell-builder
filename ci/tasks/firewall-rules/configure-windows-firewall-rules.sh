@@ -14,9 +14,10 @@ if [ "${CONFIGURE_GCP:-}" == "true" ]; then
   comma_separated_external_ips="${comma_separated_external_ips%,}"
 
   set +x
-  echo "${WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON}" | gcloud auth activate-service-account --key-file - --project cff-bosh-windows-stemcells
+  gcp_project_name=$(echo "${WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON}" | jq -r '.project_id')
+  echo "${WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON}" | gcloud auth activate-service-account --key-file - --project "${gcp_project_name}"
   set -x
-  gcloud compute firewall-rules update default-allow-winrm --project cff-bosh-windows-stemcells --source-ranges="${comma_separated_external_ips}"
+  gcloud compute firewall-rules update default-allow-winrm --project "${gcp_project_name}" --source-ranges="${comma_separated_external_ips}"
 fi
 
 # Set firewall rules in the AWS project
