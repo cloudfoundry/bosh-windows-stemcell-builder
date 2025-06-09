@@ -185,10 +185,12 @@ func revertSnapshot(vmIpath string, snapshotName string) {
 	} else {
 		By("Revert started.")
 	}
-	time.Sleep(30 * time.Second)
 }
 
 func waitForVmToBeReady(vmIp string, vmUsername string, vmPassword string) {
+	const vmReadyTimeout = 15 * time.Minute
+	const vmReadySleepInterval = 1 * time.Minute
+
 	By("Waiting for reverting snapshot to finish...")
 	clientFactory := remotemanager.NewWinRmClientFactory(vmIp, vmUsername, vmPassword)
 	rm := remotemanager.NewWinRM(vmIp, vmUsername, vmPassword, clientFactory)
@@ -197,10 +199,10 @@ func waitForVmToBeReady(vmIp string, vmUsername string, vmPassword string) {
 	start := time.Now()
 	vmReady := false
 	for !vmReady {
-		if time.Since(start) > time.Hour {
+		if time.Since(start) > vmReadyTimeout {
 			Fail(fmt.Sprintf("VM at %s failed to start", vmIp))
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(vmReadySleepInterval)
 		_, err := rm.ExecuteCommand(`powershell.exe "ls c:\windows 1>$null"`)
 		if err != nil {
 			By(fmt.Sprintf("VM not yet ready: %v", err))
