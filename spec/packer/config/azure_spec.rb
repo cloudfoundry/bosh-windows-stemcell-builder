@@ -23,7 +23,7 @@ describe Packer::Config::Azure do
         vm_size: 'some-vm-size',
         output_directory: '',
         os: 'test-os',
-        version: '2019.9999',
+        version: '2025.9999',
         vm_prefix: 'some-vm-prefix',
         mount_ephemeral_disk: false,
     ).builders }
@@ -39,7 +39,7 @@ describe Packer::Config::Azure do
         'temp_resource_group_name' => "some-vm-prefix-#{Time.now.to_i}",
         'storage_account' => 'some-storage-account',
         'capture_container_name' => 'test-os',
-        'capture_name_prefix' => '2019.9999',
+        'capture_name_prefix' => '2025.9999',
         'image_publisher' => 'MicrosoftWindowsServer',
         'image_offer' => 'some-base-image-offer',
         'image_sku' => 'some-base-image',
@@ -93,10 +93,10 @@ describe Packer::Config::Azure do
       ENV.delete('STEMCELL_DEPS_DIR')
     end
 
-    context 'windows 2019' do
+    context 'windows 2025' do
       it 'returns the expected provisioners' do
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        version = '2019.43.17-build.1'
+        version = '2025.43.17-build.1'
         provisioners = Packer::Config::Azure.new(
           client_id: '',
           client_secret: '',
@@ -107,7 +107,7 @@ describe Packer::Config::Azure do
           location: '',
           vm_size: '',
           output_directory: 'some-output-directory',
-          os: 'windows2019',
+          os: 'windows2025',
           version: version,
           vm_prefix: '',
           mount_ephemeral_disk: false,
@@ -171,7 +171,7 @@ describe Packer::Config::Azure do
             location: '',
             vm_size: '',
             output_directory: 'some-output-directory',
-            os: 'windows2019',
+            os: 'windows2025',
             vm_prefix: '',
             version: '',
             mount_ephemeral_disk: true,

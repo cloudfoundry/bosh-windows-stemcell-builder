@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'rspec/expectations'
 require './spec/packer/config/provisioner_slices/provisioner_matcher'
 require './spec/packer/config/provisioner_slices/test_provisioner'
-require './spec/packer/config/provisioner_slices/provisioners_2019'
+require './spec/packer/config/provisioner_slices/provisioners_2025'
 
 shared_examples "a standard provisioner" do |provisioner_config|
   let(:provisioners) {provisioner_config.provisioners}
@@ -108,19 +108,19 @@ describe 'provisioners' do
         version: '',
     }
 
-    context '2019' do
-      packer_config_aws_2019 = Packer::Config::Aws.new(
-        **standard_options.merge(os: 'windows2019')
+    context '2025' do
+      packer_config_aws_2025 = Packer::Config::Aws.new(
+        **standard_options.merge(os: 'windows2025')
       )
-      it_behaves_like "a standard provisioner", packer_config_aws_2019
+      it_behaves_like "a standard provisioner", packer_config_aws_2025
 
-      it_behaves_like "a 2019 provisioner", packer_config_aws_2019
+      it_behaves_like "a 2025 provisioner", packer_config_aws_2025
 
       it 'runs Set-InternetExplorerRegistries before Invoke-Sysprep is run' do
         invoke_sysprep_provisioner = TestProvisioner.new_powershell_provisioner(/Invoke-Sysprep -IaaS aws/)
         internet_explorer_provisioner = TestProvisioner.new_powershell_provisioner("Set-InternetExplorerRegistries")
 
-        expect(packer_config_aws_2019.provisioners).to include_provisioner(invoke_sysprep_provisioner, after: [internet_explorer_provisioner])
+        expect(packer_config_aws_2025.provisioners).to include_provisioner(invoke_sysprep_provisioner, after: [internet_explorer_provisioner])
       end
     end
   end

@@ -1,7 +1,7 @@
 require 'rspec/expectations'
 require './spec/packer/config/provisioner_slices/test_provisioner'
 
-shared_examples "a 2019 provisioner" do |provisioner_config|
+shared_examples "a 2025 provisioner" do |provisioner_config|
   let(:provisioners) {provisioner_config.provisioners}
 
   it 'runs Internet Explorer related registry changes after install-bosh-psmodules is run' do
