@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"syscall"
 	"testing"
 	"time"
 
@@ -171,7 +170,7 @@ var _ = SynchronizedAfterSuite(func() {
 })
 
 func revertSnapshot(vmIpath string, snapshotName string) {
-	By(fmt.Sprintf("Starting VM snapshot.revert: %s\n", snapshotName))
+	By(fmt.Sprintf("VM snapshot.revert - %s STARTING", snapshotName))
 
 	snapshotCommand := []string{
 		"snapshot.revert",
@@ -180,36 +179,41 @@ func revertSnapshot(vmIpath string, snapshotName string) {
 		fmt.Sprintf("-tls-ca-certs=%s", pathToCACert),
 		snapshotName,
 	}
-	revertExitCode := runIgnoringOutput(snapshotCommand)
-	Expect(revertExitCode).To(Equal(0), "Starting VM snapshot.revert failed")
+	revertExitCode := cli.Run(snapshotCommand)
+	Expect(revertExitCode).To(Equal(0), fmt.Sprintf("VM snapshot.revert - %s FAILED", snapshotName))
 
-	By("Started VM snapshot.revert")
+	By(fmt.Sprintf("VM snapshot.revert - %s STARTED", snapshotName))
 }
 
 func waitForVmToBeReady(vmIp string, vmUsername string, vmPassword string) {
-	const vmReadyTimeout = 15 * time.Minute
-	const vmReadySleepInterval = 1 * time.Minute
+	const vmReadyCheckTimeout = 15 * time.Minute
+	const vmReadyCheckSleepInterval = 30 * time.Second
+	vmReadyCheckStartTime := time.Now()
 
-	By("Waiting for VM snapshot.revert ...")
-	clientFactory := remotemanager.NewWinRmClientFactory(vmIp, vmUsername, vmPassword)
-	rm := remotemanager.NewWinRM(vmIp, vmUsername, vmPassword, clientFactory)
-	Expect(rm).ToNot(BeNil())
+	By("VM snapshot.revert - creating WinRM Remote Manager")
+	remoteManager := remotemanager.NewWinRM(
+		vmIp,
+		vmUsername,
+		vmPassword,
+		remotemanager.NewWinRmClientFactory(vmIp, vmUsername, vmPassword),
+	)
+	Expect(remoteManager).ToNot(BeNil())
 
-	start := time.Now()
+	By(fmt.Sprintf("VM snapshot.revert - checking VM at %s", vmIp))
 	vmReady := false
 	for !vmReady {
-		if time.Since(start) > vmReadyTimeout {
-			Fail(fmt.Sprintf("VM at %s failed to start", vmIp))
+		if time.Since(vmReadyCheckStartTime) > vmReadyCheckTimeout {
+			Fail(fmt.Sprintf("VM snapshot.revert - VM at %s not ready after %d minutes", vmIp, vmReadyCheckTimeout/time.Minute))
 		}
-		time.Sleep(vmReadySleepInterval)
-		_, err := rm.ExecuteCommand(`powershell.exe "ls c:\windows 1>$null"`)
+		time.Sleep(vmReadyCheckSleepInterval)
+		_, err := remoteManager.ExecuteCommand(`powershell.exe "ls c:\windows 1>$null"`)
 		if err != nil {
-			By(fmt.Sprintf("VM not yet ready: %v", err))
+			By(fmt.Sprintf("VM snapshot.revert - VM at %s not ready: %v", vmIp, err))
 		}
 		vmReady = err == nil
 	}
 
-	By("VM snapshot.revert finished")
+	By(fmt.Sprintf("VM snapshot.revert - VM at %s is ready", vmIp))
 }
 
 func envMustExist(variableName string) string {
@@ -237,7 +241,7 @@ func enableWinRM() {
 		"C:\\Windows\\Temp\\BOSH.WinRM.psm1",
 	}
 
-	uploadExitCode := runIgnoringOutput(uploadCommand)
+	uploadExitCode := cli.Run(uploadCommand)
 	Expect(uploadExitCode).To(Equal(0), fmt.Sprintf("There was an error uploading %s", winRMPowershellModule))
 	By(fmt.Sprintf("WinRM '%s' uploaded", winRMPowershellModule))
 
@@ -251,7 +255,7 @@ func enableWinRM() {
 		`-command`,
 		`&{Import-Module C:\Windows\Temp\BOSH.WinRM.psm1; Enable-WinRM}`,
 	}
-	enableExitCode := runIgnoringOutput(enableCommand)
+	enableExitCode := cli.Run(enableCommand)
 	Expect(enableExitCode).To(Equal(0), "There was an error enabling WinRM.")
 	By("WinRM enabled.")
 }
@@ -283,27 +287,6 @@ func powerOnVM() {
 		fmt.Sprintf("-tls-ca-certs=%s", pathToCACert),
 		"-on",
 	}
-	powerOnExitCode := runIgnoringOutput(powerOnCommand)
+	powerOnExitCode := cli.Run(powerOnCommand)
 	By(fmt.Sprintf("VM power-on exited with %d", powerOnExitCode))
-}
-
-func runIgnoringOutput(args []string) int {
-	oldStderr := os.Stderr
-	oldStdout := os.Stdout
-
-	_, w, _ := os.Pipe() //nolint:errcheck
-
-	defer w.Close() //nolint:errcheck
-
-	os.Stderr = w
-	os.Stdout = w
-
-	os.Stderr = os.NewFile(uintptr(syscall.Stderr), "/dev/null")
-
-	exitCode := cli.Run(args)
-
-	os.Stderr = oldStderr
-	os.Stdout = oldStdout
-
-	return exitCode
 }
