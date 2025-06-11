@@ -28,3 +28,4 @@ GCP_BASE_IMAGE_REGEX: windows-server-2025-dc-core-v.*
 GCP_IMAGE_FAMILY: windows-2025-core
 GCP_NETWORK: dtnz01-vpc
 GCP_NETWORK_PROJECT_ID: dtnz01-saas-vpc
+GCP_SUBNETWORK: tas-opsman01-usw1

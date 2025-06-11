@@ -1946,6 +1946,7 @@ jobs:
       MOUNT_EPHEMERAL_DISK: true
       GCP_NETWORK: ((GCP_NETWORK))
       GCP_NETWORK_PROJECT_ID: ((GCP_NETWORK_PROJECT_ID))
+      GCP_SUBNETWORK: ((GCP_SUBNETWORK))
     ensure:
       task: delete-orphan-vms
       file: bosh-windows-stemcell-builder-ci/ci/tasks/delete-vms/task.yml
