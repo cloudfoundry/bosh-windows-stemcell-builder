@@ -33,7 +33,7 @@ describe Packer::Config::Gcp do
             'source_image' => 'some-source-image',
             'image_family' => 'some-image-family',
             'zone' => 'us-west1-c',
-            'disk_size' => 32,
+            'disk_size' => 64,
             'machine_type' => 'some-vm-type',
             'omit_external_ip' => false,
             'communicator' => 'winrm',

@@ -13,7 +13,7 @@ module Packer
         version:,
         vm_prefix: '',
         mount_ephemeral_disk: false,
-        root_disk_size: 32,
+        root_disk_size: 64,
         omit_external_ip: false,
         vm_tags: ['winrm'],
         vm_type:,
