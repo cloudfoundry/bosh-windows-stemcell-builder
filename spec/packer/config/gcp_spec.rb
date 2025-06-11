@@ -20,6 +20,8 @@ describe Packer::Config::Gcp do
         version: '',
         vm_prefix: 'some-vm-prefix',
         vm_type: 'some-vm-type',
+        network: 'some-network',
+        network_project_id: 'some-project-id'
     ).builders }
 
     let (:baseline_builders) { {
@@ -66,6 +68,8 @@ describe Packer::Config::Gcp do
           version: '',
           vm_prefix: '',
           vm_type: '',
+          network: '',
+          network_project_id: ''
         ).builders
         expect(builders[0]['metadata']).to include(
           'name' => "packer-#{Time.now.to_i}"
@@ -99,6 +103,8 @@ describe Packer::Config::Gcp do
           version: version,
           vm_prefix: '',
           vm_type: '',
+          network: '',
+          network_project_id: ''
         ).provisioners
         expected_provisioners_base = [
           {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before"=>"60s"},
