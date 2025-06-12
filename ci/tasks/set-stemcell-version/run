@@ -4,7 +4,10 @@ require 'yaml'
 require 'fileutils'
 require 'digest'
 
-Dir.chdir File.join(File.dirname(__FILE__), '..', '..', '..')
+ROOT_DIR = File.join(File.dirname(__FILE__), '..', '..', '..', '..') # naming matches bash scripts
+
+Dir.chdir(ROOT_DIR)
+
 $stemcell = Dir.glob('bosh-windows-stemcell/*.tgz')
 $final_version = File.read('version/number').match(/\d+\.\d+/)[0]
 
