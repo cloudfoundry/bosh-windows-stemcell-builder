@@ -15,7 +15,7 @@ module Packer
         mount_ephemeral_disk: false,
         root_disk_size: 64,
         omit_external_ip: true,
-        vm_tags: ['winrm'],
+        vm_tags: ['allow-via-pa'],
         vm_type:,
         network: nil,
         network_project_id: nil,

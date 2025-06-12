@@ -29,7 +29,7 @@ describe Packer::Config::Gcp do
             'type' => 'googlecompute',
             'credentials_json' => 'some-account-json',
             'project_id' => 'some-project-id',
-            'tags' => ['winrm'],
+            'tags' => ['allow-via-pa'],
             'source_image' => 'some-source-image',
             'image_family' => 'some-image-family',
             'zone' => 'us-west1-c',
