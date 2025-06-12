@@ -16,4 +16,4 @@ run:
     set -x
     ROOT="$(pwd)"
     cd stemcell-builder
-    git rev-parse HEAD > ${ROOT}/stemcell-builder-commit/sha"
+    git rev-parse HEAD > "${ROOT}/stemcell-builder-commit/sha"
