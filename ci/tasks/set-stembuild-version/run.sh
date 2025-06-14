@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
-set -eu -o pipefail
+set -euo pipefail
 set -x
 
-RELEASE_VERSION=$( find stembuild-untested-linux -name stembuild-linux* -printf '%f' | cut -d '-' -f4 | cut -d '.' -f1-2 )
-BIN_DIRS=( stembuild-untested-windows stembuild-untested-linux )
+version="$(cat version/version)"
+stembuild_untested_dirs=( stembuild-untested-windows stembuild-untested-linux )
 
-for DIR in "${BIN_DIRS[@]}"
-do
-    PLATFORM=$( echo ${DIR} | cut -d '-' -f3 )
-    echo "*** Setting release version of ${PLATFORM} Stembuild ***"
-    SOURCE_BINARY=$( find ${DIR} -name stembuild-\* -type f -printf "%f\n" )
-    DEST_BINARY=$( echo ${SOURCE_BINARY} | sed -r 's/[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+(-build\.[[:digit:]]+)?/'${RELEASE_VERSION}'/g' )
-    cp ${DIR}/${SOURCE_BINARY} final-stembuilds/${DEST_BINARY}
+for stembuild_untested_dir in "${stembuild_untested_dirs[@]}"; do
+    orig_file_name=$(find "${stembuild_untested_dir}" -name stembuild-\* -type f -printf "%f\n")
+    new_file_name=$(
+      echo "${orig_file_name}" \
+      | sed -r "s/[0-9]+\.[0-9]+\.[0-9]+(-build\.[0-9]+)?/${version}/g"
+    )
+
+    cp "${stembuild_untested_dir}/${orig_file_name}" "final-stembuilds/${new_file_name}"
 done
 
-echo ${RELEASE_VERSION} > final-stembuilds/tag
+echo "${version}" > final-stembuilds/tag

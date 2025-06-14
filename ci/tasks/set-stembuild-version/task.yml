@@ -5,6 +5,7 @@ inputs:
 - name: bosh-windows-stemcell-builder-ci
 - name: stembuild-untested-windows
 - name: stembuild-untested-linux
+- name: version
 
 outputs:
 - name: final-stembuilds
