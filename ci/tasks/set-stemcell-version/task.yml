@@ -10,4 +10,4 @@ outputs:
   - name: final-stemcell
 
 run:
-  path: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/run
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/run.sh
