@@ -2480,18 +2480,13 @@ jobs:
           passed: [promote]
         - get: stembuild-untested-linux
           trigger: true
-          passed: [ promote ]
+          passed: [promote]
         - get: stembuild-untested-windows
           trigger: true
-          passed: [ promote ]
+          passed: [promote]
         - get: version
           resource: main-version
-          passed: [ promote ]
-    - task: set-stembuild-version
-      file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stembuild-version/task.yml
-      image: bosh-windows-stemcell-builder-ci-image
-      input_mapping:
-        main-version: version
+          passed: [promote]
 
 - name: github-release-stembuild
   old_name: publish-stembuild-and-stemcell-builder
