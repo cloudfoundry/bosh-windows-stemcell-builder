@@ -15,7 +15,7 @@ $startupType = Get-Service "wuauserv" | Select-Object -ExpandProperty StartType 
 
 $result = 0
 
-$testModules = Get-ChildItem "stemcell-builder\$env:MODULES_DIR" -recurse | where {$_.name -match ".*.Tests.ps1"} | foreach {$_.DirectoryName}
+$testModules = Get-ChildItem "stemcell-builder\$env:MODULES_DIR" -recurse | Where-Object {$_.name -match ".*.Tests.ps1"} | ForEach-Object {$_.DirectoryName}
 foreach ($module in $testModules) {
     Write-Host "Testing: $module"
     Push-Location "$module"
@@ -31,5 +31,5 @@ foreach ($module in $testModules) {
     Pop-Location
 }
 
-echo "Failed Test Count: $result"
+Write-Output "Failed Test Count: $result"
 exit $result
