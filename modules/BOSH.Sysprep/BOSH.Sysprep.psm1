@@ -271,8 +271,7 @@ function Remove-UserAccounts {
   $content.Save($AnswerFilePath)
 }
 
-function Update-AWS-LaunchConfigJSON
-{
+function Update-AWS-LaunchConfigJSON {
   $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
   $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
   $LaunchConfig.addDnsSuffixList = $False
@@ -280,8 +279,7 @@ function Update-AWS-LaunchConfigJSON
   $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
 }
 
-function Update-AWS-UnattendedXML
-{
+function Update-AWS-UnattendedXML {
   $UnattendedXmlPath = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Sysprep\Unattend.xml'
   $UnattendedContent = [xml](Get-Content $UnattendedXmlPath)
   $SpecializeSettings = ($UnattendedContent.unattend.settings | Where-Object { $_.pass -EQ "specialize" })
@@ -315,8 +313,7 @@ function Enable-AWS-Sysprep {
 .Description
   This cmdlet runs Sysprep and generalizes a VM so it can be a BOSH stemcell
 #>
-function Invoke-Sysprep()
-{
+function Invoke-Sysprep {
   Param (
     [string]$IaaS = $( Throw "Provide the IaaS this stemcell will be used for" ),
     [string]$NewPassword,
@@ -329,8 +326,6 @@ function Invoke-Sysprep()
 
   Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
 
-  $OsVersion = Get-OSVersion
-
   Set-NTP-Max-PhaseCorrection-Values
 
   if (-Not $SkipLGPO)
@@ -339,6 +334,7 @@ function Invoke-Sysprep()
       Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
     }
 
+    $OsVersion = Get-OSVersion
     switch ($OsVersion)
     {
       "windows2019" {
