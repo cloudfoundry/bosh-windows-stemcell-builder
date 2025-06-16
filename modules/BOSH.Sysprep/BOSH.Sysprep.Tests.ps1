@@ -238,7 +238,7 @@ Describe "Invoke-Sysprep" {
 
             Mock -ModuleName BOSH.Sysprep Write-Log { }
 
-            Mock -ModuleName BOSH.Sysprep Allow-NTPSync { }
+            Mock -ModuleName BOSH.Sysprep Set-NTP-Max-PhaseCorrection-Values { }
             Mock -ModuleName BOSH.Sysprep Enable-LocalSecurityPolicy { }
             Mock -ModuleName BOSH.Sysprep Update-AWS2016Config { }
             Mock -ModuleName BOSH.Sysprep Enable-AWS2016Sysprep { }
@@ -532,12 +532,12 @@ Describe "Create-Unattend-GCP" {
     }
 }
 
-Describe "Allow-NTPSync" {
+Describe "Set-NTP-Max-PhaseCorrection-Values" {
     It "Sets registry keys that allow the clock to be synced when delta is greater than 15 hours" {
         $oldMaxNegPhaseCorrection = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection'
         $oldMaxPosPhaseCorrection = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxPosPhaseCorrection'
 
-        { Allow-NTPSync } | Should -Not -Throw
+        { Set-NTP-Max-PhaseCorrection-Values } | Should -Not -Throw
 
         $maxValue = [uint32]::MaxValue
         (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config").'MaxNegPhaseCorrection' | Should -Be $maxValue
