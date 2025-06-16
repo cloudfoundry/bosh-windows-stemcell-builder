@@ -38,7 +38,7 @@ function Enable-LocalSecurityPolicy {
 .Description
   This cmdlet creates the Unattend file for sysprep
 #>
-function Create-Unattend {
+function Create-vSphere-Unattend {
   Param (
     [string]$UnattendDestination = "C:\Windows\Panther\Unattend",
     [string]$NewPassword,
@@ -46,7 +46,7 @@ function Create-Unattend {
     [string]$Organization,
     [string]$Owner
   )
-  Write-Log "Starting Create-Unattend"
+  Write-Log "Starting Create-vSphere-Unattend"
 
   New-Item -ItemType directory $UnattendDestination -Force
   $UnattendPath = Join-Path $UnattendDestination "unattend.xml"
@@ -151,77 +151,7 @@ function Create-Unattend {
   Out-File -FilePath $UnattendPath -InputObject $PostUnattend -Encoding utf8
 }
 
-<#
-.Synopsis
-  Sanity check that the unattend.xml shipped with GCP has not changed.
-.Description
-  Sanity check that the unattend.xml shipped with GCP has not changed.
-#>
-function Check-Default-GCP-Unattend {
-
-  [xml]$Expected = @'
-<?xml version="1.0" encoding="utf-8"?>
-<unattend xmlns="urn:schemas-microsoft-com:unattend">
-  <!--
-  For more information about unattended.xml please refer too
-  http://technet.microsoft.com/en-us/library/cc722132(v=ws.10).aspx
-  -->
-  <settings pass="generalize">
-    <component name="Microsoft-Windows-PnpSysprep" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <PersistAllDeviceInstalls>true</PersistAllDeviceInstalls>
-    </component>
-  </settings>
-  <settings pass="specialize">
-    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <!-- Random ComputerName, will be replaced by specialize script -->
-      <ComputerName></ComputerName>
-      <TimeZone>Greenwich Standard Time</TimeZone>
-    </component>
-  </settings>
-  <settings pass="oobeSystem">
-    <!-- Setting Location Information -->
-    <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <InputLocale>en-us</InputLocale>
-      <SystemLocale>en-us</SystemLocale>
-      <UILanguage>en-us</UILanguage>
-      <UserLocale>en-us</UserLocale>
-    </component>
-    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <OOBE>
-        <!-- Setting EULA -->
-        <HideEULAPage>true</HideEULAPage>
-        <!-- Setting network location to public -->
-        <NetworkLocation>Other</NetworkLocation>
-        <!-- Hide Wirelss setup -->
-        <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
-        <ProtectYourPC>1</ProtectYourPC>
-        <SkipMachineOOBE>true</SkipMachineOOBE>
-        <SkipUserOOBE>true</SkipUserOOBE>
-      </OOBE>
-      <!-- Setting timezone to GMT -->
-      <ShowWindowsLive>false</ShowWindowsLive>
-      <TimeZone>Greenwich Standard Time</TimeZone>
-      <!--Setting OEM information -->
-      <OEMInformation>
-        <Manufacturer>Google Cloud Platform</Manufacturer>
-        <Model>Google Compute Engine Virtual Machine</Model>
-        <SupportURL>https://support.google.com/enterprisehelp/answer/142244?hl=en#cloud</SupportURL>
-        <Logo>C:\Program Files\Google Compute Engine\sysprep\gcp.bmp</Logo>
-      </OEMInformation>
-    </component>
-  </settings>
-</unattend>
-'@
-
-  $UnattendPath = "C:\Program Files\Google\Compute Engine\sysprep\unattended.xml"
-  [xml]$Unattend = (Get-Content -Path $UnattendPath)
-
-  if (-Not ($Unattend.xml.Equals($Expected.xml))) {
-  Write-Error "The unattend.xml shipped with GCP has changed."
-  }
-}
-
-function Create-Unattend-GCP {
+function Create-GCP-UnattendXML {
   Param (
     [string]$UnattendDestination = "C:\Program Files\Google\Compute Engine\sysprep"
   )
@@ -324,9 +254,9 @@ function Remove-UserAccounts {
   Write-Log "Removing UserAccounts block from Answer File"
 
   $content = [xml](Get-Content $AnswerFilePath)
-  $mswShellSetup =  (($content.unattend.settings|where {$_.pass -eq 'oobeSystem'}).component|where {$_.name -eq "Microsoft-Windows-Shell-Setup"})
+  $mswShellSetup =  (($content.unattend.settings|Where-Object {$_.pass -eq 'oobeSystem'}).component|Where-Object {$_.name -eq "Microsoft-Windows-Shell-Setup"})
 
-  if ($mswShellSetup -eq $Null) {
+  if ($Null -eq $mswShellSetup) {
     Throw "Could not locate oobeSystem XML block. You may not be running this function on an answer file."
   }
 
@@ -341,7 +271,7 @@ function Remove-UserAccounts {
   $content.Save($AnswerFilePath)
 }
 
-function Update-AWS2016Config
+function Update-AWS-LaunchConfigJSON
 {
   $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
   $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
@@ -350,7 +280,7 @@ function Update-AWS2016Config
   $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
 }
 
-function Create-Unattend-AWS
+function Update-AWS-UnattendedXML
 {
   $UnattendedXmlPath = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Sysprep\Unattend.xml'
   $UnattendedContent = [xml](Get-Content $UnattendedXmlPath)
@@ -372,9 +302,9 @@ function Create-Unattend-AWS
   $UnattendedContent.Save($UnattendedXmlPath)
 }
 
-function Enable-AWS2016Sysprep {
+function Enable-AWS-Sysprep {
   # Enable sysprep
-  cd 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
+  Set-Location 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
   ./InitializeInstance.ps1 -Schedule
   ./SysprepInstance.ps1
 }
@@ -401,16 +331,7 @@ function Invoke-Sysprep()
 
   $OsVersion = Get-OSVersion
 
-  # WARN WARN: this should be removed when Microsoft fixes this bug
-  # See tracker story https://www.pivotaltracker.com/story/show/150238324
-  # Skip sysprep if using Windows Server 2016 insider build with UALSVC bug
-  $RegPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-  If ((Get-ItemProperty -Path $RegPath).CurrentBuildNumber -Eq '16278')
-  {
-    Stop-Computer
-  }
-
-  Allow-NTPSync
+  Set-NTP-Max-PhaseCorrection-Values
 
   if (-Not $SkipLGPO)
   {
@@ -429,13 +350,13 @@ function Invoke-Sysprep()
   switch ($IaaS) {
     "aws" {
       Disable-AgentService
-      Create-Unattend-AWS
-      Update-AWS2016Config
-      Enable-AWS2016Sysprep
+      Update-AWS-LaunchConfigJSON
+      Update-AWS-UnattendedXML
+      Enable-AWS-Sysprep
     }
     "gcp" {
       Disable-AgentService
-      Create-Unattend-GCP
+      Create-GCP-UnattendXML
       GCESysprep
     }
     "azure" {
@@ -443,7 +364,7 @@ function Invoke-Sysprep()
     }
     "vsphere" {
       Disable-AgentService
-      Create-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
+      Create-vSphere-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
         -Organization $Organization -Owner $Owner
 
       Invoke-Expression -Command 'C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown'
@@ -473,7 +394,7 @@ function ModifyInfFile {
   Move-Item -Path $TempFile -Destination $InfFilePath -Force
 }
 
-function Allow-NTPSync {
+function Set-NTP-Max-PhaseCorrection-Values {
       Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxNegPhaseCorrection' -Value 0xFFFFFFFF -Type dword
       Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxPosPhaseCorrection' -Value 0xFFFFFFFF -Type dword
 }
