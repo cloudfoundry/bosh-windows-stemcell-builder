@@ -12,7 +12,7 @@ Write-Host ***Test Stembuild Code***
 
 Set-Location stemcell-builder\stembuild
 
-make contract
+make iaas_cli
 if ($lastexitcode -ne 0)
 {
   throw "contract tests failed"

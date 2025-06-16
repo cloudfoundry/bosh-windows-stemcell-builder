@@ -16,30 +16,13 @@ else
 	endif
 endif
 
-all : test build
+assets/StemcellAutomation.zip:
+	@echo "Unable to locate assets/StemcellAutomation.zip. This file is bundled into the final stembuild executable and must be present. Please see README.md on how to construct this file."
+	exit 1
 
-build : out/stembuild
-
-build-integration : generate-fake-stemcell-automation $(GOSRC)
-	go build -o $(COMMAND) -ldflags $(LD_FLAGS) .
-
-clean :
-	rm -rf version/version.go assets/StemcellAutomation.zip assets/local/* out/*
-
-format :
-	go fmt ./...
-
-integration : generate-fake-stemcell-automation
-	go run github.com/onsi/ginkgo/v2/ginkgo -r -vv --randomize-all --keep-going --flake-attempts 2 --timeout 3h --output-interceptor-mode=none integration
-
-integration/construct : generate-fake-stemcell-automation
-	go run github.com/onsi/ginkgo/v2/ginkgo -r -v --randomize-all --keep-going --flake-attempts 2 --timeout 3h --output-interceptor-mode=none integration/construct
-
-integration-badger : generate-fake-stemcell-automation
-	go run github.com/onsi/ginkgo/v2/ginkgo -r -v --randomize-all --until-it-fails --timeout 3h integration
-
-generate-fake-stemcell-automation:
-	$(CP) integration/construct/assets/StemcellAutomation.zip assets/
+all : stembuild stembuild.exe
+stembuild : out/stembuild
+stembuild.exe : out/stembuild.exe
 
 out/stembuild : assets $(GOSRC)
 	CGO_ENABLED=0 go build -o $(COMMAND) -ldflags $(LD_FLAGS) .
@@ -47,20 +30,25 @@ out/stembuild : assets $(GOSRC)
 out/stembuild.exe : assets $(GOSRC)
 	GOOS=windows CGO_ENABLED=0 go build -o out/stembuild.exe -ldflags $(LD_FLAGS) .
 
-test : units
+clean :
+	rm -rf version/version.go assets/StemcellAutomation.zip out/*
 
-units : format generate-fake-stemcell-automation
-	@go run github.com/onsi/ginkgo/v2/ginkgo version
-	go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --keep-going --skip-package integration,iaas_cli
-	@echo ""
-	@echo "SWEET SUITE SUCCESS"
 
-contract :
-	go run github.com/onsi/ginkgo/v2/ginkgo -r --randomize-all --randomize-suites --keep-going --flake-attempts 2 iaas_cli
+units : stubbed-stemcell-automation-zip
+	go run github.com/onsi/ginkgo/v2/ginkgo run -r --randomize-all --randomize-suites --keep-going --skip-package integration,iaas_cli
 
-.PHONY : all build build-integration clean format generate-fake-stemcell-automation
-.PHONY : test units units-full integration integration-tests-full
+iaas_cli :
+	go run github.com/onsi/ginkgo/v2/ginkgo run -r --randomize-all --randomize-suites --keep-going --flake-attempts 2 iaas_cli
 
-assets/StemcellAutomation.zip:
-	@echo "Unable to locate assets/StemcellAutomation.zip. This file is bundled into the final stembuild executable and must be present. Please see README.md on how to construct this file."
-	exit 1
+integration-build : stubbed-stemcell-automation-zip $(GOSRC)
+	go build -o $(COMMAND) -ldflags $(LD_FLAGS) .
+
+integration : stubbed-stemcell-automation-zip
+	go run github.com/onsi/ginkgo/v2/ginkgo run -r -vv --timeout 3h --randomize-all --keep-going --flake-attempts 2 integration
+
+stubbed-stemcell-automation-zip :
+	$(CP) integration/construct/assets/StemcellAutomation.zip assets/
+
+
+.PHONY : all stembuild stembuild.exe clean
+.PHONY : units iaas_cli integration integration-build stubbed-stemcell-automation-zip

@@ -16,7 +16,7 @@ jobs:
         go-version-file: stembuild/go.mod
     - name: Provide `StemcellAutomation.zip` for `go:embed` consumption in `assets` package
       run: |
-        make generate-fake-stemcell-automation
+        make stubbed-stemcell-automation-zip
       working-directory: stembuild
     - uses: golangci/golangci-lint-action@v8
       with:
@@ -33,7 +33,7 @@ jobs:
         go-version-file: stembuild/go.mod
     - name: Provide `StemcellAutomation.zip` for `go:embed` consumption in `assets` package
       run: |
-        make generate-fake-stemcell-automation
+        make stubbed-stemcell-automation-zip
       working-directory: stembuild
     # skip specs for packager,ovftool because `ovftool` binary is required
     - run: |

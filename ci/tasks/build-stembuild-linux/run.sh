@@ -12,7 +12,7 @@ cp "${ROOT_DIR}"/${STEMCELL_AUTOMATION_ZIP} \
 
 pushd "${ROOT_DIR}/stemcell-builder/stembuild"
   echo '***Building Stembuild***'
-  make STEMCELL_VERSION="${VERSION}" build
+  make STEMCELL_VERSION="${VERSION}" stembuild
 popd
 
 echo '***Copying stembuild to output directory***'

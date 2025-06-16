@@ -17,7 +17,7 @@ $INPUT_ZIP_GLOB=Join-Path $ROOT_DIR $env:STEMCELL_AUTOMATION_ZIP
 
 Copy-Item -Path $INPUT_ZIP_GLOB "assets\StemcellAutomation.zip" -Recurse -Force
 
-make STEMCELL_VERSION=${VERSION} build
+make STEMCELL_VERSION=${VERSION} stembuild
 
 Write-Host ***Copying stembuild to output directory***
 Copy-Item out/stembuild.exe $OUTPUT_DIR/stembuild-windows-x86_64-$VERSION.exe

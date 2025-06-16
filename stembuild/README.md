@@ -288,8 +288,8 @@ ZIP_FILE_DESTINATION="stembuild/assets/StemcellAutomation.zip" \
 ./ci/tasks/zip-files/run.bash
 ```
 
-Use `make build` to build stembuild, providing the corresponding values for the stemcell version you
+Use `make stembuild` to build stembuild, providing the corresponding values for the stemcell version you
 would like to build, for example:
 ```
-STEMBUILD_VERSION=2019.70 make build
+STEMBUILD_VERSION=2019.70 make stembuild
 ```

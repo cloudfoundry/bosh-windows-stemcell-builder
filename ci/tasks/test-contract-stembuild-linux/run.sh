@@ -16,5 +16,5 @@ go -C govmomi/vcsim install
 pushd "${ROOT_DIR}/stemcell-builder/stembuild"
   echo ***Test Stembuild Code***
 
-  make contract
+  make iaas_cli
 popd
