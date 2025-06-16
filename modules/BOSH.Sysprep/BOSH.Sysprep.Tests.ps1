@@ -365,7 +365,7 @@ Describe "BOSH.Sysprep" {
         }
     }
 
-    Describe "Create-Unattend-GCP" {
+    Describe "Create-GCP-UnattendXML" {
         BeforeEach {
             $UnattendDestination = (New-TempDir)
         }
@@ -375,7 +375,7 @@ Describe "BOSH.Sysprep" {
 
         It "places the generated Unattend file in the specified directory" {
             {
-                Create-Unattend-GCP -UnattendDestination $UnattendDestination
+                Create-GCP-UnattendXML -UnattendDestination $UnattendDestination
             } | Should -Not -Throw
 
             Test-Path (Join-Path $UnattendDestination "unattended.xml") | Should -Be $True
@@ -383,7 +383,7 @@ Describe "BOSH.Sysprep" {
 
         It "sets the timezone to UTC" {
             {
-                Create-Unattend-GCP -UnattendDestination $UnattendDestination
+                Create-GCP-UnattendXML -UnattendDestination $UnattendDestination
             } | Should -Not -Throw
 
             $unattendPath = (Join-Path $UnattendDestination "unattended.xml")
