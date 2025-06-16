@@ -6,7 +6,11 @@ BeforeAll {
     Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 }
 
-Describe "Account" {
+Describe "BOSH.Account" {
+    BeforeEach {
+        Mock -ModuleName BOSH.Account Write-Log { }
+    }
+
     Context "when username is not provided" {
         It "throws" {
             { Add-Account } | Should -Throw "Provide a user name"

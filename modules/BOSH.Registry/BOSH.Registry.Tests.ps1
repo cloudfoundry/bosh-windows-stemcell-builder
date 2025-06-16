@@ -4,6 +4,8 @@ BeforeAll {
 
 Describe "BOSH.Registry" {
     BeforeEach {
+        Mock -ModuleName BOSH.Registry Write-Log { }
+
         $newItemReturn = [pscustomobject]@{"NewPath" = "HKCU:/Path/created";}
         Mock -ModuleName BOSH.Registry New-Item { $newItemReturn }
         # reset for our -parameterfilter mock

@@ -1,7 +1,8 @@
 BeforeAll {
     Import-Module ./BOSH.SSH.psm1
 
-    function Get-FileEncoding {
+    function Get-FileEncoding
+    {
         [CmdletBinding()]
         param (
             [Alias("PSPath")]
@@ -59,281 +60,287 @@ BeforeAll {
     }
 }
 
-Describe "Enable-SSHD" {
+Describe "BOSH.SSH" {
     BeforeEach {
-        Mock -ModuleName BOSH.SSH Set-Service { }
-        Mock -ModuleName BOSH.SSH Run-LGPO { }
-
-        $guid = $( New-Guid ).Guid
-        $TMP_DIR = "$env:TEMP\BOSH.SSH.Tests-$guid"
-
-        $FAKE_ZIP = "$TMP_DIR\OpenSSH-TestFake.zip"
-        $INSTALL_SCRIPT_SPY_STATUS = "$TMP_DIR\install-script-status"
-
-        CreateFakeOpenSSHZip -dir $TMP_DIR -installScriptSpyStatus $INSTALL_SCRIPT_SPY_STATUS -fakeZipPath $FAKE_ZIP
-
-        mkdir -p "$TMP_DIR\Windows\Temp"
-        echo "fake LGPO" > "$TMP_DIR\Windows\LGPO.exe"
-
-        $ORIGINAL_WINDIR = $env:WINDIR
-        $env:WINDIR = "$TMP_DIR\Windows"
-
-        $ORIGINAL_PROGRAMDATA = $env:ProgramData
-        $env:PROGRAMDATA = "$TMP_DIR\ProgramData"
-  }
-
-    AfterEach {
-        rmdir $TMP_DIR -Recurse -ErrorAction Ignore
-        $env:WINDIR = $ORIGINAL_WINDIR
-        $env:PROGRAMDATA = $ORIGINAL_PROGRAMDATA
+        Mock -ModuleName BOSH.SSH Write-Log { }
     }
 
-    It "sets the startup type of sshd to automatic" {
-        Mock -ModuleName BOSH.SSH Set-Service { } -Verifiable -ParameterFilter { $Name -eq "sshd" -and $StartupType -eq "Automatic" }
+    Describe "Enable-SSHD" {
+        BeforeEach {
+            Mock -ModuleName BOSH.SSH Set-Service { }
+            Mock -ModuleName BOSH.SSH Run-LGPO { }
 
-        Enable-SSHD -SSHZipFile $FAKE_ZIP
+            $guid = $( New-Guid ).Guid
+            $TMP_DIR = "$env:TEMP\BOSH.SSH.Tests-$guid"
 
-        Assert-VerifiableMock
-    }
+            $FAKE_ZIP = "$TMP_DIR\OpenSSH-TestFake.zip"
+            $INSTALL_SCRIPT_SPY_STATUS = "$TMP_DIR\install-script-status"
 
-    It "sets the startup type of ssh-agent to automatic" {
-        Mock -ModuleName BOSH.SSH Set-Service { } -Verifiable -ParameterFilter { $Name -eq "ssh-agent" -and $StartupType -eq "Automatic" }
+            CreateFakeOpenSSHZip -dir $TMP_DIR -installScriptSpyStatus $INSTALL_SCRIPT_SPY_STATUS -fakeZipPath $FAKE_ZIP
 
-        Enable-SSHD -SSHZipFile $FAKE_ZIP
+            mkdir -p "$TMP_DIR\Windows\Temp"
+            echo "fake LGPO" > "$TMP_DIR\Windows\LGPO.exe"
 
-        Assert-VerifiableMock
-    }
+            $ORIGINAL_WINDIR = $env:WINDIR
+            $env:WINDIR = "$TMP_DIR\Windows"
 
-    It "sets up firewall when ssh not already set up" {
-        Mock Get-NetFirewallRule {
-            return [ordered]@{
-                "Name" = "{3c06039b-ece1-4da3-8ece-255894975894}"
-                "DisplayName" = "NTP"
-                "Description" = ""
-                "DisplayGroup" = ""
-                "Group" = ""
-                "Enabled" = "True"
-                "Profile" = "Any"
-                "Platform" = "{}"
-                "Direction" = "Outbound"
-                "Action" = "Allow"
-                "EdgeTraversalPolicy" = "Block"
-                "LooseSourceMapping" = "False"
-                "LocalOnlyMapping" = "False"
-                "Owner" = ""
-                "PrimaryStatus" = "OK"
-                "Status" = "The rule was parsed successfully from the store. (65536)"
-                "EnforcementStatus" = "NotApplicable"
-                "PolicyStoreSource" = "PersistentStore"
-                "PolicyStoreSourceType" = "Local"
+            $ORIGINAL_PROGRAMDATA = $env:ProgramData
+            $env:PROGRAMDATA = "$TMP_DIR\ProgramData"
+        }
+
+        AfterEach {
+            rmdir $TMP_DIR -Recurse -ErrorAction Ignore
+            $env:WINDIR = $ORIGINAL_WINDIR
+            $env:PROGRAMDATA = $ORIGINAL_PROGRAMDATA
+        }
+
+        It "sets the startup type of sshd to automatic" {
+            Mock -ModuleName BOSH.SSH Set-Service { } -Verifiable -ParameterFilter { $Name -eq "sshd" -and $StartupType -eq "Automatic" }
+
+            Enable-SSHD -SSHZipFile $FAKE_ZIP
+
+            Assert-VerifiableMock
+        }
+
+        It "sets the startup type of ssh-agent to automatic" {
+            Mock -ModuleName BOSH.SSH Set-Service { } -Verifiable -ParameterFilter { $Name -eq "ssh-agent" -and $StartupType -eq "Automatic" }
+
+            Enable-SSHD -SSHZipFile $FAKE_ZIP
+
+            Assert-VerifiableMock
+        }
+
+        It "sets up firewall when ssh not already set up" {
+            Mock Get-NetFirewallRule {
+                return [ordered]@{
+                    "Name" = "{3c06039b-ece1-4da3-8ece-255894975894}"
+                    "DisplayName" = "NTP"
+                    "Description" = ""
+                    "DisplayGroup" = ""
+                    "Group" = ""
+                    "Enabled" = "True"
+                    "Profile" = "Any"
+                    "Platform" = "{}"
+                    "Direction" = "Outbound"
+                    "Action" = "Allow"
+                    "EdgeTraversalPolicy" = "Block"
+                    "LooseSourceMapping" = "False"
+                    "LocalOnlyMapping" = "False"
+                    "Owner" = ""
+                    "PrimaryStatus" = "OK"
+                    "Status" = "The rule was parsed successfully from the store. (65536)"
+                    "EnforcementStatus" = "NotApplicable"
+                    "PolicyStoreSource" = "PersistentStore"
+                    "PolicyStoreSourceType" = "Local"
+                }
+            } -ModuleName BOSH.SSH
+
+            Mock -ModuleName BOSH.SSH New-NetFirewallRule { }
+            Enable-SSHD -SSHZipFile $FAKE_ZIP
+            Assert-MockCalled New-NetFirewallRule -Times 1 -ModuleName BOSH.SSH -Scope It
+        }
+
+        It "doesn't set up firewall when ssh is already set up " {
+            Mock Get-NetFirewallRule {
+                return [ordered]@{
+                    "Name" = "{ E02857AB-8EA8-4358-8119-ED7D20DA7712 }"
+                    "DisplayName" = "SSH"
+                    "Description" = ""
+                    "DisplayGroup" = ""
+                    "Group" = ""
+                    "Enabled" = "True"
+                    "Profile" = "Any"
+                    "Platform" = "{ }"
+                    "Direction" = "Inbound"
+                    "Action" = "Allow"
+                    "EdgeTraversalPolicy" = "Block"
+                    "LooseSourceMapping" = "False"
+                    "LocalOnlyMapping" = "False"
+                    "Owner" = ""
+                    "PrimaryStatus" = "OK"
+                    "Status" = "The rule was parsed successfully from the store. (65536)"
+                    "EnforcementStatus" = "NotApplicable"
+                    "PolicyStoreSource" = "PersistentStore"
+                    "PolicyStoreSourceType" = "Local"
+                }
+            } -ModuleName BOSH.SSH
+
+            Mock -ModuleName BOSH.SSH New-NetFirewallRule { }
+            Enable-SSHD -SSHZipFile $FAKE_ZIP
+            Assert-MockCalled New-NetFirewallRule -Times 0 -ModuleName BOSH.SSH -Scope It
+        }
+
+        It "Generates inf and invokes LGPO if LGPO exists" {
+            Mock -ModuleName BOSH.SSH Run-LGPO -Verifiable -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
+
+            Enable-SSHD -SSHZipFile $FAKE_ZIP
+
+            Assert-VerifiableMock
+        }
+
+        It "Skips LGPO if LGPO.exe not found" {
+            rm "$TMP_DIR\Windows\LGPO.exe"
+
+            Enable-SSHD -SSHZipFile $FAKE_ZIP
+
+            Assert-MockCalled Run-LGPO -Times 0 -ModuleName BOSH.SSH -Scope It
+        }
+
+        Context "When LGPO executable fails" {
+            It "Throws an appropriate error" {
+                Mock Run-LGPO { throw "some error" } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
+                { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Throw "LGPO.exe failed with: some error*"
             }
-        } -ModuleName BOSH.SSH
+        }
 
-        Mock -ModuleName BOSH.SSH New-NetFirewallRule { }
-        Enable-SSHD -SSHZipFile $FAKE_ZIP
-        Assert-MockCalled New-NetFirewallRule -Times 1 -ModuleName BOSH.SSH -Scope It
-    }
+        It "removes existing SSH keys" {
+            New-Item -ItemType Directory -Path "$TMP_DIR\ProgramData\ssh" -ErrorAction Ignore
+            echo "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_1"
+            echo "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_2"
+            echo "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_3"
+            echo "ignore" > "$TMP_DIR\ProgramData\ssh\not_ssh_host_4"
 
-    It "doesn't set up firewall when ssh is already set up " {
-        Mock Get-NetFirewallRule {
-            return [ordered]@{
-                "Name" = "{ E02857AB-8EA8-4358-8119-ED7D20DA7712 }"
-                "DisplayName" = "SSH"
-                "Description" = ""
-                "DisplayGroup" = ""
-                "Group" = ""
-                "Enabled" = "True"
-                "Profile" = "Any"
-                "Platform" = "{ }"
-                "Direction" = "Inbound"
-                "Action" = "Allow"
-                "EdgeTraversalPolicy" = "Block"
-                "LooseSourceMapping" = "False"
-                "LocalOnlyMapping" = "False"
-                "Owner" = ""
-                "PrimaryStatus" = "OK"
-                "Status" = "The rule was parsed successfully from the store. (65536)"
-                "EnforcementStatus" = "NotApplicable"
-                "PolicyStoreSource" = "PersistentStore"
-                "PolicyStoreSourceType" = "Local"
-            }
-        } -ModuleName BOSH.SSH
+            Enable-SSHD -SSHZipFile $FAKE_ZIP
 
-        Mock -ModuleName BOSH.SSH New-NetFirewallRule { }
-        Enable-SSHD -SSHZipFile $FAKE_ZIP
-        Assert-MockCalled New-NetFirewallRule -Times 0 -ModuleName BOSH.SSH -Scope It
-    }
+            $numHosts = (Get-ChildItem "$TMP_DIR\ProgramData\ssh\").count
+            $numHosts | Should -eq 1
+        }
 
-    It "Generates inf and invokes LGPO if LGPO exists" {
-        Mock -ModuleName BOSH.SSH Run-LGPO -Verifiable -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
-
-        Enable-SSHD -SSHZipFile $FAKE_ZIP
-
-        Assert-VerifiableMock
-    }
-
-    It "Skips LGPO if LGPO.exe not found" {
-        rm "$TMP_DIR\Windows\LGPO.exe"
-
-        Enable-SSHD -SSHZipFile $FAKE_ZIP
-
-        Assert-MockCalled Run-LGPO -Times 0 -ModuleName BOSH.SSH -Scope It
-    }
-
-    Context "When LGPO executable fails" {
-        It "Throws an appropriate error" {
-            Mock Run-LGPO { throw "some error" } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Throw "LGPO.exe failed with: some error*"
+        It "creates empty ssh program dir if it doesn't exist" {
+            Enable-SSHD -SSHZipFile $FAKE_ZIP
+            { Test-Path "$TMP_DIR\ProgramData\ssh" } | Should -eq $True
         }
     }
 
-    It "removes existing SSH keys" {
-        New-Item -ItemType Directory -Path "$TMP_DIR\ProgramData\ssh" -ErrorAction Ignore
-        echo "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_1"
-        echo "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_2"
-        echo "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_3"
-        echo "ignore" > "$TMP_DIR\ProgramData\ssh\not_ssh_host_4"
+    Describe "Install-SSHD" {
+        BeforeEach {
+            Mock Set-Service { } -ModuleName BOSH.SSH
+            Mock Protect-Dir { } -ModuleName BOSH.SSH
+            Mock Invoke-CACL { } -ModuleName BOSH.SSH
+            Mock Write-Log { } -ModuleName BOSH.Utils
 
-        Enable-SSHD -SSHZipFile $FAKE_ZIP
+            $guid = $( New-Guid ).Guid
+            $TMP_DIR = "$env:TEMP\BOSH.SSH.Tests-$guid"
 
-        $numHosts = (Get-ChildItem "$TMP_DIR\ProgramData\ssh\").count
-        $numHosts | Should -eq 1
-    }
+            mkdir -p "$TMP_DIR\Windows\Temp"
+            mkdir -p "$TMP_DIR\ProgramData"
 
-    It "creates empty ssh program dir if it doesn't exist" {
-        Enable-SSHD -SSHZipFile $FAKE_ZIP
-        { Test-Path "$TMP_DIR\ProgramData\ssh" } | Should -eq $True
-    }
-}
+            $FAKE_ZIP = "$TMP_DIR\OpenSSH-TestFake.zip"
+            $INSTALL_SCRIPT_SPY_STATUS = "$TMP_DIR\install-script-status"
 
-Describe "Install-SSHD" {
-    BeforeEach {
-        Mock Set-Service { } -ModuleName BOSH.SSH
-        Mock Protect-Dir { } -ModuleName BOSH.SSH
-        Mock Invoke-CACL { } -ModuleName BOSH.SSH
-        Mock Write-Log { } -ModuleName BOSH.Utils
+            CreateFakeOpenSSHZip -dir $TMP_DIR -installScriptSpyStatus $INSTALL_SCRIPT_SPY_STATUS -fakeZipPath $FAKE_ZIP
 
-        $guid = $( New-Guid ).Guid
-        $TMP_DIR = "$env:TEMP\BOSH.SSH.Tests-$guid"
-
-        mkdir -p "$TMP_DIR\Windows\Temp"
-        mkdir -p "$TMP_DIR\ProgramData"
-
-        $FAKE_ZIP = "$TMP_DIR\OpenSSH-TestFake.zip"
-        $INSTALL_SCRIPT_SPY_STATUS = "$TMP_DIR\install-script-status"
-
-        CreateFakeOpenSSHZip -dir $TMP_DIR -installScriptSpyStatus $INSTALL_SCRIPT_SPY_STATUS -fakeZipPath $FAKE_ZIP
-
-        $ORIGINAL_PROGRAMFILES = $env:PROGRAMFILES
-        $env:PROGRAMFILES = "$TMP_DIR\ProgramFiles"
-    }
-
-    AfterEach {
-        rmdir $TMP_DIR -Recurse -ErrorAction Ignore
-        $env:PROGRAMFILES = $ORIGINAL_PROGRAMFILES
-    }
-
-    It "extracts OpenSSH to Program Files" {
-        Install-SSHD -SSHZipFile $FAKE_ZIP
-
-        Get-Item $env:PROGRAMFILES\OpenSSH | Should -Exist
-        Get-Item $env:PROGRAMFILES\OpenSSH\sshd.exe | Should -Exist
-    }
-
-    It "runs the install-sshd script" {
-        Install-SSHD -SSHZipFile $FAKE_ZIP
-
-        "$INSTALL_SCRIPT_SPY_STATUS" | Should -FileContentMatchExactly 'installed'
-    }
-
-    It "calls Protect-Dir to lock down permissions" {
-        Mock Protect-Dir { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $path -eq "$env:PROGRAMFILES\OpenSSH" }
-
-        Install-SSHD -SSHZipFile $FAKE_ZIP
-
-        Assert-VerifiableMock
-    }
-
-    It "calls Invoke-CACL with expected files" {
-        Mock Invoke-CACL { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter {
-            @(
-            "libcrypto.dll",
-            "scp.exe",
-            "sftp-server.exe",
-            "sftp.exe",
-            "ssh-add.exe",
-            "ssh-agent.exe",
-            "ssh-keygen.exe",
-            "ssh-keyscan.exe",
-            "ssh-shellhost.exe",
-            "ssh.exe",
-            "sshd.exe"
-            )
+            $ORIGINAL_PROGRAMFILES = $env:PROGRAMFILES
+            $env:PROGRAMFILES = "$TMP_DIR\ProgramFiles"
         }
 
-        Install-SSHD -SSHZipFile $FAKE_ZIP
+        AfterEach {
+            rmdir $TMP_DIR -Recurse -ErrorAction Ignore
+            $env:PROGRAMFILES = $ORIGINAL_PROGRAMFILES
+        }
 
-        Assert-VerifiableMock
-    }
+        It "extracts OpenSSH to Program Files" {
+            Install-SSHD -SSHZipFile $FAKE_ZIP
 
-    It "sets the startup type of sshd to disabled" {
-        Mock Set-Service { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $Name -eq "sshd" -and $StartupType -eq "Disabled" }
+            Get-Item $env:PROGRAMFILES\OpenSSH | Should -Exist
+            Get-Item $env:PROGRAMFILES\OpenSSH\sshd.exe | Should -Exist
+        }
 
-        Install-SSHD -SSHZipFile $FAKE_ZIP
+        It "runs the install-sshd script" {
+            Install-SSHD -SSHZipFile $FAKE_ZIP
 
-        Assert-VerifiableMock
-    }
+            "$INSTALL_SCRIPT_SPY_STATUS" | Should -FileContentMatchExactly 'installed'
+        }
 
-    It "sets the startup type of ssh-agent to disabled" {
-        Mock Set-Service { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $Name -eq "ssh-agent" -and $StartupType -eq "Disabled" }
+        It "calls Protect-Dir to lock down permissions" {
+            Mock Protect-Dir { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $path -eq "$env:PROGRAMFILES\OpenSSH" }
 
-        Install-SSHD -SSHZipFile $FAKE_ZIP
+            Install-SSHD -SSHZipFile $FAKE_ZIP
 
-        Assert-VerifiableMock
-    }
+            Assert-VerifiableMock
+        }
 
-    It "modifies the openssh configuration to remove default admin key location while maintaining UTF-8 encoding" {
-        Mock Get-Content { @"
-Match Group administrators
-AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
-"@ } -ModuleName BOSH.SSH -ParameterFilter { $Path -like "*sshd_config_default" }
+        It "calls Invoke-CACL with expected files" {
+            Mock Invoke-CACL { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter {
+                @(
+                    "libcrypto.dll",
+                    "scp.exe",
+                    "sftp-server.exe",
+                    "sftp.exe",
+                    "ssh-add.exe",
+                    "ssh-agent.exe",
+                    "ssh-keygen.exe",
+                    "ssh-keyscan.exe",
+                    "ssh-shellhost.exe",
+                    "ssh.exe",
+                    "sshd.exe"
+                )
+            }
 
-        Install-SSHD -SSHZipFile $FAKE_ZIP
-        Get-Content $env:PROGRAMFILES\OpenSSH\sshd_config_default | Out-String | Should -BeLike "#*#*"
-        Get-FileEncoding $env:PROGRAMFILES\OpenSSH\sshd_config_default | Should -BeLike "System.Text.UTF8Encoding"
-    }
+            Install-SSHD -SSHZipFile $FAKE_ZIP
 
-}
+            Assert-VerifiableMock
+        }
 
-Describe "Modify-DefaultOpenSSHConfig"{
-    It "Comments out default configuration for where administrator keys are stored" {
+        It "sets the startup type of sshd to disabled" {
+            Mock Set-Service { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $Name -eq "sshd" -and $StartupType -eq "Disabled" }
 
-        Mock Get-Content {
-@"
+            Install-SSHD -SSHZipFile $FAKE_ZIP
+
+            Assert-VerifiableMock
+        }
+
+        It "sets the startup type of ssh-agent to disabled" {
+            Mock Set-Service { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $Name -eq "ssh-agent" -and $StartupType -eq "Disabled" }
+
+            Install-SSHD -SSHZipFile $FAKE_ZIP
+
+            Assert-VerifiableMock
+        }
+
+        It "modifies the openssh configuration to remove default admin key location while maintaining UTF-8 encoding" {
+            Mock Get-Content {
+                @"
 Match Group administrators
 AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
 "@
-        } -ModuleName BOSH.SSH
+            } -ModuleName BOSH.SSH -ParameterFilter { $Path -like "*sshd_config_default" }
 
-        $result = Modify-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
-
-        Assert-MockCalled Get-Content -Times 1 -ModuleName BOSH.SSH -Scope It -ParameterFilter { $Path -like "*sshd_config_default" }
-        $result | Should -BeLike "#*#*"
+            Install-SSHD -SSHZipFile $FAKE_ZIP
+            Get-Content $env:PROGRAMFILES\OpenSSH\sshd_config_default | Out-String | Should -BeLike "#*#*"
+            Get-FileEncoding $env:PROGRAMFILES\OpenSSH\sshd_config_default | Should -BeLike "System.Text.UTF8Encoding"
+        }
     }
 
-    It "Disables the chacha20-poly1305 cipher to mitigate CVE-2023-48795" {
+    Describe "Modify-DefaultOpenSSHConfig"{
+        It "Comments out default configuration for where administrator keys are stored" {
 
-        Mock Get-Content {
-@"
+            Mock Get-Content {
+                @"
+Match Group administrators
+AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
+"@
+            } -ModuleName BOSH.SSH
+
+            $result = Modify-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
+
+            Assert-MockCalled Get-Content -Times 1 -ModuleName BOSH.SSH -Scope It -ParameterFilter { $Path -like "*sshd_config_default" }
+            $result | Should -BeLike "#*#*"
+        }
+
+        It "Disables the chacha20-poly1305 cipher to mitigate CVE-2023-48795" {
+
+            Mock Get-Content {
+                @"
 # Ciphers and keying
 #RekeyLimit default none
 "@
-        } -ModuleName BOSH.SSH
+            } -ModuleName BOSH.SSH
 
-        $result = Modify-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
+            $result = Modify-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
 
-        Assert-MockCalled Get-Content -Times 1 -ModuleName BOSH.SSH -Scope It -ParameterFilter { $Path -like "*sshd_config_default" }
-        $result | Should -BeLike "*#RekeyLimit default none`r`n# Disable cipher to mitigate CVE-2023-48795`r`nCiphers -chacha20-poly1305@openssh.com`r`n"
+            Assert-MockCalled Get-Content -Times 1 -ModuleName BOSH.SSH -Scope It -ParameterFilter { $Path -like "*sshd_config_default" }
+            $result | Should -BeLike "*#RekeyLimit default none`r`n# Disable cipher to mitigate CVE-2023-48795`r`nCiphers -chacha20-poly1305@openssh.com`r`n"
+        }
     }
-
 }
