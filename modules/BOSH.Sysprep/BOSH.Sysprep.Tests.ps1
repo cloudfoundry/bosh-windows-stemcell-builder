@@ -3,7 +3,7 @@ BeforeAll {
     Import-Module ../BOSH.Utils/BOSH.Utils.psm1
     Import-Module ../BOSH.Agent/BOSH.Agent.psm1
 
-    $OsVersion = "windows2019"
+    $OsVersion = "windows2025"
 
     InModuleScope BOSH.Sysprep {
         function GCESysprep

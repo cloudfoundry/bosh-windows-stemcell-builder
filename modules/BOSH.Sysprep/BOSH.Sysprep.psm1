@@ -29,7 +29,7 @@ function Invoke-Sysprep
     {
         "aws" {
             Disable-AgentService
-            Update-AWS-LaunchConfigJSON
+            # Update-AWS-LaunchConfigJSON
             Update-AWS-UnattendedXML
             Enable-AWS-Sysprep
         }
@@ -70,6 +70,9 @@ function Enable-LocalSecurityPolicy
         "windows2019" {
             $PolicySource = (Join-Path $PSScriptRoot "cis-merge-2019")
         }
+        "windows2025" {
+            $PolicySource = (Join-Path $PSScriptRoot "cis-merge-2019")
+        }
         Default {
             Throw "Policy backup filepath could not be determined from OS: $OsVersion"
         }
@@ -107,18 +110,18 @@ function Enable-LocalSecurityPolicy
 }
 
 # AWS
-function Update-AWS-LaunchConfigJSON
-{
-    $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
-    $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
-    $LaunchConfig.addDnsSuffixList = $False
-    $LaunchConfig.extendBootVolumeSize = $False
-    $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
-}
+#function Update-AWS-LaunchConfigJSON
+#{
+#    $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
+#    $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
+#    $LaunchConfig.addDnsSuffixList = $False
+#    $LaunchConfig.extendBootVolumeSize = $False
+#    $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
+#}
 
 function Update-AWS-UnattendedXML
 {
-    $UnattendedXmlPath = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Sysprep\Unattend.xml'
+    $UnattendedXmlPath = 'C:\ProgramData\Amazon\EC2Launch\sysprep\unattend.xml'
     $UnattendedContent = [xml](Get-Content $UnattendedXmlPath)
     $SpecializeSettings = ($UnattendedContent.unattend.settings | Where-Object { $_.pass -EQ "specialize" })
     $WindowsDeploymentComponent = ($SpecializeSettings.component | Where-Object { $_.name -EQ "Microsoft-Windows-Deployment" })
@@ -141,9 +144,7 @@ function Update-AWS-UnattendedXML
 function Enable-AWS-Sysprep
 {
     # Enable sysprep
-    Set-Location 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
-    ./InitializeInstance.ps1 -Schedule
-    ./SysprepInstance.ps1
+    & "C:\Program Files\Amazon\EC2Launch\EC2Launch.exe" sysprep
 }
 
 # GCP
