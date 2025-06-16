@@ -1,5 +1,4 @@
 BeforeAll {
-
     Import-Module ./BOSH.Sysprep.psm1
     Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 
@@ -12,12 +11,14 @@ BeforeAll {
 }
 
 Describe "BOSH.Sysprep" {
+    BeforeEach {
+        Mock -ModuleName BOSH.Sysprep Write-Log { }
+    }
+
     Describe "Invoke-Sysprep" {
         BeforeEach {
             Mock -ModuleName BOSH.Sysprep Stop-Computer { }
             Mock -ModuleName BOSH.Sysprep Start-Process { }
-
-            Mock -ModuleName BOSH.Sysprep Write-Log { }
 
             $lgpoInstalled = $True
             Mock -ModuleName BOSH.Sysprep -CommandName Test-Path -ParameterFilter {
