@@ -1426,7 +1426,7 @@ jobs:
       pre: build
   - task: create-packer-ci-key
     image: bosh-windows-stemcell-builder-ci-image
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/create-packer-ci/task.yml
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/create-packer-ci-key/task.yml
     params:
       PACKER_CI: ((bosh_windows_aws_packer_ci_private_key.private_key))
   - task: create-aws-stemcell
