@@ -2,6 +2,68 @@
 .Synopsis
   Sysprep Utilities
 .Description
+  This cmdlet runs Sysprep and generalizes a VM so it can be a BOSH stemcell
+#>
+function Invoke-Sysprep {
+  Param (
+    [string]$IaaS = $( Throw "Provide the IaaS this stemcell will be used for" ),
+    [string]$NewPassword,
+    [string]$ProductKey = "",
+    [string]$Organization = "",
+    [string]$Owner = "",
+    [switch]$SkipLGPO,
+    [switch]$EnableRDP
+  )
+
+  Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
+
+  Set-NTP-Max-PhaseCorrection-Values
+
+  if (-Not $SkipLGPO)
+  {
+    if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
+      Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
+    }
+
+    $OsVersion = Get-OSVersion
+    switch ($OsVersion)
+    {
+      "windows2019" {
+        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-2019")
+      }
+    }
+  }
+
+  switch ($IaaS) {
+    "aws" {
+      Disable-AgentService
+      Update-AWS-LaunchConfigJSON
+      Update-AWS-UnattendedXML
+      Enable-AWS-Sysprep
+    }
+    "gcp" {
+      Disable-AgentService
+      Create-GCP-UnattendXML
+      GCESysprep # See: https://cloud.google.com/compute/docs/instances/windows/creating-windows-os-image
+    }
+    "azure" {
+      C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
+    }
+    "vsphere" {
+      Disable-AgentService
+      Create-vSphere-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
+        -Organization $Organization -Owner $Owner
+
+      Invoke-Expression -Command 'C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown'
+    }
+    Default { Throw "Invalid IaaS '${IaaS}' supported platforms are: AWS, Azure, GCP and Vsphere" }
+  }
+}
+
+<#
+.Synopsis
+  Sysprep Utilities
+.Description
   This cmdlet enables enabling a local security policy for a stemcell
 #>
 function Enable-LocalSecurityPolicy {
@@ -222,55 +284,6 @@ function Create-GCP-UnattendXML {
   Out-File -FilePath $UnattendPath -InputObject $UnattendXML -Encoding utf8 -Force
 }
 
-function Remove-WasPassProcessed {
-  Param (
-    [string]$AnswerFilePath
-  )
-
-  If (!$(Test-Path $AnswerFilePath)) {
-    Throw "Answer file $AnswerFilePath does not exist"
-  }
-
-  Write-Log "Removing wasPassProcessed"
-
-  $content = [xml](Get-Content $AnswerFilePath)
-
-  foreach ($specializeBlock in $content.unattend.settings) {
-    $specializeBlock.RemoveAttribute("wasPassProcessed")
-  }
-
-  $content.Save($AnswerFilePath)
-}
-
-function Remove-UserAccounts {
-  Param (
-    [string]$AnswerFilePath
-  )
-
-  If (!$(Test-Path $AnswerFilePath)) {
-    Throw "Answer file $AnswerFilePath does not exist"
-  }
-
-  Write-Log "Removing UserAccounts block from Answer File"
-
-  $content = [xml](Get-Content $AnswerFilePath)
-  $mswShellSetup =  (($content.unattend.settings|Where-Object {$_.pass -eq 'oobeSystem'}).component|Where-Object {$_.name -eq "Microsoft-Windows-Shell-Setup"})
-
-  if ($Null -eq $mswShellSetup) {
-    Throw "Could not locate oobeSystem XML block. You may not be running this function on an answer file."
-  }
-
-  $userAccountsBlock = $mswShellSetup.UserAccounts
-
-  if ($userAccountsBlock.Count -eq 0) {
-    Return
-  }
-
-  $mswShellSetup.RemoveChild($userAccountsBlock)
-
-  $content.Save($AnswerFilePath)
-}
-
 function Update-AWS-LaunchConfigJSON {
   $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
   $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
@@ -305,89 +318,6 @@ function Enable-AWS-Sysprep {
   Set-Location 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
   ./InitializeInstance.ps1 -Schedule
   ./SysprepInstance.ps1
-}
-
-<#
-.Synopsis
-  Sysprep Utilities
-.Description
-  This cmdlet runs Sysprep and generalizes a VM so it can be a BOSH stemcell
-#>
-function Invoke-Sysprep {
-  Param (
-    [string]$IaaS = $( Throw "Provide the IaaS this stemcell will be used for" ),
-    [string]$NewPassword,
-    [string]$ProductKey = "",
-    [string]$Organization = "",
-    [string]$Owner = "",
-    [switch]$SkipLGPO,
-    [switch]$EnableRDP
-  )
-
-  Write-Log "Invoking Sysprep for IaaS: ${IaaS}"
-
-  Set-NTP-Max-PhaseCorrection-Values
-
-  if (-Not $SkipLGPO)
-  {
-    if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
-      Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
-    }
-
-    $OsVersion = Get-OSVersion
-    switch ($OsVersion)
-    {
-      "windows2019" {
-        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-2019")
-      }
-    }
-  }
-
-  switch ($IaaS) {
-    "aws" {
-      Disable-AgentService
-      Update-AWS-LaunchConfigJSON
-      Update-AWS-UnattendedXML
-      Enable-AWS-Sysprep
-    }
-    "gcp" {
-      Disable-AgentService
-      Create-GCP-UnattendXML
-      GCESysprep
-    }
-    "azure" {
-      C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
-    }
-    "vsphere" {
-      Disable-AgentService
-      Create-vSphere-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
-        -Organization $Organization -Owner $Owner
-
-      Invoke-Expression -Command 'C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown'
-    }
-    Default { Throw "Invalid IaaS '${IaaS}' supported platforms are: AWS, Azure, GCP and Vsphere" }
-  }
-}
-
-function ModifyInfFile {
-  Param(
-    [string]$InfFilePath = $(Throw "inf file path missing"),
-    [string]$KeyName = $(Throw "keyname missing"),
-    [string]$KeyValue = $(Throw "keyvalue missing")
-  )
-
-  $Regex = "^$KeyName"
-  $TempFile = $InfFilePath + ".tmp"
-
-  Get-Content $InfFilePath | ForEach-Object {
-    $ValueToWrite=$_
-    if($_ -match $Regex) {
-      $ValueToWrite="$KeyName=$KeyValue"
-    }
-    $ValueToWrite | Out-File -Append $TempFile
-  }
-
-  Move-Item -Path $TempFile -Destination $InfFilePath -Force
 }
 
 function Set-NTP-Max-PhaseCorrection-Values {
