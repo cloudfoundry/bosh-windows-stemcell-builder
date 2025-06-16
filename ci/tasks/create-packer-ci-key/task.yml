@@ -1,0 +1,13 @@
+---
+platform: linux
+outputs:
+  - name: packer-ci-private-key
+
+run:
+  path: bash
+  args:
+    - "-c"
+    - 'echo "$PACKER_CI" > packer-ci-private-key/key && chmod 600 packer-ci-private-key/key'
+
+params:
+  PACKER_CI:
