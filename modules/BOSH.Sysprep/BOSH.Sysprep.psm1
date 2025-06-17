@@ -41,7 +41,7 @@ function Invoke-Sysprep {
     }
     "vsphere" {
       Disable-AgentService
-      Create-vSphere-Unattend -NewPassword $NewPassword -ProductKey $ProductKey `
+      Create-vSphere-UnattendXML -NewPassword $NewPassword -ProductKey $ProductKey `
         -Organization $Organization -Owner $Owner
 
       Invoke-Expression -Command 'C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown'
@@ -50,12 +50,11 @@ function Invoke-Sysprep {
   }
 }
 
-<#
-.Synopsis
-  Sysprep Utilities
-.Description
-  This cmdlet enables enabling a local security policy for a stemcell
-#>
+function Set-NTP-Max-PhaseCorrection-Values {
+  Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxNegPhaseCorrection' -Value 0xFFFFFFFF -Type dword
+  Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxPosPhaseCorrection' -Value 0xFFFFFFFF -Type dword
+}
+
 function Enable-LocalSecurityPolicy {
   Write-Log "Starting LocalSecurityPolicy"
 
@@ -95,125 +94,44 @@ function Enable-LocalSecurityPolicy {
   Write-Log "Ending LocalSecurityPolicy"
 }
 
-<#
-.Synopsis
-  Sysprep Utilities
-.Description
-  This cmdlet creates the Unattend file for sysprep
-#>
-function Create-vSphere-Unattend {
-  Param (
-    [string]$UnattendDestination = "C:\Windows\Panther\Unattend",
-    [string]$NewPassword,
-    [string]$ProductKey,
-    [string]$Organization,
-    [string]$Owner
-  )
-  Write-Log "Starting Create-vSphere-Unattend"
-
-  New-Item -ItemType directory $UnattendDestination -Force
-  $UnattendPath = Join-Path $UnattendDestination "unattend.xml"
-
-  Write-Log "Writing unattend.xml to $UnattendPath"
-
-  $ProductKeyXML=""
-  if ($ProductKey -ne "") {
-    $ProductKeyXML="<ProductKey>$ProductKey</ProductKey>"
-  }
-
-  $OrganizationXML="<RegisteredOrganization />"
-  if ($Organization -ne "" -and $Organization -ne $null) {
-    $OrganizationXML="<RegisteredOrganization>$Organization</RegisteredOrganization>"
-  }
-
-  $OwnerXML="<RegisteredOwner />"
-  if ($Owner -ne "" -and $Owner -ne $null) {
-    $OwnerXML="<RegisteredOwner>$Owner</RegisteredOwner>"
-  }
-
-  $AdministratorPasswordXML = ""
-  if ($NewPassword -ne "" -and $NewPassword -ne $null) {
-    $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
-    $AdministratorPasswordXML = @"
-      <UserAccounts>
-        <AdministratorPassword>
-          <Value>$NewPassword</Value>
-          <PlainText>false</PlainText>
-        </AdministratorPassword>
-      </UserAccounts>
-"@
-  }
-
-  $PostUnattend = @"
-<?xml version="1.0" encoding="utf-8"?>
-<unattend xmlns="urn:schemas-microsoft-com:unattend">
-  <settings pass="specialize">
-    <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-      <OEMInformation>
-        <HelpCustomized>false</HelpCustomized>
-      </OEMInformation>
-      <ComputerName>*</ComputerName>
-      <TimeZone>UTC</TimeZone>
-      $ProductKeyXML
-      $OrganizationXML
-      $OwnerXML
-    </component>
-    <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-ServerManager-SvrMgrNc" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-      <DoNotOpenServerManagerAtLogon>true</DoNotOpenServerManagerAtLogon>
-    </component>
-    <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-OutOfBoxExperience" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-      <DoNotOpenInitialConfigurationTasksAtLogon>true</DoNotOpenInitialConfigurationTasksAtLogon>
-    </component>
-    <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Security-SPP-UX" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-      <SkipAutoActivation>true</SkipAutoActivation>
-    </component>
-    <component name="Microsoft-Windows-NetBT" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <Interfaces>
-            <Interface wcm:action="add">
-                <NetbiosOptions>2</NetbiosOptions>
-                <Identifier>Ethernet0</Identifier>
-            </Interface>
-        </Interfaces>
-    </component>
-    <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <RunSynchronous>
-        <RunSynchronousCommand wcm:action="add">
-          <Path>powershell Enable-AgentService</Path>
-          <Order>1</Order>
-        </RunSynchronousCommand>
-      </RunSynchronous>
-    </component>
-  </settings>
-  <settings pass="generalize">
-    <component name="Microsoft-Windows-PnpSysprep" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <PersistAllDeviceInstalls>false</PersistAllDeviceInstalls>
-      <DoNotCleanUpNonPresentDevices>false</DoNotCleanUpNonPresentDevices>
-    </component>
-  </settings>
-  <settings pass="oobeSystem">
-    <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <InputLocale>en-US</InputLocale>
-      <SystemLocale>en-US</SystemLocale>
-      <UILanguage>en-US</UILanguage>
-      <UserLocale>en-US</UserLocale>
-    </component>
-    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-      <OOBE>
-        <HideEULAPage>true</HideEULAPage>
-        <ProtectYourPC>3</ProtectYourPC>
-        <NetworkLocation>Home</NetworkLocation>
-        <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
-      </OOBE>
-      <TimeZone>UTC</TimeZone>
-      $AdministratorPasswordXML
-    </component>
-  </settings>
-</unattend>
-"@
-
-  Out-File -FilePath $UnattendPath -InputObject $PostUnattend -Encoding utf8
+# AWS
+function Update-AWS-LaunchConfigJSON {
+  $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
+  $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
+  $LaunchConfig.addDnsSuffixList = $False
+  $LaunchConfig.extendBootVolumeSize = $False
+  $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
 }
 
+function Update-AWS-UnattendedXML {
+  $UnattendedXmlPath = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Sysprep\Unattend.xml'
+  $UnattendedContent = [xml](Get-Content $UnattendedXmlPath)
+  $SpecializeSettings = ($UnattendedContent.unattend.settings | Where-Object { $_.pass -EQ "specialize" })
+  $WindowsDeploymentComponent = ($SpecializeSettings.component | Where-Object { $_.name -EQ "Microsoft-Windows-Deployment" })
+  $rynsync = $WindowsDeploymentComponent.RunSynchronous
+  $runsynccommand = $UnattendedContent.CreateElement("RunSynchronousCommand", $UnattendedContent.unattend.xmlns)
+  $rynsync.AppendChild($runsynccommand)
+  $runsynccommand.SetAttribute("action", $WindowsDeploymentComponent.wcm, "add")
+  $pathElement = $UnattendedContent.CreateElement("Path", $UnattendedContent.unattend.xmlns)
+  $pathText = $UnattendedContent.CreateTextNode("powershell Enable-AgentService")
+  $pathElement.AppendChild($pathText)
+  $runsynccommand.AppendChild($pathElement)
+  $orderElement = $UnattendedContent.CreateElement("Order", $UnattendedContent.unattend.xmlns)
+  $orderText = $UnattendedContent.CreateTextNode("3")
+  $orderElement.AppendChild($orderText)
+  $runsynccommand.AppendChild($orderElement)
+
+  $UnattendedContent.Save($UnattendedXmlPath)
+}
+
+function Enable-AWS-Sysprep {
+  # Enable sysprep
+  Set-Location 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
+  ./InitializeInstance.ps1 -Schedule
+  ./SysprepInstance.ps1
+}
+
+# GCP
 function Create-GCP-UnattendXML {
   Param (
     [string]$UnattendDestination = "C:\Program Files\Google\Compute Engine\sysprep"
@@ -285,43 +203,116 @@ function Create-GCP-UnattendXML {
   Out-File -FilePath $UnattendPath -InputObject $UnattendXML -Encoding utf8 -Force
 }
 
-function Update-AWS-LaunchConfigJSON {
-  $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
-  $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
-  $LaunchConfig.addDnsSuffixList = $False
-  $LaunchConfig.extendBootVolumeSize = $False
-  $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
-}
+# vSphere
+function Create-vSphere-UnattendXML {
+  Param (
+    [string]$UnattendDestination = "C:\Windows\Panther\Unattend",
+    [string]$NewPassword,
+    [string]$ProductKey,
+    [string]$Organization,
+    [string]$Owner
+  )
+  Write-Log "Starting Create-vSphere-UnattendXML"
 
-function Update-AWS-UnattendedXML {
-  $UnattendedXmlPath = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Sysprep\Unattend.xml'
-  $UnattendedContent = [xml](Get-Content $UnattendedXmlPath)
-  $SpecializeSettings = ($UnattendedContent.unattend.settings | Where-Object { $_.pass -EQ "specialize" })
-  $WindowsDeploymentComponent = ($SpecializeSettings.component | Where-Object { $_.name -EQ "Microsoft-Windows-Deployment" })
-  $rynsync = $WindowsDeploymentComponent.RunSynchronous
-  $runsynccommand = $UnattendedContent.CreateElement("RunSynchronousCommand", $UnattendedContent.unattend.xmlns)
-  $rynsync.AppendChild($runsynccommand)
-  $runsynccommand.SetAttribute("action", $WindowsDeploymentComponent.wcm, "add")
-  $pathElement = $UnattendedContent.CreateElement("Path", $UnattendedContent.unattend.xmlns)
-  $pathText = $UnattendedContent.CreateTextNode("powershell Enable-AgentService")
-  $pathElement.AppendChild($pathText)
-  $runsynccommand.AppendChild($pathElement)
-  $orderElement = $UnattendedContent.CreateElement("Order", $UnattendedContent.unattend.xmlns)
-  $orderText = $UnattendedContent.CreateTextNode("3")
-  $orderElement.AppendChild($orderText)
-  $runsynccommand.AppendChild($orderElement)
+  New-Item -ItemType directory $UnattendDestination -Force
+  $UnattendPath = Join-Path $UnattendDestination "unattend.xml"
 
-  $UnattendedContent.Save($UnattendedXmlPath)
-}
+  Write-Log "Writing unattend.xml to $UnattendPath"
 
-function Enable-AWS-Sysprep {
-  # Enable sysprep
-  Set-Location 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
-  ./InitializeInstance.ps1 -Schedule
-  ./SysprepInstance.ps1
-}
+  $ProductKeyXML=""
+  if ($ProductKey -ne "") {
+    $ProductKeyXML="<ProductKey>$ProductKey</ProductKey>"
+  }
 
-function Set-NTP-Max-PhaseCorrection-Values {
-      Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxNegPhaseCorrection' -Value 0xFFFFFFFF -Type dword
-      Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" -Name 'MaxPosPhaseCorrection' -Value 0xFFFFFFFF -Type dword
+  $OrganizationXML="<RegisteredOrganization />"
+  if ($Organization -ne "" -and $Organization -ne $null) {
+    $OrganizationXML="<RegisteredOrganization>$Organization</RegisteredOrganization>"
+  }
+
+  $OwnerXML="<RegisteredOwner />"
+  if ($Owner -ne "" -and $Owner -ne $null) {
+    $OwnerXML="<RegisteredOwner>$Owner</RegisteredOwner>"
+  }
+
+  $AdministratorPasswordXML = ""
+  if ($NewPassword -ne "" -and $NewPassword -ne $null) {
+    $NewPassword = [system.convert]::ToBase64String([system.text.encoding]::Unicode.GetBytes($NewPassword + "AdministratorPassword"))
+    $AdministratorPasswordXML = @"
+      <UserAccounts>
+        <AdministratorPassword>
+          <Value>$NewPassword</Value>
+          <PlainText>false</PlainText>
+        </AdministratorPassword>
+      </UserAccounts>
+"@
+  }
+
+  $PostUnattend = @"
+<?xml version="1.0" encoding="utf-8"?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend">
+  <settings pass="specialize">
+    <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <OEMInformation>
+        <HelpCustomized>false</HelpCustomized>
+      </OEMInformation>
+      <ComputerName>*</ComputerName>
+      <TimeZone>UTC</TimeZone>
+      $ProductKeyXML
+  $OrganizationXML
+  $OwnerXML
+    </component>
+    <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-ServerManager-SvrMgrNc" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <DoNotOpenServerManagerAtLogon>true</DoNotOpenServerManagerAtLogon>
+    </component>
+    <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-OutOfBoxExperience" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <DoNotOpenInitialConfigurationTasksAtLogon>true</DoNotOpenInitialConfigurationTasksAtLogon>
+    </component>
+    <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Security-SPP-UX" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <SkipAutoActivation>true</SkipAutoActivation>
+    </component>
+    <component name="Microsoft-Windows-NetBT" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <Interfaces>
+            <Interface wcm:action="add">
+                <NetbiosOptions>2</NetbiosOptions>
+                <Identifier>Ethernet0</Identifier>
+            </Interface>
+        </Interfaces>
+    </component>
+    <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <RunSynchronous>
+        <RunSynchronousCommand wcm:action="add">
+          <Path>powershell Enable-AgentService</Path>
+          <Order>1</Order>
+        </RunSynchronousCommand>
+      </RunSynchronous>
+    </component>
+  </settings>
+  <settings pass="generalize">
+    <component name="Microsoft-Windows-PnpSysprep" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <PersistAllDeviceInstalls>false</PersistAllDeviceInstalls>
+      <DoNotCleanUpNonPresentDevices>false</DoNotCleanUpNonPresentDevices>
+    </component>
+  </settings>
+  <settings pass="oobeSystem">
+    <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <InputLocale>en-US</InputLocale>
+      <SystemLocale>en-US</SystemLocale>
+      <UILanguage>en-US</UILanguage>
+      <UserLocale>en-US</UserLocale>
+    </component>
+    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <OOBE>
+        <HideEULAPage>true</HideEULAPage>
+        <ProtectYourPC>3</ProtectYourPC>
+        <NetworkLocation>Home</NetworkLocation>
+        <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+      </OOBE>
+      <TimeZone>UTC</TimeZone>
+      $AdministratorPasswordXML
+    </component>
+  </settings>
+</unattend>
+"@
+
+  Out-File -FilePath $UnattendPath -InputObject $PostUnattend -Encoding utf8
 }

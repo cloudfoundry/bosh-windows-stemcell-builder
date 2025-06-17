@@ -396,7 +396,7 @@ function Remove-SSHKeys
     Pop-Location
 }
 
-function Run-LGPO
+function Invoke-LGPO
 {
     param (
         [string]$LGPOPath = $( Throw "Provide LGPO path" ),
@@ -437,7 +437,7 @@ SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349
         Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
         try
         {
-            Run-LGPO -LGPOPath $LGPOPath -InfFilePath $InfFilePath
+            Invoke-LGPO -LGPOPath $LGPOPath -InfFilePath $InfFilePath
         }
         catch
         {

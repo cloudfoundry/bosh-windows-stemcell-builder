@@ -45,8 +45,8 @@ Describe "BOSH.CFCell" {
 
             Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" | select -exp fDenyTSConnections | Should -Be 1
             netstat /p tcp /a | findstr ":3389 " | Should -BeNullOrEmpty
-            Get-NetFirewallRule -DisplayName "Remote Desktop*" | ForEach { $_.enabled | Should -Be "False" }
-            Get-Service "Termservice" | Select -exp starttype | Should -Be "Disabled"
+            Get-NetFirewallRule -DisplayName "Remote Desktop*" | ForEach-Object { $_.enabled | Should -Be "False" }
+            Get-Service "Termservice" | Select-Object -exp starttype | Should -Be "Disabled"
         }
 
         It "disables the services" {

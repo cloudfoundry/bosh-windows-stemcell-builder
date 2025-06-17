@@ -41,7 +41,7 @@ function Remove-Available-Windows-Features {
     Write-Log "Starting to remove 'Available' Windows Features"
 
     Get-WindowsFeature |
-            ? { $_.InstallState -eq 'Available' } |
+            Where-Object { $_.InstallState -eq 'Available' } |
             Uninstall-WindowsFeature -Remove
 
     Write-Log "Finished removing 'Available' Windows Features"
@@ -52,7 +52,7 @@ function DefragDisk {
     $volumes = gwmi win32_volume
 
     # Now get the C:\ volume
-    $v1 = $volumes | where {$_.name -eq "C:\"}
+    $v1 = $volumes | Where-Object {$_.name -eq "C:\"}
 
     # Perform a defrag analysis
     $v1.defraganalysis().defraganalysis
@@ -65,7 +65,6 @@ function DefragDisk {
 }
 
 function ZeroDisk {
-    $Success = $TRUE
     $FilePath = "C:\zero.tmp"
     $Volume = Get-WmiObject win32_logicaldisk -filter "DeviceID='C:'"
     $ArraySize = 64kb

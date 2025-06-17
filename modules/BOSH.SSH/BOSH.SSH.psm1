@@ -8,7 +8,7 @@
     Open-Zip -ZipFile $SSHZipFile -OutPath "$env:PROGRAMFILES\SSHTemp"
 
     $ConfigPath =  "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64\sshd_config_default"
-    $ModifiedConfigContents = Modify-DefaultOpenSSHConfig -ConfigPath $ConfigPath
+    $ModifiedConfigContents = Edit-DefaultOpenSSHConfig -ConfigPath $ConfigPath
     Remove-Item -Force $ConfigPath
     Out-File -FilePath $ConfigPath -InputObject $ModifiedConfigContents -Encoding UTF8
 
@@ -46,7 +46,7 @@
 
 function Enable-SSHD
 {
-    if ((Get-NetFirewallRule | where { $_.DisplayName -ieq 'SSH' }) -eq $null)
+    if ($null -eq (Get-NetFirewallRule | Where-Object { $_.DisplayName -ieq 'SSH' }))
     {
         "Creating firewall rule for SSH"
         New-NetFirewallRule -Protocol TCP -LocalPort 22 -Direction Inbound -Action Allow -DisplayName SSH
@@ -76,7 +76,7 @@ SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349
         Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
         Try
         {
-            Run-LGPO -LGPOPath $LGPOPath -InfFilePath $InfFilePath
+            Invoke-LGPO -LGPOPath $LGPOPath -InfFilePath $InfFilePath
         }
         Catch
         {
@@ -120,7 +120,7 @@ function Invoke-CACL
     }
 }
 
-function Run-LGPO
+function Invoke-LGPO
 {
     param (
         [string]$LGPOPath = $( Throw "Provide LGPO path" ),
@@ -129,16 +129,16 @@ function Run-LGPO
     & $LGPOPath /s $InfFilePath
 }
 
-function Modify-DefaultOpenSSHConfig
+function Edit-DefaultOpenSSHConfig
 {
     param (
         [string]$ConfigPath = $( Throw "Provide openssh default config path" )
     )
 
     $ModifiedConfig = Get-Content $ConfigPath `
-    | %{$_ -replace ".*Match Group administrators.*", "#$&"} `
-    | %{$_ -replace ".*AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys.*", "#$&" } `
-    | %{$_ -replace "#RekeyLimit default none", "$&`r`n# Disable cipher to mitigate CVE-2023-48795`r`nCiphers -chacha20-poly1305@openssh.com`r`n"}
+    | ForEach-Object{$_ -replace ".*Match Group administrators.*", "#$&"} `
+    | ForEach-Object{$_ -replace ".*AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys.*", "#$&" } `
+    | ForEach-Object{$_ -replace "#RekeyLimit default none", "$&`r`n# Disable cipher to mitigate CVE-2023-48795`r`nCiphers -chacha20-poly1305@openssh.com`r`n"}
 
     return $ModifiedConfig
 }

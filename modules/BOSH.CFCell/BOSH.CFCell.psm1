@@ -108,13 +108,13 @@ function disable-service {
 function set-firewall {
   Write-Log "Starting to set firewall rules"
 	Set-NetFirewallProfile -all -DefaultInboundAction Block -DefaultOutboundAction Allow -AllowUnicastResponseToMulticast False -Enabled True
-	check-firewall "public"
-	check-firewall "private"
-	check-firewall "domain"
+	test-firewall "public"
+	test-firewall "private"
+	test-firewall "domain"
   Write-Log "Finished setting firewall rules"
 
   $MetadataServerAllowRules = Get-NetFirewallRule -Enabled True -Direction Outbound | Get-NetFirewallAddressFilter | Where-Object -FilterScript { $_.RemoteAddress -Eq '169.254.169.254' }
-  If ($MetadataServerAllowRules -Ne $null) {
+  If ($null -Ne $MetadataServerAllowRules) {
     Write-Log "Removing firewall rule that allows access to metadata server"
     $MetadataServerAllowRules | Remove-NetFirewallRule
     New-NetFirewallRule `
@@ -142,7 +142,7 @@ function get-firewall {
   return $result
 }
 
-function check-firewall {
+function test-firewall {
   param([string] $profileName)
 
   $firewall = (get-firewall $profileName)
@@ -298,7 +298,7 @@ function Disable-NetBIOS {
 function Remove-DockerPackage {
     $dockerPackage = Get-Package -Name DockerMsftProvider -ErrorAction ignore
 
-    if ($dockerPackage -eq $null) {
+    if ($null-eq $dockerPackage) {
       Write-Log "Docker is not installed. No need to remove."
       return
     }

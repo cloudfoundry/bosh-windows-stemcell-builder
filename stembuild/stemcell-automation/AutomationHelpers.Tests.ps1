@@ -1149,7 +1149,7 @@ Describe "Enable-SSHD" {
 
     BeforeEach {
         Mock -ModuleName AutomationHelpers -CommandName Set-Service { }
-        Mock -ModuleName AutomationHelpers -CommandName Run-LGPO { }
+        Mock -ModuleName AutomationHelpers -CommandName Invoke-LGPO { }
 
         $guid = $( New-Guid ).Guid
         $TMP_DIR = "$env:TEMP\BOSH.SSH.Tests-$guid"
@@ -1258,7 +1258,7 @@ Describe "Enable-SSHD" {
     }
 
     It "Generates inf and invokes LGPO if LGPO exists" {
-        Mock -ModuleName AutomationHelpers -CommandName Run-LGPO -Verifiable -ParameterFilter {
+        Mock -ModuleName AutomationHelpers -CommandName Invoke-LGPO -Verifiable -ParameterFilter {
             $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf"
         }
 
@@ -1272,12 +1272,12 @@ Describe "Enable-SSHD" {
 
         { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Not -Throw
 
-        Should -Invoke -ModuleName AutomationHelpers -CommandName Run-LGPO -Times 0
+        Should -Invoke -ModuleName AutomationHelpers -CommandName Invoke-LGPO -Times 0
     }
 
     Context "When LGPO executable fails" {
         It "Throws an appropriate error" {
-            Mock -ModuleName AutomationHelpers -CommandName Run-LGPO { throw "some error" } -Verifiable -ParameterFilter {
+            Mock -ModuleName AutomationHelpers -CommandName Invoke-LGPO { throw "some error" } -Verifiable -ParameterFilter {
                 $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf"
             }
 

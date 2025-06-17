@@ -68,7 +68,7 @@ Describe "BOSH.SSH" {
     Describe "Enable-SSHD" {
         BeforeEach {
             Mock -ModuleName BOSH.SSH Set-Service { }
-            Mock -ModuleName BOSH.SSH Run-LGPO { }
+            Mock -ModuleName BOSH.SSH Invoke-LGPO { }
 
             $guid = $( New-Guid ).Guid
             $TMP_DIR = "$env:TEMP\BOSH.SSH.Tests-$guid"
@@ -171,7 +171,7 @@ Describe "BOSH.SSH" {
         }
 
         It "Generates inf and invokes LGPO if LGPO exists" {
-            Mock -ModuleName BOSH.SSH Run-LGPO -Verifiable -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
+            Mock -ModuleName BOSH.SSH Invoke-LGPO -Verifiable -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
 
             Enable-SSHD -SSHZipFile $FAKE_ZIP
 
@@ -183,22 +183,22 @@ Describe "BOSH.SSH" {
 
             Enable-SSHD -SSHZipFile $FAKE_ZIP
 
-            Assert-MockCalled Run-LGPO -Times 0 -ModuleName BOSH.SSH -Scope It
+            Assert-MockCalled Invoke-LGPO -Times 0 -ModuleName BOSH.SSH -Scope It
         }
 
         Context "When LGPO executable fails" {
             It "Throws an appropriate error" {
-                Mock Run-LGPO { throw "some error" } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
+                Mock Invoke-LGPO { throw "some error" } -Verifiable -ModuleName BOSH.SSH -ParameterFilter { $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf" }
                 { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Throw "LGPO.exe failed with: some error*"
             }
         }
 
         It "removes existing SSH keys" {
             New-Item -ItemType Directory -Path "$TMP_DIR\ProgramData\ssh" -ErrorAction Ignore
-            echo "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_1"
-            echo "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_2"
-            echo "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_3"
-            echo "ignore" > "$TMP_DIR\ProgramData\ssh\not_ssh_host_4"
+            Write-Output "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_1"
+            Write-Output "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_2"
+            Write-Output "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_3"
+            Write-Output "ignore" > "$TMP_DIR\ProgramData\ssh\not_ssh_host_4"
 
             Enable-SSHD -SSHZipFile $FAKE_ZIP
 
@@ -312,7 +312,7 @@ AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
         }
     }
 
-    Describe "Modify-DefaultOpenSSHConfig"{
+    Describe "Edit-DefaultOpenSSHConfig"{
         It "Comments out default configuration for where administrator keys are stored" {
 
             Mock Get-Content {
@@ -322,7 +322,7 @@ AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
 "@
             } -ModuleName BOSH.SSH
 
-            $result = Modify-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
+            $result = Edit-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
 
             Assert-MockCalled Get-Content -Times 1 -ModuleName BOSH.SSH -Scope It -ParameterFilter { $Path -like "*sshd_config_default" }
             $result | Should -BeLike "#*#*"
@@ -337,7 +337,7 @@ AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
 "@
             } -ModuleName BOSH.SSH
 
-            $result = Modify-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
+            $result = Edit-DefaultOpenSSHConfig -ConfigPath "some/path/sshd_config_default"
 
             Assert-MockCalled Get-Content -Times 1 -ModuleName BOSH.SSH -Scope It -ParameterFilter { $Path -like "*sshd_config_default" }
             $result | Should -BeLike "*#RekeyLimit default none`r`n# Disable cipher to mitigate CVE-2023-48795`r`nCiphers -chacha20-poly1305@openssh.com`r`n"

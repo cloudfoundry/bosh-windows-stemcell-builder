@@ -1,9 +1,5 @@
 BeforeAll {
-    Remove-Module -Name BOSH.Utils -ErrorAction Ignore
     Import-Module ./BOSH.Utils.psm1
-
-    Remove-Module -Name AbsolutePathChroot -ErrorAction Ignore
-    Import-Module ./AbsolutePathChroot.psm1
 
     # As of now, this function only supports DWords and Strings.
     function Restore-RegistryState {
@@ -35,6 +31,18 @@ BeforeAll {
         sleep -Milliseconds 500
         $obj = Get-WindowsOptionalFeature -Online -FeatureName $featureName
         return $obj.State
+    }
+
+    function New-Item-Stub-For-Testing {
+        param(
+            $Path
+        )
+        $optionalDriveLetterRegex = "(.:)?(.+)"
+        $pathWithoutDriveName = $Path -replace $optionalDriveLetterRegex, '$2'
+
+        $safePath=".\"
+
+        New-Item -Path "$safePath$pathWithoutDriveName" @Args
     }
 }
 
@@ -455,7 +463,7 @@ Describe "BOSH.Utils" {
         BeforeEach {
             $versionFileDestination = "./var/vcap/bosh/etc/stemcell_version"
             Mock New-Item -Module BOSH.Utils {
-                AbsolutePathChroot-New-Item @Args
+                New-Item-Stub-For-Testing @Args
             }
         }
 

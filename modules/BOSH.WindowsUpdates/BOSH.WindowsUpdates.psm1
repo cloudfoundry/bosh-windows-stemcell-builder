@@ -11,7 +11,7 @@ $script:ScriptPath = $MyInvocation.MyCommand.Path
 
 function Find-WindowsUpdatesTask {
     $task = Get-ScheduledTask -TaskName "InstallWindowsUpdates" -ErrorAction SilentlyContinue
-    return $task -ne $null
+    return $null -ne $task
 }
 
 function Register-WindowsUpdatesTask {
@@ -90,7 +90,6 @@ function Install-WindowsUpdates {
 }
 
 function Invoke-RebootOrComplete {
-    $RegistryEntry = "InstallWindowsUpdates"
     switch ($script:RestartRequired) {
         0 {
             Unregister-WindowsUpdatesTask
