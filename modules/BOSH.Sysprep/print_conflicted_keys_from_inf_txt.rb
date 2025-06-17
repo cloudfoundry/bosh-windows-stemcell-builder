@@ -25,20 +25,20 @@ class Inf
     end
   end
 
-  def uniq()
+  def uniq
     trim_contents = contents.map { |x| x.strip }
-    Inf.new(name, trim_contents.uniq {|text| text.split('=')[0].downcase + text.split('=')[1..-1].join('')})
+    Inf.new(name, trim_contents.uniq { |text| text.split('=')[0].downcase + text.split('=')[1..-1].join('') })
   end
 
-  def sort()
+  def sort
     Inf.new(name, contents.sort)
   end
 
-  def size()
+  def size
     @contents.size
   end
 
-  def summary()
+  def summary
     "section: #{@name} size: #{size}"
   end
 end
@@ -55,8 +55,8 @@ def convert_to_utf8(name)
 end
 
 def merge(a, b)
-  a_no_comment = a.split("\r\n").reject {|x| x.strip.gsub(/^;.*/,'').empty?}.join("\r\n").strip
-  b_no_comment = b.split("\r\n").reject {|x| x.strip.gsub(/^;.*/,'').empty?}.join("\r\n").strip
+  a_no_comment = a.split("\r\n").reject { |x| x.strip.gsub(/^;.*/, '').empty? }.join("\r\n").strip
+  b_no_comment = b.split("\r\n").reject { |x| x.strip.gsub(/^;.*/, '').empty? }.join("\r\n").strip
 
   a_normalize_equals = a_no_comment.gsub(' = ', '=').gsub(" =\r\n", "=\r\n")
   b_normalize_equals = b_no_comment.gsub(' = ', '=').gsub(" =\r\n", "=\r\n")
@@ -64,7 +64,7 @@ def merge(a, b)
   a_infs = Infs.from_string(a_normalize_equals)
   b_infs = Infs.from_string(b_normalize_equals)
 
-  (a_infs + b_infs).group_by {|x| x.name}.map {|section_name,infs| Inf.new(section_name, infs.map{|x| x.contents}.flatten)}
+  (a_infs + b_infs).group_by { |x| x.name }.map { |section_name, infs| Inf.new(section_name, infs.map { |x| x.contents }.flatten) }
 end
 
 a_contents = convert_to_utf8('GptTmpl-ms-baseline.inf')
@@ -92,17 +92,17 @@ sorted.each do |section|
   elements = section.contents
   title = section.name
 
-  grouped = elements.group_by {|x| x.split("=")[0]}
-  dups = grouped.keys.select {|k| grouped[k].size > 1}
+  grouped = elements.group_by { |x| x.split("=")[0] }
+  dups = grouped.keys.select { |k| grouped[k].size > 1 }
 
-  if(dups.nil?)
+  if dups.nil?
     puts "found 0 conflicts in section #{title}"
   else
     puts "found #{dups.size} conflicts in section #{title}"
-    dups.each {|x| puts x}
+    dups.each { |x| puts x }
   end
 end
 
 new_file = 'GptTmpl-merged.inf'
-File.write new_file, sorted.map{|section| section.name + "\n" + section.contents.join("\n")}.join("\n")
+File.write new_file, sorted.map { |section| section.name + "\n" + section.contents.join("\n") }.join("\n")
 puts "merged files with uniques removed outputted to #{new_file}"

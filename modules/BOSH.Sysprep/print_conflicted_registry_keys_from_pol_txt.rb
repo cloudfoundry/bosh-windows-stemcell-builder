@@ -6,8 +6,8 @@ def convert_to_utf8(name)
 end
 
 def merge(a, b)
-  a_no_comment = a.split("\r\n").reject {|x| x[0] == ';' }.join("\r\n").strip
-  b_no_comment = b.split("\r\n").reject {|x| x[0] == ';' }.join("\r\n").strip
+  a_no_comment = a.split("\r\n").reject { |x| x[0] == ';' }.join("\r\n").strip
+  b_no_comment = b.split("\r\n").reject { |x| x[0] == ';' }.join("\r\n").strip
   a_no_comment.strip + "\r\n\r\n" + b_no_comment.strip
 end
 
@@ -27,14 +27,14 @@ after_uniq = before_uniq.uniq do |entry|
 end
 puts "after uniq: #{after_uniq.size}"
 
-library = after_uniq.group_by {|x| x.split("\r\n")[1..2].join('\\')}
-dups = library.keys.select {|k| library[k].size > 1}
+library = after_uniq.group_by { |x| x.split("\r\n")[1..2].join('\\') }
+dups = library.keys.select { |k| library[k].size > 1 }
 
-if(dups.nil?)
- puts "found 0 conflicts"
+if dups.nil?
+  puts "found 0 conflicts"
 else
- puts "found #{dups.size} conflicts"
- dups.each {|x| puts x}
+  puts "found #{dups.size} conflicts"
+  dups.each { |x| puts x }
 end
 
 merged_file = "registry-merged.txt"

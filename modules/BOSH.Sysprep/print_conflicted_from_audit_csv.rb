@@ -26,7 +26,7 @@ class AuditFile
       values = x.split(',')
       keys = values[0..5].join('').downcase
       setting_value = values[6]
-      keys+setting_value
+      keys + setting_value
     end
 
     AuditFile.new(header, uniqed)
@@ -63,13 +63,13 @@ grouped = uniqued.contents.group_by do |line|
   policy_target + ',' + subcategory
 end
 
-dups = grouped.keys.select {|k| grouped[k].size > 1}
+dups = grouped.keys.select { |k| grouped[k].size > 1 }
 
-if(dups.nil?)
+if dups.nil?
   puts "found 0 conflicts"
 else
   puts "found #{dups.size} conflicts"
-  dups.each {|x| puts x}
+  dups.each { |x| puts x }
 end
 
 merged_file = "audit-merged.csv"
