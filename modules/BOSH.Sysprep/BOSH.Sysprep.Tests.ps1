@@ -1,7 +1,13 @@
 BeforeAll {
     Import-Module ./BOSH.Sysprep.psm1
     Import-Module ../BOSH.Utils/BOSH.Utils.psm1
+    Import-Module ../BOSH.Agent/BOSH.Agent.psm1
 
+
+    InModuleScope BOSH.Sysprep {
+        function GCESysprep {} # See: https://cloud.google.com/compute/docs/instances/windows/creating-windows-os-image
+        Mock GCESysprep {}
+    }
     function New-TempDir
     {
         $parent = [System.IO.Path]::GetTempPath()
@@ -20,11 +26,11 @@ Describe "BOSH.Sysprep" {
             Mock -ModuleName BOSH.Sysprep Stop-Computer { }
             Mock -ModuleName BOSH.Sysprep Start-Process { }
 
-            Mock -ModuleName BOSH.Sysprep -CommandName Test-Path -ParameterFilter {
-                if ($Path -eq "C:\Windows\LGPO.exe")
-                {
-                    return $True
-                }
+            Mock -ModuleName BOSH.Sysprep Get-OSVersion { "windows2019" }
+
+            $lgpoExists = $True
+            Mock -ModuleName BOSH.Sysprep Test-Path { $lgpoExists } -ParameterFilter {
+                $Path -eq "C:\Windows\LGPO.exe"
             }
         }
 
@@ -35,6 +41,10 @@ Describe "BOSH.Sysprep" {
         }
 
         Context "when provided an invalid Iaas" {
+            BeforeEach {
+                Mock -ModuleName BOSH.Sysprep -CommandName Set-NTP-Max-PhaseCorrection-Values { }
+            }
+
             It "throws" {
                 { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO -OsVersion "windows2019" } | Should -Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
             }
@@ -60,42 +70,31 @@ Describe "BOSH.Sysprep" {
             }
 
             Describe "LGPO" {
-                Context "when OS is windows2019" {
-                    BeforeEach {
-                        Mock Get-OSVersion { "windows2019" } -ModuleName Bosh.Sysprep
-                    }
+                It "enables local security policy with 'cis-merge-2019'" {
+                    $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-2019"
+                    { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
 
-                    It "enables local security policy with 'cis-merge-2019'" {
-                        $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-2019"
-                        { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
-
-                        Should -Invoke -ModuleName BOSH.Sysprep `
+                    Should -Invoke -ModuleName BOSH.Sysprep `
                         -CommandName Enable-LocalSecurityPolicy -Times 1 -ParameterFilter {
-                            $PolicySource -eq $ExpectedPath
-                        }
+                        $PolicySource -eq $ExpectedPath
+                    }
+                }
+
+                Context "when '-SkipLGPO' is set" {
+                    It "skips local policy update if -SkipLGPO is set" {
+                        { Invoke-Sysprep -Iaas "aws" -SkipLGPO } | Should -Not -Throw
+
+                        Should -Invoke -ModuleName BOSH.Sysprep -CommandName Enable-LocalSecurityPolicy -Times 0
+                    }
+                }
+
+                Context "if LGPO.exe is not found" {
+                    BeforeEach {
+                        $lgpoExists = $False
                     }
 
-                    Context "when '-SkipLGPO' is set" {
-                        It "skips local policy update if -SkipLGPO is set" {
-                            { Invoke-Sysprep -Iaas "aws" -SkipLGPO } | Should -Not -Throw
-
-                            Should -Invoke -ModuleName BOSH.Sysprep -CommandName Enable-LocalSecurityPolicy -Times 0
-                        }
-                    }
-
-                    Context "if LGPO.exe is not found" {
-                        BeforeEach {
-                            Mock -ModuleName BOSH.Sysprep -CommandName Test-Path -ParameterFilter {
-                                if ($Path -eq "C:\Windows\LGPO.exe")
-                                {
-                                    return $True
-                                }
-                            }
-                        }
-
-                        It "throws an error" {
-                            { Invoke-Sysprep -Iaas "aws" -SkipLGPO } | Should -Throw
-                        }
+                    It "throws an error" {
+                        { Invoke-Sysprep -Iaas "aws" } | Should -Throw
                     }
                 }
             }
@@ -106,6 +105,7 @@ Describe "BOSH.Sysprep" {
                 Mock -ModuleName BOSH.Sysprep Set-NTP-Max-PhaseCorrection-Values { }
                 Mock -ModuleName BOSH.Sysprep Enable-LocalSecurityPolicy { }
 
+                Mock -ModuleName BOSH.Sysprep Disable-AgentService { }
                 Mock -ModuleName BOSH.Sysprep Create-GCP-UnattendXML { }
                 Mock -ModuleName BOSH.Sysprep GCESysprep { }
             }
@@ -125,10 +125,6 @@ Describe "BOSH.Sysprep" {
 
             Describe "LGPO" {
                 Context "when OS is windows2019" {
-                    BeforeEach {
-                        Mock Get-OSVersion { "windows2019" } -ModuleName Bosh.Sysprep
-                    }
-
                     It "enables local security policy with 'cis-merge-2019'" {
                         $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-2019"
                         { Invoke-Sysprep -Iaas "gcp" } | Should -Not -Throw
@@ -149,16 +145,11 @@ Describe "BOSH.Sysprep" {
 
                     Context "if LGPO.exe is not found" {
                         BeforeEach {
-                            Mock -ModuleName BOSH.Sysprep -CommandName Test-Path -ParameterFilter {
-                                if ($Path -eq "C:\Windows\LGPO.exe")
-                                {
-                                    return $True
-                                }
-                            }
+                            $lgpoExists = $False
                         }
 
                         It "throws an error" {
-                            { Invoke-Sysprep -Iaas "gcp" -SkipLGPO } | Should -Throw
+                            { Invoke-Sysprep -Iaas "gcp" } | Should -Throw
                         }
                     }
                 }
@@ -170,6 +161,7 @@ Describe "BOSH.Sysprep" {
                 Mock -ModuleName BOSH.Sysprep Set-NTP-Max-PhaseCorrection-Values { }
                 Mock -ModuleName BOSH.Sysprep Enable-LocalSecurityPolicy { }
 
+                Mock -ModuleName BOSH.Sysprep Disable-AgentService { }
                 Mock -ModuleName BOSH.Sysprep Create-vSphere-Unattend { }
                 Mock -ModuleName BOSH.Sysprep Invoke-Expression { }
             }
@@ -198,10 +190,6 @@ Describe "BOSH.Sysprep" {
 
             Describe "LGPO" {
                 Context "when OS is windows2019" {
-                    BeforeEach {
-                        Mock Get-OSVersion { "windows2019" } -ModuleName Bosh.Sysprep
-                    }
-
                     It "enables local security policy with 'cis-merge-2019'" {
                         $ExpectedPath = Join-Path $PSScriptRoot "cis-merge-2019"
                         { Invoke-Sysprep -Iaas "vsphere" } | Should -Not -Throw
@@ -222,16 +210,11 @@ Describe "BOSH.Sysprep" {
 
                     Context "if LGPO.exe is not found" {
                         BeforeEach {
-                            Mock -ModuleName BOSH.Sysprep -CommandName Test-Path -ParameterFilter {
-                                if ($Path -eq "C:\Windows\LGPO.exe")
-                                {
-                                    return $True
-                                }
-                            }
+                            $lgpoExists = $False
                         }
 
                         It "throws an error" {
-                            { Invoke-Sysprep -Iaas "vsphere" -SkipLGPO } | Should -Throw
+                            { Invoke-Sysprep -Iaas "vsphere" } | Should -Throw
                         }
                     }
                 }
