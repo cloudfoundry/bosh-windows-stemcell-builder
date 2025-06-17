@@ -1,11 +1,13 @@
 # BOSH Powershell Modules
+
 Powershell scripts to set up a Windows VM in a manner appropriate for a BOSH Stemcell.
 
 ## Testing
 
 Tests are written using the Pester testing framework and must be run in Powershell on a Windows environment.
 
-The test suite for each module currently assumes that the tests are being run with the module as the current working directory.
+The test suite for each module currently assumes that the tests are being run with the module as the current working
+directory.
 
 This requires iterating through the module directories to run all the tests:
 
@@ -64,11 +66,13 @@ Invoke-Pester
 ## Debugging
 
 You can debug powershell scripts using VSCode. It has some dependencies:
+
 - dotnet runtime `brew install dotnet`
 - powershell binary `brew install powershell`
 - vscode extensions: `Powershell`, `C#` and `C# Dev Kit` (the latter may not be required)
 
 You can create a launch.json file like:
+
 ```json
 {
     "version": "0.2.0",
