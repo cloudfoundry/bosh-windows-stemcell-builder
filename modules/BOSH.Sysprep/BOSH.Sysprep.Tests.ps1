@@ -20,11 +20,10 @@ Describe "BOSH.Sysprep" {
             Mock -ModuleName BOSH.Sysprep Stop-Computer { }
             Mock -ModuleName BOSH.Sysprep Start-Process { }
 
-            $lgpoInstalled = $True
             Mock -ModuleName BOSH.Sysprep -CommandName Test-Path -ParameterFilter {
                 if ($Path -eq "C:\Windows\LGPO.exe")
                 {
-                    return $lgpoInstalled
+                    return $True
                 }
             }
         }
@@ -52,7 +51,7 @@ Describe "BOSH.Sysprep" {
                 Mock -ModuleName BOSH.Sysprep Enable-AWS-Sysprep { }
             }
 
-            It "handles other OS'" {
+            It "updates launchconfig.json, unattended.xml and calls Enable-AWS-Sysprep" {
                 { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
 
                 Should -Invoke -ModuleName BOSH.Sysprep -CommandName Update-AWS-LaunchConfigJSON
@@ -80,14 +79,18 @@ Describe "BOSH.Sysprep" {
                         It "skips local policy update if -SkipLGPO is set" {
                             { Invoke-Sysprep -Iaas "aws" -SkipLGPO } | Should -Not -Throw
 
-                            Should -Invoke -ModuleName BOSH.Sysprep `
-                        -CommandName Enable-LocalSecurityPolicy -Times 0
+                            Should -Invoke -ModuleName BOSH.Sysprep -CommandName Enable-LocalSecurityPolicy -Times 0
                         }
                     }
 
                     Context "if LGPO.exe is not found" {
                         BeforeEach {
-                            $lgpoInstalled = $False
+                            Mock -ModuleName BOSH.Sysprep -CommandName Test-Path -ParameterFilter {
+                                if ($Path -eq "C:\Windows\LGPO.exe")
+                                {
+                                    return $True
+                                }
+                            }
                         }
 
                         It "throws an error" {
@@ -140,14 +143,18 @@ Describe "BOSH.Sysprep" {
                         It "skips local policy update if -SkipLGPO is set" {
                             { Invoke-Sysprep -Iaas "gcp" -SkipLGPO } | Should -Not -Throw
 
-                            Should -Invoke -ModuleName BOSH.Sysprep `
-                        -CommandName Enable-LocalSecurityPolicy -Times 0
+                            Should -Invoke -ModuleName BOSH.Sysprep -CommandName Enable-LocalSecurityPolicy -Times 0
                         }
                     }
 
                     Context "if LGPO.exe is not found" {
                         BeforeEach {
-                            $lgpoInstalled = $False
+                            Mock -ModuleName BOSH.Sysprep -CommandName Test-Path -ParameterFilter {
+                                if ($Path -eq "C:\Windows\LGPO.exe")
+                                {
+                                    return $True
+                                }
+                            }
                         }
 
                         It "throws an error" {
@@ -209,14 +216,18 @@ Describe "BOSH.Sysprep" {
                         It "skips local policy update if -SkipLGPO is set" {
                             { Invoke-Sysprep -Iaas "vsphere" -SkipLGPO } | Should -Not -Throw
 
-                            Should -Invoke -ModuleName BOSH.Sysprep `
-                        -CommandName Enable-LocalSecurityPolicy -Times 0
+                            Should -Invoke -ModuleName BOSH.Sysprep -CommandName Enable-LocalSecurityPolicy -Times 0
                         }
                     }
 
                     Context "if LGPO.exe is not found" {
                         BeforeEach {
-                            $lgpoInstalled = $False
+                            Mock -ModuleName BOSH.Sysprep -CommandName Test-Path -ParameterFilter {
+                                if ($Path -eq "C:\Windows\LGPO.exe")
+                                {
+                                    return $True
+                                }
+                            }
                         }
 
                         It "throws an error" {
