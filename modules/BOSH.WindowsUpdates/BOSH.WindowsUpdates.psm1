@@ -48,7 +48,6 @@ function Wait-WindowsUpdates {
 }
 
 function Install-WindowsUpdates {
-
     # Set registry key so that we will receive the Jan 2018 patches (KB4056895)
     REG ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\QualityCompat /f /v cadca5fe-87d3-4b96-b7fb-a231484277cc /t REG_DWORD /d 0
 
@@ -298,87 +297,4 @@ function Get-UpdateBatch {
         $script:RestartRequired=0
         $script:MoreUpdates=0
     }
-}
-
-function Search-InstalledUpdates {
-    $Session = New-Object -ComObject Microsoft.Update.Session
-    $Searcher = $Session.CreateUpdateSearcher()
-    $Searcher.Search("IsInstalled=1").Updates | Sort-Object LastDeploymentChangeTime | ForEach-Object { "KB$($_.KBArticleIDs) | $($_.Title)" }
-}
-
-function Test-InstalledUpdates {
-    Write-Host "Running Get-HotFix:"
-    Get-HotFix
-    $Session = New-Object -ComObject Microsoft.Update.Session
-    Write-Host "Session: $Session"
-    $Searcher = $Session.CreateUpdateSearcher()
-    Write-Host "Searcher: $Searcher"
-    $UninstalledUpdates = $Searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0").Updates
-    if ($UninstalledUpdates.Count -ne 0) {
-        Write-Log "The following updates are not currently installed:"
-        foreach ($Update in $UninstalledUpdates) {
-            Write-Log "> $($Update.Title)"
-        }
-        Throw 'There are uninstalled updates'
-    }
-}
-
-<#
-.Synopsis
-    Disable Automatic Updates
-.Description
-    This cmdlet disables automatic Windows Updates
-#>
-function Disable-AutomaticUpdates {
-    Stop-Service -Name wuauserv
-    Set-Service -Name wuauserv -StartupType Disabled
-
-    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 1 -Name 'AUOptions'
-    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'EnableFeaturedSoftware'
-    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'IncludeRecommendedUpdates'
-}
-
-function Enable-CVE-2015-6161 {
-    #Enable MS15-124 - Internet Explorer ASLR Bypass fix - CVE-2015-6161
-    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
-    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ALLOW_USER32_EXCEPTION_HANDLER_HARDENING" /t REG_DWORD /v "iexplore.exe" /d 1 /f
-}
-
-function Enable-CVE-2017-8529 {
-    #Enable Microsoft Browser Information Disclosure Vulnerability - CVE-2017-8529
-    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" /v iexplore.exe /t REG_DWORD /d 1 /f
-    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_ENABLE_PRINT_INFO_DISCLOSURE_FIX" /v iexplore.exe /t REG_DWORD /d 1 /f
-
-}
-
-function Enable-CredSSP {
-    #Enable CredSSP  updates - CVE-2018-0886
-    #Policy set to "mitigated"
-    reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters" /v AllowEncryptionOracle /t REG_DWORD /d 1 /f
-}
-
-function Upgrade-PSVersion  {
-    if (Test-PSVersion) {
-        Write-Log "Upgrade-PSVersion: No need to upgrade. PSVersion is 5 or above"
-        return
-    }
-
-    $existingProtocol = [Net.ServicePointManager]::SecurityProtocol
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Write-Log "Upgrade-PSVersion: Downloading."
-
-    $MSUPath = "c:\provision\PS51.msu"
-    Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=839516" -UseBasicParsing -OutFile $MSUPath
-
-    Write-Log "Upgrade-PSVersion: Downloaded. Installing."
-
-    $p = Start-Process -FilePath $MSUPath -ArgumentList '/quiet /norestart /log:"C:\provision\psupgrade.log"' -Wait -PassThru
-    Write-Log "Upgrade-PSVersion: Installed. Process exit code: $($p.ExitCode)"
-    [Net.ServicePointManager]::SecurityProtocol = $existingProtocol
-}
-
-function Test-PSVersion {
-    $version = $PSVersionTable.PSVersion
-    Write-Log "Powershell is $version"
-    $version.Major -ge 5
 }
