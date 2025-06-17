@@ -119,7 +119,7 @@ Describe "BOSH.Sysprep" {
                 Mock -ModuleName BOSH.Sysprep Set-NTP-Max-PhaseCorrection-Values { }
 
                 Mock -ModuleName BOSH.Sysprep Disable-AgentService { }
-                Mock -ModuleName BOSH.Sysprep Create-vSphere-UnattendXML { }
+                Mock -ModuleName BOSH.Sysprep New-vSphere-UnattendXML { }
                 Mock -ModuleName BOSH.Sysprep Invoke-Expression { }
             }
 
@@ -133,7 +133,7 @@ Describe "BOSH.Sysprep" {
             It "creates an unattend.xml file" {
                 { Invoke-Sysprep -IaaS "vsphere" } | Should -Not -Throw
 
-                Should -Invoke -ModuleName BOSH.Sysprep -CommandName Create-vSphere-UnattendXML -ParameterFilter {
+                Should -Invoke -ModuleName BOSH.Sysprep -CommandName New-vSphere-UnattendXML -ParameterFilter {
                     $NewPassword -ne $null -and $ProductKey -ne $null -and $Organization -ne $null -and $Owner -ne $null
                 }
             }
@@ -148,7 +148,7 @@ Describe "BOSH.Sysprep" {
         }
     }
 
-    Describe "Create-vSphere-UnattendXML" {
+    Describe "New-vSphere-UnattendXML" {
         BeforeEach {
             $UnattendDestination = (New-TempDir)
             $NewPassword = "NewPassword"
@@ -163,7 +163,7 @@ Describe "BOSH.Sysprep" {
 
         It "places the generated Unattend file in the specified directory" {
             {
-                Create-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
+                New-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
                 -NewPassword $NewPassword `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
@@ -175,7 +175,7 @@ Describe "BOSH.Sysprep" {
         It "handles special chars in passwords" {
             $NewPassword = "<!--Password123"
             {
-                Create-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
+                New-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
                 -NewPassword $NewPassword `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
@@ -191,7 +191,7 @@ Describe "BOSH.Sysprep" {
 
         It "handles null for NewPassword" {
             {
-                Create-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
+                New-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
                 -NewPassword $null `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
@@ -208,7 +208,7 @@ Describe "BOSH.Sysprep" {
 
         It "handles empty string for NewPassword" {
             {
-                Create-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
+                New-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
                 -NewPassword "" `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
@@ -225,7 +225,7 @@ Describe "BOSH.Sysprep" {
 
         It "handles not providing NewPassword" {
             {
-                Create-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
+                New-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
                 -ProductKey $ProductKey `
                 -Organization $Organization `
                 -Owner $Owner
@@ -242,7 +242,7 @@ Describe "BOSH.Sysprep" {
         Context "the generated Unattend file" {
             BeforeEach {
                 {
-                    Create-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
+                    New-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
                      -NewPassword $NewPassword `
                      -ProductKey $ProductKey `
                      -Organization $Organization `
@@ -262,7 +262,7 @@ Describe "BOSH.Sysprep" {
 
             It "when Product Key is not provided, there is no Product Key, Organization, or Owner" {
                 {
-                    Create-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
+                    New-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
                     -NewPassword $NewPassword
                 } | Should -Not -Throw
                 [xml]$unattendXML = Get-Content -Path $unattendPath
@@ -273,7 +273,7 @@ Describe "BOSH.Sysprep" {
 
             It "when Product Key is not provided: Organization and Owner are not removed" {
                 {
-                    Create-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
+                    New-vSphere-UnattendXML -UnattendDestination $UnattendDestination `
                     -NewPassword $NewPassword -Organization 'Test-Org' -Owner 'Test-Owner'
                 } | Should -Not -Throw
                 [xml]$unattendXML = Get-Content -Path $unattendPath

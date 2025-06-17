@@ -41,7 +41,7 @@ function Invoke-Sysprep {
     }
     "vsphere" {
       Disable-AgentService
-      Create-vSphere-UnattendXML -NewPassword $NewPassword -ProductKey $ProductKey `
+      New-vSphere-UnattendXML -NewPassword $NewPassword -ProductKey $ProductKey `
         -Organization $Organization -Owner $Owner
 
       Invoke-Expression -Command 'C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown'
@@ -204,7 +204,7 @@ function Create-GCP-UnattendXML {
 }
 
 # vSphere
-function Create-vSphere-UnattendXML {
+function New-vSphere-UnattendXML {
   Param (
     [string]$UnattendDestination = "C:\Windows\Panther\Unattend",
     [string]$NewPassword,
@@ -212,7 +212,7 @@ function Create-vSphere-UnattendXML {
     [string]$Organization,
     [string]$Owner
   )
-  Write-Log "Starting Create-vSphere-UnattendXML"
+  Write-Log "Starting New-vSphere-UnattendXML"
 
   New-Item -ItemType directory $UnattendDestination -Force
   $UnattendPath = Join-Path $UnattendDestination "unattend.xml"
