@@ -21,17 +21,7 @@ function Invoke-Sysprep {
 
   if (-Not $SkipLGPO)
   {
-    if (-Not (Test-Path "C:\Windows\LGPO.exe")) {
-      Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
-    }
-
-    $OsVersion = Get-OSVersion
-    switch ($OsVersion)
-    {
-      "windows2019" {
-        Enable-LocalSecurityPolicy (Join-Path $PSScriptRoot "cis-merge-2019")
-      }
-    }
+    Enable-LocalSecurityPolicy
   }
 
   switch ($IaaS) {
@@ -67,26 +57,37 @@ function Invoke-Sysprep {
   This cmdlet enables enabling a local security policy for a stemcell
 #>
 function Enable-LocalSecurityPolicy {
-  Param (
-    [string]$PolicySource =$(throw "Policy backup filepath is required")
-  )
   Write-Log "Starting LocalSecurityPolicy"
+
+  $OsVersion = Get-OSVersion
+  switch ($OsVersion)
+  {
+    "windows2019" {
+      $PolicySource = (Join-Path $PSScriptRoot "cis-merge-2019")
+    }
+    Default { Throw "Policy backup filepath could not be determined from OS: $OsVersion" }
+  }
+
+  $lgpoExePath = "C:\Windows\LGPO.exe"
+  if (-Not (Test-Path $lgpoExePath)) {
+    Throw "Error: LGPO.exe is expected to be installed to C:\Windows\LGPO.exe"
+  }
 
   # Convert registry.txt files into registry.pol files
   $MachineDir="$PolicySource/DomainSysvol/GPO/Machine"
-  LGPO.exe /r "$MachineDir/registry.txt" /w "$MachineDir/registry.pol"
+  Invoke-Expression "$lgpoExePath /r '$MachineDir/registry.txt' /w '$MachineDir/registry.pol'"
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Generating policy: Machine"
   }
 
   $UserDir="$PolicySource/DomainSysvol/GPO/User"
-  LGPO.exe /r "$UserDir/registry.txt" /w "$UserDir/registry.pol"
+  Invoke-Expression "$lgpoExePath /r '$UserDir/registry.txt' /w '$UserDir/registry.pol'"
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Generating policy: User"
   }
 
   # Apply policies
-  LGPO.exe /g "$PolicySource/DomainSysvol" /v
+  Invoke-Expression "$lgpoExePath /g '$PolicySource/DomainSysvol' /v"
   if ($LASTEXITCODE -ne 0) {
     Write-Error "Applying policy: $PolicySource/DomainSysvol"
   }
