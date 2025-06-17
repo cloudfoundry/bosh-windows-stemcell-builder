@@ -1,31 +1,34 @@
-function Write-Log {
-   Param (
-   [Parameter(Mandatory=$True,Position=1)][string]$Message,
-   [string]$LogFile="C:\provision\log.log"
-   )
+function Write-Log
+{
+    Param (
+        [Parameter(Mandatory = $True, Position = 1)][string]$Message,
+        [string]$LogFile = "C:\provision\log.log"
+    )
 
-   $LogDir = (split-path $LogFile -parent)
-   If ((Test-Path $LogDir) -ne $True) {
-     New-Item -Path $LogDir -ItemType Directory -Force
-   }
+    $LogDir = (split-path $LogFile -parent)
+    If ((Test-Path $LogDir) -ne $True)
+    {
+        New-Item -Path $LogDir -ItemType Directory -Force
+    }
 
-   $msg = "{0} {1}" -f (Get-Date -Format o), $Message
-   Add-Content -Path $LogFile -Value $msg -Encoding 'UTF8'
-   Write-Host $msg
+    $msg = "{0} {1}" -f (Get-Date -Format o), $Message
+    Add-Content -Path $LogFile -Value $msg -Encoding 'UTF8'
+    Write-Host $msg
 }
+
+$boshWinRMDir = 'C:\Program Files\WindowsPowerShell\Modules\BOSH.WinRM'
+Write-Log "Making bosh module directory: $boshWinRMDir"
+New-Item -Path $boshWinRMDir -ItemType Directory -Force
 
 $winrmUrl = 'https://raw.githubusercontent.com/cloudfoundry/bosh-psmodules/master/modules/BOSH.WinRM/BOSH.WinRM.psm1'
-Write-Log "Making bosh module directory"
-$dir = 'C:\Program Files\WindowsPowerShell\Modules\BOSH.WinRM'
-New-Item -Path $dir -ItemType Directory -Force
 
-Write-Log "Fetching bosh module"
-Invoke-WebRequest $winrmUrl -OutFile "$dir\BOSH.WinRM.psm1"
+Write-Log "Fetching bosh module $winrmUrl"
+Invoke-WebRequest $winrmUrl -OutFile "$boshWinRMDir\BOSH.WinRM.psm1"
 
-if (-not(Get-Command Enable-WinRM -errorAction SilentlyContinue))
+if (-not (Get-Command Enable-WinRM -errorAction SilentlyContinue))
 {
-    Write-Log "Enable-WinRM was not loaded. There may be a problem with $winrmUrl" 
+    Write-Log "Enable-WinRM was not loaded. There may be a problem with $winrmUrl"
 }
 
-Write-Log "Invoking winrm"
+Write-Log "Invoking WinRM"
 Enable-WinRM
