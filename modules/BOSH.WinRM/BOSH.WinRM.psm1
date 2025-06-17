@@ -54,20 +54,3 @@ function runCmd {
 	 Write-Log "Error running: $arg"
       }
 }
-
-function Write-Log {
-   Param (
-   [Parameter(Mandatory=$True,Position=1)][string]$Message,
-   [string]$LogFile="C:\provision\log.log"
-   )
-
-   $LogDir = (split-path $LogFile -parent)
-   If ((Test-Path $LogDir) -ne $True) {
-     New-Item -Path $LogDir -ItemType Directory -Force
-   }
-
-   $msg = "{0} {1}" -f (Get-Date -Format o), $Message
-   Add-Content -Path $LogFile -Value $msg -Encoding 'UTF8'
-   Write-Host $msg
-}
-
