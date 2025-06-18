@@ -23,7 +23,7 @@ foreach ($module in $testModules) {
     # Do not set $ErrorActionPreference and let Pester handle it nativetly; setting it to Stop globally will
     # break the tests since they are written with the assumption non zero exit codes will not fail a test
     # See: https://github.com/pester/Pester/issues/1404#issuecomment-568659518 for details
-    $results=Invoke-Pester -PassThru
+    $results=Invoke-Pester -PassThru # append "-Output Diagnostic" for verbose output
     if ($results.FailedCount -gt 0) {
       $result += $results.FailedCount
     }

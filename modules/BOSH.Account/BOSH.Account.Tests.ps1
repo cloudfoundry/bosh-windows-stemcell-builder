@@ -25,14 +25,15 @@ Describe "BOSH.Account" {
 
     Context "when the username and password are valid" {
         BeforeAll {
-            $timestamp=(get-date -UFormat "%s" -Millisecond 0)
+            $timestamp = (get-date -UFormat "%s" -Millisecond 0)
             $user = "TestUser_$timestamp"
             $password = "Password123!"
         }
 
-         BeforeEach {
-            $userExists = !!(Get-LocalUser | Where {$_.Name -eq $user})
-            if($userExists) {
+        BeforeEach {
+            $userExists = !!(Get-LocalUser | Where { $_.Name -eq $user })
+            if ($userExists)
+            {
                 Remove-LocalUser -Name $user
             }
         }
@@ -41,10 +42,10 @@ Describe "BOSH.Account" {
             Add-Account -User $user -Password $password
             mkdir "C:\Users\$user" -ErrorAction Ignore
             $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
-            $existing = $adsi.Children | Where-Object {$_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
+            $existing = $adsi.Children | Where-Object { $_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
             $existing | Should -Not -Be $null
             Remove-Account -User $user
-            $existing = $adsi.Children | Where-Object {$_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
+            $existing = $adsi.Children | Where-Object { $_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
             $existing | Should -Be $null
         }
     }

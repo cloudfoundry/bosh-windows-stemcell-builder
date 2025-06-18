@@ -7,7 +7,7 @@
     New-Item "$env:PROGRAMFILES\SSHTemp" -Type Directory -Force
     Open-Zip -ZipFile $SSHZipFile -OutPath "$env:PROGRAMFILES\SSHTemp"
 
-    $ConfigPath =  "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64\sshd_config_default"
+    $ConfigPath = "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64\sshd_config_default"
     $ModifiedConfigContents = Edit-DefaultOpenSSHConfig -ConfigPath $ConfigPath
     Remove-Item -Force $ConfigPath
     Out-File -FilePath $ConfigPath -InputObject $ModifiedConfigContents -Encoding UTF8
@@ -25,17 +25,17 @@
 
     #    # Grant NT AUTHORITY\Authenticated Users access to .EXEs and the .DLL in OpenSSH
     $FileNames = @(
-    "libcrypto.dll",
-    "scp.exe",
-    "sftp-server.exe",
-    "sftp.exe",
-    "ssh-add.exe",
-    "ssh-agent.exe",
-    "ssh-keygen.exe",
-    "ssh-keyscan.exe",
-    "ssh-shellhost.exe",
-    "ssh.exe",
-    "sshd.exe"
+        "libcrypto.dll",
+        "scp.exe",
+        "sftp-server.exe",
+        "sftp.exe",
+        "ssh-add.exe",
+        "ssh-agent.exe",
+        "ssh-keygen.exe",
+        "ssh-keyscan.exe",
+        "ssh-shellhost.exe",
+        "ssh.exe",
+        "sshd.exe"
     )
     Invoke-CACL -FileNames $FileNames
 
@@ -136,9 +136,9 @@ function Edit-DefaultOpenSSHConfig
     )
 
     $ModifiedConfig = Get-Content $ConfigPath `
-    | ForEach-Object{$_ -replace ".*Match Group administrators.*", "#$&"} `
-    | ForEach-Object{$_ -replace ".*AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys.*", "#$&" } `
-    | ForEach-Object{$_ -replace "#RekeyLimit default none", "$&`r`n# Disable cipher to mitigate CVE-2023-48795`r`nCiphers -chacha20-poly1305@openssh.com`r`n"}
+    | ForEach-Object{ $_ -replace ".*Match Group administrators.*", "#$&" } `
+    | ForEach-Object{ $_ -replace ".*AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys.*", "#$&" } `
+    | ForEach-Object{ $_ -replace "#RekeyLimit default none", "$&`r`n# Disable cipher to mitigate CVE-2023-48795`r`nCiphers -chacha20-poly1305@openssh.com`r`n" }
 
     return $ModifiedConfig
 }

@@ -5,52 +5,55 @@
     This cmdlet enables the WinRM endpoint using http and basic auth by default
 #>
 
-function Enable-WinRM {
-      Write-Log "Start WinRM with defaults"
-      runCmd 'winrm quickconfig -q'
+function Enable-WinRM
+{
+    Write-Log "Start WinRM with defaults"
+    runCmd 'winrm quickconfig -q'
 
-      Write-Log "Getting WinRM config"
-      runCmd 'winrm get winrm/config'
+    Write-Log "Getting WinRM config"
+    runCmd 'winrm get winrm/config'
 
-      Write-Log "Override defaults to allow unlimited shells/processes/memory"
-      runCmd 'winrm set winrm/config @{MaxTimeoutms="7200000"}'
-      runCmd 'winrm set winrm/config/winrs @{MaxMemoryPerShellMB="0"}'
-      runCmd 'winrm set winrm/config/winrs @{MaxProcessesPerShell="0"}'
-      runCmd 'winrm set winrm/config/winrs @{MaxShellsPerUser="0"}'
-      runCmd 'winrm set winrm/config/winrs @{MaxConcurrentUsers="30"}'
-      runCmd 'winrm set winrm/config/service @{MaxConcurrentOperationsPerUser="5000"}'
+    Write-Log "Override defaults to allow unlimited shells/processes/memory"
+    runCmd 'winrm set winrm/config @{MaxTimeoutms="7200000"}'
+    runCmd 'winrm set winrm/config/winrs @{MaxMemoryPerShellMB="0"}'
+    runCmd 'winrm set winrm/config/winrs @{MaxProcessesPerShell="0"}'
+    runCmd 'winrm set winrm/config/winrs @{MaxShellsPerUser="0"}'
+    runCmd 'winrm set winrm/config/winrs @{MaxConcurrentUsers="30"}'
+    runCmd 'winrm set winrm/config/service @{MaxConcurrentOperationsPerUser="5000"}'
 
-      Write-Log "Enable HTTP"
-      runCmd 'winrm quickconfig -transport:http'
+    Write-Log "Enable HTTP"
+    runCmd 'winrm quickconfig -transport:http'
 
-      Write-Log "Enable insecure basic auth over http"
-      runCmd 'winrm set winrm/config/service/auth @{Basic="true"}'
-      runCmd 'winrm set winrm/config/client/auth @{Basic="true"}'
-      runCmd 'winrm set winrm/config/service @{AllowUnencrypted="true"}'
+    Write-Log "Enable insecure basic auth over http"
+    runCmd 'winrm set winrm/config/service/auth @{Basic="true"}'
+    runCmd 'winrm set winrm/config/client/auth @{Basic="true"}'
+    runCmd 'winrm set winrm/config/service @{AllowUnencrypted="true"}'
 
-      Write-Log "Win RM listener Address/Port"
-      runCmd 'winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"}'
+    Write-Log "Win RM listener Address/Port"
+    runCmd 'winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"}'
 
-      Write-Log "Ensure the Windows firewall allows WinRM traffic through"
-      Enable-NetFirewallRule -DisplayName "Windows Remote Management (HTTP-In)"
+    Write-Log "Ensure the Windows firewall allows WinRM traffic through"
+    Enable-NetFirewallRule -DisplayName "Windows Remote Management (HTTP-In)"
 
-      Write-Log "Win RM port open"
-      runCmd 'netsh firewall add portopening TCP 5985 "Port 5985"'
+    Write-Log "Win RM port open"
+    runCmd 'netsh firewall add portopening TCP 5985 "Port 5985"'
 
-      Write-Log "Getting WinRM config after"
-      runCmd 'winrm get winrm/config'
+    Write-Log "Getting WinRM config after"
+    runCmd 'winrm get winrm/config'
 }
 
-function runCmd {
-   Param(
-	 [string]$arg
-	)
-      $command_log_ouput = & cmd.exe /c $arg
+function runCmd
+{
+    Param(
+        [string]$arg
+    )
+    $command_log_ouput = & cmd.exe /c $arg
 
-      Write-Log "Running: $arg"
-      Write-Log "$command_log_ouput"
+    Write-Log "Running: $arg"
+    Write-Log "$command_log_ouput"
 
-      if ($LASTEXITCODE -ne 0) {
-	 Write-Log "Error running: $arg"
-      }
+    if ($LASTEXITCODE -ne 0)
+    {
+        Write-Log "Error running: $arg"
+    }
 }

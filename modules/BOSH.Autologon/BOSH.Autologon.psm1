@@ -5,12 +5,13 @@
     This cmdlet enables/disables the Autologon
 #>
 
-$RegistryKey="HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+$RegistryKey = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 
-function Enable-Autologon {
+function Enable-Autologon
+{
     Param (
-        [Parameter(Mandatory=$true)][string]$Password,
-        [string]$User="Provisioner"
+        [Parameter(Mandatory = $true)][string]$Password,
+        [string]$User = "Provisioner"
     )
 
     Write-Log "Enable Autologon"
@@ -20,7 +21,8 @@ function Enable-Autologon {
     Set-ItemProperty -Path $RegistryKey -Name DefaultPassword -Value $Password -Force
 }
 
-function Disable-Autologon {
+function Disable-Autologon
+{
     Write-Log "Disable Autologon"
     Set-ItemProperty $RegistryKey -name AutoAdminLogon -value 0
 }

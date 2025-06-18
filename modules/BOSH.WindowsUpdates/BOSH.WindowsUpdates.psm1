@@ -9,20 +9,23 @@
 $script:ScriptName = $MyInvocation.MyCommand.ToString()
 $script:ScriptPath = $MyInvocation.MyCommand.Path
 
-function Find-WindowsUpdatesTask {
+function Find-WindowsUpdatesTask
+{
     $task = Get-ScheduledTask -TaskName "InstallWindowsUpdates" -ErrorAction SilentlyContinue
     return $null -ne $task
 }
 
-function Register-WindowsUpdatesTask {
+function Register-WindowsUpdatesTask
+{
     $Prin = New-ScheduledTaskPrincipal -GroupId "BUILTIN\Administrators" -RunLevel Highest
     $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
     -Argument "-Command `"Install-WindowsUpdates`" "
-    $trigger =  New-ScheduledTaskTrigger -AtLogon -RandomDelay 00:00:30
+    $trigger = New-ScheduledTaskTrigger -AtLogon -RandomDelay 00:00:30
     Register-ScheduledTask -Principal $Prin -Action $action -Trigger $trigger -TaskName "InstallWindowsUpdates" -Description "InstallWindowsUpdates"
 }
 
-function Unregister-WindowsUpdatesTask {
+function Unregister-WindowsUpdatesTask
+{
     $task = Find-WindowsUpdatesTask
     if ($task)
     {
@@ -31,8 +34,9 @@ function Unregister-WindowsUpdatesTask {
     }
 }
 
-function Wait-WindowsUpdates {
-    Param([string]$Password,[string]$User)
+function Wait-WindowsUpdates
+{
+    Param([string]$Password, [string]$User)
 
     Enable-Autologon -Password $Password -User $User
 
@@ -47,7 +51,8 @@ function Wait-WindowsUpdates {
     Write-Log "$winrm_config"
 }
 
-function Install-WindowsUpdates {
+function Install-WindowsUpdates
+{
     # Set registry key so that we will receive the Jan 2018 patches (KB4056895)
     REG ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\QualityCompat /f /v cadca5fe-87d3-4b96-b7fb-a231484277cc /t REG_DWORD /d 0
 
@@ -57,9 +62,12 @@ function Install-WindowsUpdates {
     reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v FeatureSettingsOverrideMask /t REG_DWORD /d 3 /f
     reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization" /v MinVmVersionForCpuBasedMitigations /t REG_SZ /d "1.0" /f
 
-    if (test-path "C:\provision\patch.msu") {
+    if (test-path "C:\provision\patch.msu")
+    {
         Write-Log "Already installed out-of-band patch"
-    } else {
+    }
+    else
+    {
         Set-Service -Name wuauserv -StartupType Manual
         Start-Service -Name wuauserv
 
@@ -75,34 +83,45 @@ function Install-WindowsUpdates {
 
     $script:Cycles = 0
     $script:CycleUpdateCount = 0
-    $script:MaxUpdatesPerCycle=500
-    $script:RestartRequired=0
-    $script:MoreUpdates=0
-    $script:MaxCycles=5
+    $script:MaxUpdatesPerCycle = 500
+    $script:RestartRequired = 0
+    $script:MoreUpdates = 0
+    $script:MaxCycles = 5
 
     Get-UpdateBatch
-    if ($script:MoreUpdates -eq 1) {
+    if ($script:MoreUpdates -eq 1)
+    {
         Install-UpdateBatch
-    } else {
+    }
+    else
+    {
         Invoke-RebootOrComplete
     }
 }
 
-function Invoke-RebootOrComplete {
-    switch ($script:RestartRequired) {
+function Invoke-RebootOrComplete
+{
+    $RegistryEntry = "InstallWindowsUpdates"
+    switch ($script:RestartRequired)
+    {
         0 {
             Unregister-WindowsUpdatesTask
 
             Write-Log "No Restart Required"
             Get-UpdateBatch
 
-            if (($script:MoreUpdates -eq 1) -and ($script:Cycles -le $script:MaxCycles)) {
+            if (($script:MoreUpdates -eq 1) -and ($script:Cycles -le $script:MaxCycles))
+            {
                 Install-UpdateBatch
-            } elseif ($script:Cycles -gt $script:MaxCycles) {
+            }
+            elseif ($script:Cycles -gt $script:MaxCycles)
+            {
                 Write-Log "Exceeded Cycle Count - Stopping"
                 Enable-WinRM
                 Disable-Autologon
-            } else {
+            }
+            else
+            {
                 Write-Log "Done Installing Windows Updates"
                 Enable-WinRM
                 Disable-Autologon
@@ -114,10 +133,13 @@ function Invoke-RebootOrComplete {
         }
         1 {
             $prop = Find-WindowsUpdatesTask
-            if (-not $prop ) {
+            if (-not $prop)
+            {
                 Write-Log "Restart Scheduled Task Does Not Exist - Creating It"
                 Register-WindowsUpdatesTask
-            } else {
+            }
+            else
+            {
                 Write-Log "Restart Scheduled Task Exists Already"
             }
 
@@ -131,54 +153,74 @@ function Invoke-RebootOrComplete {
     }
 }
 
-function Install-UpdateBatch {
+function Install-UpdateBatch
+{
     $script:Cycles++
-    Write-Log "Evaluating Available Updates with limit of $($script:MaxUpdatesPerCycle):"
+    Write-Log "Evaluating Available Updates with limit of $( $script:MaxUpdatesPerCycle ):"
     $UpdatesToDownload = New-Object -ComObject 'Microsoft.Update.UpdateColl'
     $script:i = 0;
-    if ($Host.Version.Major -eq 5) {
-      $CurrentUpdates = $SearchResult.Updates
-    } else {
-      $CurrentUpdates = $SearchResult.Updates | Select-Object
+    if ($Host.Version.Major -eq 5)
+    {
+        $CurrentUpdates = $SearchResult.Updates
     }
-    while($script:i -lt $SearchResult.Updates.Count -and $script:CycleUpdateCount -lt $script:MaxUpdatesPerCycle) {
+    else
+    {
+        $CurrentUpdates = $SearchResult.Updates | Select-Object
+    }
+    while ($script:i -lt $SearchResult.Updates.Count -and $script:CycleUpdateCount -lt $script:MaxUpdatesPerCycle)
+    {
         $Update = $CurrentUpdates[$script:i]
-        if (($null -ne $Update) -and (!$Update.IsDownloaded)) {
+        if (($null -ne $Update) -and (!$Update.IsDownloaded))
+        {
             [bool]$addThisUpdate = $false
-            if ($Update.InstallationBehavior.CanRequestUserInput) {
-                Write-Log "> Skipping: $($Update.Title) because it requires user input"
-            } else {
-                if (!($Update.EulaAccepted)) {
-                    Write-Log "> Note: $($Update.Title) has a license agreement that must be accepted. Accepting the license."
+            if ($Update.InstallationBehavior.CanRequestUserInput)
+            {
+                Write-Log "> Skipping: $( $Update.Title ) because it requires user input"
+            }
+            else
+            {
+                if (!($Update.EulaAccepted))
+                {
+                    Write-Log "> Note: $( $Update.Title ) has a license agreement that must be accepted. Accepting the license."
                     $Update.AcceptEula()
                     [bool]$addThisUpdate = $true
                     $script:CycleUpdateCount++
-                } else {
+                }
+                else
+                {
                     [bool]$addThisUpdate = $true
                     $script:CycleUpdateCount++
                 }
             }
 
-            if ([bool]$addThisUpdate) {
-                Write-Log "Adding: $($Update.Title)"
+            if ([bool]$addThisUpdate)
+            {
+                Write-Log "Adding: $( $Update.Title )"
                 $UpdatesToDownload.Add($Update) |Out-Null
             }
         }
         $script:i++
     }
 
-    if ($UpdatesToDownload.Count -eq 0) {
+    if ($UpdatesToDownload.Count -eq 0)
+    {
         Write-Log "No Updates To Download..."
-    } else {
+    }
+    else
+    {
         Write-Log 'Downloading Updates...'
         $ok = 0;
-        while (! $ok) {
-            try {
+        while (!$ok)
+        {
+            try
+            {
                 $Downloader = $UpdateSession.CreateUpdateDownloader()
                 $Downloader.Updates = $UpdatesToDownload
                 $Downloader.Download()
                 $ok = 1;
-            } catch {
+            }
+            catch
+            {
                 Write-Log $_.Exception | Format-List -force
                 Write-Log "Error downloading updates. Retrying in 30s."
                 $script:attempts = $script:attempts + 1
@@ -190,21 +232,25 @@ function Install-UpdateBatch {
     $UpdatesToInstall = New-Object -ComObject 'Microsoft.Update.UpdateColl'
     [bool]$rebootMayBeRequired = $false
     Write-Log 'The following updates are downloaded and ready to be installed:'
-    foreach ($Update in $SearchResult.Updates) {
-        if (($Update.IsDownloaded)) {
-            Write-Log "> $($Update.Title)"
+    foreach ($Update in $SearchResult.Updates)
+    {
+        if (($Update.IsDownloaded))
+        {
+            Write-Log "> $( $Update.Title )"
             $UpdatesToInstall.Add($Update) |Out-Null
 
-            if ($Update.InstallationBehavior.RebootBehavior -gt 0){
+            if ($Update.InstallationBehavior.RebootBehavior -gt 0)
+            {
                 [bool]$rebootMayBeRequired = $true
             }
         }
     }
 
-    if ($UpdatesToInstall.Count -eq 0) {
+    if ($UpdatesToInstall.Count -eq 0)
+    {
         Write-Log 'No updates available to install...'
-        $script:MoreUpdates=0
-        $script:RestartRequired=0
+        $script:MoreUpdates = 0
+        $script:RestartRequired = 0
         Enable-WinRM
 
         Write-Log "Getting WinRM config"
@@ -213,9 +259,10 @@ function Install-UpdateBatch {
         break
     }
 
-    if ($rebootMayBeRequired) {
+    if ($rebootMayBeRequired)
+    {
         Write-Log 'These updates may require a reboot'
-        $script:RestartRequired=1
+        $script:RestartRequired = 1
     }
 
     Write-Log 'Installing updates...'
@@ -224,16 +271,19 @@ function Install-UpdateBatch {
     $Installer.Updates = $UpdatesToInstall
     $InstallationResult = $Installer.Install()
 
-    Write-Log "Installation Result: $($InstallationResult.ResultCode)"
-    Write-Log "Reboot Required: $($InstallationResult.RebootRequired)"
+    Write-Log "Installation Result: $( $InstallationResult.ResultCode )"
+    Write-Log "Reboot Required: $( $InstallationResult.RebootRequired )"
     Write-Log 'Listing of updates installed and individual installation results:'
-    if ($InstallationResult.RebootRequired) {
-        $script:RestartRequired=1
-    } else {
-        $script:RestartRequired=0
+    if ($InstallationResult.RebootRequired)
+    {
+        $script:RestartRequired = 1
+    }
+    else
+    {
+        $script:RestartRequired = 0
     }
 
-    for($i=0; $i -lt $UpdatesToInstall.Count; $i++) {
+    for($i = 0; $i -lt $UpdatesToInstall.Count; $i++) {
         New-Object -TypeName PSObject -Property @{
             Title = $UpdatesToInstall.Item($i).Title
             Result = $InstallationResult.GetUpdateResult($i).ResultCode
@@ -245,7 +295,8 @@ function Install-UpdateBatch {
     Invoke-RebootOrComplete
 }
 
-function Get-UpdateBatch {
+function Get-UpdateBatch
+{
     Write-Log "Checking For Windows Updates"
     $Username = $env:USERDOMAIN + "\" + $env:USERNAME
 
@@ -260,11 +311,15 @@ function Get-UpdateBatch {
     $script:successful = $FALSE
     $script:attempts = 0
     $script:maxAttempts = 12
-    while(-not $script:successful -and $script:attempts -lt $script:maxAttempts) {
-        try {
+    while (-not $script:successful -and $script:attempts -lt $script:maxAttempts)
+    {
+        try
+        {
             $script:SearchResult = $script:UpdateSearcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
             $script:successful = $TRUE
-        } catch {
+        }
+        catch
+        {
             Write-Log $_.Exception | Format-List -force
             Write-Log "Search call to UpdateSearcher was unsuccessful. Retrying in 10s."
             $script:attempts = $script:attempts + 1
@@ -272,30 +327,36 @@ function Get-UpdateBatch {
         }
     }
 
-    if ($SearchResult.Updates.Count -ne 0) {
+    if ($SearchResult.Updates.Count -ne 0)
+    {
         $Message = "There are " + $SearchResult.Updates.Count + " more updates."
         Write-Log $Message
-        try {
-            for($i=0; $i -lt $script:SearchResult.Updates.Count; $i++) {
-              Write-Log $script:SearchResult.Updates.Item($i).Title
-              Write-Log $script:SearchResult.Updates.Item($i).Description
-              Write-Log $script:SearchResult.Updates.Item($i).RebootRequired
-              Write-Log $script:SearchResult.Updates.Item($i).EulaAccepted
-          }
-            $script:MoreUpdates=1
-        } catch {
+        try
+        {
+            for($i = 0; $i -lt $script:SearchResult.Updates.Count; $i++) {
+                Write-Log $script:SearchResult.Updates.Item($i).Title
+                Write-Log $script:SearchResult.Updates.Item($i).Description
+                Write-Log $script:SearchResult.Updates.Item($i).RebootRequired
+                Write-Log $script:SearchResult.Updates.Item($i).EulaAccepted
+            }
+            $script:MoreUpdates = 1
+        }
+        catch
+        {
             Write-Log $_.Exception | Format-List -force
             Write-Log "Showing SearchResult was unsuccessful. Rebooting."
-            $script:RestartRequired=1
-            $script:MoreUpdates=0
+            $script:RestartRequired = 1
+            $script:MoreUpdates = 0
             Invoke-RebootOrComplete
             Write-Log "Show never happen to see this text!"
             Restart-Computer
         }
-    } else {
+    }
+    else
+    {
         Write-Log 'There are no applicable updates'
-        $script:RestartRequired=0
-        $script:MoreUpdates=0
+        $script:RestartRequired = 0
+        $script:MoreUpdates = 0
     }
 }
 
@@ -305,7 +366,8 @@ function Get-UpdateBatch {
 .Description
     This cmdlet disables automatic Windows Updates
 #>
-function Disable-AutomaticUpdates {
+function Disable-AutomaticUpdates
+{
     Stop-Service -Name wuauserv
     Set-Service -Name wuauserv -StartupType Disabled
     Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 1 -Name 'AUOptions'

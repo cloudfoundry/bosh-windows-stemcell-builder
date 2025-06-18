@@ -4,11 +4,12 @@
 .Description
     This cmdlet adds a Windows user
 #>
-function Add-Account {
+function Add-Account
+{
     Param(
-            [string]$User = $(Throw "Provide a user name"),
-            [string]$Password = $(Throw "Provide a password")
-         )
+        [string]$User = $( Throw "Provide a user name" ),
+        [string]$Password = $( Throw "Provide a password" )
+    )
     Write-Log "Add-Account"
 
     Write-Log "Creating new local user $User."
@@ -19,9 +20,9 @@ function Add-Account {
     Write-Log "Adding local user $User to $Group."
     $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
     Write-Log $adsi
-    $AdminGroup = $adsi.Children | Where-Object {$_.SchemaClassName -eq 'group' -and $_.Name -eq $Group }
+    $AdminGroup = $adsi.Children | Where-Object { $_.SchemaClassName -eq 'group' -and $_.Name -eq $Group }
     Write-Log $AdminGroup
-    $UserObject = $adsi.Children | Where-Object {$_.SchemaClassName -eq 'user' -and $_.Name -eq $User }
+    $UserObject = $adsi.Children | Where-Object { $_.SchemaClassName -eq 'user' -and $_.Name -eq $User }
     Write-Log $UserObject
     $AdminGroup.Add($UserObject.Path)
     Write-Log "Completed adding $User to $Group"
@@ -33,10 +34,11 @@ Remove Windows user
 .Description
 This cmdlet removes a Windows user
 #>
-function Remove-Account {
+function Remove-Account
+{
     Param(
-            [string]$User = $(Throw "Provide a user name")
-         )
+        [string]$User = $( Throw "Provide a user name" )
+    )
     Write-Log "Remove-Account"
     Write-Log "Removing local user $User."
     $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"

@@ -1,15 +1,13 @@
 BeforeAll {
-    Remove-Module -Name BOSH.WindowsUpdates -ErrorAction Ignore
     Import-Module ./BOSH.WindowsUpdates.psm1
 
-    Remove-Module -Name BOSH.Utils -ErrorAction Ignore
     Import-Module ../BOSH.Utils/BOSH.Utils.psm1
 }
 
 Describe "BOSH.WindowsUpdates" {
-    BeforeEach {
-        Mock -ModuleName BOSH.WindowsUpdates Write-Log { }
-    }
+#    BeforeEach {
+#        Mock -ModuleName BOSH.WindowsUpdates Write-Log { }
+#    }
 
     Describe "Disable-AutomaticUpdates" {
         BeforeEach {

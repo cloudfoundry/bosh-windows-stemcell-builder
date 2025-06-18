@@ -1,10 +1,11 @@
-function Invoke-LGPO-Build-Pol-From-Text {
+function Invoke-LGPO-Build-Pol-From-Text
+{
     param(
-        [Parameter(Mandatory=$True)]
+        [Parameter(Mandatory = $True)]
         [String]
         $LGPOTextReadPath,
 
-        [Parameter(Mandatory=$True)]
+        [Parameter(Mandatory = $True)]
         [String]
         $RegistryPolWritePath
     )
@@ -14,9 +15,10 @@ function Invoke-LGPO-Build-Pol-From-Text {
     }
 }
 
-function Invoke-LGPO-Apply-Policies {
+function Invoke-LGPO-Apply-Policies
+{
     param(
-        [Parameter(Mandatory=$True)]
+        [Parameter(Mandatory = $True)]
         [String]
         $RegistryPolPath
     )
@@ -26,7 +28,8 @@ function Invoke-LGPO-Apply-Policies {
     }
 }
 
-function Set-InternetExplorerRegistries {
+function Set-InternetExplorerRegistries
+{
     <#
     .SYNOPSIS
         Apply BOSH Windows Stemcell registry settings related to internet explorer
@@ -46,24 +49,27 @@ function Set-InternetExplorerRegistries {
         Write-Log "Starting Internet Explorer Registry Changes"
         $IePolicyPath = Join-Path $PSScriptRoot "data\IE-Policies"
 
-        $MachineDir="$IePolicyPath\DomainSysvol\GPO\Machine"
+        $MachineDir = "$IePolicyPath\DomainSysvol\GPO\Machine"
 
         New-Item -ItemType Directory -Path "$MachineDir" -Force -ErrorAction "Stop"
         $machinePolicyExitCode = Invoke-LGPO-Build-Pol-From-Text -LGPOTextReadPath "$IePolicyPath\machine.txt" -RegistryPolWritePath "$MachineDir\registry.pol"
-        if ($machinePolicyExitCode -ne 0) {
+        if ($machinePolicyExitCode -ne 0)
+        {
             throw "Generating IE policy: Machine"
         }
 
-        $UserDir="$IePolicyPath\DomainSysvol\GPO\User"
+        $UserDir = "$IePolicyPath\DomainSysvol\GPO\User"
         New-Item -ItemType Directory -Path "$UserDir" -Force -ErrorAction "Stop"
         $userPolicyExitCode = Invoke-LGPO-Build-Pol-From-Text -LGPOTextReadPath "$IePolicyPath\user.txt" -RegistryPolWritePath "$UserDir\registry.pol"
-        if ($userPolicyExitCode -ne 0) {
+        if ($userPolicyExitCode -ne 0)
+        {
             throw "Generating IE policy: User"
         }
 
         # Apply policies
         $policyApplicationExitCode = Invoke-LGPO-Apply-Policies -RegistryPolPath $IePolicyPath
-        if ($policyApplicationExitCode -ne 0) {
+        if ($policyApplicationExitCode -ne 0)
+        {
             throw "Error Applying IE policy: $IePolicyPath"
         }
     }

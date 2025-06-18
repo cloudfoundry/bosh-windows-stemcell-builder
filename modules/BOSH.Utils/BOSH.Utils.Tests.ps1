@@ -2,45 +2,55 @@ BeforeAll {
     Import-Module ./BOSH.Utils.psm1
 
     # As of now, this function only supports DWords and Strings.
-    function Restore-RegistryState {
+    function Restore-RegistryState
+    {
         param(
             [bool]$KeyExists,
             [String]$KeyPath,
             [String]$ValueName,
             [PSObject]$ValueData
         )
-        if ($KeyExists) {
-            if ($ValueData -eq $null) {
+        if ($KeyExists)
+        {
+            if ($ValueData -eq $null)
+            {
                 Remove-ItemProperty -path $KeyPath -Name $ValueName
-            } else {
+            }
+            else
+            {
                 Set-ItemProperty -path $KeyPath -Name $ValueName -Value $ValueData
             }
-        } else {
+        }
+        else
+        {
             Remove-Item -Path $KeyPath -ErrorAction SilentlyContinue
         }
     }
 
-    function New-TempDir {
+    function New-TempDir
+    {
         $parent = [System.IO.Path]::GetTempPath()
-        [string] $name = [System.Guid]::NewGuid()
+        [string]$name = [System.Guid]::NewGuid()
         (New-Item -ItemType Directory -Path (Join-Path $parent $name)).FullName
     }
 
-    function getWindowsOptionalFeatureState {
+    function getWindowsOptionalFeatureState
+    {
         param([string] $featureName)
         sleep -Milliseconds 500
         $obj = Get-WindowsOptionalFeature -Online -FeatureName $featureName
         return $obj.State
     }
 
-    function New-Item-Stub-For-Testing {
+    function New-Item-Stub-For-Testing
+    {
         param(
             $Path
         )
         $optionalDriveLetterRegex = "(.:)?(.+)"
         $pathWithoutDriveName = $Path -replace $optionalDriveLetterRegex, '$2'
 
-        $safePath=".\"
+        $safePath = ".\"
 
         New-Item -Path "$safePath$pathWithoutDriveName" @Args
     }
