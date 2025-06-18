@@ -298,3 +298,17 @@ function Get-UpdateBatch {
         $script:MoreUpdates=0
     }
 }
+
+<#
+.Synopsis
+    Disable Automatic Updates
+.Description
+    This cmdlet disables automatic Windows Updates
+#>
+function Disable-AutomaticUpdates {
+    Stop-Service -Name wuauserv
+    Set-Service -Name wuauserv -StartupType Disabled
+    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 1 -Name 'AUOptions'
+    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'EnableFeaturedSoftware'
+    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update' -Value 0 -Name 'IncludeRecommendedUpdates'
+}
