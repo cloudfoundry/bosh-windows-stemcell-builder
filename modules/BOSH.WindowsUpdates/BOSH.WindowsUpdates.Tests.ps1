@@ -5,9 +5,9 @@ BeforeAll {
 }
 
 Describe "BOSH.WindowsUpdates" {
-#    BeforeEach {
-#        Mock -ModuleName BOSH.WindowsUpdates Write-Log { }
-#    }
+    BeforeEach {
+        Mock -ModuleName BOSH.WindowsUpdates Write-Log { }
+    }
 
     Describe "Disable-AutomaticUpdates" {
         BeforeEach {
