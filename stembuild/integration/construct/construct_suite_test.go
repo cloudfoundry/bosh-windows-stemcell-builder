@@ -230,20 +230,26 @@ func enableWinRM() {
 	repositoryRoot := filepath.Dir(filepath.Dir(filepath.Dir(filepath.Dir(currentFile))))
 
 	By("Enabling WinRM on the base image before integration tests...")
-	winRMPowershellModule := filepath.Join(repositoryRoot, "modules", "BOSH.WinRM", "BOSH.WinRM.psm1")
-	uploadCommand := []string{
-		"guest.upload",
-		fmt.Sprintf("-vm.ipath=%s", conf.VMInventoryPath),
-		fmt.Sprintf("-u=%s", vcenterAdminCredentialUrl),
-		fmt.Sprintf("-l=%s:%s", conf.VMUsername, conf.VMPassword),
-		fmt.Sprintf("-tls-ca-certs=%s", pathToCACert),
-		winRMPowershellModule,
-		"C:\\Windows\\Temp\\BOSH.WinRM.psm1",
-	}
+	powershellModules := []string{"BOSH.Utils", "BOSH.WinRM"}
 
-	uploadExitCode := cli.Run(uploadCommand)
-	Expect(uploadExitCode).To(Equal(0), fmt.Sprintf("There was an error uploading %s", winRMPowershellModule))
-	By(fmt.Sprintf("WinRM '%s' uploaded", winRMPowershellModule))
+	for _, powershellModule := range powershellModules {
+		powershellModuleLocalPath := filepath.Join(repositoryRoot, "modules", powershellModule, fmt.Sprintf("%s.psm1", powershellModule))
+		powershellModuleRemotePath := fmt.Sprintf("C:\\Windows\\Temp\\%s.psm1", powershellModule)
+
+		uploadCommand := []string{
+			"guest.upload",
+			fmt.Sprintf("-vm.ipath=%s", conf.VMInventoryPath),
+			fmt.Sprintf("-u=%s", vcenterAdminCredentialUrl),
+			fmt.Sprintf("-l=%s:%s", conf.VMUsername, conf.VMPassword),
+			fmt.Sprintf("-tls-ca-certs=%s", pathToCACert),
+			powershellModuleLocalPath,
+			powershellModuleRemotePath,
+		}
+
+		uploadExitCode := cli.Run(uploadCommand)
+		Expect(uploadExitCode).To(Equal(0), fmt.Sprintf("error uploading %s to %s", powershellModuleLocalPath, powershellModuleRemotePath))
+		By(fmt.Sprintf("'%s' was uploaded to '%s'", powershellModuleLocalPath, powershellModuleRemotePath))
+	}
 
 	enableCommand := []string{
 		"guest.start",
