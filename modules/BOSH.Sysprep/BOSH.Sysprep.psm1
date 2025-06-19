@@ -121,6 +121,8 @@ function Enable-LocalSecurityPolicy
 
 function Update-AWS-UnattendedXML
 {
+    Get-Content -Path 'C:\ProgramData\Amazon\EC2Launch\config\agent-config.yml'
+
     $UnattendedXmlPath = 'C:\ProgramData\Amazon\EC2Launch\sysprep\unattend.xml'
     $UnattendedContent = [xml](Get-Content $UnattendedXmlPath)
     $SpecializeSettings = ($UnattendedContent.unattend.settings | Where-Object { $_.pass -EQ "specialize" })
