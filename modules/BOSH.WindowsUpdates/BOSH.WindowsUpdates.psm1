@@ -101,7 +101,6 @@ function Install-WindowsUpdates
 
 function Invoke-RebootOrComplete
 {
-    $RegistryEntry = "InstallWindowsUpdates"
     switch ($script:RestartRequired)
     {
         0 {

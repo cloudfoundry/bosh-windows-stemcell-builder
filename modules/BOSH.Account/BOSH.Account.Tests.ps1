@@ -31,7 +31,7 @@ Describe "BOSH.Account" {
         }
 
         BeforeEach {
-            $userExists = !!(Get-LocalUser | Where { $_.Name -eq $user })
+            $userExists = !!(Get-LocalUser | Where-Object { $_.Name -eq $user })
             if ($userExists)
             {
                 Remove-LocalUser -Name $user

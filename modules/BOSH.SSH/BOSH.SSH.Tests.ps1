@@ -52,9 +52,9 @@ BeforeAll {
 
         mkdir "$dir\OpenSSH-Win64"
         $installSpyBehavior = "echo installed > $installScriptSpyStatus"
-        echo $installSpyBehavior > "$dir\OpenSSH-Win64\install-sshd.ps1"
-        echo "fake sshd" > "$dir\OpenSSH-Win64\sshd.exe"
-        echo "fake config" > "$dir\OpenSSH-Win64\sshd_config_default"
+        Write-Output $installSpyBehavior > "$dir\OpenSSH-Win64\install-sshd.ps1"
+        Write-Output "fake sshd" > "$dir\OpenSSH-Win64\sshd.exe"
+        Write-Output "fake config" > "$dir\OpenSSH-Win64\sshd_config_default"
 
         Compress-Archive -Force -Path "$dir\OpenSSH-Win64" -DestinationPath $fakeZipPath
     }
@@ -79,7 +79,7 @@ Describe "BOSH.SSH" {
             CreateFakeOpenSSHZip -dir $TMP_DIR -installScriptSpyStatus $INSTALL_SCRIPT_SPY_STATUS -fakeZipPath $FAKE_ZIP
 
             mkdir -p "$TMP_DIR\Windows\Temp"
-            echo "fake LGPO" > "$TMP_DIR\Windows\LGPO.exe"
+            Write-Output "fake LGPO" > "$TMP_DIR\Windows\LGPO.exe"
 
             $ORIGINAL_WINDIR = $env:WINDIR
             $env:WINDIR = "$TMP_DIR\Windows"

@@ -43,7 +43,7 @@ Describe "BOSH.CFCell" {
 
             Protect-CFCell -IaaS "ignored"
 
-            Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" | select -exp fDenyTSConnections | Should -Be 1
+            Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" | Select-Object -exp fDenyTSConnections | Should -Be 1
             netstat /p tcp /a | findstr ":3389 " | Should -BeNullOrEmpty
             Get-NetFirewallRule -DisplayName "Remote Desktop*" | ForEach-Object { $_.enabled | Should -Be "False" }
             Get-Service "Termservice" | Select-Object -exp starttype | Should -Be "Disabled"

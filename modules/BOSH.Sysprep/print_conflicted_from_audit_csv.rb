@@ -17,11 +17,11 @@ class AuditFile
     AuditFile.new(header, contents)
   end
 
-  def print()
+  def print
     ([header] + contents).join("\r\n")
   end
 
-  def uniq()
+  def uniq
     uniqed = contents.uniq do |x|
       values = x.split(',')
       keys = values[0..5].join('').downcase
@@ -32,7 +32,7 @@ class AuditFile
     AuditFile.new(header, uniqed)
   end
 
-  def size()
+  def size
     contents.size
   end
 end
