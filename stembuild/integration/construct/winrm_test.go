@@ -1,6 +1,7 @@
 package construct_test
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager"
@@ -10,7 +11,6 @@ import (
 )
 
 var _ = Describe("WinRM Remote Manager", func() {
-
 	var rm remotemanager.RemoteManager
 
 	BeforeEach(func() {
@@ -19,24 +19,30 @@ var _ = Describe("WinRM Remote Manager", func() {
 		Expect(rm).ToNot(BeNil())
 	})
 
-	AfterEach(func() {
-		_, err := rm.ExecuteCommand("powershell.exe Remove-Item c:\\provision -recurse")
-		Expect(err).ToNot(HaveOccurred())
-	})
-
 	Context("ExtractArchive", func() {
+		var destPath string
+
 		BeforeEach(func() {
-			err := rm.UploadArtifact(filepath.Join("assets", "StemcellAutomation.zip"), "C:\\provision\\StemcellAutomation.zip")
+			destPath = "C:\\provision"
+			err := rm.UploadArtifact(
+				filepath.Join("assets", "StemcellAutomation.zip"),
+				fmt.Sprintf("%s\\StemcellAutomation.zip", destPath),
+			)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			_, err := rm.ExecuteCommand(fmt.Sprintf("powershell.exe Remove-Item %s -recurse", destPath))
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("succeeds when Extract-Archive powershell function returns zero exit code", func() {
-			err := rm.ExtractArchive("C:\\provision\\StemcellAutomation.zip", "C:\\provision")
+			err := rm.ExtractArchive(fmt.Sprintf("%s\\StemcellAutomation.zip", destPath), destPath)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("fails when Extract-Archive powershell function returns non-zero exit code", func() {
-			err := rm.ExtractArchive("C:\\provision\\NonExistingFile.zip", "C:\\provision")
+			err := rm.ExtractArchive(fmt.Sprintf("%s\\NonExistingFile.zip", destPath), destPath)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("powershell encountered an issue: "))
 		})
