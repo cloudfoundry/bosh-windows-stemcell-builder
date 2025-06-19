@@ -1,0 +1,7 @@
+---
+name: golang-windows
+
+dependencies: []
+
+files:
+- golang-windows/go1.12.7.windows-amd64.zip

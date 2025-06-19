@@ -1,0 +1,7 @@
+---
+name: lgpo
+
+dependencies: []
+
+files:
+- lgpo/LGPO.exe

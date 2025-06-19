@@ -1,0 +1,10 @@
+{
+  "processes": [
+    {
+      "name": "simple-job",
+      "executable": "powershell",
+      "args": ["/var/vcap/jobs/simple-job/bin/run.ps1" ]
+    }
+  ]
+}
+

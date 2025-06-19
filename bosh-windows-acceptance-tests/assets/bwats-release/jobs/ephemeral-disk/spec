@@ -1,0 +1,15 @@
+---
+name: ephemeral-disk
+
+description: "This errand verifies ephemeral disk mounting"
+
+templates:
+  run.ps1.erb: bin/run.ps1
+
+packages:
+- golang-windows
+
+properties:
+  run_test.enabled:
+    description: "Run tests for ephemeral disk"
+    default: false
