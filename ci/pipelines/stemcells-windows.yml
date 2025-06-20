@@ -668,7 +668,9 @@ jobs:
             set -eu -o pipefail
             set -x
             cd bosh-windows-acceptance-tests
+            go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest run ./...
             go test -c
+            go run github.com/onsi/ginkgo/v2/ginkgo run --dry-run -v
   - put: bosh-windows-acceptance-tests-src-out
     params:
       repository: bosh-windows-acceptance-tests-src-out
