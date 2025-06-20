@@ -53,5 +53,5 @@ pushd bosh-windows-acceptance-tests
   }
 END_OF_CONFIG
 
-  go run github.com/onsi/ginkgo/ginkgo --focus="${GINKGO_FOCUS}" --skip="${GINKGO_SKIP}" -r -v .
+  go run github.com/onsi/ginkgo/v2/ginkgo --focus="${GINKGO_FOCUS}" --skip="${GINKGO_SKIP}" -r -v .
 popd
