@@ -54,7 +54,7 @@ Describe "BOSH.Sysprep" {
                 Mock -ModuleName BOSH.Sysprep Set-NTP-Max-PhaseCorrection-Values { }
 
                 Mock -ModuleName BOSH.Sysprep Disable-AgentService { }
-#                Mock -ModuleName BOSH.Sysprep Update-AWS-LaunchConfigJSON { }
+                Mock -ModuleName BOSH.Sysprep Update-AWS-LaunchConfigJSON { }
                 Mock -ModuleName BOSH.Sysprep Update-AWS-UnattendedXML { }
                 Mock -ModuleName BOSH.Sysprep Enable-AWS-Sysprep { }
             }
@@ -69,7 +69,7 @@ Describe "BOSH.Sysprep" {
             It "updates launchconfig.json, unattended.xml and calls Enable-AWS-Sysprep" {
                 { Invoke-Sysprep -Iaas "aws" } | Should -Not -Throw
 
-#                Should -Invoke -ModuleName BOSH.Sysprep -CommandName Update-AWS-LaunchConfigJSON
+                Should -Invoke -ModuleName BOSH.Sysprep -CommandName Update-AWS-LaunchConfigJSON
                 Should -Invoke -ModuleName BOSH.Sysprep -CommandName Update-AWS-UnattendedXML
                 Should -Invoke -ModuleName BOSH.Sysprep -CommandName Enable-AWS-Sysprep
             }

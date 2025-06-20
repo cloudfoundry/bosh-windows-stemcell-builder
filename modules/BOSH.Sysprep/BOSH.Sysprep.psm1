@@ -29,7 +29,7 @@ function Invoke-Sysprep
     {
         "aws" {
             Disable-AgentService
-            # Update-AWS-LaunchConfigJSON
+            Update-AWS-LaunchConfigJSON
             Update-AWS-UnattendedXML
             Enable-AWS-Sysprep
         }
@@ -110,19 +110,49 @@ function Enable-LocalSecurityPolicy
 }
 
 # AWS
-#function Update-AWS-LaunchConfigJSON
-#{
-#    $LaunchConfigJson = 'C:\ProgramData\Amazon\EC2-Windows\Launch\Config\LaunchConfig.json'
-#    $LaunchConfig = Get-Content $LaunchConfigJson -raw | ConvertFrom-Json
-#    $LaunchConfig.addDnsSuffixList = $False
-#    $LaunchConfig.extendBootVolumeSize = $False
-#    $LaunchConfig | ConvertTo-Json | Set-Content $LaunchConfigJson
-#}
+function Update-AWS-LaunchConfigJSON
+{
+    $LaunchConfigPath = 'C:\ProgramData\Amazon\EC2Launch\config\agent-config.yml'
+
+    # Overwrite default config with extendRootPartition and setDnsSuffix tasks removed.
+    $LaunchConfigYaml = @'
+version: 1.1
+config:
+- stage: preReady
+  tasks:
+  - task: activateWindows
+    inputs:
+      activation:
+        type: amazon
+  - task: setAdminAccount
+    inputs:
+      password:
+        type: doNothing
+  - task: setWallpaper
+    inputs:
+      path: C:\ProgramData\Amazon\EC2Launch\wallpaper\Ec2Wallpaper.jpg
+      attributes:
+      - hostName
+      - instanceId
+      - privateIpAddress
+      - publicIpAddress
+      - instanceSize
+      - availabilityZone
+      - architecture
+      - memory
+      - network
+- stage: postReady
+  tasks:
+  - task: startSsm
+'@
+
+    Set-Content -Path $LaunchConfigPath -Value $LaunchConfigYaml -Encoding utf8
+
+    Get-Content -Path $LaunchConfigPath
+}
 
 function Update-AWS-UnattendedXML
 {
-    Get-Content -Path 'C:\ProgramData\Amazon\EC2Launch\config\agent-config.yml'
-
     $UnattendedXmlPath = 'C:\ProgramData\Amazon\EC2Launch\sysprep\unattend.xml'
     $UnattendedContent = [xml](Get-Content $UnattendedXmlPath)
     $SpecializeSettings = ($UnattendedContent.unattend.settings | Where-Object { $_.pass -EQ "specialize" })
