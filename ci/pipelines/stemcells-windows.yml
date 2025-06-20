@@ -661,7 +661,14 @@ jobs:
         - name: bosh-windows-acceptance-tests
       platform: linux
       run:
-        path: "bosh-windows-acceptance-tests/bin/build-test.sh"
+        path: bash
+        args:
+          - "-c"
+          - |
+            set -eu -o pipefail
+            set -x
+            cd bosh-windows-acceptance-tests
+            go test -c
   - put: bosh-windows-acceptance-tests-src-out
     params:
       repository: bosh-windows-acceptance-tests-src-out
