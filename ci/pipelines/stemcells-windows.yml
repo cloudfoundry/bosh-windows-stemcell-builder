@@ -158,14 +158,14 @@ resources:
 - name: bosh-windows-acceptance-tests-src-out
   type: git
   source:
-    branch: master
+    branch: windows-2019
     uri: https://github.com/cloudfoundry/bosh-windows-acceptance-tests.git
     username: bosh-admin-bot
     password: ((github_public_repo_token))
 - name: bosh-windows-acceptance-tests
   type: git
   source:
-    branch: master
+    branch: windows-2019
     uri: https://github.com/cloudfoundry/bosh-windows-acceptance-tests.git
     username: bosh-admin-bot
     password: ((github_public_repo_token))
@@ -667,7 +667,7 @@ jobs:
           - |
             set -eu -o pipefail
             set -x
-            cd bosh-windows-acceptance-tests
+            cd bosh-windows-acceptance-tests/acceptance_test
             go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest run ./...
             go test -c
             go run github.com/onsi/ginkgo/v2/ginkgo run --dry-run -v
