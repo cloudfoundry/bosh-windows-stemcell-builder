@@ -633,7 +633,7 @@ jobs:
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-windows/task.yml
       tags: [windows-nimbus]
     - task: acceptance-test-dry-run
-      file: bosh-windows-stemcell-builder-ci/ci/tasks/clean-up-pre-release-blobstore/task.yml
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/acceptance-test-dry-run/task.yml
       image: bosh-windows-stemcell-builder-ci-image
   - put: stemcell-builder
     params:
