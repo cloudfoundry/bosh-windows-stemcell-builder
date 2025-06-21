@@ -609,10 +609,18 @@ jobs:
       resource: main-version
     - get: weekly
       trigger: true
-  - task: bump-golang-deps
+  - task: bump-golang-deps-stembuild
     file: golang-release/ci/tasks/shared/bump-deps.yml
     params:
       SOURCE_PATH: stembuild
+    input_mapping:
+      input_repo: stemcell-builder
+    output_mapping:
+      output_repo: stemcell-builder
+  - task: bump-golang-deps-acceptance_test
+    file: golang-release/ci/tasks/shared/bump-deps.yml
+    params:
+      SOURCE_PATH: acceptance_test
     input_mapping:
       input_repo: stemcell-builder
     output_mapping:
@@ -624,29 +632,9 @@ jobs:
     - task: unit-test-on-windows
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-windows/task.yml
       tags: [windows-nimbus]
-    - task: build-test
-      config:
-        image_resource:
-          type: registry-image
-          source:
-            repository: bosh/integration
-            username: ((docker.username))
-            password: ((docker.password))
-        inputs:
-          - name: stemcell-builder
-        platform: linux
-        run:
-          path: bash
-          args:
-            - "-c"
-            - |
-              set -eu -o pipefail
-              set -x
-              cd stemcell-builder/acceptance_test
-              go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest run ./...
-              go test -c
-              go run github.com/onsi/ginkgo/v2/ginkgo run --dry-run -v
-
+    - task: acceptance-test-dry-run
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/clean-up-pre-release-blobstore/task.yml
+      image: bosh-windows-stemcell-builder-ci-image
   - put: stemcell-builder
     params:
       rebase: true

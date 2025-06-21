@@ -1,20 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-echo "If you see the following error don't worry everything is working, the images got deleted, but some did not need to be deleted (they are less than 30 days old):"
-echo "'X of Y blobs not deleted due to Failed Precondition'"
+set -eu -o pipefail
+set -x
 
-echo "Deleting blobs from images"
-az storage blob delete-batch \
-  --auth-mode key \
-  --account-key $AZURE_STORAGE_ACCESS_KEY \
-  --account-name $AZURE_STORAGE_ACCOUNT \
-  --source=images --pattern="*.vhd" \
-  --if-unmodified-since=$(date -d "30 days ago" '+%Y-%m-%dT%H:%MZ')
+cd stemcell-builder/acceptance_test
 
-echo "Deleting blobs from system"
-az storage blob delete-batch \
-  --auth-mode key \
-  --account-key $AZURE_STORAGE_ACCESS_KEY \
-  --account-name $AZURE_STORAGE_ACCOUNT \
-  --source=system --pattern="*.vhd" \
-  --if-unmodified-since=$(date -d "30 days ago" '+%Y-%m-%dT%H:%MZ')
+go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest run ./...
+
+go test -c
+
+go run github.com/onsi/ginkgo/v2/ginkgo run --dry-run -v
