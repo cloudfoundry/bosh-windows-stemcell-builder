@@ -1,0 +1,6 @@
+- type: replace
+  path: /instance_groups/name=check-multiple/vm_type
+  value: ((RootEphemeralVmType))
+
+- type: remove
+  path: /instance_groups/name=check-multiple/vm_extensions
