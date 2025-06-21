@@ -1,4 +1,4 @@
-# bosh-windows-acceptance-tests
+# Acceptance Tests
 
 This repo houses tests used to verify Windows Stemcells function as expected.
 
@@ -49,12 +49,15 @@ The timeout for BOSH commands can be overridden with the BWATS_BOSH_TIMEOUT envi
 
 
 # Internals of the release and what it does
-This release has a few tests that verify if the features are installed on stemcell or not. There are few jobs on the BWATS release at [assets/bwats-release/jobs path](https://github.com/cloudfoundry/bosh-windows-acceptance-tests/tree/master/assets/bwats-release/jobs.
 
-When ginkgo tests are run, these jobs are installed on the stemcells and the tests in each job are run against it. As part of running BWATs there are several deployments done, to avoid conficts on same stemcell. 
+This release has a few tests that verify if the features are installed on stemcell or not. There are few jobs on the
+BWATS release at [jobs](assets/bwats-release/jobs).
 
-The bulk of our assertions are run as part of the check-system job.
-**This is where you will likely want to make changes**, e.g. to add test coverage around our expectations of happy-path stemcell behavior.
+When ginkgo tests are run, these jobs are installed on the stemcells and the tests in each job are run against it. As
+part of running BWATs there are several deployments done, to avoid conficts on same stemcell.
+
+The bulk of our assertions are run as part of the check-system job. **This is where you will likely want to make changes
+**, e.g. to add test coverage around our expectations of happy-path stemcell behavior.
 
 The relevant call chain is:
 

@@ -1,4 +1,4 @@
-module github.com/cloudfoundry/bosh-windows-acceptance-tests/acceptance_test
+module github.com/cloudfoundry/bosh-windows-stemcell-builder/acceptance_test
 
 go 1.23.0
 

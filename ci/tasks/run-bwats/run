@@ -27,7 +27,7 @@ if [ "$SECURITY_COMPLIANCE_APPLIED" != "true" ] ; then
   SECURITY_COMPLIANCE_APPLIED="false"
 fi
 
-pushd bosh-windows-acceptance-tests/acceptance_test
+pushd stemcell-builder/acceptance_test
   export CONFIG_JSON=config.json
   cat > "${CONFIG_JSON}" <<-END_OF_CONFIG
   {

@@ -155,20 +155,6 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
-- name: bosh-windows-acceptance-tests-src-out
-  type: git
-  source:
-    branch: windows-2019
-    uri: https://github.com/cloudfoundry/bosh-windows-acceptance-tests.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
-- name: bosh-windows-acceptance-tests
-  type: git
-  source:
-    branch: windows-2019
-    uri: https://github.com/cloudfoundry/bosh-windows-acceptance-tests.git
-    username: bosh-admin-bot
-    password: ((github_public_repo_token))
 - name: govmomi
   type: git
   source:
@@ -617,7 +603,6 @@ jobs:
     - get: bosh-windows-stemcell-builder-ci-image
     - get: bosh-windows-stemcell-builder-ci
     - get: stemcell-builder
-    - get: bosh-windows-acceptance-tests
     - get: golang-release
     - get: ovftool
     - get: version
@@ -639,42 +624,33 @@ jobs:
     - task: unit-test-on-windows
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-windows/task.yml
       tags: [windows-nimbus]
+    - task: build-test
+      config:
+        image_resource:
+          type: registry-image
+          source:
+            repository: bosh/integration
+            username: ((docker.username))
+            password: ((docker.password))
+        inputs:
+          - name: stemcell-builder
+        platform: linux
+        run:
+          path: bash
+          args:
+            - "-c"
+            - |
+              set -eu -o pipefail
+              set -x
+              cd stemcell-builder/acceptance_test
+              go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest run ./...
+              go test -c
+              go run github.com/onsi/ginkgo/v2/ginkgo run --dry-run -v
+
   - put: stemcell-builder
     params:
       rebase: true
       repository: stemcell-builder
-  - task: bump-bosh-windows-acceptance-tests-deps
-    file: golang-release/ci/tasks/shared/bump-deps.yml
-    input_mapping:
-      input_repo: bosh-windows-acceptance-tests
-    output_mapping:
-      output_repo: bosh-windows-acceptance-tests-src-out
-  - task: build-test
-    config:
-      image_resource:
-        type: registry-image
-        source:
-          repository: bosh/integration
-          username: ((docker.username))
-          password: ((docker.password))
-      inputs:
-        - name: bosh-windows-acceptance-tests
-      platform: linux
-      run:
-        path: bash
-        args:
-          - "-c"
-          - |
-            set -eu -o pipefail
-            set -x
-            cd bosh-windows-acceptance-tests/acceptance_test
-            go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest run ./...
-            go test -c
-            go run github.com/onsi/ginkgo/v2/ginkgo run --dry-run -v
-  - put: bosh-windows-acceptance-tests-src-out
-    params:
-      repository: bosh-windows-acceptance-tests-src-out
-      rebase: true
 
 - name: test-bosh-psmodules
   serial: true
@@ -1141,7 +1117,6 @@ jobs:
       steps:
       - get: bosh-windows-stemcell-builder-ci
       - get: bosh-windows-stemcell-builder-ci-image
-      - get: bosh-windows-acceptance-tests
       - get: stemcell-builder
         passed: [create-stembuild-linux-stemcell]
       - get: stembuild-untested-linux
@@ -1310,7 +1285,6 @@ jobs:
         steps:
           - get: bosh-windows-stemcell-builder-ci
           - get: bosh-windows-stemcell-builder-ci-image
-          - get: bosh-windows-acceptance-tests
           - get: stemcell-builder
             passed: [create-stembuild-windows-stemcell]
           - get: stembuild-untested-windows
@@ -1504,7 +1478,6 @@ jobs:
         passed: [create-aws]
       - get: packer-output-ami
         passed: [create-aws]
-      - get: bosh-windows-acceptance-tests
       - get: bosh-agent-release
         passed: [create-aws]
   - task: run-bwats-aws-stemcell
@@ -1674,7 +1647,6 @@ jobs:
         passed: [create-aws-govcloud]
       - get: packer-output-govcloud-ami
         passed: [create-aws-govcloud]
-      - get: bosh-windows-acceptance-tests
       - get: bosh-agent-release
         passed: [create-aws-govcloud]
   - task: run-bwats-aws-govcloud-stemcell
@@ -1836,7 +1808,6 @@ jobs:
         resource: azure-build-number
         passed: [create-azure]
         trigger: true
-      - get: bosh-windows-acceptance-tests
       - get: bosh-agent-release
         passed: [create-azure]
   - task: download-heavy
@@ -2015,7 +1986,6 @@ jobs:
         trigger: true
       - get: main-version
         passed: [create-gcp]
-      - get: bosh-windows-acceptance-tests
       - get: bosh-agent-release
         passed: [create-gcp]
   - put: goose-lock
@@ -2188,7 +2158,6 @@ jobs:
       - get: govcloud-ami
         passed: [promote]
         resource: packer-output-govcloud-ami
-      - get: bosh-windows-acceptance-tests
       - get: bosh-agent-release
         passed: [promote]
       - get: blobstore-dav-cli

@@ -38,7 +38,7 @@ rake publish:gcp                # Publish an image to GCP
 bundle exec rspec
 ```
 
-Acceptance testing for stemcells should be done with [bosh-windows-acceptance-tests](https://github.com/cloudfoundry/bosh-windows-acceptance-tests)
+Acceptance testing for stemcells is done via [acceptance_test](acceptance_test)
 
 ## Relocated Documentation
 - azure-light-stemcell.md
