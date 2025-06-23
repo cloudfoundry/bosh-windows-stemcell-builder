@@ -546,7 +546,8 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 	return filename, nil
 }
 
-func (c *TestConfig) deployWithManifest(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string, manifestPath string) error {
+func (c *TestConfig) deployWithManifest(bosh *BoshCommand, deploymentName string, stemcellVersion string,
+	bwatsVersion string, manifestPath string, opsFiles ...string) error {
 	manifestProperties := ManifestProperties{
 		DeploymentName:            deploymentName,
 		ReleaseName:               "bwats-release",
@@ -565,30 +566,11 @@ func (c *TestConfig) deployWithManifest(bosh *BoshCommand, deploymentName string
 		SecurityComplianceApplied: c.SecurityComplianceApplied,
 	}
 
-	var err error
-
-	if c.RootEphemeralVmType != "" {
-		var pwd string
-		pwd, err = os.Getwd()
-		Expect(err).NotTo(HaveOccurred())
-		opsFilePath := filepath.Join(pwd, "assets", "root-disk-as-ephemeral.yml")
-
-		err = bosh.Run(fmt.Sprintf(
-			"-d %s deploy %s -o %s %s",
-			deploymentName,
-			manifestPath,
-			opsFilePath,
-			manifestProperties.toVarsString(),
-		))
-	} else {
-		err = bosh.Run(fmt.Sprintf("-d %s deploy %s %s", deploymentName, manifestPath, manifestProperties.toVarsString()))
+	var opsFileArgs strings.Builder
+	for _, path := range opsFiles {
+		opsFileArgs.WriteString(fmt.Sprintf("-o %s ", path))
 	}
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return bosh.Run(fmt.Sprintf("-d %s deploy %s %s %s", deploymentName, manifestPath, manifestProperties.toVarsString(), opsFileArgs.String()))
 }
 
 func (c *TestConfig) deploy(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string) error {
@@ -596,5 +578,13 @@ func (c *TestConfig) deploy(bosh *BoshCommand, deploymentName string, stemcellVe
 	Expect(err).NotTo(HaveOccurred())
 	manifestPath = filepath.Join(pwd, "assets", "manifest.yml")
 
-	return c.deployWithManifest(bosh, deploymentName, stemcellVersion, bwatsVersion, manifestPath)
+	var opsFilePaths []string
+	if c.RootEphemeralVmType != "" {
+		var pwd string
+		pwd, err = os.Getwd()
+		Expect(err).NotTo(HaveOccurred())
+		opsFilePaths = append(opsFilePaths, filepath.Join(pwd, "assets", "root-disk-as-ephemeral.yml"))
+	}
+
+	return c.deployWithManifest(bosh, deploymentName, stemcellVersion, bwatsVersion, manifestPath, opsFilePaths...)
 }
