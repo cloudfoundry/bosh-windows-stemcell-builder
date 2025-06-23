@@ -1,0 +1,15 @@
+User
+Software\Policies\Microsoft\Internet Explorer\Control Panel
+FormSuggest Passwords
+DWORD:1
+
+User
+Software\Policies\Microsoft\Internet Explorer\Main
+FormSuggest PW Ask
+SZ:no
+
+User
+Software\Policies\Microsoft\Internet Explorer\Main
+FormSuggest Passwords
+SZ:no
+

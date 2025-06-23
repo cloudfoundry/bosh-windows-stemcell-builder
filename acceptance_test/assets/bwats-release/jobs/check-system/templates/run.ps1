@@ -74,6 +74,9 @@ function Verify-LGPO
     "windows2019" {
       $TestDir = "$PSScriptRoot\..\test-2019"
     }
+    "windows2025" {
+      $TestDir = "$PSScriptRoot\..\test-2025"
+    }
   }
 
   Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "\n\n"
