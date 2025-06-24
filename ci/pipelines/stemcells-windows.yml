@@ -859,7 +859,7 @@ jobs:
       VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
       VM_USERNAME: ((stembuild_vm_user.username))
       VM_PASSWORD: ((stembuild_vm_user.password))
-      PACKAGE_TEST_VM_NAME: stembuild-package-integration-tests-base-vm
+      PACKAGE_TEST_VM_NAME: stembuild-package-2025-integration-tests-base-vm
       OS_LINE: *windows_os_line
   - task: build
     tags: [windows-nimbus]
@@ -946,7 +946,7 @@ jobs:
         params:
           VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
           VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
-          PACKAGE_TEST_VM_NAME: stembuild-package-integration-tests-base-vm
+          PACKAGE_TEST_VM_NAME: stembuild-package-2025-integration-tests-base-vm
           VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
           VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
           VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
@@ -987,7 +987,7 @@ jobs:
       VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
       VM_USERNAME: ((stembuild_vm_user.username))
       VM_PASSWORD: ((stembuild_vm_user.password))
-      PACKAGE_TEST_VM_NAME: stembuild-package-integration-tests-base-vm
+      PACKAGE_TEST_VM_NAME: stembuild-package-2025-integration-tests-base-vm
       OS_LINE: *windows_os_line
   - task: build
     file: bosh-windows-stemcell-builder-ci/ci/tasks/build-stembuild-linux/task.yml
