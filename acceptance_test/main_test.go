@@ -560,7 +560,7 @@ func (c *TestConfig) deployWithManifest(bosh *BoshCommand, deploymentName string
 		DefaultUsername:           c.DefaultUsername,
 		DefaultPassword:           c.DefaultPassword,
 		StemcellOs:                c.StemcellOs,
-		StemcellVersion:           fmt.Sprintf(`"%s"`, stemcellVersion),
+		StemcellVersion:           stemcellVersion,
 		ReleaseVersion:            bwatsVersion,
 		MountEphemeralDisk:        c.MountEphemeralDisk,
 		SSHDisabledByDefault:      c.SSHDisabledByDefault,
