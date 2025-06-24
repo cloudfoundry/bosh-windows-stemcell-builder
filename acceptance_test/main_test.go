@@ -2,7 +2,6 @@ package windows_stemcell_acceptance_test
 
 import (
 	"archive/zip"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -308,11 +307,20 @@ func newBoshCommand(config *TestConfig) *BoshCommand {
 }
 
 func (c *BoshCommand) args(command string) []string {
-	args := strings.Split(command, " ")
-	args = append([]string{"-n", "-e", c.DirectorIP, "--client", c.Client, "--client-secret", c.ClientSecret}, args...)
-	if c.CertPath != "" {
-		args = append([]string{"--ca-cert", c.CertPath}, args...)
+	commonArgs := []string{
+		"--non-interactive",
+		fmt.Sprintf("--environment=%s", c.DirectorIP),
+		fmt.Sprintf("--client=%s", c.Client),
+		fmt.Sprintf("--client-secret=%s", c.ClientSecret),
 	}
+	if c.CertPath != "" {
+		commonArgs = append(commonArgs, fmt.Sprintf("--ca-cert=%s", c.CertPath))
+	}
+
+	commandArgs := strings.Split(command, " ")
+
+	args := append(commonArgs, commandArgs...)
+
 	return args
 }
 
@@ -321,7 +329,7 @@ func (c *BoshCommand) Run(command string) error {
 }
 
 func (c *BoshCommand) RunErrand(errandName string, deploymentName string) error {
-	return c.Run(fmt.Sprintf("-d %s run-errand --download-logs %s --tty", deploymentName, errandName))
+	return c.Run(fmt.Sprintf("--deployment=%s run-errand --download-logs %s --tty", deploymentName, errandName))
 }
 
 func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
@@ -329,10 +337,8 @@ func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
 
 	if dir != "" {
 		cmd.Dir = dir
-		GinkgoWriter.Printf("\nRUNNING %q IN %q\n", strings.Join(cmd.Args, " "), dir)
-	} else {
-		GinkgoWriter.Printf("\nRUNNING %q\n", strings.Join(cmd.Args, " "))
 	}
+	GinkgoWriter.Printf("\nRUNNING: %q\nWorking Dir: %q\n", strings.Join(cmd.Args, " "), cmd.Dir)
 
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	if err != nil {
@@ -349,7 +355,7 @@ func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
 		}
 		return stdout,
 			fmt.Errorf(
-				"Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n",
+				"Non-zero exit code for cmd %q: %d\nSTDERR:\n%s\nSTDOUT:%s\n---------------------------------\n",
 				strings.Join(cmd.Args, " "), exitCode, stderr, stdout,
 			)
 	}
@@ -457,30 +463,25 @@ type ManifestProperties struct {
 	SecurityComplianceApplied bool
 }
 
-func (m ManifestProperties) toVarsString() string {
-	manifest := m.toMap()
+func (m ManifestProperties) toVarsFlags() []string {
+	const stringVarFmt = `--var=%s="%s"`
+	const boolVarFmt = "--var=%s=%t"
 
-	fmtString := "-v %s=%s "
+	var varFlags []string
 
-	var b bytes.Buffer
-
-	for k, v := range manifest {
+	for k, v := range m.toMap() {
 		if v != "" {
-			_, err := fmt.Fprintf(&b, fmtString, k, v)
-			Expect(err).NotTo(HaveOccurred())
+			varFlags = append(varFlags, fmt.Sprintf(stringVarFmt, k, v))
 		}
 	}
 
-	boolOperators := []string{
-		fmt.Sprintf("-v MountEphemeralDisk=%t", m.MountEphemeralDisk),
-		fmt.Sprintf("-v SSHDisabledByDefault=%t", m.SSHDisabledByDefault),
-		fmt.Sprintf("-v SecurityComplianceApplied=%t", m.SecurityComplianceApplied),
-	}
+	varFlags = append(varFlags,
+		fmt.Sprintf(boolVarFmt, "MountEphemeralDisk", m.MountEphemeralDisk),
+		fmt.Sprintf(boolVarFmt, "SSHDisabledByDefault", m.SSHDisabledByDefault),
+		fmt.Sprintf(boolVarFmt, "SecurityComplianceApplied", m.SecurityComplianceApplied),
+	)
 
-	_, err := fmt.Fprint(&b, strings.Join(boolOperators, " "))
-	Expect(err).NotTo(HaveOccurred())
-
-	return b.String()
+	return varFlags
 }
 
 func (m ManifestProperties) toMap() map[string]string {
@@ -568,9 +569,19 @@ func (c *TestConfig) deployWithManifest(bosh *BoshCommand, deploymentName string
 
 	var opsFileArgs strings.Builder
 	for _, path := range opsFiles {
-		opsFileArgs.WriteString(fmt.Sprintf("-o %s ", path))
+		opsFileArgs.WriteString(fmt.Sprintf("--ops-file=%s ", path))
 	}
-	return bosh.Run(fmt.Sprintf("-d %s deploy %s %s %s", deploymentName, manifestPath, manifestProperties.toVarsString(), opsFileArgs.String()))
+	cmdArgs := []string{
+		fmt.Sprintf("--deployment=%s", deploymentName),
+		"deploy",
+		manifestPath,
+	}
+	for _, path := range opsFiles {
+		cmdArgs = append(cmdArgs, fmt.Sprintf("--ops-file=%s", path))
+	}
+	cmdArgs = append(cmdArgs, manifestProperties.toVarsFlags()...)
+
+	return bosh.Run(strings.Join(cmdArgs, " "))
 }
 
 func (c *TestConfig) deploy(bosh *BoshCommand, deploymentName string, stemcellVersion string, bwatsVersion string) error {
@@ -580,9 +591,6 @@ func (c *TestConfig) deploy(bosh *BoshCommand, deploymentName string, stemcellVe
 
 	var opsFilePaths []string
 	if c.RootEphemeralVmType != "" {
-		var pwd string
-		pwd, err = os.Getwd()
-		Expect(err).NotTo(HaveOccurred())
 		opsFilePaths = append(opsFilePaths, filepath.Join(pwd, "assets", "root-disk-as-ephemeral.yml"))
 	}
 
