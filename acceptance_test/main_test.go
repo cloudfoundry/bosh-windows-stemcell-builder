@@ -27,6 +27,8 @@ const LgpoUrl = "https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FF
 const lgpoFile = "LGPO.exe"
 const redeployRetries = 10
 
+const windowsVersion = "windows-2019"
+
 var (
 	boshCommand               *BoshCommand
 	deploymentName            string
@@ -59,7 +61,7 @@ var _ = BeforeSuite(func() {
 
 	err = boshCommand.Run("login")
 	Expect(err).NotTo(HaveOccurred())
-	deploymentName = fmt.Sprintf("windows-acceptance-test-%d", getTimestampInMs())
+	deploymentName = buildDeploymentName("stemcell-acceptance-test")
 
 	stemcellYML, err := fetchStemcellInfo(testConfig.StemcellPath)
 	Expect(err).NotTo(HaveOccurred())
@@ -88,7 +90,7 @@ var _ = AfterSuite(func() {
 		return
 	}
 
-	err := boshCommand.Run(fmt.Sprintf("-d %s delete-deployment --force", deploymentName))
+	err := boshCommand.Run(fmt.Sprintf("--deployment=%s delete-deployment --force", deploymentName))
 	Expect(err).NotTo(HaveOccurred())
 	err = boshCommand.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellName, stemcellVersion))
 	Expect(err).NotTo(HaveOccurred())
@@ -167,7 +169,7 @@ var _ = Describe("BOSH Windows", func() {
 		var slowCompilingDeploymentName string
 
 		AfterEach(func() {
-			err := boshCommand.Run(fmt.Sprintf("-d %s delete-deployment --force", slowCompilingDeploymentName))
+			err := boshCommand.Run(fmt.Sprintf("--deployment=%s delete-deployment --force", slowCompilingDeploymentName))
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -176,7 +178,7 @@ var _ = Describe("BOSH Windows", func() {
 			Expect(err).NotTo(HaveOccurred())
 			manifestPath = filepath.Join(pwd, "assets", "slow-compile-manifest.yml")
 
-			slowCompilingDeploymentName = fmt.Sprintf("windows-acceptance-test-slow-compile-%d", getTimestampInMs())
+			slowCompilingDeploymentName = buildDeploymentName("stemcell-acceptance-test-slow-compile")
 
 			err = testConfig.deployWithManifest(boshCommand, slowCompilingDeploymentName, stemcellVersion, releaseVersion, manifestPath)
 			Expect(err).NotTo(HaveOccurred())
@@ -185,12 +187,12 @@ var _ = Describe("BOSH Windows", func() {
 
 	Context("ssh enabled", func() {
 		It("allows SSH connection", func() {
-			err := boshCommand.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit", deploymentName))
+			err := boshCommand.Run(fmt.Sprintf("--deployment=%s ssh --opts=-T --command=exit", deploymentName))
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("cleans up ssh users after a successful connection", func() {
-			err := boshCommand.Run(fmt.Sprintf("-d %s ssh --opts=-T --command=exit", deploymentName))
+			err := boshCommand.Run(fmt.Sprintf("--deployment=%s ssh --opts=-T --command=exit", deploymentName))
 			Expect(err).NotTo(HaveOccurred())
 
 			err = boshCommand.RunErrand("check-ssh", deploymentName) // test for C:\Users only having one ssh user, net users only containing one ssh user.
@@ -198,6 +200,14 @@ var _ = Describe("BOSH Windows", func() {
 		})
 	})
 })
+
+func buildDeploymentName(baseName string) string {
+	return fmt.Sprintf("%s-%s-%d", windowsVersion, baseName, getTimestampInMs())
+}
+
+func getTimestampInMs() int64 {
+	return time.Now().UTC().UnixNano() / int64(time.Millisecond)
+}
 
 type TestConfig struct {
 	Bosh struct {
@@ -220,10 +230,6 @@ type TestConfig struct {
 	SkipMSUpdateTest          bool   `json:"skip_ms_update_test"`
 	SSHDisabledByDefault      bool   `json:"ssh_disabled_by_default"`
 	SecurityComplianceApplied bool   `json:"security_compliance_applied"`
-}
-
-func getTimestampInMs() int64 {
-	return time.Now().UTC().UnixNano() / int64(time.Millisecond)
 }
 
 type StemcellYML struct {
@@ -508,7 +514,7 @@ func downloadLogs(instanceName string, jobName string, index int, bosh *BoshComm
 	Expect(err).NotTo(HaveOccurred())
 	defer os.RemoveAll(tempDir) //nolint:errcheck
 
-	err = bosh.Run(fmt.Sprintf("-d %s logs %s/%d --dir %s", deploymentName, instanceName, index, tempDir))
+	err = bosh.Run(fmt.Sprintf("--deployment=%s logs %s/%d --dir %s", deploymentName, instanceName, index, tempDir))
 	Expect(err).NotTo(HaveOccurred())
 
 	matches, err := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("%s.%s.%d-*.tgz", deploymentName, instanceName, index)))
