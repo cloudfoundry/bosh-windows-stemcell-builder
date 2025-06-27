@@ -1983,20 +1983,18 @@ jobs:
     tags: [broadcom]
   - do:
     - task: run-bwats-gcp-stemcell
+      tags: [broadcom]
       file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
       image: bosh-windows-stemcell-builder-ci-image
       input_mapping: { stemcell: bosh-windows-stemcell }
       params:
         ACCOUNT_JSON: ((broadcom_labs_gcp_credentials_json))
         AZ: az1
-        BOSH_CA_CERT: ((iaas_directors_gcp-director_bosh_ca_cert.ca))
-        BOSH_CLIENT: ((iaas_directors_gcp-director_bosh_client.username))
-        BOSH_CLIENT_SECRET: ((iaas_directors_gcp-director_bosh_client.password))
-        BOSH_ENVIRONMENT: ((iaas_directors_gcp-director_bosh_environment))
+        BOSH_CA_CERT: ((iaas_directors_labs-gcp-director_bosh_ca_cert.ca))
+        BOSH_CLIENT: ((iaas_directors_labs-gcp-director_bosh_client.username))
+        BOSH_CLIENT_SECRET: ((iaas_directors_labs-gcp-director_bosh_client.password))
+        BOSH_ENVIRONMENT: ((iaas_directors_labs-gcp-director_bosh_environment))
         IAAS: gcp
-        SSH_TUNNEL_IP: ((iaas_directors_gcp-director_bosh_jumpbox_ip))
-        SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_gcp-director_bosh_jumpbox_ssh.private_key))
-        SSH_TUNNEL_USER: ((iaas_directors_gcp-director_bosh_jumpbox_username))
         STEMCELL_OS: windows((BASE_OS_VERSION))
         STEMCELL_PATH: stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
         VM_EXTENSIONS: "50GB_ephemeral_disk" # WARN: Cloud Config specific
