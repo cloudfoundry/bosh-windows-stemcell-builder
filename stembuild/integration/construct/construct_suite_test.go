@@ -236,8 +236,6 @@ func enableWinRM() {
 		powershellModuleLocalPath := filepath.Join(repositoryRoot, "modules", powershellModule, fmt.Sprintf("%s.psm1", powershellModule))
 		powershellModuleRemotePath := fmt.Sprintf("C:\\Windows\\Temp\\%s.psm1", powershellModule)
 
-		By(fmt.Sprintf("VM username: %s, password: %s", conf.VMUsername, conf.VMPassword))
-
 		uploadCommand := []string{
 			"guest.upload",
 			fmt.Sprintf("-vm.ipath=%s", conf.VMInventoryPath),
