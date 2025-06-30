@@ -45,10 +45,10 @@ while [ "${VM_IP}" != "${FOUND_IP_ADDRESS}" ]; do
 	VM_INFO=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}")
 
 	FOUND_IP_ADDRESS=$(echo "${VM_INFO}" |
-	    jq -r ".VirtualMachines[0].Guest.Net[0].IpAddress | .[]? |select(. == \"${VM_IP}\")")
+	    jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]? |select(. == \"${VM_IP}\")")
 
     echo "Current IP Addresses:"
-	echo "${VM_INFO}" | jq -r ".VirtualMachines[0].Guest.Net[0].IpAddress | .[]?"
+	echo "${VM_INFO}" | jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]?"
 
 	if [ ${SECONDS} -gt 600 ] ; then
 		exit 1

@@ -39,7 +39,7 @@ function run_pwsh_command_with_govc() {
   pid=$(
     $govc_pwsh_cmd ${command}
   )
-  return=$(govc guest.ps -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" -p=${pid} -X -json | jq '.ProcessInfo[0].ExitCode')
+  return=$(govc guest.ps -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" -p=${pid} -X -json | jq '.processInfo[0].exitCode')
   echo "${command} returned ${return}"
 }
 
@@ -52,7 +52,7 @@ returnWindowsUpdateCount="exit (([array](Get-WindowsUpdate)).Count)"
 echo "getting update count"
 get_update_count_pid=$($govc_pwsh_cmd ${returnWindowsUpdateCount})
 echo "getting update count exit code via guest.ps"
-updates_remaining=$(govc guest.ps -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" -p=${get_update_count_pid} -X -json | jq '.ProcessInfo[0].ExitCode')
+updates_remaining=$(govc guest.ps -vm.ipath="${vm_ipath}" -l="${vm_username}:${vm_password}" -p=${get_update_count_pid} -X -json | jq '.processInfo[0].exitCode')
 echo "Windows Updates to install: $updates_remaining"
 while [[ updates_remaining -ne 0 ]]; do
 
