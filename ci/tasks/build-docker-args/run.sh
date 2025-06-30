@@ -3,7 +3,7 @@ set -eu -o pipefail
 
 # install needed dependencies so that this task can be run on a stock ubuntu image
 apt-get update -y
-apt-get install -y curl jq
+apt-get install -y ca-certificates curl jq
 
 bosh_cli_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s https://api.github.com/repos/cloudfoundry/bosh-cli/releases/latest \
                 | jq -r '.assets[] | select(.name | contains ("linux-amd64")) | .browser_download_url')"
@@ -15,11 +15,8 @@ ruby_install_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s htt
                     | jq -r '.assets[] | select(.name | endswith ("tar.gz")) | .browser_download_url')"
 golangci_lint_install_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s https://api.github.com/repos/golangci/golangci-lint/releases/latest \
                     | jq -r '.assets[] | select(.name | match("golangci-lint-[0-9]+.[0-9]+.[0-9]+-linux-amd64.tar.gz")) | .browser_download_url')"
-
-# TODO: figure out why v0.50.0 fails with 'govc: A specified parameter was not correct: spec.identity.userData.fullName'
-govc_install_url="https://github.com/vmware/govmomi/releases/download/v0.29.0/govc_Linux_x86_64.tar.gz"
-#govc_install_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s https://api.github.com/repos/vmware/govmomi/releases/latest \
-#                    | jq -r '.assets[] | select(.name | match("govc_Linux_x86_64.tar.gz")) | .browser_download_url')"
+govc_install_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s https://api.github.com/repos/vmware/govmomi/releases/latest \
+                    | jq -r '.assets[] | select(.name | match("govc_Linux_x86_64.tar.gz")) | .browser_download_url')"
 
 gem_home="/usr/local/bundle"
 ruby_version="$(cat bosh-windows-stemcell-builder-ci/.ruby-version)"
