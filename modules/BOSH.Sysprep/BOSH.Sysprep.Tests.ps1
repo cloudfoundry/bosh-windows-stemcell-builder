@@ -3,6 +3,7 @@ BeforeAll {
     Import-Module ../BOSH.Utils/BOSH.Utils.psm1
     Import-Module ../BOSH.Agent/BOSH.Agent.psm1
 
+    $OsVersion = "windows2019"
 
     InModuleScope BOSH.Sysprep {
         function GCESysprep
@@ -28,13 +29,13 @@ Describe "BOSH.Sysprep" {
             Mock -ModuleName BOSH.Sysprep Stop-Computer { }
             Mock -ModuleName BOSH.Sysprep Start-Process { }
 
-            Mock -ModuleName BOSH.Sysprep -CommandName Get-OSVersion { "windows2019" }
+            Mock -ModuleName BOSH.Sysprep -CommandName Get-OSVersion { $OsVersion }
             Mock -ModuleName BOSH.Sysprep -CommandName Enable-LocalSecurityPolicy { }
         }
 
         Context "when not provided an IaaS" {
             It "throws" {
-                { Invoke-Sysprep -OsVersion "windows2019" } | Should -Throw "Provide the IaaS this stemcell will be used for"
+                { Invoke-Sysprep -OsVersion $OsVersion } | Should -Throw "Provide the IaaS this stemcell will be used for"
             }
         }
 
@@ -44,7 +45,7 @@ Describe "BOSH.Sysprep" {
             }
 
             It "throws" {
-                { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO -OsVersion "windows2019" } | Should -Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
+                { Invoke-Sysprep -IaaS "OpenShift" -SkipLGPO -OsVersion $OsVersion } | Should -Throw "Invalid IaaS 'OpenShift' supported platforms are: AWS, Azure, GCP and Vsphere"
             }
         }
 
@@ -334,7 +335,7 @@ Describe "BOSH.Sysprep" {
 
     Describe "Enable-LocalSecurityPolicy" {
         BeforeEach {
-            Mock -ModuleName BOSH.Sysprep -CommandName Get-OSVersion { "windows2019" }
+            Mock -ModuleName BOSH.Sysprep -CommandName Get-OSVersion { $OsVersion }
 
             $expectedPolicyDir = Join-Path $PSScriptRoot "cis-merge-2019"
             $domainSysVolDir = "$expectedPolicyDir/DomainSysvol"
