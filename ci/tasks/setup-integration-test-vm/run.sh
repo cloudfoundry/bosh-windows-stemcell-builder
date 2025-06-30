@@ -28,7 +28,10 @@ govc vm.clone \
 
 govc vm.customize \
   -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}" \
-  -ip "${VM_IP}" "${VM_CUSTOMIZATION_NAME}"
+  -ip "${VM_IP}" \
+  -org "${VM_ORG_NAME}" \
+  -username "${VM_USERNAME}" \
+  "${VM_CUSTOMIZATION_NAME}"
 
 govc vm.power -on \
   -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}"

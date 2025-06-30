@@ -19,5 +19,7 @@ params:
   CLONE_DATASTORE:
   CLONE_RESOURCE_POOL:
   VM_CUSTOMIZATION_NAME: Bosh-Windows-Base
+  VM_ORG_NAME: Broadcom
+  VM_USERNAME: Tanzu Platform
   CLONE_FOLDER:
   JOB_OS_NAME:             # linux or windows
