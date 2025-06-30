@@ -3,6 +3,8 @@ BASE_OS_VERSION: "2019"
 
 ROOT_BUCKET: all-bosh-windows
 
+PRODUCTION_BUCKET: bosh-windows-stemcells-production
+
 # AWS
 AWS_BASE_AMI_NAME: Windows_Server-2019-English-Core-Base-*
 AWS_PACKER_REGION: us-east-1
