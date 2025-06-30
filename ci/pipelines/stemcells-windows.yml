@@ -2038,19 +2038,17 @@ jobs:
     tags: [broadcom]
   - do:
     - task: run-wuts
+      tags: [broadcom]
       file: windows-utilities-release/ci/tasks/run-wuts/task.yml
       image: bosh-integration-registry-image
       input_mapping: { stemcell: bosh-windows-stemcell }
       params:
         AZ: az1
-        BOSH_CA_CERT: ((iaas_directors_gcp-director_bosh_ca_cert.ca))
-        BOSH_CLIENT: ((iaas_directors_gcp-director_bosh_client.username))
-        BOSH_CLIENT_SECRET: ((iaas_directors_gcp-director_bosh_client.password))
-        BOSH_ENVIRONMENT: ((iaas_directors_gcp-director_bosh_environment))
+        BOSH_CA_CERT: ((iaas_directors_labs-gcp-director_bosh_ca_cert.ca))
+        BOSH_CLIENT: ((iaas_directors_labs-gcp-director_bosh_client.username))
+        BOSH_CLIENT_SECRET: ((iaas_directors_labs-gcp-director_bosh_client.password))
+        BOSH_ENVIRONMENT: ((iaas_directors_labs-gcp-director_bosh_environment))
         NETWORK: default
-        SSH_TUNNEL_IP: ((iaas_directors_gcp-director_bosh_jumpbox_ip))
-        SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_gcp-director_bosh_jumpbox_ssh.private_key))
-        SSH_TUNNEL_USER: ((iaas_directors_gcp-director_bosh_jumpbox_username))
         VM_EXTENSIONS: "50GB_ephemeral_disk"
         VM_TYPE: large
     ensure:
