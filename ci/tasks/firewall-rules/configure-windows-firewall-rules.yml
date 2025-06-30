@@ -5,6 +5,7 @@ inputs:
   - name: bosh-windows-stemcell-builder-ci
 
 params:
+  CONFIGURE_GCP:
   COMMERCIAL_AWS_ACCESS_KEY_ID:
   COMMERCIAL_AWS_DEFAULT_REGION:
   COMMERCIAL_AWS_ROLE_ARN:

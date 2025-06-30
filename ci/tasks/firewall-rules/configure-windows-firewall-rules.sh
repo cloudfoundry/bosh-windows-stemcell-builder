@@ -2,20 +2,22 @@
 set -eu -o pipefail
 set -x
 
-# We have firewall rules that are necessary when creating Windows stemcells in AWS and GCP.
+# We have firewall rules that are necessary when creating Windows stemcells in AWS and GCP (if needed).
 # This script ensures that the concourse worker egress IPs have access on the
 # WinRM port (5985).
-# Set firewall rules in the GCP project
-comma_separated_external_ips=""
-for external_ip in $ALLOWED_IP_ADDRESSES; do
-  comma_separated_external_ips="${external_ip}/32,${comma_separated_external_ips}"
-done
-comma_separated_external_ips="${comma_separated_external_ips%,}"
+# Set firewall rules in the GCP project if needed
+if [ -n "${CONFIGURE_GCP}" ]; then
+  comma_separated_external_ips=""
+  for external_ip in $ALLOWED_IP_ADDRESSES; do
+    comma_separated_external_ips="${external_ip}/32,${comma_separated_external_ips}"
+  done
+  comma_separated_external_ips="${comma_separated_external_ips%,}"
 
-set +x
-echo "${WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON}" | gcloud auth activate-service-account --key-file - --project cff-bosh-windows-stemcells
-set -x
-gcloud compute firewall-rules update default-allow-winrm --project cff-bosh-windows-stemcells --source-ranges="${comma_separated_external_ips}"
+  set +x
+  echo "${WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON}" | gcloud auth activate-service-account --key-file - --project cff-bosh-windows-stemcells
+  set -x
+  gcloud compute firewall-rules update default-allow-winrm --project cff-bosh-windows-stemcells --source-ranges="${comma_separated_external_ips}"
+fi
 
 # Set firewall rules in the AWS project
 aws_ip_ranges=""

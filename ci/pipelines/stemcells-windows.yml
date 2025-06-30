@@ -737,6 +737,7 @@ jobs:
     file: bosh-windows-stemcell-builder-ci/ci/tasks/firewall-rules/configure-windows-firewall-rules.yml
     image: bosh-windows-stemcell-builder-ci-image
     params:
+      CONFIGURE_GCP: true
       COMMERCIAL_AWS_ACCESS_KEY_ID: ((aws-stemcells_aws_access_key.username))
       COMMERCIAL_AWS_DEFAULT_REGION: ((AWS_PACKER_REGION))
       COMMERCIAL_AWS_ROLE_ARN: ((aws-stemcells_aws_access_key.role_arn))
