@@ -64,7 +64,7 @@ module Packer
       end
 
       def instance_type
-        'm4.large'
+        'm5.large'
       end
 
       def launch_block_device_mappings

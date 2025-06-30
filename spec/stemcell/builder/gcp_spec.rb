@@ -27,6 +27,9 @@ describe Stemcell::Builder do
         source_image = "some-source-image"
         image_family= "some-family"
         vm_prefix = "some-vm-prefix"
+        network = 'default'
+        network_project_id = 'project-id'
+        subnetwork = 'subnet'
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
@@ -39,7 +42,10 @@ describe Stemcell::Builder do
           os: os,
           version: version,
           vm_prefix: vm_prefix,
-          mount_ephemeral_disk: false
+          mount_ephemeral_disk: false,
+          network: network,
+          network_project_id: network_project_id,
+          subnetwork: subnetwork,
         ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
@@ -71,7 +77,10 @@ describe Stemcell::Builder do
           source_image: source_image,
           image_family: image_family,
           vm_prefix: vm_prefix,
-          mount_ephemeral_disk: "false"
+          mount_ephemeral_disk: "false",
+          network: network,
+          network_project_id: network_project_id,
+          subnetwork: subnetwork,
         ).build
         expect(stemcell_path).to eq('path-to-stemcell')
       end
@@ -85,6 +94,9 @@ describe Stemcell::Builder do
           packer_vars = 'some-packer-vars'
           os = 'windows2019'
           vm_prefix = 'some-vm-prefix'
+          network = 'default'
+          network_project_id = 'project-id'
+          subnetwork = 'subnet'
 
           packer_config = double(:packer_config)
           allow(packer_config).to receive(:dump).and_return('some-packer-config')
@@ -97,7 +109,10 @@ describe Stemcell::Builder do
             os: os,
             version: '',
             vm_prefix: vm_prefix,
-            mount_ephemeral_disk: false
+            mount_ephemeral_disk: false,
+            network: network,
+            network_project_id: network_project_id,
+            subnetwork: subnetwork,
           ).and_return(packer_config)
 
           packer_runner = double(:packer_runner)
@@ -110,6 +125,9 @@ describe Stemcell::Builder do
               output_directory: output_directory,
               version: '',
               packer_vars: packer_vars,
+              network: network,
+              network_project_id: network_project_id,
+              subnetwork: subnetwork,
               account_json: account_json,
               source_image: source_image,
               image_family: image_family,

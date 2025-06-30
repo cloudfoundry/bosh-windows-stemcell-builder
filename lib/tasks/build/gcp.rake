@@ -27,6 +27,9 @@ namespace :build do
     gcp_builder = Stemcell::Builder::Gcp.new(
       account_json: Stemcell::Builder::validate_env('ACCOUNT_JSON'),
       os: Stemcell::Builder::validate_env('OS_VERSION'),
+      network: ENV.fetch('GCP_NETWORK', ''), # optional
+      network_project_id: ENV.fetch('GCP_NETWORK_PROJECT_ID', ''), # optional
+      subnetwork: ENV.fetch('GCP_SUBNETWORK', ''), # optional
       output_directory: output_directory,
       packer_vars: {},
       source_image: source_image,

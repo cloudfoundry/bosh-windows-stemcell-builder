@@ -28,7 +28,7 @@ describe Packer::Config::Gcp do
             'tags' => ['winrm'],
             'source_image' => 'some-source-image',
             'image_family' => 'some-image-family',
-            'zone' => 'us-east1-c',
+            'zone' => 'us-west1-c',
             'disk_size' => 32,
             'machine_type' => 'n1-standard-4',
             'omit_external_ip' => false,
