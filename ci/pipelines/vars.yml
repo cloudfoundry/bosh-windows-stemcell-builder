@@ -2,7 +2,6 @@
 BASE_OS_VERSION: "2019"
 
 ROOT_BUCKET: all-bosh-windows
-
 PRODUCTION_BUCKET: bosh-windows-stemcells-production
 
 # AWS
