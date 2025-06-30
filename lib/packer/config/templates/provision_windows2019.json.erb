@@ -1,6 +1,11 @@
 [
   {
     "type": "file",
+    "source": "../lgpo-binary/LGPO_30/LGPO.exe",
+    "destination": "C:\\windows\\LGPO.exe"
+  },
+  {
+    "type": "file",
     "source": "build/bosh-psmodules.zip",
     "destination": "C:\\provision\\bosh-psmodules.zip",
     "pause_before": "60s"
@@ -152,11 +157,6 @@
       "trap { $host.SetShouldExit(1) }",
       "Enable-SSHD"
     ]
-  },
-  {
-    "type": "file",
-    "source": "../lgpo-binary/LGPO_30/LGPO.exe",
-    "destination": "C:\\windows\\LGPO.exe"
   },
   {
     "type": "file",
