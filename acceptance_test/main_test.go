@@ -147,12 +147,8 @@ var _ = Describe("BOSH Windows", func() {
 	})
 
 	It("is fully updated", func() { // 860s
-		if testConfig.SkipMSUpdateTest {
-			Skip("Skipping check-updates test - SkipMSUpdateTest set to true")
-		} else {
-			err := boshCommand.RunErrand("check-updates", deploymentName)
-			Expect(err).NotTo(HaveOccurred())
-		}
+		err := boshCommand.RunErrand("check-updates", deploymentName)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("has all certificate authority certs that are present on the Windows Update Server", func() {
@@ -227,7 +223,6 @@ type TestConfig struct {
 	DefaultPassword           string `json:"default_password"`
 	SkipCleanup               bool   `json:"skip_cleanup"`
 	MountEphemeralDisk        bool   `json:"mount_ephemeral_disk"`
-	SkipMSUpdateTest          bool   `json:"skip_ms_update_test"`
 	SSHDisabledByDefault      bool   `json:"ssh_disabled_by_default"`
 	SecurityComplianceApplied bool   `json:"security_compliance_applied"`
 }

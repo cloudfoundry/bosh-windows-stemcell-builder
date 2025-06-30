@@ -19,10 +19,6 @@ if [ "$SSH_DISABLED_BY_DEFAULT" != "true" ] ; then
   SSH_DISABLED_BY_DEFAULT="false"
 fi
 
-if [ "$SKIP_MS_UPDATE_TEST" != "true" ] ; then
-  SKIP_MS_UPDATE_TEST="false"
-fi
-
 if [ "$SECURITY_COMPLIANCE_APPLIED" != "true" ] ; then
   SECURITY_COMPLIANCE_APPLIED="false"
 fi
@@ -48,7 +44,6 @@ pushd stemcell-builder/acceptance_test
     "ssh_disabled_by_default": $SSH_DISABLED_BY_DEFAULT,
     "default_username" : "$DEFAULT_USERNAME",
     "default_password" : "$DEFAULT_PASSWORD",
-    "skip_ms_update_test": $SKIP_MS_UPDATE_TEST,
     "security_compliance_applied": $SECURITY_COMPLIANCE_APPLIED
   }
 END_OF_CONFIG
