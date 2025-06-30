@@ -1,6 +1,5 @@
 #!/bin/bash
-
-set -eo pipefail
+set -euo pipefail
 
 ACCOUNT_EMAIL=$(echo "${ACCOUNT_JSON}" | jq -r .client_email)
 PROJECT_ID=$(echo "${ACCOUNT_JSON}" | jq -r .project_id)
@@ -11,8 +10,8 @@ gcloud config set project "${PROJECT_ID}"
 
 set -x
 
-if [[ "$BASE_OS" != "windows2019" ]]; then
-    echo "Define BASE_OS environment variable (i.e. windows2019)" 1>&2
+if [[ "${BASE_OS}" =~ windows[0-9]{4}  ]]; then
+    echo "Define BASE_OS environment variable (ex: windows2135)" 1>&2
 	exit 1
 fi
 
@@ -24,5 +23,5 @@ fi
 image_id=$(gcloud compute images list --filter="name~'${BASE_IMAGE_REGEX}'"  --format json | jq -r .[0].name)
 version=$(cat version/number)
 
-printf '{"base_image":"%s","image_family":"%s"}' "$image_id" "$IMAGE_FAMILY" > base-gcp-image/base-gcp-image-$BASE_OS-$version.json
-
+printf '{"base_image":"%s","image_family":"%s"}' "$image_id" "$IMAGE_FAMILY" \
+  > "base-gcp-image/base-gcp-image-${BASE_OS}-${version}.json"

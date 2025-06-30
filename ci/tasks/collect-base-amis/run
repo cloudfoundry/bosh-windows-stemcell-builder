@@ -48,7 +48,7 @@ version = File.read('version/number').chomp
 
 base_ami = ENV['BASE_AMI']
 unless supported_base_ami.include? base_ami
-  abort 'abort "Define BASE_AMI environment variable (i.e. windows2019)'
+  abort 'Define BASE_AMI environment variable (ex: windows2135)'
 end
 
 base_ami_name = ENV['BASE_AMI_NAME']
