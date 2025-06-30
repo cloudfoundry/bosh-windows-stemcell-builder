@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,7 +13,7 @@ func TestCreateManifest(t *testing.T) {
 	const expected = `---
 name: bosh-azure-hyperv-windows2019-go_agent
 version: '10.0.17763.410'
-bosh_protocol: 1
+api_version: 3
 sha1: 478da1732dba66e67e6a657fdf03b5614c513b04
 operating_system: windows2019
 cloud_properties:
@@ -31,7 +30,7 @@ cloud_properties:
   root_device_name: "/dev/sda1"
 `
 
-	tmpdir, err := ioutil.TempDir("", "")
+	tmpdir, err := os.MkdirTemp("", "")
 	if err != nil {
 		t.Fatal(err)
 	}

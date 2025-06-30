@@ -17,6 +17,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 )
@@ -316,10 +317,8 @@ func DownloadVHD(dirname string) (string, error) {
 	return destinationFile, nil
 }
 
-// Main and flag validation
-
+// Main and flag validation - add env keys first so that flags take precedence
 var (
-	// Add env keys first so that flags take precedence
 	VhdURL      = os.Getenv("AZURE_VHD_URL")      // vhd
 	VhdURLFile  = os.Getenv("AZURE_VHD_URL_FILE") // vhdfile
 	Version     = os.Getenv("AZURE_VERSION")      // version
@@ -327,6 +326,8 @@ var (
 	WindowsOS   = os.Getenv("AZURE_WINDOWS_OS")   // os
 	Destination = os.Getenv("AZURE_DESTINATION")  // dest
 	WorkDir     = os.Getenv("AZURE_TEMP_DIR")     // temp
+
+	supportedWindowsVersions = []string{"2019"}
 )
 
 func parseFlags() error {
@@ -334,7 +335,7 @@ func parseFlags() error {
 	flag.StringVar(&VhdURLFile, "vhdfile", "", "File containing the VHD URL with SAS token, env: AZURE_VHD_URL_FILE")
 	flag.StringVar(&Version, "version", "", "Stemcell version, env: AZURE_VERSION")
 	flag.StringVar(&VersionFile, "versionfile", "", "File containing the stemcell version, env: AZURE_VERSION_FILE")
-	flag.StringVar(&WindowsOS, "os", "", "Windows version (2019), env: AZURE_WINDOWS_OS")
+	flag.StringVar(&WindowsOS, "os", "", "Windows version (e.g 2135), env: AZURE_WINDOWS_OS")
 	flag.StringVar(&Destination, "dest", "", "Destination directory if not provided the current working directory will be used, env: AZURE_DESTINATION")
 	flag.StringVar(&WorkDir, "temp", "", "Temporary directory (must be capable of storing +130GB of data), env: AZURE_TEMP_DIR")
 
@@ -401,14 +402,12 @@ func validateFlags() []error {
 	if WindowsOS == "" {
 		add(errors.New("missing required argument: [os]"))
 	}
-	switch strings.ToLower(WindowsOS) {
-	case "2019":
-	// Ok
-	case "windows2019":
-		WindowsOS = strings.TrimPrefix(WindowsOS, "windows")
-	default:
-		add(fmt.Errorf("OS version must be 2019 have: %s", WindowsOS))
+
+	WindowsOS = strings.TrimPrefix(WindowsOS, "windows")
+	if !slices.Contains(supportedWindowsVersions, WindowsOS) {
+		add(fmt.Errorf("OS version must be one of %v, got: %s", supportedWindowsVersions, WindowsOS))
 	}
+
 	if Destination == "" {
 		add(errors.New("missing required argument: [dest]"))
 	}
