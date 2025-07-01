@@ -10,7 +10,7 @@ gcloud config set project "${PROJECT_ID}"
 
 set -x
 
-if [[ "${BASE_OS}" =~ windows[0-9]{4}  ]]; then
+if [[ ! "${BASE_OS}" =~ windows[0-9]{4}  ]]; then
     echo "Define BASE_OS environment variable (ex: windows2135)" 1>&2
 	exit 1
 fi
