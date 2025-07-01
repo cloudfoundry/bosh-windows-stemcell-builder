@@ -246,9 +246,10 @@ func enableWinRM() {
 			powershellModuleRemotePath,
 		}
 
+		By(fmt.Sprintf("Starting upload of '%s' to '%s': '%s'", powershellModuleLocalPath, powershellModuleRemotePath, strings.Join(uploadCommand, " ")))
 		uploadExitCode := cli.Run(uploadCommand)
 		Expect(uploadExitCode).To(Equal(0), fmt.Sprintf("error uploading %s to %s", powershellModuleLocalPath, powershellModuleRemotePath))
-		By(fmt.Sprintf("'%s' was uploaded to '%s'", powershellModuleLocalPath, powershellModuleRemotePath))
+		By(fmt.Sprintf("Finished upload of '%s' to '%s': '%s'", powershellModuleLocalPath, powershellModuleRemotePath, strings.Join(uploadCommand, " ")))
 	}
 
 	enableCommand := []string{
