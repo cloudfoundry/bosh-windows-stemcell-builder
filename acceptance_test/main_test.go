@@ -118,13 +118,8 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).To(BeNil())
 		releaseDir := filepath.Join(pwd, "assets", "bwats-release")
 
-		f, err := os.OpenFile(filepath.Join(releaseDir, "jobs", "simple-job", "templates", "pre-start.ps1"),
-			os.O_APPEND|os.O_WRONLY, 0600)
-		Expect(err).ToNot(HaveOccurred())
-		defer f.Close() //nolint:errcheck
-
 		for i := 0; i < redeployRetries; i++ {
-			GinkgoWriter.Printf("Redeploy attempt: #%d\n", i)
+			By(fmt.Sprintf("Redeploy attempt: #%d\n", i))
 
 			version := fmt.Sprintf("0.dev+%d", getTimestampInMs())
 			tightLoopStemcellVersions = append(tightLoopStemcellVersions, version)
@@ -234,9 +229,7 @@ type StemcellYML struct {
 
 func fetchStemcellInfo(stemcellPath string) (StemcellYML, error) {
 	var stemcellInfo StemcellYML
-	tempDir, err := os.MkdirTemp("", "")
-	Expect(err).NotTo(HaveOccurred())
-	defer os.RemoveAll(tempDir) //nolint:errcheck
+	tempDir := GinkgoT().TempDir()
 
 	cmd := exec.Command("tar", "xf", stemcellPath, "-C", tempDir, "stemcell.MF")
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)

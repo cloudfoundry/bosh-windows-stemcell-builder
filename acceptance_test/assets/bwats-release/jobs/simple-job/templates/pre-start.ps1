@@ -1,2 +1,3 @@
 Write-Host "Running pre-start script..."
-Write-Host "Redeploy attempt #0"Write-Host "Redeploy attempt #1"Write-Host "Redeploy attempt #2"Write-Host "Redeploy attempt #3"Write-Host "Redeploy attempt #4"Write-Host "Redeploy attempt #5"Write-Host "Redeploy attempt #6"Write-Host "Redeploy attempt #7"Write-Host "Redeploy attempt #8"Write-Host "Redeploy attempt #9"
+Write-Host "The time is $(Get-Date)"
+Write-Host "Finishing pre-start script..."
