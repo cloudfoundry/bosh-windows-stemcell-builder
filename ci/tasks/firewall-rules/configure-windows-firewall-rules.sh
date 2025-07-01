@@ -6,9 +6,9 @@ set -x
 # This script ensures that the concourse worker egress IPs have access on the
 # WinRM port (5985).
 # Set firewall rules in the GCP project if needed
-if [ -n "${CONFIGURE_GCP}" ]; then
+if [ "${CONFIGURE_GCP:-}" == "true" ]; then
   comma_separated_external_ips=""
-  for external_ip in $ALLOWED_IP_ADDRESSES; do
+  for external_ip in ${ALLOWED_IP_ADDRESSES}; do
     comma_separated_external_ips="${external_ip}/32,${comma_separated_external_ips}"
   done
   comma_separated_external_ips="${comma_separated_external_ips%,}"
@@ -21,7 +21,7 @@ fi
 
 # Set firewall rules in the AWS project
 aws_ip_ranges=""
-for external_ip in $ALLOWED_IP_ADDRESSES; do
+for external_ip in ${ALLOWED_IP_ADDRESSES}; do
   aws_ip_ranges="{CidrIp=${external_ip}/32},${aws_ip_ranges}"
 done
 aws_ip_ranges="${aws_ip_ranges%,}"
