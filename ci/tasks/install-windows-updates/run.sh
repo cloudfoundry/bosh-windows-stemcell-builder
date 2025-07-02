@@ -33,7 +33,7 @@ function wait_for_vm_to_come_up() {
   set -e
 }
 
-function run_pwsh_command_with_govc() {
+function run_powershell_command_with_logging() {
   command=$1
   echo "Running $command"
   pid=$(
@@ -45,8 +45,8 @@ function run_pwsh_command_with_govc() {
 
 wait_for_vm_to_come_up
 
-run_pwsh_command_with_govc 'Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force'
-run_pwsh_command_with_govc 'Install-Module -Name PSWindowsUpdate -MinimumVersion 2.1.0.1 -Force'
+run_powershell_command_with_logging 'Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force'
+run_powershell_command_with_logging 'Install-Module -Name PSWindowsUpdate -MinimumVersion 2.1.0.1 -Force'
 
 returnWindowsUpdateCount="exit (([array](Get-WindowsUpdate)).Count)"
 echo "getting update count"
@@ -87,8 +87,8 @@ while [[ updates_remaining -ne 0 ]]; do
   echo "Updates remaining: ${updates_remaining}"
 done
 
-run_pwsh_command_with_govc "Get-Hotfix > C:\\hotfix.log"
+run_powershell_command_with_logging "Get-Hotfix > C:\\hotfix.log"
 
 govc guest.download -l "${vm_username}:${vm_password}" -vm="${vm_ipath}" "C:\\hotfix.log" hotfix-log/hotfixes.log
 
-run_pwsh_command_with_govc "Dism.exe /online /Cleanup-Image /StartComponentCleanup"
+run_powershell_command_with_logging "Dism.exe /online /Cleanup-Image /StartComponentCleanup"
