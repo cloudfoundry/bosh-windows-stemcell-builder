@@ -97,7 +97,8 @@ var _ = AfterSuite(func() {
 	err = boshCommand.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
 	Expect(err).NotTo(HaveOccurred())
 	if len(tightLoopStemcellVersions) != 0 {
-		err = boshCommand.Run(fmt.Sprintf("delete-release bwats-release/%s", tightLoopStemcellVersions[len(tightLoopStemcellVersions)-1]))
+		releaseVersion := tightLoopStemcellVersions[len(tightLoopStemcellVersions)-1]
+		err = boshCommand.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
 		Expect(err).NotTo(HaveOccurred())
 	}
 
@@ -122,13 +123,13 @@ var _ = Describe("BOSH Windows", func() {
 		for i := 0; i < redeployRetries; i++ {
 			By(fmt.Sprintf("Redeploy attempt: #%d\n", i))
 
-			version := fmt.Sprintf("0.dev+%s", getTimestamp())
-			tightLoopStemcellVersions = append(tightLoopStemcellVersions, version)
-			Expect(boshCommand.RunIn(fmt.Sprintf("create-release --force --version %s", version), releaseDir)).To(Succeed())
+			releaseVersion := fmt.Sprintf("0.dev+%s", getTimestamp())
+			tightLoopStemcellVersions = append(tightLoopStemcellVersions, releaseVersion)
+			Expect(boshCommand.RunIn(fmt.Sprintf("create-release --force --version %s", releaseVersion), releaseDir)).To(Succeed())
 
 			Expect(boshCommand.RunIn("upload-release", releaseDir)).To(Succeed())
 
-			err = testConfig.deploy(boshCommand, deploymentName, stemcellVersion, version)
+			err = testConfig.deploy(boshCommand, deploymentName, stemcellVersion, releaseVersion)
 
 			if err != nil {
 				downloadLogs("check-multiple", "simple-job", 0, boshCommand)
