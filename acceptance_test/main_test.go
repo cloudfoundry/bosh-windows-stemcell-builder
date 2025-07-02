@@ -109,8 +109,9 @@ var _ = AfterSuite(func() {
 var _ = Describe("BOSH Windows", func() {
 	It("can run a job that relies on a package", func() {
 		time.Sleep(60 * time.Second)
-		Eventually(downloadLogs("check-multiple", "simple-job", 0, boshCommand),
-			time.Second*65).Should(gbytes.Say("60 seconds passed"))
+		Eventually(
+			downloadLogs("check-multiple", "simple-job", 0, boshCommand),
+		).WithTimeout(time.Second * 65).Should(gbytes.Say("60 seconds passed"))
 	})
 
 	It("successfully runs redeploy in a tight loop", func() {
@@ -239,7 +240,7 @@ func fetchStemcellInfo(stemcellPath string) (StemcellYML, error) {
 	cmd := exec.Command("tar", "xf", stemcellPath, "-C", tempDir, "stemcell.MF")
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
-	Eventually(session, 20*time.Minute).Should(gexec.Exit())
+	Eventually(session).WithTimeout(20 * time.Minute).Should(gexec.Exit())
 
 	exitCode := session.ExitCode()
 	if exitCode != 0 {
@@ -344,7 +345,7 @@ func (c *BoshCommand) RunInStdOut(command, dir string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	Eventually(session, c.Timeout).Should(gexec.Exit())
+	Eventually(session).WithTimeout(c.Timeout).Should(gexec.Exit())
 
 	exitCode := session.ExitCode()
 	stdout := session.Out.Contents()
