@@ -5,9 +5,11 @@ Set-Service -Name wuauserv -StartupType Manual
 Start-Service -Name wuauserv
 
 $Session = New-Object -ComObject Microsoft.Update.Session
-Write-Host "Session: $Session"
+Write-Host "Session: $($Session | ConvertTo-Json)"
+
 $Searcher = $Session.CreateUpdateSearcher()
-Write-Host "Searcher: $Searcher"
+Write-Host "Searcher: $($Searcher | ConvertTo-Json)"
+
 $UninstalledUpdates = $Searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0").Updates
 Write-Host "UninstalledUpdates.Count: $($UninstalledUpdates.Count) "
 
