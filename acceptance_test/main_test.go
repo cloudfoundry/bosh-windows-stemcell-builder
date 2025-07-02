@@ -121,7 +121,7 @@ var _ = Describe("BOSH Windows", func() {
 		for i := 0; i < redeployRetries; i++ {
 			By(fmt.Sprintf("Redeploy attempt: #%d\n", i))
 
-			version := fmt.Sprintf("0.dev+%d", getTimestampInMs())
+			version := fmt.Sprintf("0.dev+%s", getTimestamp())
 			tightLoopStemcellVersions = append(tightLoopStemcellVersions, version)
 			Expect(boshCommand.RunIn(fmt.Sprintf("create-release --force --version %s", version), releaseDir)).To(Succeed())
 
@@ -193,11 +193,16 @@ var _ = Describe("BOSH Windows", func() {
 })
 
 func buildDeploymentName(baseName string) string {
-	return fmt.Sprintf("%s-%s-%d", windowsVersion, baseName, getTimestampInMs())
+	return fmt.Sprintf(
+		"%s-%s-%s",
+		windowsVersion,
+		baseName,
+		time.Now().Format("2006-01-02T15h04s05"),
+	)
 }
 
-func getTimestampInMs() int64 {
-	return time.Now().UTC().UnixNano() / int64(time.Millisecond)
+func getTimestamp() string {
+	return time.Now().Format("20060102150405")
 }
 
 type TestConfig struct {
@@ -384,7 +389,7 @@ func createBwatsRelease(bosh *BoshCommand) string {
 	pwd, err := os.Getwd()
 	Expect(err).NotTo(HaveOccurred())
 
-	releaseVersion = fmt.Sprintf("0.dev+%d", getTimestampInMs())
+	releaseVersion = fmt.Sprintf("0.dev+%s", getTimestamp())
 	var goZipPath string
 	if _, err = os.Stat(filepath.Join(pwd, GoZipFile)); os.IsNotExist(err) {
 		goZipPath, err = downloadFile("golang-", GolangURL)
@@ -498,11 +503,9 @@ func (m ManifestProperties) toMap() map[string]string {
 }
 
 func downloadLogs(instanceName string, jobName string, index int, bosh *BoshCommand) *gbytes.Buffer {
-	tempDir, err := os.MkdirTemp("", "")
-	Expect(err).NotTo(HaveOccurred())
-	defer os.RemoveAll(tempDir) //nolint:errcheck
+	tempDir := GinkgoT().TempDir()
 
-	err = bosh.Run(fmt.Sprintf("--deployment=%s logs %s/%d --dir %s", deploymentName, instanceName, index, tempDir))
+	err := bosh.Run(fmt.Sprintf("--deployment=%s logs %s/%d --dir %s", deploymentName, instanceName, index, tempDir))
 	Expect(err).NotTo(HaveOccurred())
 
 	matches, err := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("%s.%s.%d-*.tgz", deploymentName, instanceName, index)))
@@ -534,7 +537,9 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 		return "", err
 	}
 	defer res.Body.Close() //nolint:errcheck
-	if _, err := io.Copy(f, res.Body); err != nil {
+
+	_, err = io.Copy(f, res.Body)
+	if err != nil {
 		return "", err
 	}
 
