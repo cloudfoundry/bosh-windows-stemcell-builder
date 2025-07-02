@@ -141,7 +141,7 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	It("is fully updated", func() { // 860s
+	It("is fully updated", func() {
 		err := boshCommand.RunErrand("check-updates", deploymentName)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -289,12 +289,13 @@ func newBoshCommand(config *TestConfig) *BoshCommand {
 	var err error
 	if s := os.Getenv("BWATS_BOSH_TIMEOUT"); s != "" {
 		timeout, err = time.ParseDuration(s)
-		GinkgoWriter.Printf("Using BWATS_BOSH_TIMEOUT (%s) as timeout\n", s)
+		By(fmt.Sprintf("Found BWATS_BOSH_TIMEOUT: '%s'", s))
 
 		if err != nil {
 			GinkgoWriter.Printf("Error parsing BWATS_BOSH_TIMEOUT (%s): %s - falling back to default\n", s, err)
 		}
 	}
+	By(fmt.Sprintf("Setting BoshCommand.Timeout = '%s'", timeout))
 
 	return &BoshCommand{
 		DirectorIP:   config.Bosh.Target,
