@@ -244,7 +244,7 @@ resources:
     username: bosh-admin-bot
     password: ((github_public_repo_token))
     branch: *bosh_windows_stemcell_builder_semver_branch
-    file: aws-2019
+    file: aws
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: azure-build-number
   type: semver
@@ -255,7 +255,7 @@ resources:
     username: bosh-admin-bot
     password: ((github_public_repo_token))
     branch: *bosh_windows_stemcell_builder_semver_branch
-    file: azure-2019
+    file: azure
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: gcp-build-number
   type: semver
@@ -266,7 +266,7 @@ resources:
     username: bosh-admin-bot
     password: ((github_public_repo_token))
     branch: *bosh_windows_stemcell_builder_semver_branch
-    file: gcp-2019
+    file: gcp
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: stembuild-linux-build-number
   type: semver
@@ -277,7 +277,7 @@ resources:
     username: bosh-admin-bot
     password: ((github_public_repo_token))
     branch: *bosh_windows_stemcell_builder_semver_branch
-    file: stembuild-linux-2019
+    file: stembuild-linux
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: stembuild-windows-build-number
   type: semver
@@ -288,7 +288,7 @@ resources:
     username: bosh-admin-bot
     password: ((github_public_repo_token))
     branch: *bosh_windows_stemcell_builder_semver_branch
-    file: stembuild-windows-2019
+    file: stembuild-windows
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: main-version
   type: semver
@@ -299,7 +299,7 @@ resources:
     username: bosh-admin-bot
     password: ((github_public_repo_token))
     branch: *bosh_windows_stemcell_builder_semver_branch
-    file: main-2019
+    file: main
     initial_version: "((BASE_OS_VERSION)).1.0"
 
 # type: pool
