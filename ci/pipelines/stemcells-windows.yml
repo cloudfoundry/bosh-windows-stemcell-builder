@@ -3,6 +3,7 @@
 anchors:
 - &gcp_account_json ((cff-bosh-windows-stemcells_bosh-153_gcp_credentials_json))
 - &bosh_windows_stemcell_builder_branch windows-2019
+- &bosh_windows_stemcell_builder_semver_branch semver-2019
 - &windows_stemcell_ci_image bosh/windows-stemcell-ci
 - &windows_stemcell_ci_tag windows-2019
 - &windows_os_version windows2019
@@ -242,7 +243,7 @@ resources:
     uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-    branch: semver
+    branch: *bosh_windows_stemcell_builder_semver_branch
     file: aws-2019
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: azure-build-number
@@ -253,7 +254,7 @@ resources:
     uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-    branch: semver
+    branch: *bosh_windows_stemcell_builder_semver_branch
     file: azure-2019
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: gcp-build-number
@@ -264,7 +265,7 @@ resources:
     uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-    branch: semver
+    branch: *bosh_windows_stemcell_builder_semver_branch
     file: gcp-2019
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: stembuild-linux-build-number
@@ -275,7 +276,7 @@ resources:
     uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-    branch: semver
+    branch: *bosh_windows_stemcell_builder_semver_branch
     file: stembuild-linux-2019
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: stembuild-windows-build-number
@@ -286,7 +287,7 @@ resources:
     uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-    branch: semver
+    branch: *bosh_windows_stemcell_builder_semver_branch
     file: stembuild-windows-2019
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: main-version
@@ -297,7 +298,7 @@ resources:
     uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
     username: bosh-admin-bot
     password: ((github_public_repo_token))
-    branch: semver
+    branch: *bosh_windows_stemcell_builder_semver_branch
     file: main-2019
     initial_version: "((BASE_OS_VERSION)).1.0"
 
