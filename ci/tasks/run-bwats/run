@@ -48,5 +48,8 @@ pushd stemcell-builder/acceptance_test
   }
 END_OF_CONFIG
 
-  go run github.com/onsi/ginkgo/v2/ginkgo --focus="${GINKGO_FOCUS}" --skip="${GINKGO_SKIP}" -r -v .
+  go run github.com/onsi/ginkgo/v2/ginkgo run -r -v \
+    --timeout="${GINKGO_TIMEOUT}" \
+    --focus="${GINKGO_FOCUS}" \
+    --skip="${GINKGO_SKIP}" .
 popd
