@@ -26,14 +26,14 @@ var _ = Describe("Version flag", func() {
 		It("prints version information", func() {
 			session := helpers.Stembuild(stembuildExecutable, "--version")
 
-			Eventually(session, 20).Should(Exit(0))
+			Eventually(session).WithTimeout(20).Should(Exit(0))
 			Eventually(session).Should(Say(expectedVersion))
 		})
 
 		It("with command, prints version information and does not run command", func() {
 			session := helpers.Stembuild(stembuildExecutable, "--version", "package")
 
-			Eventually(session, 20).Should(Exit(0))
+			Eventually(session).WithTimeout(20).Should(Exit(0))
 			Eventually(session).Should(Say(expectedVersion))
 		})
 	})

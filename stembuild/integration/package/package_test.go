@@ -88,7 +88,7 @@ var _ = Describe("Package", func() {
 			"-vcenter-ca-certs", pathToCACert,
 		)
 
-		Eventually(session, 60*time.Minute, 5*time.Second).Should(gexec.Exit(0))
+		Eventually(session).WithTimeout(60 * time.Minute).WithPolling(5 * time.Second).Should(gexec.Exit(0))
 		var out []byte
 		session.Out.Write(out) //nolint:errcheck
 		By(fmt.Sprintf("session.Out: '%s'", string(out)))
@@ -143,7 +143,7 @@ var _ = Describe("Package", func() {
 			"-vcenter-ca-certs", pathToCACert,
 		)
 
-		Eventually(session, 60*time.Minute, 5*time.Second).Should(gexec.Exit(0))
+		Eventually(session).WithTimeout(60 * time.Minute).WithPolling(5 * time.Second).Should(gexec.Exit(0))
 		var out []byte
 		session.Out.Write(out) //nolint:errcheck
 		By(fmt.Sprintf("session.Out: '%s'", string(out)))

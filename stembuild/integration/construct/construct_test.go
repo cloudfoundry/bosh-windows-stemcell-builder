@@ -51,21 +51,21 @@ var _ = Describe("stembuild construct", func() {
 			session := helpers.Stembuild(stembuildExecutable, "construct", "-vm-ip", conf.TargetIP, "-vm-username", conf.VMUsername, "-vm-password", conf.VMPassword, "-vcenter-url", conf.VCenterURL, "-vcenter-username", conf.VCenterUsername, "-vcenter-password", conf.VCenterPassword, "-vm-inventory-path", conf.VMInventoryPath, "-vcenter-ca-certs", conf.VCenterCACert)
 
 			Eventually(session, shutdownTimeout).Should(Exit(0))
-			Eventually(session.Out, constructOutputTimeout).Should(Say(`mock stemcell automation script executed`))
+			Eventually(session.Out).WithTimeout(constructOutputTimeout).Should(Say(`mock stemcell automation script executed`))
 		})
 
 		It("executes post-reboot automation script", func() {
 			session := helpers.Stembuild(stembuildExecutable, "construct", "-vm-ip", conf.TargetIP, "-vm-username", conf.VMUsername, "-vm-password", conf.VMPassword, "-vcenter-url", conf.VCenterURL, "-vcenter-username", conf.VCenterUsername, "-vcenter-password", conf.VCenterPassword, "-vm-inventory-path", conf.VMInventoryPath, "-vcenter-ca-certs", conf.VCenterCACert)
 
 			Eventually(session, shutdownTimeout).Should(Exit(0))
-			Eventually(session.Out, constructOutputTimeout*5).Should(Say(`mock stemcell automation post-reboot script executed`))
+			Eventually(session.Out).WithTimeout(constructOutputTimeout * 5).Should(Say(`mock stemcell automation post-reboot script executed`))
 		})
 
 		It("extracts the WinRM BOSH powershell script and executes it successfully on the guest VM", func() {
 			session := helpers.Stembuild(stembuildExecutable, "construct", "-vm-ip", conf.TargetIP, "-vm-username", conf.VMUsername, "-vm-password", conf.VMPassword, "-vcenter-url", conf.VCenterURL, "-vcenter-username", conf.VCenterUsername, "-vcenter-password", conf.VCenterPassword, "-vm-inventory-path", conf.VMInventoryPath, "-vcenter-ca-certs", conf.VCenterCACert)
 
 			Eventually(session, shutdownTimeout).Should(Exit(0))
-			Eventually(session.Out, constructOutputTimeout).Should(Say(`Attempting to enable WinRM on the guest vm...WinRm enabled on the guest VM`))
+			Eventually(session.Out).WithTimeout(constructOutputTimeout).Should(Say(`Attempting to enable WinRM on the guest vm...WinRm enabled on the guest VM`))
 		})
 	})
 
