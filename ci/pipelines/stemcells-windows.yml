@@ -244,7 +244,6 @@ resources:
     private_key: ((github_deploy_key_bosh_windows_stemcell_builder.private_key))
     branch: *bosh_windows_stemcell_builder_semver_branch
     file: azure
-    file: azure-2025
     initial_version: "((BASE_OS_VERSION)).1.0"
 - name: gcp-build-number
   type: semver
