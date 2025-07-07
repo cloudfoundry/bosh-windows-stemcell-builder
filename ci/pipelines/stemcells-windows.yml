@@ -303,46 +303,6 @@ resources:
     initial_version: "((BASE_OS_VERSION)).1.0"
 
 # type: pool
-- name: aws-lock
-  type: pool
-  tags: [*internal_worker_tag]
-  source:
-    branch: master
-    pool: aws-wuts-((BASE_OS_VERSION))
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
-- name: azure-lock
-  type: pool
-  tags: [*internal_worker_tag]
-  source:
-    branch: master
-    pool: azure-wuts-((BASE_OS_VERSION))
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
-- name: goose-lock
-  type: pool
-  tags: [*internal_worker_tag]
-  source:
-    branch: master
-    pool: goose-((BASE_OS_VERSION))
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
-- name: gcp-lock
-  type: pool
-  tags: [*internal_worker_tag]
-  source:
-    branch: master
-    pool: gcp-wuts-((BASE_OS_VERSION))
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
-- name: vsphere-director-lock
-  type: pool
-  tags: [*internal_worker_tag]
-  source:
-    branch: master
-    pool: vsphere-((BASE_OS_VERSION))
-    private_key: ((github_deploy_key_Bosh-Windows-Locks.private_key))
-    uri: git@github.gwd.broadcom.net:TNZ/Bosh-Windows-Locks.git
 - name: nimbus-ips
   type: pool
   tags: [*internal_worker_tag]
@@ -1172,11 +1132,6 @@ jobs:
       - get: stembuild-linux-stemcell
         passed: [create-stembuild-linux-stemcell]
         trigger: true
-  - put: vsphere-director-lock
-    inputs: detect
-    params:
-      acquire: true
-    tags: [*internal_worker_tag]
   - do:
     - task: run-bwats-stembuild-linux
       file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
@@ -1199,12 +1154,6 @@ jobs:
         SECURITY_COMPLIANCE_APPLIED: true
         DEFAULT_USERNAME: ((stembuild_vm_user.username))
         DEFAULT_PASSWORD: ((stembuild_vm_user.password))
-    ensure:
-      put: vsphere-director-lock
-      inputs: detect
-      params:
-        release: vsphere-director-lock
-      tags: [*internal_worker_tag]
 
 - name: wuts-stembuild-linux-stemcell
   serial: true
@@ -1225,11 +1174,6 @@ jobs:
           trigger: true
           passed: [test-stembuild-linux-stemcell]
         - get: bosh-integration-registry-image
-  - put: vsphere-director-lock
-    inputs: detect
-    params:
-      acquire: true
-    tags: [*internal_worker_tag]
   - do:
     - task: run-wuts
       file: windows-utilities-release/ci/tasks/run-wuts/task.yml
@@ -1249,12 +1193,6 @@ jobs:
         STEMCELL_OS: *windows_os_version
         VM_EXTENSIONS: ""
         VM_TYPE: default # TODO: Add "put" output of this passing test to release candidates bucket (?)
-    ensure:
-      put: vsphere-director-lock
-      inputs: detect
-      params:
-        release: vsphere-director-lock
-      tags: [*internal_worker_tag]
 
 - name: create-stembuild-windows-stemcell
   serial: true
@@ -1350,11 +1288,6 @@ jobs:
           - get: stembuild-windows-stemcell
             passed: [create-stembuild-windows-stemcell]
             trigger: true
-    - put: vsphere-director-lock
-      inputs: detect
-      params:
-        acquire: true
-      tags: [*internal_worker_tag]
     - do:
         - task: run-bwats-stembuild-windows
           file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
@@ -1377,12 +1310,6 @@ jobs:
             SECURITY_COMPLIANCE_APPLIED: true
             DEFAULT_USERNAME: ((stembuild_vm_user.username))
             DEFAULT_PASSWORD: ((stembuild_vm_user.password))
-      ensure:
-        put: vsphere-director-lock
-        inputs: detect
-        params:
-          release: vsphere-director-lock
-        tags: [*internal_worker_tag]
 
 - name: wuts-stembuild-windows-stemcell
   serial: true
@@ -1403,11 +1330,6 @@ jobs:
             trigger: true
             passed: [test-stembuild-windows-stemcell]
           - get: bosh-integration-registry-image
-    - put: vsphere-director-lock
-      inputs: detect
-      params:
-        acquire: true
-      tags: [*internal_worker_tag]
     - do:
         - task: run-wuts
           file: windows-utilities-release/ci/tasks/run-wuts/task.yml
@@ -1427,12 +1349,6 @@ jobs:
             STEMCELL_OS: *windows_os_version
             VM_EXTENSIONS: ""
             VM_TYPE: default
-      ensure:
-        put: vsphere-director-lock
-        inputs: detect
-        params:
-          release: vsphere-director-lock
-        tags: [*internal_worker_tag]
 
 - name: create-aws
   serial: true
@@ -1604,11 +1520,6 @@ jobs:
       - get: bosh-agent-release
         passed: [test-aws]
       - get: bosh-integration-registry-image
-  - put: aws-lock
-    inputs: detect
-    params:
-      acquire: true
-    tags: [*internal_worker_tag]
   - do:
     - task: run-wuts
       file: windows-utilities-release/ci/tasks/run-wuts/task.yml
@@ -1627,12 +1538,6 @@ jobs:
         STEMCELL_OS: *windows_os_version
         VM_EXTENSIONS: ""
         VM_TYPE: large
-    ensure:
-      put: aws-lock
-      inputs: detect
-      params:
-        release: aws-lock
-      tags: [*internal_worker_tag]
 
 - name: create-aws-govcloud
   serial: true
@@ -1985,11 +1890,6 @@ jobs:
     params:
       STEMCELL_OS: windows((BASE_OS_VERSION))
       DESTINATION_DIR: heavy-stemcell
-  - put: azure-lock
-    inputs: detect
-    params:
-      acquire: true
-    tags: [*internal_worker_tag]
   - do:
     - task: run-wuts
       file: windows-utilities-release/ci/tasks/run-wuts/task.yml
@@ -2008,12 +1908,6 @@ jobs:
         STEMCELL_OS: *windows_os_version
         VM_EXTENSIONS: ""
         VM_TYPE: ((AZURE_HEAVY_VM_TYPE))
-    ensure:
-      put: azure-lock
-      inputs: detect
-      params:
-        release: azure-lock
-      tags: [*internal_worker_tag]
 
 - name: create-gcp
   serial: true
@@ -2110,11 +2004,6 @@ jobs:
         tags: [*worker_tag]
       - get: bosh-agent-release
         passed: [create-gcp]
-  - put: goose-lock
-    inputs: detect
-    params:
-      acquire: true
-    tags: [*internal_worker_tag]
   - do:
     - task: run-bwats-gcp-stemcell
       tags: [*internal_worker_tag]
@@ -2136,12 +2025,6 @@ jobs:
         SECURITY_COMPLIANCE_APPLIED: true
         DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
         DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
-    ensure:
-      put: goose-lock
-      inputs: detect
-      params:
-        release: goose-lock
-      tags: [*internal_worker_tag]
   - put: gcp-tested
     params:
       file: bosh-windows-stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
@@ -2167,11 +2050,6 @@ jobs:
       - get: bosh-agent-release
         passed: [test-gcp]
       - get: bosh-integration-registry-image
-  - put: gcp-lock
-    inputs: detect
-    params:
-      acquire: true
-    tags: [*internal_worker_tag]
   - do:
     - task: run-wuts
       tags: [*internal_worker_tag]
@@ -2188,12 +2066,6 @@ jobs:
         STEMCELL_OS: *windows_os_version
         VM_EXTENSIONS: "50GB_ephemeral_disk"
         VM_TYPE: large
-    ensure:
-      put: gcp-lock
-      inputs: detect
-      params:
-        release: gcp-lock
-      tags: [*internal_worker_tag]
 
 - name: promote
   serial: true
