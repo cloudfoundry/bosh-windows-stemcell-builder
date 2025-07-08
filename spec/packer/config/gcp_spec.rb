@@ -17,7 +17,7 @@ describe Packer::Config::Gcp do
         output_directory: '',
         image_family: 'some-image-family',
         os: os,
-        version: '',
+        version: 'some-version',
         vm_prefix: 'some-vm-prefix',
         vm_type: 'some-vm-type',
         network: 'some-network',
@@ -54,7 +54,7 @@ describe Packer::Config::Gcp do
 
       it 'returns the expected builders' do
         expect(builders[0]).to include(baseline_builders)
-        expect(builders[0]['image_name']).to match(/packer-\d+/)
+        expect(builders[0]['image_name']).to match(/stemcell-windows-some-version-\d+/)
       end
     end
 
