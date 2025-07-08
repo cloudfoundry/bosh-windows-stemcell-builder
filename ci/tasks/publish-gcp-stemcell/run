@@ -2,10 +2,47 @@
 set -eu -o pipefail
 set -x
 
-cd stemcell-builder
-bundle install
-rake publish:gcp
-rake gcp:label:for_test
-cd ..
+version="$(cat version/version)"
+light_stemcell_file_name="$(ls gcp-tested/*.tgz)"
 
-mv bosh-windows-stemcell/*.tgz untested-stemcell
+# Extrace source image name + project from stemcell.MF
+tar -xvf "${light_stemcell_file_name}"
+
+source_url="$(yq .cloud_properties.image_url stemcell.MF)"
+source_image="$(echo "$source_url" | sed -E 's|https://.*/images/(.*)$|\1|')"
+source_image_project="$(echo "$source_url" | sed -E 's|https://.*/projects/(.*)/global/.*|\1|')"
+
+destination_project=$(echo "${ACCOUNT_JSON}" | jq -r .project_id)
+destination_stemcell_image_name="windows-stemcell-${version}"
+
+gcloud auth activate-service-account --quiet --key-file <(echo "$ACCOUNT_JSON")
+
+gcloud compute images create "${destination_stemcell_image_name}" \
+  --project "${destination_project}" \
+  --source-image="${source_image}" \
+  --source-image-project="${source_image_project}"
+
+gcloud compute images add-iam-policy-binding "${destination_stemcell_image_name}" \
+  --project "${destination_project}" \
+  --member='allAuthenticatedUsers' \
+  --role='roles/compute.imageUser'
+
+# Update version + new image URL in light stemcell
+new_image_url="$(
+  gcloud compute images describe "${destination_stemcell_image_name}" \
+    --project "${destination_project}" \
+    --format=json \
+    | jq -r .selfLink
+)"
+
+yq -i ".version = \"${version}\"" stemcell.MF
+yq -i ".cloud_properties.image_url = \"${new_image_url}\"" stemcell.MF
+
+# Rename light stemcell file to not include extra version metadata
+new_file_name=$(
+  echo "${light_stemcell_file_name}" \
+  | sed -r "s/[0-9]+\.[0-9]+\.[0-9]+(-build\.[0-9]+)?/${version}/g"
+)
+tar -zcvf "${new_file_name}" image stemcell.MF
+
+mv "${new_file_name}" final_stemcell/

@@ -1955,12 +1955,6 @@ jobs:
         IAAS: gcp
         VM_PREFIX: packer-prod-((BASE_OS_VERSION))
   - *print-updates
-  - task: publish-gcp-stemcell
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/publish-gcp-stemcell/task.yml
-    image: bosh-windows-stemcell-builder-ci-image
-    params:
-      OS_VERSION: windows((BASE_OS_VERSION))
-      ACCOUNT_JSON: *gcp_account_json
   - put: gcp-untested
     params:
       file: bosh-windows-stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
@@ -2260,16 +2254,11 @@ jobs:
         tags: [*worker_tag]
 #      - get: boshio-input
 #        resource: boshio
-  - task: gcp-set-stemcell-filename-version
-    input_mapping: { bosh-windows-stemcell: gcp-tested }
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/task.yml
+  - task: publish-gcp-stemcell
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/publish-gcp-stemcell/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-  - task: label-gcp-stemcell-for-production
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/label-gcp-stemcell-for-production/task.yml
-    image: bosh-windows-stemcell-builder-ci-image
-    input_mapping: { bosh-windows-stemcell: gcp-tested }
     params:
-      ACCOUNT_JSON: *gcp_account_json
+      ACCOUNT_JSON: ((broadcom_saas-tnz-pub-winstem_gcp_credentials_json))
 #  - task: commit-meta4-dev-file
 #    file: bosh-windows-stemcell-builder-ci/ci/tasks/commit-meta4-file/task.yml
 #    image: bosh-windows-stemcell-builder-ci-image
