@@ -1,7 +1,7 @@
 # To configure this pipeline: pipelines/configure.sh windows-2025
 
 anchors:
-- &gcp_account_json ((broadcom_demo_gcp_credentials_json))
+- &gcp_account_json ((broadcom_labs_gcp_credentials_json))
 - &bosh_windows_stemcell_builder_branch windows-2025
 - &bosh_windows_stemcell_builder_semver_branch semver-2025
 - &windows_stemcell_ci_image bosh/windows-stemcell-ci
