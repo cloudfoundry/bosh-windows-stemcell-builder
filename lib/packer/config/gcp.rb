@@ -49,7 +49,7 @@ module Packer
             'image_family' => @image_family,
             'zone' => 'us-west1-c',
             'disk_size' => @root_disk_size,
-            'image_name' => "stemcell-windows-#{@version}-#{Time.now.strftime("%Y%m%d%H%M%S")}",
+            'image_name' => "stemcell-windows-#{@version}-#{Time.now.strftime("%Y%m%d%H%M%S")}".gsub('.', '-'),
             'machine_type' => @vm_type,
             'network' => @network,
             'network_project_id' => @network_project_id,

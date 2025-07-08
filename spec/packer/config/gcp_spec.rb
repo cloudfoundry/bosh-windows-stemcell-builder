@@ -17,7 +17,7 @@ describe Packer::Config::Gcp do
         output_directory: '',
         image_family: 'some-image-family',
         os: os,
-        version: 'some-version',
+        version: 'some.version',
         vm_prefix: 'some-vm-prefix',
         vm_type: 'some-vm-type',
         network: 'some-network',
