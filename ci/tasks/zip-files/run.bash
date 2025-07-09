@@ -6,7 +6,6 @@ ROOT_DIR=$(pwd)
 REPO_ROOT="${REPO_ROOT:-"$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"}"
 ZIP_FILE_DESTINATION="${ZIP_FILE_DESTINATION:-"${ROOT_DIR}/zip-file/StemcellAutomation-$(date +"%s").zip"}"
 
-OPENSSH_ZIP="${OPENSSH_ZIP:-"${ROOT_DIR}/open-ssh/OpenSSH-Win64.zip"}"
 BOSH_PSMODULES_ZIP="${BOSH_PSMODULES_ZIP:-"${ROOT_DIR}/psmodules-zip-output/bosh-psmodules.zip"}"
 AGENT_ZIP="${AGENT_ZIP:-"${ROOT_DIR}/bosh-agent/agent.zip"}"
 DEPS_JSON="${DEPS_JSON:-"${ROOT_DIR}/deps-file/deps.json"}"
