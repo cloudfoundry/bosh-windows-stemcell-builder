@@ -19,6 +19,7 @@ describe Packer::Config::Gcp do
         os: os,
         version: '',
         vm_prefix: 'some-vm-prefix',
+        vm_type: 'some-vm-type',
     ).builders }
 
     let (:baseline_builders) { {
@@ -30,7 +31,7 @@ describe Packer::Config::Gcp do
             'image_family' => 'some-image-family',
             'zone' => 'us-west1-c',
             'disk_size' => 32,
-            'machine_type' => 'n1-standard-4',
+            'machine_type' => 'some-vm-type',
             'omit_external_ip' => false,
             'communicator' => 'winrm',
             'winrm_username' => 'winrmuser',
@@ -64,6 +65,7 @@ describe Packer::Config::Gcp do
           os: '',
           version: '',
           vm_prefix: '',
+          vm_type: '',
         ).builders
         expect(builders[0]['metadata']).to include(
           'name' => "packer-#{Time.now.to_i}"
@@ -95,7 +97,8 @@ describe Packer::Config::Gcp do
           image_family: '',
           os: 'windows2019',
           version: version,
-          vm_prefix: ''
+          vm_prefix: '',
+          vm_type: '',
         ).provisioners
         expected_provisioners_base = [
           {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before"=>"60s"},

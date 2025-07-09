@@ -36,6 +36,7 @@ namespace :build do
       image_family: image_family,
       version: version,
       vm_prefix: ENV.fetch('VM_PREFIX', ''),
+      vm_type: ENV.fetch('GCP_VM_TYPE', 'n1-standard-4'),
       mount_ephemeral_disk: ENV.fetch('MOUNT_EPHEMERAL_DISK', 'false')
     )
 

@@ -7,6 +7,7 @@ module Stemcell
                      source_image:,
                      image_family:,
                      vm_prefix:,
+                     vm_type:,
                      network:,
                      network_project_id:,
                      subnetwork:,
@@ -16,6 +17,7 @@ module Stemcell
         @source_image = source_image
         @image_family = image_family
         @vm_prefix = vm_prefix
+        @vm_type = vm_type
         @network = network
         @network_project_id = network_project_id
         @subnetwork = subnetwork
@@ -49,6 +51,7 @@ module Stemcell
           os: @os,
           version: @version,
           vm_prefix: @vm_prefix,
+          vm_type: @vm_type,
           mount_ephemeral_disk: @mount_ephemeral_disk
         ).dump
       end

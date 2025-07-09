@@ -16,6 +16,7 @@ module Packer
         root_disk_size: 32,
         omit_external_ip: false,
         vm_tags: ['winrm'],
+        vm_type:,
         network: nil,
         network_project_id: nil,
         subnetwork: nil)
@@ -31,6 +32,7 @@ module Packer
         @root_disk_size = root_disk_size
         @omit_external_ip = omit_external_ip
         @vm_tags = vm_tags
+        @vm_type = vm_type
         @network = network
         @network_project_id = network_project_id
         @subnetwork = subnetwork
@@ -48,7 +50,7 @@ module Packer
             'zone' => 'us-west1-c',
             'disk_size' => @root_disk_size,
             'image_name' => "packer-#{Time.now.to_i}",
-            'machine_type' => 'n1-standard-4',
+            'machine_type' => @vm_type,
             'network' => @network,
             'network_project_id' => @network_project_id,
             'subnetwork' => @subnetwork,

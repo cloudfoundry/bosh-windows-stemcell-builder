@@ -27,6 +27,7 @@ describe Stemcell::Builder do
         source_image = "some-source-image"
         image_family= "some-family"
         vm_prefix = "some-vm-prefix"
+        vm_type = "some-vm-type"
         network = 'default'
         network_project_id = 'project-id'
         subnetwork = 'subnet'
@@ -42,6 +43,7 @@ describe Stemcell::Builder do
           os: os,
           version: version,
           vm_prefix: vm_prefix,
+          vm_type: vm_type,
           mount_ephemeral_disk: false,
           network: network,
           network_project_id: network_project_id,
@@ -77,6 +79,7 @@ describe Stemcell::Builder do
           source_image: source_image,
           image_family: image_family,
           vm_prefix: vm_prefix,
+          vm_type: vm_type,
           mount_ephemeral_disk: "false",
           network: network,
           network_project_id: network_project_id,
@@ -94,6 +97,7 @@ describe Stemcell::Builder do
           packer_vars = 'some-packer-vars'
           os = 'windows2019'
           vm_prefix = 'some-vm-prefix'
+          vm_type = 'some-vm-type'
           network = 'default'
           network_project_id = 'project-id'
           subnetwork = 'subnet'
@@ -109,6 +113,7 @@ describe Stemcell::Builder do
             os: os,
             version: '',
             vm_prefix: vm_prefix,
+            vm_type: vm_type,
             mount_ephemeral_disk: false,
             network: network,
             network_project_id: network_project_id,
@@ -131,7 +136,8 @@ describe Stemcell::Builder do
               account_json: account_json,
               source_image: source_image,
               image_family: image_family,
-              vm_prefix: vm_prefix
+              vm_prefix: vm_prefix,
+              vm_type: vm_type,
             ).build
           }.to raise_error(Stemcell::Builder::PackerFailure)
         end
