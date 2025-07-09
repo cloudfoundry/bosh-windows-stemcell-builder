@@ -26,6 +26,6 @@ AZURE_HEAVY_VM_TYPE: default
 # GCP
 GCP_BASE_IMAGE_REGEX: windows-server-2025-dc-core-v.*
 GCP_IMAGE_FAMILY: windows-2025-core
-GCP_NETWORK: dtnz01-vpc
-GCP_NETWORK_PROJECT_ID: dtnz01-saas-vpc
-GCP_SUBNETWORK: tas-opsman01-usw1
+GCP_NETWORK: ltnz001-vpc
+GCP_NETWORK_PROJECT_ID: ltnz001-saas-vpc
+GCP_SUBNETWORK: ltnz001-tas-opsmanager-usw1
