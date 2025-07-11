@@ -36,9 +36,8 @@ var _ = Describe("Convert VMDK", func() {
 				stembuildExecutable, err := helpers.BuildStembuild(stembuildVersion)
 				Expect(err).ToNot(HaveOccurred())
 
-
 				session := helpers.Stembuild(stembuildExecutable, "package", "--vmdk", inputVmdk)
-				Eventually(session).WithTimeout(60*time.Second).Should(Exit(1))
+				Eventually(session).WithTimeout(60 * time.Second).Should(Exit(1))
 				Eventually(session.Err).Should(Say(fmt.Sprintf(`versioning error; parsed os version is: %s`, osVersion)))
 			})
 		})
