@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/test/helpers"
 
@@ -26,14 +27,14 @@ var _ = Describe("Version flag", func() {
 		It("prints version information", func() {
 			session := helpers.Stembuild(stembuildExecutable, "--version")
 
-			Eventually(session).WithTimeout(20).Should(Exit(0))
+			Eventually(session).WithTimeout(60 * time.Second).Should(Exit(0))
 			Eventually(session).Should(Say(expectedVersion))
 		})
 
 		It("with command, prints version information and does not run command", func() {
 			session := helpers.Stembuild(stembuildExecutable, "--version", "package")
 
-			Eventually(session).WithTimeout(20).Should(Exit(0))
+			Eventually(session).WithTimeout(60 * time.Second).Should(Exit(0))
 			Eventually(session).Should(Say(expectedVersion))
 		})
 	})

@@ -16,53 +16,60 @@ import (
 )
 
 var _ = Describe("Convert VMDK", func() {
-
-	Context("when valid vmdk file", func() {
+	Context("with valid vmdk file", func() {
+		var osVersion string
+		var stembuildVersion string
 		var stemcellFilename string
 		var inputVmdk string
 
-		Context("stembuild when executed with invalid", func() {
-			var version string
+		BeforeEach(func() {
+			inputVmdk = filepath.Join("..", "test", "data", "expected.vmdk")
+		})
 
-			Context("OS value", func() {
-				It("of 1709 returns an error", func() {
-					version = "1709.0"
-					expectedOSVersionInNameANdManifest := "2016"
-					var err error
-					stembuildExecutable, err = helpers.BuildStembuild("9999.1.0")
-					Expect(err).ToNot(HaveOccurred())
+		Context("when stembuild is built with an invalid version", func() {
+			BeforeEach(func() {
+				osVersion = "9999"
+				stembuildVersion = "9999.0"
+			})
 
-					stemcellFilename = fmt.Sprintf("bosh-stemcell-%s-vsphere-esxi-windows%s-go_agent.tgz", version, expectedOSVersionInNameANdManifest)
-					inputVmdk = filepath.Join("..", "test", "data", "expected.vmdk")
+			It("it returns an error", func() {
+				stembuildExecutable, err := helpers.BuildStembuild(stembuildVersion)
+				Expect(err).ToNot(HaveOccurred())
 
-					session := helpers.Stembuild(stembuildExecutable, "package", "--vmdk", inputVmdk)
-					Eventually(session).WithTimeout(20).Should(Exit(1))
-					Eventually(session.Err).Should(Say(`versioning error; parsed os version is: 9999`))
-				})
 
+				session := helpers.Stembuild(stembuildExecutable, "package", "--vmdk", inputVmdk)
+				Eventually(session).WithTimeout(60*time.Second).Should(Exit(1))
+				Eventually(session.Err).Should(Say(fmt.Sprintf(`versioning error; parsed os version is: %s`, osVersion)))
 			})
 		})
 
-		Context("stembuild when executed", func() {
-			var osVersion string
-			var version string
+		Context("stembuild is built with an valid version", func() {
+			BeforeEach(func() {
+				osVersion = "2019"
+				stembuildVersion = "2019.0"
+			})
 
 			AfterEach(func() {
 				Expect(os.Remove(stemcellFilename)).To(Succeed())
 			})
 
 			It("creates a valid 2019 stemcell", func() {
-
-				var err error
-				stembuildExecutable, err = helpers.BuildStembuild("2019.0.0")
+				stembuildExecutable, err := helpers.BuildStembuild(stembuildVersion)
 				Expect(err).ToNot(HaveOccurred())
 
-				osVersion = "2019"
-				version = "2019.0"
-				stemcellFilename = fmt.Sprintf("bosh-stemcell-%s-vsphere-esxi-windows%s-go_agent.tgz", version, osVersion)
-				inputVmdk = filepath.Join("..", "test", "data", "expected.vmdk")
+				stemcellFilename = fmt.Sprintf("bosh-stemcell-%s-vsphere-esxi-windows%s-go_agent.tgz", stembuildVersion, osVersion)
 
-				session := expectStembuildToSucceed("package", "--vmdk", inputVmdk, "--outputDir", ".")
+				args := []string{"package", "--vmdk", inputVmdk, "--outputDir", "."}
+				session := helpers.Stembuild(stembuildExecutable, args...)
+				Eventually(session).WithTimeout(60*time.Second).Should(Exit(0),
+					fmt.Sprintf(
+						"Expected %s %s to exit with code 0, exited with code %d\nout: %s\nerr: %s",
+						stembuildExecutable,
+						strings.Join(args, " "),
+						session.ExitCode(),
+						string(session.Out.Contents()),
+						string(session.Err.Contents()),
+					))
 				Eventually(session).Should(Say(`created stemcell: .*\.tgz`))
 				Expect(stemcellFilename).To(BeAnExistingFile())
 
@@ -90,18 +97,3 @@ var _ = Describe("Convert VMDK", func() {
 		})
 	})
 })
-
-func expectStembuildToSucceed(arguments ...string) *Session {
-	session := helpers.Stembuild(stembuildExecutable, arguments...)
-	Eventually(session).WithTimeout(60*time.Second).Should(Exit(0),
-		fmt.Sprintf(
-			"Expected %s %s to exit with code 0, exited with code %d\nout: %s\nerr: %s",
-			stembuildExecutable,
-			strings.Join(arguments, " "),
-			session.ExitCode(),
-			string(session.Out.Contents()),
-			string(session.Err.Contents()),
-		))
-
-	return session
-}
