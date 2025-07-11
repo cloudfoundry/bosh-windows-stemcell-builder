@@ -25,15 +25,16 @@ func envMustExist(variableName string) string {
 }
 
 var _ = Describe("VcenterClient", func() {
+	const powershell = "C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
+
+	var (
+		ctx            = context.TODO()
+		managerFactory = &vcenterclientfactory.ManagerFactory{}
+		factoryConfig  *vcenterclientfactory.FactoryConfig
+	)
+
 	Describe("StartProgram", func() {
-
-		var (
-			managerFactory *vcenterclientfactory.ManagerFactory
-			factoryConfig  *vcenterclientfactory.FactoryConfig
-		)
-
 		BeforeEach(func() {
-
 			factoryConfig = &vcenterclientfactory.FactoryConfig{
 				VCenterServer: envMustExist(VcenterUrl),
 				Username:      envMustExist(VcenterUsername),
@@ -41,14 +42,9 @@ var _ = Describe("VcenterClient", func() {
 				ClientCreator: &vcenterclientfactory.ClientCreator{},
 				FinderCreator: &vcenterclientfactory.GovmomiFinderCreator{},
 			}
-
-			managerFactory = &vcenterclientfactory.ManagerFactory{}
 		})
 
 		ExpectProgramToStartAndExitSuccessfully := func() {
-
-			ctx := context.TODO()
-
 			vCenterManager, err := managerFactory.VCenterManager(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -64,7 +60,6 @@ var _ = Describe("VcenterClient", func() {
 
 			time.Sleep(10 * time.Second)
 
-			powershell := "C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
 			pid, err := guestManager.StartProgramInGuest(ctx, powershell, "Exit 59")
 			Expect(err).ToNot(HaveOccurred())
 
@@ -77,6 +72,7 @@ var _ = Describe("VcenterClient", func() {
 			It("Starts a program and returns its exit code", func() {
 				factoryConfig.RootCACertPath = ""
 				managerFactory.SetConfig(*factoryConfig)
+
 				ExpectProgramToStartAndExitSuccessfully()
 			})
 		})
@@ -114,7 +110,6 @@ var _ = Describe("VcenterClient", func() {
 				factoryConfig.RootCACertPath = fakeCertPath
 				managerFactory.SetConfig(*factoryConfig)
 
-				ctx := context.TODO()
 				_, err = managerFactory.VCenterManager(ctx)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("cannot be used as a trusted CA certificate"))
@@ -123,13 +118,7 @@ var _ = Describe("VcenterClient", func() {
 	})
 
 	Describe("DownloadFileFromGuest", func() {
-		var (
-			managerFactory   *vcenterclientfactory.ManagerFactory
-			factoryConfig    *vcenterclientfactory.FactoryConfig
-			fileToDownload   string
-			expectedContents string
-			guestManager     *guest_manager.GuestManager
-		)
+		var guestManager *guest_manager.GuestManager
 
 		BeforeEach(func() {
 			factoryConfig = &vcenterclientfactory.FactoryConfig{
@@ -139,14 +128,9 @@ var _ = Describe("VcenterClient", func() {
 				ClientCreator: &vcenterclientfactory.ClientCreator{},
 				FinderCreator: &vcenterclientfactory.GovmomiFinderCreator{},
 			}
-			managerFactory = &vcenterclientfactory.ManagerFactory{}
 			factoryConfig.RootCACertPath = ""
 			managerFactory.SetConfig(*factoryConfig)
 
-			fileToDownload = "C:\\Windows\\dummy.txt"
-			expectedContents = "infinite content"
-
-			ctx := context.TODO()
 			vCenterManager, err := managerFactory.VCenterManager(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -164,10 +148,10 @@ var _ = Describe("VcenterClient", func() {
 		})
 
 		Context("specified file exists", func() {
-			BeforeEach(func() {
-				ctx := context.TODO()
+			var fileToDownload = "C:\\Windows\\dummy.txt"
+			var expectedContents = "infinite content"
 
-				powershell := "C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
+			BeforeEach(func() {
 				pid, err := guestManager.StartProgramInGuest(ctx, powershell, fmt.Sprintf("'%s' | Set-Content %s", expectedContents, fileToDownload))
 				Expect(err).ToNot(HaveOccurred())
 
@@ -177,18 +161,13 @@ var _ = Describe("VcenterClient", func() {
 			})
 
 			It("downloads the file", func() {
-				ctx := context.TODO()
 				fileContents, _, err := guestManager.DownloadFileInGuest(ctx, fileToDownload)
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(BufferReader(fileContents)).Should(Say(expectedContents))
-
 			})
 
 			AfterEach(func() {
-				ctx := context.TODO()
-
-				powershell := "C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
 				pid, err := guestManager.StartProgramInGuest(ctx, powershell, fmt.Sprintf("rm %s", fileToDownload))
 				Expect(err).ToNot(HaveOccurred())
 
@@ -200,8 +179,7 @@ var _ = Describe("VcenterClient", func() {
 
 		Context("specified file does not exist", func() {
 			It("returns an error", func() {
-				ctx := context.TODO()
-				_, _, err := guestManager.DownloadFileInGuest(ctx, fileToDownload)
+				_, _, err := guestManager.DownloadFileInGuest(ctx, "C:\\Windows\\non-existent-file.txt")
 				Expect(err.Error()).To(ContainSubstring("vcenter_client - unable to download file"))
 			})
 		})
