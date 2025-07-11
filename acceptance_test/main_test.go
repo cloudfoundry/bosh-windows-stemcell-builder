@@ -180,12 +180,12 @@ var _ = Describe("BOSH Windows", func() {
 
 	Context("ssh enabled", func() {
 		It("allows SSH connection", func() {
-			err := boshCommand.Run(fmt.Sprintf("--deployment=%s ssh --opts=-T --command=exit", deploymentName))
+			err := boshCommand.Run(fmt.Sprintf("--deployment=%s ssh --opts='-T -vvv' --command=exit", deploymentName))
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("cleans up ssh users after a successful connection", func() {
-			err := boshCommand.Run(fmt.Sprintf("--deployment=%s ssh --opts=-T --command=exit", deploymentName))
+			err := boshCommand.Run(fmt.Sprintf("--deployment=%s ssh --opts='-T -vvv' --command=exit", deploymentName))
 			Expect(err).NotTo(HaveOccurred())
 
 			err = boshCommand.RunErrand("check-ssh", deploymentName) // test for C:\Users only having one ssh user, net users only containing one ssh user.
