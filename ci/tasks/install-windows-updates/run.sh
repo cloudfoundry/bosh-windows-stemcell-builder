@@ -19,11 +19,19 @@ function start_powershell_command() {
   local powershell_command="${1}"
 
   echo "Starting '${powershell_command}'" >&2
-  govc guest.start \
-    -vm.ipath="${vm_ipath}" \
-    -l="${vm_username}:${vm_password}" \
-    "\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe" \
-    "${powershell_command}"
+  pid=$(
+    govc guest.start \
+      -vm.ipath="${vm_ipath}" \
+      -l="${vm_username}:${vm_password}" \
+      "\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe" \
+      "${powershell_command}"
+    )
+
+  if [ -z "${pid}" ]; then
+    echo "No PID returned when invoking '${powershell_command}'" >&2
+  fi
+
+  echo pid
 }
 
 function get_powershell_pid_exit_code() {
