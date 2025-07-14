@@ -31,7 +31,7 @@ function start_powershell_command() {
     echo "No PID returned when invoking '${powershell_command}'" >&2
   fi
 
-  echo pid
+  echo "${pid}"
 }
 
 function get_powershell_pid_exit_code() {
