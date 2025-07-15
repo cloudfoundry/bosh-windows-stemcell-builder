@@ -99,8 +99,8 @@ while [[ ${updates_remaining} -ne 0 ]]; do
 
   wait_for_vm_to_come_up
 
-  updates_remaining=""
-  while [[ "${updates_remaining}" != "null" ]] ; do
+  updates_remaining="checking-for-update-count"
+  until [[ "${updates_remaining}" =~ ^[0-9]+$ ]] ; do
     set +e # ignore failures here since the vmware tools agent may be down while updates are being applied
     updates_remaining=$(get_windows_updates_remaining)
     set -e
