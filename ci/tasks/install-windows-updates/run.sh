@@ -56,18 +56,20 @@ function run_powershell_command_with_logging() {
   echo "Started '${powershell_command}' with pid '${pid}'" >&2
 
   exit_code=$(get_powershell_pid_exit_code "${pid}")
-  echo "Exited '${powershell_command}' with exit code '${exit_code}'" >&2
+  echo "Finished '${powershell_command}' with exit code '${exit_code}'" >&2
 }
 
 function wait_for_vm_to_come_up() {
+  echo "Checking if VM is up" >&2
   result=-1
-  set +e
   while [[ result -ne 0 ]]; do
-    start_powershell_command Get-ChildItem \\ 2> /dev/null # try to connect
+    set +e
+    start_powershell_command Get-ChildItem
     result=$?
-    sleep 1
+    set -e
+    sleep 5
   done
-  set -e
+  echo "VM is up" >&2
 }
 
 function get_windows_updates_remaining() {
@@ -91,14 +93,9 @@ while [[ updates_remaining -ne 0 ]]; do
   set +e # ignore unreachable agent if the vm just went down for reboot
   run_powershell_command_with_logging "Install-WindowsUpdate -AcceptAll -AutoReboot"
   set -e
-  echo "Install-WU done"
 
-  # wait for VM to go down and poll for connectivity
-  echo "Waiting for VM to come back after reboot, if necessary..."
-  sleep 60
   wait_for_vm_to_come_up
 
-  echo "VM reachable"
   updates_remaining=
   while [[ -z "${updates_remaining}" ]] ; do
     echo "Trying to discover how many updates remain..."
