@@ -34,9 +34,9 @@ function get_powershell_pid_exit_code() {
   govc guest.ps \
     -vm.ipath="${vm_ipath}" \
     -l="${vm_username}:${vm_password}" \
-    -p="${powershell_pid}" \
     -X -json \
-  | jq '.processInfo[0].exitCode'
+    -p="${powershell_pid}" \
+  | tee  >&2 | jq '.processInfo[0].exitCode'
 }
 
 function download_remote_file() {
