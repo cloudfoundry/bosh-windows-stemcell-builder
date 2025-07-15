@@ -60,16 +60,19 @@ function run_powershell_command_with_logging() {
 }
 
 function wait_for_vm_to_come_up() {
-  echo "Checking if VM is up" >&2
+  echo "Starting VM check" >&2
+  count=0
   result=-1
   while [[ result -ne 0 ]]; do
     set +e
+    echo "Checking VM: ${count}" >&2
+    count=$((count+1))
     start_powershell_command Get-ChildItem
     result=$?
     set -e
     sleep 5
   done
-  echo "VM is up" >&2
+  echo "Finished VM check" >&2
 }
 
 function get_windows_updates_remaining() {
@@ -96,8 +99,8 @@ while [[ ${updates_remaining} -ne 0 ]]; do
 
   wait_for_vm_to_come_up
 
-  updates_remaining=
-  while [[ -z "${updates_remaining}" ]] ; do
+  updates_remaining=""
+  while [[ -z "${updates_remaining}" || "${updates_remaining}" == "null" ]] ; do
     set +e # ignore failures here since the vmware tools agent may be down while updates are being applied
     updates_remaining=$(get_windows_updates_remaining)
     set -e
