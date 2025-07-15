@@ -114,4 +114,7 @@ run_powershell_command_with_logging "Get-Hotfix > ${remote_hotfix_log_path}"
 
 download_remote_file "${remote_hotfix_log_path}" hotfix-log/hotfixes.log
 
-run_powershell_command_with_logging "Dism.exe /online /Cleanup-Image /StartComponentCleanup"
+dism_cmd="Dism.exe /online /Cleanup-Image /StartComponentCleanup"
+echo "Running: ${dism_cmd}" >&2
+# not using `run_powershell_command_with_logging`, vmware tools may be stopped before pid can be fetched
+start_powershell_command "${dism_cmd}"
