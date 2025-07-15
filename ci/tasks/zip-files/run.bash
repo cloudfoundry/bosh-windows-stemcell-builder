@@ -19,7 +19,7 @@ mkdir -p "${stemcell_automation_dir}"
 
 declare -a files_to_zip
 mapfile -t files_to_zip < <(find "${REPO_ROOT}/stembuild/stemcell-automation" -type f -not -name "*Test*" -name "*.ps*1")
-files_to_zip+=("${OPENSSH_ZIP}" "${BOSH_PSMODULES_ZIP}" "${AGENT_ZIP}" "${DEPS_JSON}")
+files_to_zip+=("${BOSH_PSMODULES_ZIP}" "${AGENT_ZIP}" "${DEPS_JSON}")
 
 cp "${files_to_zip[@]}" "${stemcell_automation_dir}"
 
