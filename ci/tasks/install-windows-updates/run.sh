@@ -90,7 +90,7 @@ run_powershell_command_with_logging 'Install-PackageProvider -Name NuGet -Minimu
 run_powershell_command_with_logging 'Install-Module -Name PSWindowsUpdate -MinimumVersion 2.1.0.1 -Force'
 
 updates_remaining=$(get_windows_updates_remaining)
-echo "Windows Updates to install: ${updates_remaining}" >&2
+echo "Initial Windows Updates to install: ${updates_remaining}" >&2
 
 while [[ ${updates_remaining} -ne 0 ]]; do
   set +e # ignore unreachable agent if the vm just went down for reboot
@@ -100,12 +100,12 @@ while [[ ${updates_remaining} -ne 0 ]]; do
   wait_for_vm_to_come_up
 
   updates_remaining=""
-  while [[ -z "${updates_remaining}" || "${updates_remaining}" == "null" ]] ; do
+  while [[ "${updates_remaining}" != "null" ]] ; do
     set +e # ignore failures here since the vmware tools agent may be down while updates are being applied
     updates_remaining=$(get_windows_updates_remaining)
     set -e
   done
-  echo "Updates remaining: ${updates_remaining}" >&2
+  echo "Remaining Windows Updates to install: ${updates_remaining}" >&2
 done
 
 remote_hotfix_log_path="C:\\hotfix.log"
