@@ -89,7 +89,7 @@ run_powershell_command_with_logging 'Install-Module -Name PSWindowsUpdate -Minim
 updates_remaining=$(get_windows_updates_remaining)
 echo "Windows Updates to install: ${updates_remaining}" >&2
 
-while [[ updates_remaining -ne 0 ]]; do
+while [[ ${updates_remaining} -ne 0 ]]; do
   set +e # ignore unreachable agent if the vm just went down for reboot
   run_powershell_command_with_logging "Install-WindowsUpdate -AcceptAll -AutoReboot"
   set -e
