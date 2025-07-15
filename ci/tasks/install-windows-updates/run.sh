@@ -73,6 +73,7 @@ function wait_for_vm_to_come_up() {
 }
 
 function get_windows_updates_remaining() {
+  echo "Checking for updates remaining (via exit code of 'guest.ps')..." >&2
   # run powershell command that "exits" with the Count returned by Get-WindowsUpdate
   get_update_count_pid="$(start_powershell_command "exit (([array](Get-WindowsUpdate)).Count)")"
 
@@ -85,10 +86,9 @@ wait_for_vm_to_come_up
 run_powershell_command_with_logging 'Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force'
 run_powershell_command_with_logging 'Install-Module -Name PSWindowsUpdate -MinimumVersion 2.1.0.1 -Force'
 
-echo "getting update count exit code via guest.ps"
 updates_remaining=$(get_windows_updates_remaining)
+echo "Windows Updates to install: ${updates_remaining}" >&2
 
-echo "Windows Updates to install: ${updates_remaining}"
 while [[ updates_remaining -ne 0 ]]; do
   set +e # ignore unreachable agent if the vm just went down for reboot
   run_powershell_command_with_logging "Install-WindowsUpdate -AcceptAll -AutoReboot"
@@ -98,12 +98,11 @@ while [[ updates_remaining -ne 0 ]]; do
 
   updates_remaining=
   while [[ -z "${updates_remaining}" ]] ; do
-    echo "Trying to discover how many updates remain..."
     set +e # ignore failures here since the vmware tools agent may be down while updates are being applied
     updates_remaining=$(get_windows_updates_remaining)
     set -e
   done
-  echo "Updates remaining: ${updates_remaining}"
+  echo "Updates remaining: ${updates_remaining}" >&2
 done
 
 remote_hotfix_log_path="C:\\hotfix.log"
