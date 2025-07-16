@@ -49,10 +49,12 @@ var _ = Describe("VcenterClient", func() {
 			guestManager, err := vCenterManager.GuestManager(ctx, opsManager, envMustExist(TestVmUsername), envMustExist(TestVmPassword))
 			Expect(err).ToNot(HaveOccurred())
 
-			time.Sleep(10 * time.Second)
-
-			pid, err := guestManager.StartProgramInGuest(ctx, powershell, "Exit 59")
-			Expect(err).ToNot(HaveOccurred())
+			var pid int64
+			Eventually(func() error {
+				var startProgramErr error
+				pid, startProgramErr = guestManager.StartProgramInGuest(ctx, powershell, "Exit 59")
+				return startProgramErr
+			}).WithTimeout(1 * time.Minute).Should(Succeed())
 
 			exitCode, err := guestManager.ExitCodeForProgramInGuest(ctx, pid)
 			Expect(err).ToNot(HaveOccurred())
