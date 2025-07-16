@@ -46,7 +46,7 @@ var _ = Describe("GuestManager", func() {
 			procManager.StartProgramReturns(int64(0), errors.New("You aint nothin but a hound dog"))
 
 			_, err := guestManager.StartProgramInGuest(ctx, "mkdir", "C:\\dummy")
-			Expect(err).To(MatchError("vcenter_client - could not run process: mkdir C:\\dummy on guest os, error: You aint nothin but a hound dog"))
+			Expect(err).To(MatchError("vcenter_client - could not run process: 'mkdir C:\\dummy' on guest os, error: You aint nothin but a hound dog"))
 		})
 	})
 

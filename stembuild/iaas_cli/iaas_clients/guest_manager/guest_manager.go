@@ -51,7 +51,7 @@ func (g *GuestManager) StartProgramInGuest(ctx context.Context, command, args st
 
 	pid, err := g.processManager.StartProgram(ctx, &g.auth, &spec)
 	if err != nil {
-		return -1, fmt.Errorf("vcenter_client - could not run process: %s on guest os, error: %s",
+		return -1, fmt.Errorf("vcenter_client - could not run process: '%s' on guest os, error: %s",
 			fmt.Sprintf("%s %s", command, args), err.Error())
 	}
 
