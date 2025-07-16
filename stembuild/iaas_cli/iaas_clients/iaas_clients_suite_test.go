@@ -3,6 +3,7 @@ package iaas_clients
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -85,3 +86,12 @@ var _ = AfterSuite(func() {
 		Expect(err).ToNot(HaveOccurred())
 	}
 })
+
+func envMustExist(variableName string) string {
+	result := os.Getenv(variableName)
+	if result == "" {
+		Fail(fmt.Sprintf("%s must be set", variableName))
+	}
+
+	return result
+}

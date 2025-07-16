@@ -15,15 +15,6 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 )
 
-func envMustExist(variableName string) string {
-	result := os.Getenv(variableName)
-	if result == "" {
-		Fail(fmt.Sprintf("%s must be set", variableName))
-	}
-
-	return result
-}
-
 var _ = Describe("VcenterClient", func() {
 	const powershell = "C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
 
