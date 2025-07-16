@@ -8,7 +8,7 @@ require (
 	github.com/google/subcommands v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/masterzen/winrm v0.0.0-20240702205601-3fad6e106085
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.3
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
 	github.com/packer-community/winrmcp v0.0.0-20221126162354-6e900dd2c68f
@@ -48,10 +48,10 @@ require (
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/mod v0.26.0 // indirect
-	golang.org/x/net v0.41.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
-	golang.org/x/tools v0.34.0 // indirect
+	golang.org/x/tools v0.35.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
