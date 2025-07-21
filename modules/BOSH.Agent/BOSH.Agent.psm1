@@ -255,7 +255,7 @@ function Set-Path
 
 function Enable-AgentService
 {
-    Write-Log "Disabling bosh agent service"
+    Write-Log "Enabling bosh agent service"
     Set-Service bosh-agent -StartupType automatic
 }
 
