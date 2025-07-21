@@ -39,7 +39,7 @@ function get_powershell_pid_exit_code() {
     -p="${powershell_pid}"
   )
   echo "${json_out}" >&2
-  echo "${json_out}"| jq '.processInfo[0].exitCode'
+  echo "${json_out}" | jq '.processInfo[0].exitCode'
 }
 
 function download_remote_file() {
