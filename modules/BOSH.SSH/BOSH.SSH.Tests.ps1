@@ -75,9 +75,7 @@ Describe "BOSH.SSH" {
         }
 
         It "calls Edit-DefaultOpenSSHConfig" {
-            Mock Edit-DefaultOpenSSHConfig { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter {
-                $ConfigPath -eq "$env:WINDIR\System32\OpenSSH\sshd_config_default"
-            }
+            Mock Edit-DefaultOpenSSHConfig { } -Verifiable -ModuleName BOSH.SSH
 
             Install-SSHD
 
@@ -98,6 +96,8 @@ Describe "BOSH.SSH" {
 
             $ORIGINAL_WINDIR = $env:WINDIR
             $env:WINDIR = $FAKE_WINDIR
+
+            $GeneratedConfigPath = "$TMP_DIR/sshd_config"
         }
 
         AfterEach {
@@ -114,7 +114,7 @@ AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
 "@
             Out-File -FilePath $ConfigPath -InputObject $Content -Encoding UTF8
 
-            Edit-DefaultOpenSSHConfig -ConfigPath $ConfigPath
+            Edit-DefaultOpenSSHConfig -ConfigPath $ConfigPath -GeneratedConfigPath $GeneratedConfigPath
 
             $ExpectedContent = @"
 #Match Group administrators
@@ -132,7 +132,7 @@ AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys
 "@
             Out-File -FilePath $ConfigPath -InputObject $Content -Encoding UTF8
 
-            Edit-DefaultOpenSSHConfig -ConfigPath $ConfigPath
+            Edit-DefaultOpenSSHConfig -ConfigPath $ConfigPath -GeneratedConfigPath $GeneratedConfigPath
 
 $ExpectedContent = @"
 #RekeyLimit default none
@@ -148,7 +148,7 @@ Ciphers -chacha20-poly1305@openssh.com
 
             Out-File -FilePath $ConfigPath -InputObject "some-fake-content" -Encoding UTF8
 
-            Edit-DefaultOpenSSHConfig -ConfigPath $ConfigPath
+            Edit-DefaultOpenSSHConfig -ConfigPath $ConfigPath -GeneratedConfigPath $GeneratedConfigPath
 
             Get-FileEncoding $ConfigPath | Should -BeLike "System.Text.UTF8Encoding"
         }

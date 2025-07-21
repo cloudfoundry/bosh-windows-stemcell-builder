@@ -1,7 +1,6 @@
 ﻿function Install-SSHD
 {
-    $ConfigPath = "$env:windir\System32\OpenSSH\sshd_config_default"
-    Edit-DefaultOpenSSHConfig -ConfigPath $ConfigPath
+    Edit-DefaultOpenSSHConfig
 
     Set-Service -Name sshd -StartupType Disabled
     Set-Service -Name ssh-agent -StartupType Disabled
@@ -31,7 +30,8 @@ function Remove-SSHKeys
 function Edit-DefaultOpenSSHConfig
 {
     param (
-        [string]$ConfigPath = $( Throw "Provide openssh default config path" )
+        [string]$ConfigPath = "$env:windir\System32\OpenSSH\sshd_config_default",
+        [string]$GeneratedConfigPath = "$env:ProgramData\ssh\sshd_config"
     )
 
     Copy-Item -Path $ConfigPath -Destination "$ConfigPath.bak"
@@ -51,4 +51,8 @@ function Edit-DefaultOpenSSHConfig
 
     Remove-Item -Force $ConfigPath
     Out-File -FilePath $ConfigPath -InputObject $ModifiedConfig -Encoding UTF8
+
+    # We need to make sure that the generated config is cleared, so our above changes are applied when the config
+    # is next generated. If this isnt done, then we may have a config from the prior template.
+    Remove-Item -Path $GeneratedConfigPath -ErrorAction Ignore
 }
