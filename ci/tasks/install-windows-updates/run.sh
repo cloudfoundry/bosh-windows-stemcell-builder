@@ -31,12 +31,15 @@ function get_powershell_pid_exit_code() {
 
   echo "Getting exit code for ${powershell_pid}" >&2
   # -X blocks until the guest process exits
-  govc guest.ps \
+  json_out=$(
+    govc guest.ps \
     -vm.ipath="${vm_ipath}" \
     -l="${vm_username}:${vm_password}" \
     -X -json \
-    -p="${powershell_pid}" \
-  | tee  >&2 | jq '.processInfo[0].exitCode'
+    -p="${powershell_pid}"
+  )
+  echo "${json_out}" >&2
+  echo "${json_out}"| jq '.processInfo[0].exitCode'
 }
 
 function download_remote_file() {
