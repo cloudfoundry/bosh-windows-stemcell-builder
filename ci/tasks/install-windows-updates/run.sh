@@ -90,13 +90,14 @@ function get_windows_updates_remaining() {
 
   if [[ "${exit_code}" == "null" ]]; then
     echo "Checking for updates remaining (via 'guest.run')..." >&2
-    exit_code=$(
+    raw_exit_code=$(
       govc guest.run \
         -vm.ipath="${vm_ipath}" \
         -l="${vm_username}:${vm_password}" \
         "${powershell_exe}" \
         "(Get-WindowsUpdate).Count"
     )
+    exit_code="${raw_exit_code/$'\r'/}"
     echo "Checking for updates remaining (via 'guest.run') returned '${exit_code}'" >&2
   fi
 
