@@ -81,13 +81,26 @@ function wait_for_vm_to_come_up() {
 }
 
 function get_windows_updates_remaining() {
-  echo "Checking for updates remaining (via exit code of 'guest.run')..." >&2
+  echo "Checking for updates remaining (via exit code of 'guest.ps')..." >&2
+  # run powershell command that "exits" with the Count returned by Get-WindowsUpdate
+  get_update_count_pid="$(start_powershell_command "exit (([array](Get-WindowsUpdate)).Count)")"
 
-  govc guest.run \
-    -vm.ipath="${vm_ipath}" \
-    -l="${vm_username}:${vm_password}" \
-    "${powershell_exe}" \
-    "(Get-WindowsUpdate).Count"
+  exit_code=$(get_powershell_pid_exit_code "${get_update_count_pid}")
+  echo "Checking for updates remaining (via exit code of 'guest.ps') returned '${exit_code}'" >&2
+
+  if [[ "${exit_code}" == "null" ]]; then
+    echo "Checking for updates remaining (via 'guest.run')..." >&2
+    exit_code=$(
+      govc guest.run \
+        -vm.ipath="${vm_ipath}" \
+        -l="${vm_username}:${vm_password}" \
+        "${powershell_exe}" \
+        "(Get-WindowsUpdate).Count"
+    )
+    echo "Checking for updates remaining (via 'guest.run') returned '${exit_code}'" >&2
+  fi
+
+  echo "${exit_code}"
 }
 
 wait_for_vm_to_come_up
