@@ -11,9 +11,11 @@ $VCENTER_CA_CERT
 END_OF_CERT
 export GOVC_TLS_CA_CERTS=ca.crt
 
-vm_ipath=${STEMBUILD_CONSTRUCT_TARGET_VM}
 vm_username="${VM_USERNAME}"
 vm_password="${VM_PASSWORD}"
+
+vm_ipath=${STEMBUILD_CONSTRUCT_TARGET_VM}
+powershell_exe="\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
 
 function start_powershell_command() {
   local powershell_command="${1}"
@@ -22,7 +24,7 @@ function start_powershell_command() {
   govc guest.start \
     -vm.ipath="${vm_ipath}" \
     -l="${vm_username}:${vm_password}" \
-    "\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe" \
+    "${powershell_exe}" \
     "${powershell_command}"
 }
 
@@ -79,11 +81,13 @@ function wait_for_vm_to_come_up() {
 }
 
 function get_windows_updates_remaining() {
-  echo "Checking for updates remaining (via exit code of 'guest.ps')..." >&2
-  # run powershell command that "exits" with the Count returned by Get-WindowsUpdate
-  get_update_count_pid="$(start_powershell_command "exit (([array](Get-WindowsUpdate)).Count)")"
+  echo "Checking for updates remaining (via exit code of 'guest.run')..." >&2
 
-  get_powershell_pid_exit_code "${get_update_count_pid}"
+  govc guest.run \
+    -vm.ipath="${vm_ipath}" \
+    -l="${vm_username}:${vm_password}" \
+    "${powershell_exe}" \
+    "(Get-WindowsUpdate).Count"
 }
 
 wait_for_vm_to_come_up
