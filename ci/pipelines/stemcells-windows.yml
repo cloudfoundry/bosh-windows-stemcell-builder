@@ -2506,7 +2506,8 @@ jobs:
         - promote-gcp
         - promote-stembuild
         tags: [*worker_tag]
-      - get: main-version
+      - get: version
+        resource: main-version
         trigger: true
         passed:
         - promote-aws
