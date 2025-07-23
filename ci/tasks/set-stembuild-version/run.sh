@@ -2,7 +2,7 @@
 set -euo pipefail
 set -x
 
-version="$(cat version/version)"
+version="$(cut -d '.' -f1-2 < version/version)"
 stembuild_untested_dirs=( stembuild-untested-windows stembuild-untested-linux )
 
 for stembuild_untested_dir in "${stembuild_untested_dirs[@]}"; do
