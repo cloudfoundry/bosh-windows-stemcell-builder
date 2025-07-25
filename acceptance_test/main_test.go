@@ -214,19 +214,16 @@ type TestConfig struct {
 		ClientSecret string `json:"client_secret"`
 		Target       string `json:"target"`
 	} `json:"bosh"`
-	StemcellPath              string `json:"stemcell_path"`
-	StemcellOs                string `json:"stemcell_os"`
-	Az                        string `json:"az"`
-	VmType                    string `json:"vm_type"`
-	RootEphemeralVmType       string `json:"root_ephemeral_vm_type"`
-	VmExtensions              string `json:"vm_extensions"`
-	Network                   string `json:"network"`
-	DefaultUsername           string `json:"default_username"`
-	DefaultPassword           string `json:"default_password"`
-	SkipCleanup               bool   `json:"skip_cleanup"`
-	MountEphemeralDisk        bool   `json:"mount_ephemeral_disk"`
-	SSHDisabledByDefault      bool   `json:"ssh_disabled_by_default"`
-	SecurityComplianceApplied bool   `json:"security_compliance_applied"`
+	StemcellPath        string `json:"stemcell_path"`
+	StemcellOs          string `json:"stemcell_os"`
+	Az                  string `json:"az"`
+	VmType              string `json:"vm_type"`
+	RootEphemeralVmType string `json:"root_ephemeral_vm_type"`
+	VmExtensions        string `json:"vm_extensions"`
+	Network             string `json:"network"`
+	DefaultUsername     string `json:"default_username"`
+	DefaultPassword     string `json:"default_password"`
+	SkipCleanup         bool   `json:"skip_cleanup"`
 }
 
 type StemcellYML struct {
@@ -448,40 +445,28 @@ func createBwatsRelease(bosh *BoshCommand) string {
 }
 
 type ManifestProperties struct {
-	DeploymentName            string
-	ReleaseName               string
-	AZ                        string
-	VmType                    string
-	RootEphemeralVmType       string
-	VmExtensions              string
-	Network                   string
-	StemcellOs                string
-	StemcellVersion           string
-	ReleaseVersion            string
-	DefaultUsername           string
-	DefaultPassword           string
-	MountEphemeralDisk        bool
-	SSHDisabledByDefault      bool
-	SecurityComplianceApplied bool
+	DeploymentName      string
+	ReleaseName         string
+	AZ                  string
+	VmType              string
+	RootEphemeralVmType string
+	VmExtensions        string
+	Network             string
+	StemcellOs          string
+	StemcellVersion     string
+	ReleaseVersion      string
+	DefaultUsername     string
+	DefaultPassword     string
 }
 
 func (m ManifestProperties) toVarsFlags() []string {
-	const stringVarFmt = `--var=%s="%s"`
-	const boolVarFmt = "--var=%s=%t"
-
 	var varFlags []string
 
 	for k, v := range m.toMap() {
 		if v != "" {
-			varFlags = append(varFlags, fmt.Sprintf(stringVarFmt, k, v))
+			varFlags = append(varFlags, fmt.Sprintf(`--var=%s="%s"`, k, v))
 		}
 	}
-
-	varFlags = append(varFlags,
-		fmt.Sprintf(boolVarFmt, "MountEphemeralDisk", m.MountEphemeralDisk),
-		fmt.Sprintf(boolVarFmt, "SSHDisabledByDefault", m.SSHDisabledByDefault),
-		fmt.Sprintf(boolVarFmt, "SecurityComplianceApplied", m.SecurityComplianceApplied),
-	)
 
 	return varFlags
 }
@@ -552,21 +537,18 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 func (c *TestConfig) deployWithManifest(bosh *BoshCommand, deploymentName string, stemcellVersion string,
 	bwatsVersion string, manifestPath string, opsFiles ...string) error {
 	manifestProperties := ManifestProperties{
-		DeploymentName:            deploymentName,
-		ReleaseName:               "bwats-release",
-		AZ:                        c.Az,
-		VmType:                    c.VmType,
-		RootEphemeralVmType:       c.RootEphemeralVmType,
-		VmExtensions:              c.VmExtensions,
-		Network:                   c.Network,
-		DefaultUsername:           c.DefaultUsername,
-		DefaultPassword:           c.DefaultPassword,
-		StemcellOs:                c.StemcellOs,
-		StemcellVersion:           stemcellVersion,
-		ReleaseVersion:            bwatsVersion,
-		MountEphemeralDisk:        c.MountEphemeralDisk,
-		SSHDisabledByDefault:      c.SSHDisabledByDefault,
-		SecurityComplianceApplied: c.SecurityComplianceApplied,
+		DeploymentName:      deploymentName,
+		ReleaseName:         "bwats-release",
+		AZ:                  c.Az,
+		VmType:              c.VmType,
+		RootEphemeralVmType: c.RootEphemeralVmType,
+		VmExtensions:        c.VmExtensions,
+		Network:             c.Network,
+		DefaultUsername:     c.DefaultUsername,
+		DefaultPassword:     c.DefaultPassword,
+		StemcellOs:          c.StemcellOs,
+		StemcellVersion:     stemcellVersion,
+		ReleaseVersion:      bwatsVersion,
 	}
 
 	var opsFileArgs strings.Builder
