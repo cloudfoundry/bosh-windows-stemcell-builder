@@ -2162,11 +2162,6 @@ jobs:
         resource: packer-output-govcloud-ami
       - get: bosh-agent-release
         passed: [promote]
-      - get: blobstore-dav-cli
-      - get: blobstore-s3-cli
-      - get: blobstore-gcs-cli
-      - get: windows-bsdtar
-      - get: windows-winsw
       - get: boshio-input
         resource: boshio
   - task: copy-public-stemcells
