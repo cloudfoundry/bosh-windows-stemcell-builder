@@ -1,50 +1,38 @@
 #!/usr/bin/env bash
 set -eu -o pipefail
 
-set +x
 if [ -n "${SSH_TUNNEL_USER}" ]; then
+  set +x
   source ./bosh-windows-stemcell-builder-ci/ci/common-scripts/setup_bosh_proxy.sh
   setup_bosh_proxy "${SSH_TUNNEL_USER}" "${SSH_TUNNEL_IP}" "${SSH_TUNNEL_PRIVATE_KEY}"
 fi
+
 set -x
 
 # shellcheck disable=SC2086
-RESOLVED_STEMCELL_PATH=$(readlink -f ${STEMCELL_PATH})
-
-if [ "$MOUNT_EPHEMERAL_DISK" != "true" ] ; then
-  MOUNT_EPHEMERAL_DISK="false"
-fi
-
-if [ "$SSH_DISABLED_BY_DEFAULT" != "true" ] ; then
-  SSH_DISABLED_BY_DEFAULT="false"
-fi
-
-if [ "$SECURITY_COMPLIANCE_APPLIED" != "true" ] ; then
-  SECURITY_COMPLIANCE_APPLIED="false"
-fi
+resolved_stemcell_path=$(readlink -f ${STEMCELL_PATH})
+json_safe_bosh_ca_cert="${BOSH_CA_CERT//$'\n'/\\n}"
 
 pushd stemcell-builder/acceptance_test
   export CONFIG_JSON=config.json
+
   cat > "${CONFIG_JSON}" <<-END_OF_CONFIG
   {
     "bosh": {
-      "ca_cert": "$(ruby -e "puts ENV['BOSH_CA_CERT'].split(\"\n\").join('\n')")",
-      "client": "$BOSH_CLIENT",
-      "client_secret": "$BOSH_CLIENT_SECRET",
-      "target": "$BOSH_ENVIRONMENT"
+      "ca_cert": "${json_safe_bosh_ca_cert}",
+      "client": "${BOSH_CLIENT}",
+      "client_secret": "${BOSH_CLIENT_SECRET}",
+      "target": "${BOSH_ENVIRONMENT}"
     },
-    "stemcell_path": "$RESOLVED_STEMCELL_PATH",
-    "stemcell_os": "$STEMCELL_OS",
-    "az": "$AZ",
-    "vm_type": "$VM_TYPE",
-    "root_ephemeral_vm_type": "$ROOT_EPHEMERAL_VM_TYPE",
-    "vm_extensions": "$VM_EXTENSIONS",
-    "network": "$NETWORK",
-    "mount_ephemeral_disk": $MOUNT_EPHEMERAL_DISK,
-    "ssh_disabled_by_default": $SSH_DISABLED_BY_DEFAULT,
-    "default_username" : "$DEFAULT_USERNAME",
-    "default_password" : "$DEFAULT_PASSWORD",
-    "security_compliance_applied": $SECURITY_COMPLIANCE_APPLIED
+    "stemcell_path": "${resolved_stemcell_path}",
+    "stemcell_os": "${STEMCELL_OS}",
+    "az": "${AZ}",
+    "vm_type": "${VM_TYPE}",
+    "root_ephemeral_vm_type": "${ROOT_EPHEMERAL_VM_TYPE}",
+    "vm_extensions": "${VM_EXTENSIONS}",
+    "network": "${NETWORK}",
+    "default_username": "${DEFAULT_USERNAME}",
+    "default_password": "${DEFAULT_PASSWORD}",
   }
 END_OF_CONFIG
 

@@ -1029,7 +1029,6 @@ jobs:
 
 - name: create-stembuild-linux-stemcell
   serial: true
-  serial_groups: [vsphere]
   plan:
   - in_parallel:
     - get: bosh-windows-stemcell-builder-ci
@@ -1109,7 +1108,7 @@ jobs:
         path: cat
         args: ["hotfix-log/hotfixes.log"]
   - put: stembuild-linux-stemcell
-    attempts: 3 # <- to address nimbus network issues # <- to address nimbus network issues
+    attempts: 3 # <- to address nimbus network issues
     params:
       file: stembuild-built-stemcell/bosh-stemcell-*-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
 
@@ -1147,11 +1146,8 @@ jobs:
         SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
         SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
         STEMCELL_OS: windows((BASE_OS_VERSION)) # this should be whatever the os listed in stemcell.MF says
-        STEMCELL_PATH: stemcell/bosh-stemcell-*-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
         VM_TYPE: large # WARN: This is Cloud Config specific!!!
         VM_EXTENSIONS: 10GB_ephemeral_disk
-        MOUNT_EPHEMERAL_DISK: true
-        SECURITY_COMPLIANCE_APPLIED: true
         DEFAULT_USERNAME: ((stembuild_vm_user.username))
         DEFAULT_PASSWORD: ((stembuild_vm_user.password))
 
@@ -1196,7 +1192,6 @@ jobs:
 
 - name: create-stembuild-windows-stemcell
   serial: true
-  serial_groups: [vsphere-windows]
   plan:
     - in_parallel:
         - get: bosh-windows-stemcell-builder-ci
@@ -1303,11 +1298,8 @@ jobs:
             SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
             SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
             STEMCELL_OS: windows((BASE_OS_VERSION)) # this should be whatever the os listed in stemcell.MF says
-            STEMCELL_PATH: stemcell/bosh-stemcell-*-vsphere-esxi-windows((BASE_OS_VERSION))-go_agent.tgz
             VM_TYPE: large # WARN: This is Cloud Config specific!!!
             VM_EXTENSIONS: 10GB_ephemeral_disk
-            MOUNT_EPHEMERAL_DISK: true
-            SECURITY_COMPLIANCE_APPLIED: true
             DEFAULT_USERNAME: ((stembuild_vm_user.username))
             DEFAULT_PASSWORD: ((stembuild_vm_user.password))
 
@@ -1482,10 +1474,7 @@ jobs:
       SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_aws-director_bosh_jumpbox_ssh.private_key))
       SSH_TUNNEL_USER: ((iaas_directors_aws-director_bosh_jumpbox_username))
       STEMCELL_OS: windows((BASE_OS_VERSION))
-      STEMCELL_PATH: stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_PACKER_REGION)).tgz
-      MOUNT_EPHEMERAL_DISK: true
       VM_EXTENSIONS: 50GB_ephemeral_disk
-      SECURITY_COMPLIANCE_APPLIED: true
       DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
       DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
   - put: aws-tested
@@ -1613,7 +1602,6 @@ jobs:
         params:
           file: amis/packer-output-ami-*.txt
 
-# Run BWATS against Govcloud stemcell
 - name: test-aws-govcloud
   serial: true
   plan:
@@ -1655,10 +1643,7 @@ jobs:
       SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_aws-govcloud-director_bosh_jumpbox_ssh.private_key))
       SSH_TUNNEL_USER: ((iaas_directors_aws-govcloud-director_bosh_jumpbox_username))
       STEMCELL_OS: windows((BASE_OS_VERSION))
-      STEMCELL_PATH: stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
-      MOUNT_EPHEMERAL_DISK: true
       VM_EXTENSIONS: 50GB_ephemeral_disk
-      SECURITY_COMPLIANCE_APPLIED: true
       DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
       DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
   - put: aws-govcloud-tested
@@ -1842,12 +1827,9 @@ jobs:
       SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_azure-director_bosh_jumpbox_ssh.private_key))
       SSH_TUNNEL_USER: ((iaas_directors_azure-director_bosh_jumpbox_username))
       STEMCELL_OS: windows((BASE_OS_VERSION))
-      STEMCELL_PATH: stemcell/*.tgz
       VM_TYPE: ((AZURE_HEAVY_VM_TYPE))
       ROOT_EPHEMERAL_VM_TYPE: use_root_disk_as_ephemeral
-      MOUNT_EPHEMERAL_DISK: true
-      VM_EXTENSIONS: "50GB_ephemeral_disk"
-      SECURITY_COMPLIANCE_APPLIED: true
+      VM_EXTENSIONS: 50GB_ephemeral_disk
       DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
       DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
   - put: azure-tested
@@ -2019,10 +2001,7 @@ jobs:
         BOSH_ENVIRONMENT: ((iaas_directors_labs-gcp-director_bosh_environment))
         IAAS: gcp
         STEMCELL_OS: windows((BASE_OS_VERSION))
-        STEMCELL_PATH: stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
-        VM_EXTENSIONS: "50GB_ephemeral_disk" # WARN: Cloud Config specific
-        MOUNT_EPHEMERAL_DISK: true
-        SECURITY_COMPLIANCE_APPLIED: true
+        VM_EXTENSIONS: 50GB_ephemeral_disk
         DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
         DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
   - put: gcp-tested
@@ -2066,6 +2045,7 @@ jobs:
         STEMCELL_OS: *windows_os_version
         VM_EXTENSIONS: "50GB_ephemeral_disk"
         VM_TYPE: large
+
 
 - name: promote
   serial: true
@@ -2249,7 +2229,6 @@ jobs:
         AWS_ACCESS_KEY: ((aws-stemcells_aws_access_key.username))
         AWS_ROLE_ARN: ((aws-stemcells_aws_access_key.role_arn))
         AWS_SECRET_KEY: ((aws-stemcells_aws_access_key.password))
-
 
 - name: promote-gcp
   serial: true

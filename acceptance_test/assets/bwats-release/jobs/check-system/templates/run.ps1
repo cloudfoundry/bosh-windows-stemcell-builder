@@ -156,25 +156,22 @@ function Verify-Acls {
 }
 
 function Verify-Services {
-  $config = Get-Config
-  $SSH_Disabled = if ($config.ssh_disabled_by_default -eq "true") { $True } else { $False }
-
   If ( (Get-Service WinRM).Status -ne "Stopped") {
     $msg = "WinRM is not Stopped. It is {0}" -f $(Get-Service WinRM).Status
     Write-Error $msg
     Exit 1
   }
 
-  $startype = If ($SSH_DISABLED) {"Disabled"} Else {"Automatic"}
+  $ssh_startype = "Automatic"
 
-  If ( (Get-Service sshd).StartType -ne $startype) {
-    $msg = "sshd service start type is not ${startype}. It is {0}" -f $(Get-Service sshd).StartType
+  If ( (Get-Service sshd).StartType -ne $ssh_startype) {
+    $msg = "sshd service start type is not ${ssh_startype}. It is {0}" -f $(Get-Service sshd).StartType
     Write-Error $msg
     Exit 1
   }
 
-  If ( (Get-Service ssh-agent).StartType -ne $startype) {
-    $msg = "ssh-agent service start type is not ${startype}. It is {0}" -f $(Get-Service ssh-agent).StartType
+  If ( (Get-Service ssh-agent).StartType -ne $ssh_startype) {
+    $msg = "ssh-agent service start type is not ${ssh_startype}. It is {0}" -f $(Get-Service ssh-agent).StartType
     Write-Error $msg
     Exit 1
   }
@@ -428,17 +425,11 @@ Verify-PSVersion5
 Verify-VersionFile
 Verify-TimeZone
 
-$config = Get-Config
-$validatePolicies = if ($config.security_compliance_expected_to_comply -eq "true") { $True } else { $False }
-
-if ( $validatePolicies )
+Import-Module C:\var\vcap\packages\pester\Pester\Pester.psd1
+$pesterResults = Invoke-Pester $PSScriptRoot/AuditPolicies.Tests.ps1 -PassThru
+if ($pesterResults.FailedCount -gt 0)
 {
-  Import-Module C:\var\vcap\packages\pester\Pester\Pester.psd1
-  $pesterResults = Invoke-Pester $PSScriptRoot/AuditPolicies.Tests.ps1 -PassThru
-  if ($pesterResults.FailedCount -gt 0)
-  {
-    Exit 1
-  }
+  Exit 1
 }
 
 Exit 0
