@@ -31,17 +31,21 @@ function start_powershell_command() {
 function get_powershell_pid_exit_code() {
   local powershell_pid="${1}"
 
-  echo "Getting exit code for ${powershell_pid}" >&2
-  # -X blocks until the guest process exits
-  json_out=$(
-    govc guest.ps \
-    -vm.ipath="${vm_ipath}" \
-    -l="${vm_username}:${vm_password}" \
-    -X -json \
-    -p="${powershell_pid}"
-  )
-  echo "${json_out}" >&2
-  echo "${json_out}" | jq '.processInfo[0].exitCode'
+  if [[ -z "${powershell_pid}" ]]; then
+    echo "Provide PID was blank: '${powershell_pid}" >&2
+  else
+    echo "Getting exit code for '${powershell_pid}'" >&2
+    # -X blocks until the guest process exits
+    json_out=$(
+      govc guest.ps \
+      -vm.ipath="${vm_ipath}" \
+      -l="${vm_username}:${vm_password}" \
+      -X -json \
+      -p="${powershell_pid}"
+    )
+    echo "JSON response for 'guest.ps': ${json_out}" >&2
+    echo "${json_out}" | jq '.processInfo[0].exitCode'
+  fi
 }
 
 function download_remote_file() {
@@ -112,6 +116,13 @@ run_powershell_command_with_logging 'Install-Module -Name PSWindowsUpdate -Minim
 
 updates_remaining=$(get_windows_updates_remaining)
 echo "Initial Windows Updates to install: ${updates_remaining}" >&2
+
+# TODO: rewrite as a single loop:
+# install updates
+# wait for VM to reboot
+# wait for vmware tools to be available
+# (re)get updates-remaining
+# => if remaining == 0; break
 
 while [[ ${updates_remaining} -ne 0 ]]; do
   set +e # ignore unreachable agent if the vm just went down for reboot
