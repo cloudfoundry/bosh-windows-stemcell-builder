@@ -21,7 +21,7 @@ if [ -n "${GREP_PATTERN}" ]; then
   AMI_LIST=$(echo "${AMI_LIST}" | eval "${GREP_PATTERN}")
 fi
 OS=$(grep "operating_system" stemcell.MF | cut -f2 -d: | tr -d ' ')
-VERSION=$(grep "^version" stemcell.MF | cut -f2 -d: | tr -d ' ' | tr -d "'")
+VERSION=$(grep "^version" stemcell.MF | cut -f2 -d: | tr -d ' ' | tr -d "'" | tr -d '"')
 
 for AMI_LINE in ${AMI_LIST}; do
   AMI_REGION=$(echo "${AMI_LINE}" | cut -f1 -d:)
