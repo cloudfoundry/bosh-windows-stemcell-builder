@@ -8,12 +8,13 @@
 
 function Enable-SSHD
 {
-    if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue | Select-Object Name, Enabled)) {
-        Write-Output "Firewall Rule 'OpenSSH-Server-In-TCP' does not exist, creating it..."
-        New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
-    } else {
-        Write-Output "Firewall rule 'OpenSSH-Server-In-TCP' has been created and exists."
+    # Remove existing OpenSSH firewall rule and recreate with '-Profile Any' option
+    if ($firewall_rule = Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue) {
+        "Removing firewall rule: 'OpenSSH-Server-In-TCP'"
+        $firewall_rule | Remove-NetFirewallRule
     }
+    Write-Output "Creating firewall rule 'OpenSSH-Server-In-TCP'"
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -Profile Any -LocalPort 22
 
     Set-Service -Name sshd -StartupType Automatic
     Set-Service -Name ssh-agent -StartupType Automatic
