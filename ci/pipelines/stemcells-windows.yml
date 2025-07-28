@@ -981,6 +981,7 @@ jobs:
           CLONE_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
           CLONE_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
           JOB_OS_NAME: "linux"
+          VM_CUSTOMIZATION_NAME: Bosh-Windows-2019-Base
   - task: generate-deps-file
     file: bosh-windows-stemcell-builder-ci/ci/tasks/generate-deps-file/task.yml
     image: bosh-windows-stemcell-builder-ci-image
