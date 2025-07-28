@@ -189,34 +189,25 @@ Ciphers -chacha20-poly1305@openssh.com
             Assert-MockCalled New-NetFirewallRule -ModuleName BOSH.SSH -Times 1
         }
 
-        It "doesn't set up firewall when ssh is already set up " {
+        It "removes the existing SSH firewall rule and recreates it " {
             Mock Get-NetFirewallRule {
                 return [ordered]@{
-                    "Name" = "{ E02857AB-8EA8-4358-8119-ED7D20DA7712 }"
-                    "DisplayName" = "OpenSSH-Server-In-TCP"
-                    "Description" = ""
-                    "DisplayGroup" = ""
-                    "Group" = ""
-                    "Enabled" = "True"
-                    "Profile" = "Any"
-                    "Platform" = "{ }"
-                    "Direction" = "Inbound"
-                    "Action" = "Allow"
-                    "EdgeTraversalPolicy" = "Block"
-                    "LooseSourceMapping" = "False"
-                    "LocalOnlyMapping" = "False"
-                    "Owner" = ""
-                    "PrimaryStatus" = "OK"
-                    "Status" = "The rule was parsed successfully from the store. (65536)"
-                    "EnforcementStatus" = "NotApplicable"
-                    "PolicyStoreSource" = "PersistentStore"
-                    "PolicyStoreSourceType" = "Local"
+                    "Name" = "OpenSSH-Server-In-TCP"
                 }
             } -ModuleName BOSH.SSH
 
-            Mock New-NetFirewallRule { } -ModuleName BOSH.SSH -Verifiable
+            Mock Remove-NetFirewallRule { } -ModuleName BOSH.SSH -Verifiable -ParameterFilter { $Name -eq "OpenSSH-Server-In-TCP" }
+            Mock New-NetFirewallRule { } -ModuleName BOSH.SSH -Verifiable -ParameterFilter {
+                        $Name -eq "OpenSSH-Server-In-TCP" -and
+                        $Enabled -eq "True" -and
+                        $Direction -eq "Inbound" -and
+                        $Protocol -eq "TCP" -and
+                        $Action -eq "Allow" -and
+                        $Profile -eq "Any" -and
+                        $LocalPort -eq 22 }
             Enable-SSHD
-            Assert-MockCalled New-NetFirewallRule -ModuleName BOSH.SSH -Times 0
+            Assert-MockCalled Remove-NetFirewallRule -ModuleName BOSH.SSH -Times 1
+            Assert-MockCalled New-NetFirewallRule -ModuleName BOSH.SSH -Times 1
         }
 
         It "invokes Remove-SSHKeys" {

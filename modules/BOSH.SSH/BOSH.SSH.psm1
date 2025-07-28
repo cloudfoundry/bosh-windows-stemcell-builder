@@ -9,9 +9,9 @@
 function Enable-SSHD
 {
     # Remove existing OpenSSH firewall rule and recreate with '-Profile Any' option
-    if ($firewall_rule = Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue) {
+    if (Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue) {
         "Removing firewall rule: 'OpenSSH-Server-In-TCP'"
-        $firewall_rule | Remove-NetFirewallRule
+        Remove-NetFirewallRule -Name "OpenSSH-Server-In-TCP"
     }
     Write-Output "Creating firewall rule 'OpenSSH-Server-In-TCP'"
     New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -Profile Any -LocalPort 22
