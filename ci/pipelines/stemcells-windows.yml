@@ -964,6 +964,7 @@ jobs:
           CLONE_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
           CLONE_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
           JOB_OS_NAME: "linux"
+          VM_CUSTOMIZATION_NAME: "Bosh-Windows-2025-Base"
   - task: generate-deps-file
     file: bosh-windows-stemcell-builder-ci/ci/tasks/generate-deps-file/task.yml
     image: bosh-windows-stemcell-builder-ci-image
@@ -1955,6 +1956,7 @@ jobs:
         ACCOUNT_JSON: *gcp_account_json
         IAAS: gcp
         VM_PREFIX: packer-prod-((BASE_OS_VERSION))
+    tags: [*worker_tag]
   - *print-updates
   - put: gcp-untested
     params:
@@ -2002,7 +2004,7 @@ jobs:
         IAAS: gcp
         STEMCELL_OS: windows((BASE_OS_VERSION))
         STEMCELL_PATH: stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
-        VM_EXTENSIONS: "50GB_ephemeral_disk" # WARN: Cloud Config specific
+        VM_EXTENSIONS: "100GB_ephemeral_disk" # WARN: Cloud Config specific
         MOUNT_EPHEMERAL_DISK: true
         SECURITY_COMPLIANCE_APPLIED: true
         DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
@@ -2046,7 +2048,7 @@ jobs:
         BOSH_ENVIRONMENT: ((iaas_directors_labs-gcp-director_bosh_environment))
         NETWORK: default
         STEMCELL_OS: *windows_os_version
-        VM_EXTENSIONS: "50GB_ephemeral_disk"
+        VM_EXTENSIONS: "100GB_ephemeral_disk"
         VM_TYPE: large
 
 - name: promote

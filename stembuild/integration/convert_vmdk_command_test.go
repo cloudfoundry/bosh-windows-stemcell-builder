@@ -15,6 +15,8 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
+const timeout = 60 * time.Second
+
 var _ = Describe("Convert VMDK", func() {
 
 	Context("when valid vmdk file", func() {
@@ -36,7 +38,7 @@ var _ = Describe("Convert VMDK", func() {
 					inputVmdk = filepath.Join("..", "test", "data", "expected.vmdk")
 
 					session := helpers.Stembuild(stembuildExecutable, "package", "--vmdk", inputVmdk)
-					Eventually(session).WithTimeout(20).Should(Exit(1))
+					Eventually(session).WithTimeout(timeout).Should(Exit(1))
 					Eventually(session.Err).Should(Say(`versioning error; parsed os version is: 9999`))
 				})
 
@@ -93,7 +95,7 @@ var _ = Describe("Convert VMDK", func() {
 
 func expectStembuildToSucceed(arguments ...string) *Session {
 	session := helpers.Stembuild(stembuildExecutable, arguments...)
-	Eventually(session).WithTimeout(60*time.Second).Should(Exit(0),
+	Eventually(session).WithTimeout(timeout).Should(Exit(0),
 		fmt.Sprintf(
 			"Expected %s %s to exit with code 0, exited with code %d\nout: %s\nerr: %s",
 			stembuildExecutable,
