@@ -167,8 +167,6 @@ function Protect-Path
     }
 }
 
-
-
 function Set-ProxySettings
 {
     Param([string]$HTTPProxy, [string]$HTTPSProxy, [string]$BypassList)
