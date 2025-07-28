@@ -15,6 +15,7 @@ BeforeAll {
 
 Describe "BOSH.Account" {
     BeforeEach {
+        Mock -ModuleName BOSH.Utils Write-Log { }
         Mock -ModuleName BOSH.Agent Write-Log { }
     }
 
