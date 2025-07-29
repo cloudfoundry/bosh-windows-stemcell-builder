@@ -4,11 +4,13 @@
         # Microsoft privided OpenSSH must be installed on Windows 2019
         # => https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse?tabs=powershell&pivots=windows-server-2019
         $sshPackages = @("OpenSSH.Client", "OpenSSH.Server")
-        foreach ($sshPackage in $sshPackages)
-        {
-            Get-WindowsCapability -Online -Name "$sshPackage*" `
-                | Where-Object { $_.State -eq "NotPresent" } `
-                | Add-WindowsCapability -Online
+        foreach ($sshPackage in $sshPackages) {
+            try {
+                $moduleName = (Get-WindowsCapability -Online -Name "$sshPackage*" | ForEach-Object Name)
+                Add-WindowsCapability -Online -Name $moduleName
+            } catch {
+                Write-Output "Error installing $moduleName : $_"
+            }
         }
     }
 
