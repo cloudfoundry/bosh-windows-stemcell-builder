@@ -11,9 +11,11 @@ $VCENTER_CA_CERT
 END_OF_CERT
 export GOVC_TLS_CA_CERTS=ca.crt
 
-vm_ipath=${STEMBUILD_CONSTRUCT_TARGET_VM}
 vm_username="${VM_USERNAME}"
 vm_password="${VM_PASSWORD}"
+
+vm_ipath=${STEMBUILD_CONSTRUCT_TARGET_VM}
+powershell_exe="\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
 
 function start_powershell_command() {
   local powershell_command="${1}"
@@ -22,21 +24,28 @@ function start_powershell_command() {
   govc guest.start \
     -vm.ipath="${vm_ipath}" \
     -l="${vm_username}:${vm_password}" \
-    "\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe" \
+    "${powershell_exe}" \
     "${powershell_command}"
 }
 
 function get_powershell_pid_exit_code() {
   local powershell_pid="${1}"
 
-  echo "Getting exit code for ${powershell_pid}" >&2
-  # -X blocks until the guest process exits
-  govc guest.ps \
-    -vm.ipath="${vm_ipath}" \
-    -l="${vm_username}:${vm_password}" \
-    -p="${powershell_pid}" \
-    -X -json \
-  | jq '.processInfo[0].exitCode'
+  if [[ -z "${powershell_pid}" ]]; then
+    echo "Provide PID was blank: '${powershell_pid}" >&2
+  else
+    echo "Getting exit code for '${powershell_pid}'" >&2
+    # -X blocks until the guest process exits
+    json_out=$(
+      govc guest.ps \
+      -vm.ipath="${vm_ipath}" \
+      -l="${vm_username}:${vm_password}" \
+      -X -json \
+      -p="${powershell_pid}"
+    )
+    echo "JSON response for 'guest.ps': ${json_out}" >&2
+    echo "${json_out}" | jq '.processInfo[0].exitCode'
+  fi
 }
 
 function download_remote_file() {
@@ -56,25 +65,47 @@ function run_powershell_command_with_logging() {
   echo "Started '${powershell_command}' with pid '${pid}'" >&2
 
   exit_code=$(get_powershell_pid_exit_code "${pid}")
-  echo "Exited '${powershell_command}' with exit code '${exit_code}'" >&2
+  echo "Finished '${powershell_command}' with exit code '${exit_code}'" >&2
 }
 
 function wait_for_vm_to_come_up() {
+  echo "Starting VM check" >&2
+  count=0
   result=-1
-  set +e
   while [[ result -ne 0 ]]; do
-    start_powershell_command Get-ChildItem \\ 2> /dev/null # try to connect
+    set +e
+    echo "Checking VM: ${count}" >&2
+    count=$((count+1))
+    start_powershell_command Get-ChildItem
     result=$?
-    sleep 1
+    set -e
+    sleep 5
   done
-  set -e
+  echo "Finished VM check" >&2
 }
 
 function get_windows_updates_remaining() {
+  echo "Checking for updates remaining (via exit code of 'guest.ps')..." >&2
   # run powershell command that "exits" with the Count returned by Get-WindowsUpdate
   get_update_count_pid="$(start_powershell_command "exit (([array](Get-WindowsUpdate)).Count)")"
 
-  get_powershell_pid_exit_code "${get_update_count_pid}"
+  exit_code=$(get_powershell_pid_exit_code "${get_update_count_pid}")
+  echo "Checking for updates remaining (via exit code of 'guest.ps') returned '${exit_code}'" >&2
+
+  if [[ "${exit_code}" == "null" ]]; then
+    echo "Checking for updates remaining (via 'guest.run')..." >&2
+    raw_exit_code=$(
+      govc guest.run \
+        -vm.ipath="${vm_ipath}" \
+        -l="${vm_username}:${vm_password}" \
+        "${powershell_exe}" \
+        "(Get-WindowsUpdate).Count"
+    )
+    exit_code="${raw_exit_code/$'\r'/}"
+    echo "Checking for updates remaining (via 'guest.run') returned '${exit_code}'" >&2
+  fi
+
+  echo "${exit_code}"
 }
 
 wait_for_vm_to_come_up
@@ -83,30 +114,30 @@ wait_for_vm_to_come_up
 run_powershell_command_with_logging 'Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force'
 run_powershell_command_with_logging 'Install-Module -Name PSWindowsUpdate -MinimumVersion 2.1.0.1 -Force'
 
-echo "getting update count exit code via guest.ps"
 updates_remaining=$(get_windows_updates_remaining)
+echo "Initial Windows Updates to install: ${updates_remaining}" >&2
 
-echo "Windows Updates to install: ${updates_remaining}"
-while [[ updates_remaining -ne 0 ]]; do
+# TODO: rewrite as a single loop:
+# install updates
+# wait for VM to reboot
+# wait for vmware tools to be available
+# (re)get updates-remaining
+# => if remaining == 0; break
+
+while [[ ${updates_remaining} -ne 0 ]]; do
   set +e # ignore unreachable agent if the vm just went down for reboot
   run_powershell_command_with_logging "Install-WindowsUpdate -AcceptAll -AutoReboot"
   set -e
-  echo "Install-WU done"
 
-  # wait for VM to go down and poll for connectivity
-  echo "Waiting for VM to come back after reboot, if necessary..."
-  sleep 60
   wait_for_vm_to_come_up
 
-  echo "VM reachable"
-  updates_remaining=
-  while [[ -z "${updates_remaining}" ]] ; do
-    echo "Trying to discover how many updates remain..."
+  updates_remaining="checking-for-update-count"
+  until [[ "${updates_remaining}" =~ ^[0-9]+$ ]] ; do
     set +e # ignore failures here since the vmware tools agent may be down while updates are being applied
     updates_remaining=$(get_windows_updates_remaining)
     set -e
   done
-  echo "Updates remaining: ${updates_remaining}"
+  echo "Remaining Windows Updates to install: ${updates_remaining}" >&2
 done
 
 remote_hotfix_log_path="C:\\hotfix.log"
@@ -115,4 +146,7 @@ run_powershell_command_with_logging "Get-Hotfix > ${remote_hotfix_log_path}"
 
 download_remote_file "${remote_hotfix_log_path}" hotfix-log/hotfixes.log
 
-run_powershell_command_with_logging "Dism.exe /online /Cleanup-Image /StartComponentCleanup"
+dism_cmd="Dism.exe /online /Cleanup-Image /StartComponentCleanup"
+echo "Running: ${dism_cmd}" >&2
+# not using `run_powershell_command_with_logging`, vmware tools may be stopped before pid can be fetched
+start_powershell_command "${dism_cmd}"
