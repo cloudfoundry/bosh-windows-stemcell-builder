@@ -208,13 +208,6 @@ resources:
     password: ((docker.password))
 
 # type: github-release
-- name: openssh-release
-  type: github-release
-  source:
-    owner: PowerShell
-    repository: Win32-OpenSSH
-    access_token: ((github_public_repo_token))
-    tag_filter: v([^v].*)
 - name: stemcell-builder-github-release
   type: github-release
   source:
@@ -797,8 +790,6 @@ jobs:
         tags: [*worker_tag]
       - get: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag]
-      - get: open-ssh
-        resource: openssh-release
       - get: stemcell-builder
         passed: [build]
         tags: [*worker_tag]
@@ -910,8 +901,6 @@ jobs:
         tags: [*worker_tag]
       - get: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag]
-      - get: open-ssh
-        resource: openssh-release
       - get: stemcell-builder
         passed: [build]
         tags: [*worker_tag]
@@ -1369,8 +1358,6 @@ jobs:
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
-      - get: sshd
-        resource: openssh-release
       - get: bosh-agent-release
         passed: [build]
       - get: blobstore-dav-cli
@@ -1555,8 +1542,6 @@ jobs:
       - get: main-version
         passed: [wuts-aws]
         tags: [*worker_tag]
-      - get: sshd
-        resource: openssh-release
       - get: bosh-agent-release
         passed: [wuts-aws]
       - get: blobstore-dav-cli
@@ -1721,8 +1706,6 @@ jobs:
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
-      - get: sshd
-        resource: openssh-release
       - get: bosh-agent-release
         passed: [build]
       - get: blobstore-dav-cli
@@ -1919,8 +1902,6 @@ jobs:
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
-      - get: sshd
-        resource: openssh-release
       - get: bosh-agent-release
         passed: [build]
       - get: blobstore-dav-cli

@@ -1,9 +1,6 @@
-# We import module BOSH.SSH to ensure that we get the Install-SSHD function it defines. Starting with
-# OpenSSH 9.1, there is a conflicting install-sshd.ps1 script that takes precedence instead if you do
-# not load the module.
 BeforeAll {
-    Import-Module ../../modules/BOSH.SSH
     Import-Module ../../modules/BOSH.Utils
+    Import-Module ../../modules/BOSH.SSH
     Import-Module ../../modules/BOSH.CFCell
     Import-Module ../../modules/BOSH.Agent
     Import-Module ../../modules/BOSH.CFCell
