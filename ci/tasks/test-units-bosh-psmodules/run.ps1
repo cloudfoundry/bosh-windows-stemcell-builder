@@ -10,20 +10,22 @@ Import-Module "$moduleDir\Pester\$($pesterModule.Version)\Pester.psm1"
 
 $status = (Get-Service -Name "wuauserv").Status
 $startupType = (Get-Service "wuauserv" | Select-Object -ExpandProperty StartType)
-Write-Host "-----------------------------------"
+
+Write-Host "-------------------------------------------"
 Write-Host "wuauserv Status    = '$status'"
 Write-Host "wuauserv StartType = '$startupType'"
 Write-Host
 Write-Host "Running specs under: $(Get-Location)\stemcell-builder\$env:MODULES_DIR"
+Write-Host "-------------------------------------------"
 Write-Host
-Write-Host "-----------------------------------"
 
 $result = 0
 
 $testModules = Get-ChildItem "stemcell-builder\$env:MODULES_DIR" -recurse | Where-Object {$_.name -match ".*.Tests.ps1"} | ForEach-Object {$_.DirectoryName}
 foreach ($module in $testModules) {
     $moduleName = $(Split-Path -Path $module -Leaf)
-    Write-Host "START Testing: $moduleName"
+    Write-Host
+    Write-Host "------------------------------- $moduleName"
     Push-Location "$module"
 
     # Do not set $ErrorActionPreference and let Pester handle it nativetly; setting it to Stop globally will
@@ -33,7 +35,7 @@ foreach ($module in $testModules) {
     if ($results.FailedCount -gt 0) {
       $result += $results.FailedCount
     }
-    Write-Host "FINISH Testing: $moduleName"
+    Write-Host "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ $moduleName"
     Write-Host
     Pop-Location
 }
