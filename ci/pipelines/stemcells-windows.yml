@@ -1384,11 +1384,6 @@ jobs:
     params:
       pre: build
     tags: [*worker_tag]
-  - task: create-packer-ci-key
-    image: bosh-windows-stemcell-builder-ci-image
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/create-packer-ci-key/task.yml
-    params:
-      PACKER_CI: ((bosh_windows_aws_packer_ci_private_key.private_key))
   - task: create-aws-stemcell
     attempts: 3
     timeout: 2h
@@ -1400,6 +1395,7 @@ jobs:
       PACKER_AWS_ACCESS_KEY: ((aws-stemcells_aws_access_key.username))
       PACKER_AWS_SECRET_KEY: ((aws-stemcells_aws_access_key.password))
       PACKER_REGION: ((AWS_PACKER_REGION))
+      PACKER_CI_PRIVATE_KEY: ((bosh_windows_aws_packer_ci_private_key.private_key))
       OS_VERSION: windows((BASE_OS_VERSION))
       OUTPUT_BUCKET_NAME: aws-regional-stemcells-((BASE_OS_VERSION))
       VM_PREFIX: packer-prod-((BASE_OS_VERSION))
@@ -1564,11 +1560,6 @@ jobs:
       - get: blobstore-gcs-cli
       - get: windows-bsdtar
       - get: windows-winsw
-  - task: create-packer-ci-key
-    image: bosh-windows-stemcell-builder-ci-image
-    file: bosh-windows-stemcell-builder-ci/ci/tasks/create-packer-ci-key/task.yml
-    params:
-      PACKER_CI: ((bosh_windows_aws_govcloud_packer_ci_private_key.private_key))
   - task: create-aws-govcloud-stemcell
     attempts: 3
     timeout: 1h30m
@@ -1579,6 +1570,7 @@ jobs:
       AWS_REGION: us-gov-west-1
       PACKER_AWS_SECRET_KEY: ((packer_user_gov_aws_access_key.password))
       PACKER_REGION: ((AWS_GOVCLOUD_PACKER_REGION))
+      PACKER_CI_PRIVATE_KEY: ((bosh_windows_aws_govcloud_packer_ci_private_key.private_key))
       OS_VERSION: windows((BASE_OS_VERSION))
       OUTPUT_BUCKET_NAME: aws-regional-stemcells-((BASE_OS_VERSION))
       VM_PREFIX: packer-prod-((BASE_OS_VERSION))
