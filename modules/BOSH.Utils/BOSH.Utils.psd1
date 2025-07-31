@@ -26,8 +26,7 @@
         'Get-OSVersionString',
         'Get-WinRMConfig',
         'Get-WUCerts',
-        'New-VersionFile',
-        'Enable-Hyper-V'
+        'New-VersionFile'
     )
     CmdletsToExport = @()
     VariablesToExport = '*'
