@@ -2,6 +2,8 @@
 set -eu -o pipefail
 set -x
 
+CONCOURSE_ROOT="$(pwd)"
+
 if [ -n "${AWS_ROLE_ARN}" ]; then
   aws configure --profile creds_account set aws_access_key_id "${PACKER_AWS_ACCESS_KEY}"
   set +x
@@ -18,12 +20,14 @@ else
   export AWS_SECRET_KEY="${PACKER_AWS_SECRET_KEY}"
   set -x
 fi
+export PACKER_CI_PRIVATE_KEY_LOCATION="${CONCOURSE_ROOT}/packer-ci-private-key/packer_key"
+mkdir -p "$(dirname "${PACKER_CI_PRIVATE_KEY_LOCATION}")"
+echo "${PACKER_CI_PRIVATE_KEY}" > "${PACKER_CI_PRIVATE_KEY_LOCATION}"
+chmod 600 "${PACKER_CI_PRIVATE_KEY_LOCATION}"
 
 pushd lgpo-binary
   unzip LGPO.zip
 popd
-
-CONCOURSE_ROOT="$(pwd)"
 
 "${CONCOURSE_ROOT}/bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/run.sh"
 "${CONCOURSE_ROOT}/bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/run.sh"
