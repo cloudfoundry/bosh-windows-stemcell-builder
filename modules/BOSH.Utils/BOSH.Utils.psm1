@@ -436,8 +436,3 @@ function Invoke-Remove-Item
     )
     Remove-Item -path $path
 }
-
-function Enable-Hyper-V
-{
-    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All -norestart
-}

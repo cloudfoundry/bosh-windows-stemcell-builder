@@ -495,20 +495,4 @@ Describe "BOSH.Utils" {
             { New-VersionFile } | Should -Throw '-Version parameter must be specified as major.minor`[.whatever`]'
         }
     }
-
-    Describe "Enable-Hyper-V" {
-
-        AfterEach {
-            Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -norestart
-        }
-
-        It "Enables Hyper V" {
-            getWindowsOptionalFeatureState("Microsoft-Hyper-V") | Should -MatchExactly "Disabled"
-
-            Enable-Hyper-V
-
-            getWindowsOptionalFeatureState("Microsoft-Hyper-V") | Should -MatchExactly "Enabled"
-        }
-
-    }
 }
