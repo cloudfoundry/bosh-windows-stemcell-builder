@@ -29,7 +29,7 @@ sio-400            VirtualSIOController          SIO controller 0
 video-500          VirtualMachineVideoCard       Video card
 keyboard-600       VirtualKeyboard               Keyboard
 pointing-700       VirtualPointingDevice         Pointing device; Device
-disk-1000-0        VirtualDisk                   104,857,600 KB
+disk-1000-0        VirtualDisk                   41,943,040 KB
 lsilogic-sas-1000  VirtualLsiLogicSASController  LSI Logic SAS
 ethernet-0         VirtualE1000e                 internal-network
 vmci-12000         VirtualMachineVMCIDevice      Device on the virtual machine PCI bus that provides support for the virtual machine communication interface
