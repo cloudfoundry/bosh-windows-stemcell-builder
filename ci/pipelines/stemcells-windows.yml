@@ -155,6 +155,7 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
+    branch: remove-sshd-config
 - name: govmomi
   type: git
   source:
@@ -1538,6 +1539,7 @@ jobs:
         STEMCELL_OS: *windows_os_version
         VM_EXTENSIONS: ""
         VM_TYPE: large
+        WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
 
 - name: create-aws-govcloud
   serial: true
@@ -1710,6 +1712,7 @@ jobs:
         NETWORK: default
         VM_EXTENSIONS: ""
         VM_TYPE: large
+        WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
 
 - name: create-azure
   serial: true
@@ -1908,6 +1911,7 @@ jobs:
         STEMCELL_OS: *windows_os_version
         VM_EXTENSIONS: ""
         VM_TYPE: ((AZURE_HEAVY_VM_TYPE))
+        WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
 
 - name: create-gcp
   serial: true
@@ -2065,6 +2069,7 @@ jobs:
         STEMCELL_OS: *windows_os_version
         VM_EXTENSIONS: "100GB_ephemeral_disk"
         VM_TYPE: large
+        WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
 
 - name: promote
   serial: true
