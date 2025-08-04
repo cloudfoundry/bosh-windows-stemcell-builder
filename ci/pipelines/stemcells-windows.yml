@@ -837,6 +837,7 @@ jobs:
           CLONE_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
           CLONE_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
           JOB_OS_NAME: "windows"
+          VM_CUSTOMIZATION_NAME: "Bosh-Windows-2025-Base"
   - task: generate-deps-file
     file: bosh-windows-stemcell-builder-ci/ci/tasks/generate-deps-file/task.yml
     image: bosh-windows-stemcell-builder-ci-image
@@ -1065,12 +1066,12 @@ jobs:
     image: bosh-windows-stemcell-builder-ci-image
     tags: [windows-nimbus]
     params:
+      GOVC_URL: ((nimbus_windows-demo_auth_url))
       VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
       VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
       VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
       VCENTER_VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
       STEMBUILD_BASE_VM_NAME: windows-server-2025-base-vm-linux
-      STEMBUILD_BASE_VM_IP: 192.168.111.31
       STEMBUILD_BASE_VM_USERNAME: ((stembuild_vm_user.username))
       STEMBUILD_BASE_VM_PASSWORD: ((stembuild_vm_user.password))
   - task: run-stembuild-package
@@ -1227,16 +1228,30 @@ jobs:
         DATACENTER: dc0
         VM_TO_SNAPSHOT: /dc0/vm/bosh-windows-ci-vms-and-templates/windows-server-2025-base-vm-windows
         SNAPSHOT_NAME: "stembuild-ready-power-on"
+    - task: fetch-vm-ip
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/fetch-vm-ip/task.yml
+      image: bosh-windows-stemcell-builder-ci-image
+      tags: [windows-nimbus]
+      params:
+        GOVC_URL: ((nimbus_windows-demo_auth_url))
+        VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
+        VCENTER_VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
+        VM_NAME: windows-server-2025-base-vm-windows
+    - load_var: ip
+      file: vm-ip/ip
+      format: trim
+      reveal: true
     - task: run-stembuild-construct
       file: bosh-windows-stemcell-builder-ci/ci/tasks/run-construct-stembuild-windows/task.yml
       tags: [windows-nimbus]
       params:
+        GOVC_URL: ((nimbus_windows-demo_auth_url))
         VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
         VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
         VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
         VCENTER_VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
         STEMBUILD_BASE_VM_NAME: windows-server-2025-base-vm-windows
-        STEMBUILD_BASE_VM_IP: 192.168.111.32
+        STEMBUILD_BASE_VM_IP: ((.:ip))
         STEMBUILD_BASE_VM_USERNAME: ((stembuild_vm_user.username))
         STEMBUILD_BASE_VM_PASSWORD: ((stembuild_vm_user.password))
     - task: run-stembuild-package

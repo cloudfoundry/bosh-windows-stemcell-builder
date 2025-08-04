@@ -1,0 +1,16 @@
+---
+platform: linux
+
+inputs: []
+
+outputs:
+- name: vm-ip
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/fetch-vm-ip/run.sh
+
+params:
+  GOVC_URL:
+  VCENTER_BASE_URL:
+  VM_NAME:
+  VCENTER_VM_FOLDER:
