@@ -1,7 +1,8 @@
 ---
 platform: linux
 
-inputs: []
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
 
 outputs:
 - name: vm-ip
