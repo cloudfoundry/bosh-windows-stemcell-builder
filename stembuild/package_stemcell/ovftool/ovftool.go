@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var stopWalk = errors.New("stop walk") //nolint:staticcheck
+var errStopWalk = errors.New("stop walk")
 
 func findExecutable(root, name string) (string, error) {
 	var file string
@@ -19,19 +19,19 @@ func findExecutable(root, name string) (string, error) {
 		if !fi.IsDir() && fi.Name() == name {
 			if s, err := exec.LookPath(path); err == nil {
 				file = s
-				return stopWalk
+				return errStopWalk
 			}
 		}
 		return nil
 	}
 	err := filepath.Walk(root, walkFn)
 	if file == "" {
-		if err == nil || errors.Is(err, stopWalk) {
+		if err == nil || errors.Is(err, errStopWalk) {
 			err = fmt.Errorf("executable file not found in: %s", root)
 		}
 		// CEV: this should never happen
-		if errors.Is(err, stopWalk) {
-			err = fmt.Errorf("executable file not found in: %s - exec.LookPath error.", root) //nolint:staticcheck
+		if errors.Is(err, errStopWalk) {
+			err = fmt.Errorf("executable file not found in: %s - exec.LookPath error", root)
 		}
 		return "", &exec.Error{Name: name, Err: err}
 	}

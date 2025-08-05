@@ -63,5 +63,6 @@ func Ovftool(installPaths []string) (string, error) {
 			return path, nil
 		}
 	}
+
 	return "", &exec.Error{Name: name, Err: exec.ErrNotFound}
 }

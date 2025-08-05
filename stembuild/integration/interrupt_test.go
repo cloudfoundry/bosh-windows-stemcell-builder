@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/test/helpers"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/test/helpers"
 )
 
 var _ = Describe("Interrupts", func() {
