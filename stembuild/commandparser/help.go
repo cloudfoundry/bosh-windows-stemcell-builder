@@ -63,7 +63,7 @@ func (h *stembuildHelp) Execute(c context.Context, f *flag.FlagSet, args ...inte
 
 func (h *stembuildHelp) Explain(w io.Writer) {
 
-	fmt.Fprintf(w, "%s version %s, Windows Stemcell Building Tool\n\n", path.Base(os.Args[0]), version.Version) //nolint:errcheck
+	fmt.Fprintf(w, "%s version %s, Windows Stemcell Building Tool\n\n", path.Base(os.Args[0]), version.Current) //nolint:errcheck
 	fmt.Fprintf(w, "Usage: %s <global options> <command> <command flags>\n\n", path.Base(os.Args[0]))           //nolint:errcheck
 
 	fmt.Fprint(w, "Commands:\n") //nolint:errcheck

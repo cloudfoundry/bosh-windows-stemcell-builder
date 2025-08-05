@@ -35,7 +35,7 @@ func main() {
 	}
 
 	var gf commandparser.GlobalFlags
-	packageCmd := commandparser.NewPackageCommand(version.NewVersionGetter(), &packager.Factory{}, &commandparser.PackageMessenger{Output: os.Stderr})
+	packageCmd := commandparser.NewPackageCommand(version.New(), &packager.Factory{}, &commandparser.PackageMessenger{Output: os.Stderr})
 	packageCmd.GlobalFlags = &gf
 	constructCmd := commandparser.NewConstructCmd(context.Background(), &construct.Factory{}, &vcenter_manager.ManagerFactory{}, &commandparser.ConstructValidator{}, &commandparser.ConstructCmdMessenger{OutputChannel: os.Stderr})
 	constructCmd.GlobalFlags = &gf
@@ -65,7 +65,7 @@ func main() {
 
 	fs.Parse(os.Args[1:]) //nolint:errcheck
 	if gf.ShowVersion {
-		fmt.Fprintf(os.Stdout, "%s version %s, Windows Stemcell Building Tool\n\n", path.Base(os.Args[0]), version.Version) //nolint:errcheck
+		fmt.Fprintf(os.Stdout, "%s version %s, Windows Stemcell Building Tool\n\n", path.Base(os.Args[0]), version.Current) //nolint:errcheck
 		os.Remove(s)                                                                                                        //nolint:errcheck
 		os.Exit(0)
 	}

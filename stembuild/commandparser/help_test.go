@@ -21,7 +21,7 @@ var _ = Describe("help", func() {
 	// struct variables. This adds a bit of protection when renaming flag parameters.
 	Describe("Explain", func() {
 		It("shows the correct version", func() {
-			version.Version = "1.56"
+			version.Current = "1.56"
 			buf := bytes.Buffer{}
 			fs := flag.NewFlagSet(path.Base(os.Args[0]), flag.ExitOnError)
 			commands := make([]subcommands.Command, 0)
@@ -29,7 +29,7 @@ var _ = Describe("help", func() {
 
 			sb.Explain(&buf)
 
-			expectedString := fmt.Sprintf("%s version %s, Windows Stemcell Building Tool", path.Base(os.Args[0]), version.Version)
+			expectedString := fmt.Sprintf("%s version %s, Windows Stemcell Building Tool", path.Base(os.Args[0]), version.Current)
 			Expect(buf.String()).To(ContainSubstring(expectedString))
 		})
 	})
