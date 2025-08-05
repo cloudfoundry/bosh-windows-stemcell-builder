@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -32,6 +33,7 @@ var _ = Describe("VmdkPackager", func() {
 			Stop:         make(chan struct{}),
 			BuildOptions: stembuildConfig,
 			Logger:       colorlogger.New(0, false, GinkgoWriter),
+			Messenger:    messenger.NewStembuildMessenger(GinkgoWriter, GinkgoWriter),
 		}
 	})
 

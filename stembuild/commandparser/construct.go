@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/google/subcommands"
 	"github.com/vmware/govmomi/guest"
 	"github.com/vmware/govmomi/object"
@@ -34,7 +35,7 @@ type VCenterManager interface {
 
 //counterfeiter:generate . VMPreparerFactory
 type VMPreparerFactory interface {
-	New(config config.SourceConfig, vCenterManager VCenterManager) (VmConstruct, error)
+	New(config config.SourceConfig, vCenterManager VCenterManager, messenger messenger.Messenger) (VmConstruct, error)
 }
 
 //counterfeiter:generate . ManagerFactory
@@ -49,21 +50,13 @@ type ConstructCmdValidator interface {
 	LGPOInDirectory() bool
 }
 
-//counterfeiter:generate . ConstructMessenger
-type ConstructMessenger interface {
-	ArgumentsNotProvided()
-	LGPONotFound()
-	CannotConnectToVM(err error)
-	CannotPrepareVM(err error)
-}
-
 type ConstructCmd struct {
 	ctx            context.Context
 	sourceConfig   config.SourceConfig
 	prepFactory    VMPreparerFactory
 	managerFactory ManagerFactory
 	validator      ConstructCmdValidator
-	messenger      ConstructMessenger
+	messenger      messenger.Messenger
 	GlobalFlags    *GlobalFlags
 }
 
@@ -84,8 +77,14 @@ func (v setupFlagsValue) Set(s string) error {
 	return nil
 }
 
-func NewConstructCmd(ctx context.Context, prepFactory VMPreparerFactory, managerFactory ManagerFactory, validator ConstructCmdValidator, messenger ConstructMessenger) *ConstructCmd {
-	return &ConstructCmd{ctx: ctx, prepFactory: prepFactory, managerFactory: managerFactory, validator: validator, messenger: messenger}
+func NewConstructCmd(ctx context.Context, prepFactory VMPreparerFactory, managerFactory ManagerFactory, validator ConstructCmdValidator, messenger messenger.Messenger) *ConstructCmd {
+	return &ConstructCmd{
+		ctx:            ctx,
+		prepFactory:    prepFactory,
+		managerFactory: managerFactory,
+		validator:      validator,
+		messenger:      messenger,
+	}
 }
 
 func (*ConstructCmd) Name() string { return "construct" }
@@ -130,11 +129,11 @@ func (p *ConstructCmd) SetFlags(f *flag.FlagSet) {
 func (p *ConstructCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	c := p.sourceConfig
 	if !p.validator.PopulatedArgs(c.GuestVmIp, c.GuestVMUsername, c.GuestVMPassword, c.VCenterUrl, c.VCenterUsername, c.VCenterPassword, c.VmInventoryPath) {
-		p.messenger.ArgumentsNotProvided()
+		p.messenger.PrintErr("Not all required parameters were provided. See stembuild --help for more details")
 		return subcommands.ExitFailure
 	}
 	if !p.validator.LGPOInDirectory() {
-		p.messenger.LGPONotFound()
+		p.messenger.PrintErr("Could not find LGPO.zip in the current directory")
 		return subcommands.ExitFailure
 	}
 
@@ -149,19 +148,19 @@ func (p *ConstructCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interfac
 
 	vCenterManager, err := p.managerFactory.VCenterManager(p.ctx)
 	if err != nil {
-		p.messenger.CannotPrepareVM(err)
+		p.messenger.PrintErr(fmt.Sprintf("Cannot connect to VM: %s", err))
 		return subcommands.ExitFailure
 	}
 
-	vmConstruct, err := p.prepFactory.New(p.sourceConfig, vCenterManager)
+	vmConstruct, err := p.prepFactory.New(p.sourceConfig, vCenterManager, p.messenger)
 	if err != nil {
-		p.messenger.CannotPrepareVM(err)
+		p.messenger.PrintErr(fmt.Sprintf("Could not prepare VM: %s", err))
 		return subcommands.ExitFailure
 	}
 
 	err = vmConstruct.PrepareVM()
 	if err != nil {
-		p.messenger.CannotPrepareVM(err)
+		p.messenger.PrintErr(fmt.Sprintf("Could not prepare VM: %s", err))
 		return subcommands.ExitFailure
 	}
 

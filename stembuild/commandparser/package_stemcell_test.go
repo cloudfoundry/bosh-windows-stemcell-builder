@@ -4,13 +4,17 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 
 	"github.com/google/subcommands"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/colorlogger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/commandparser"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/commandparser/commandparserfakes"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 )
 
 var _ = Describe("package_stemcell", func() {
@@ -20,31 +24,37 @@ var _ = Describe("package_stemcell", func() {
 	Describe("SetFlags", func() {
 
 		var (
-			f      *flag.FlagSet
-			PkgCmd *commandparser.PackageCmd
+			f          *flag.FlagSet
+			packageCmd *commandparser.PackageCmd
+
+			outBuf *Buffer
+			errBuf *Buffer
 
 			oSAndVersionGetter *commandparserfakes.FakeOSAndVersionGetter
 			packagerFactory    *commandparserfakes.FakePackagerFactory
 			packager           *commandparserfakes.FakePackager
-			packagerMessenger  *commandparserfakes.FakePackagerMessenger
 		)
 
 		BeforeEach(func() {
 			f = flag.NewFlagSet("test", flag.ContinueOnError)
 
+			outBuf = NewBuffer()
+			errBuf = NewBuffer()
+
+			packager = new(commandparserfakes.FakePackager)
+
 			oSAndVersionGetter = new(commandparserfakes.FakeOSAndVersionGetter)
 			packagerFactory = new(commandparserfakes.FakePackagerFactory)
-			packager = new(commandparserfakes.FakePackager)
-			packagerMessenger = new(commandparserfakes.FakePackagerMessenger)
-
 			packagerFactory.NewPackagerReturns(packager, nil)
+			logger := colorlogger.New(0, false, GinkgoWriter)
+			stembuildMessenger := messenger.NewStembuildMessenger(outBuf, errBuf)
 
-			PkgCmd = commandparser.NewPackageCommand(oSAndVersionGetter, packagerFactory, packagerMessenger)
-			PkgCmd.SetFlags(f)
-			PkgCmd.GlobalFlags = &commandparser.GlobalFlags{}
+			packageCmd = commandparser.NewPackageCommand(oSAndVersionGetter, packagerFactory, logger, stembuildMessenger)
+			packageCmd.SetFlags(f)
+			packageCmd.GlobalFlags = &commandparser.GlobalFlags{}
 		})
 
-		var defaultArgs = []string{}
+		var defaultArgs []string
 
 		Describe("Execute", func() {
 			BeforeEach(func() {
@@ -58,11 +68,11 @@ var _ = Describe("package_stemcell", func() {
 				err := f.Parse(vmdkArgs)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitSuccess))
 
 				Expect(packagerFactory.NewPackagerCallCount()).To(Equal(1))
-				actualSourceConfig, _, _ := packagerFactory.NewPackagerArgsForCall(0)
+				actualSourceConfig, _, _, _ := packagerFactory.NewPackagerArgsForCall(0)
 				Expect(actualSourceConfig.Vmdk).To(Equal("some_vmdk_file"))
 			})
 
@@ -78,11 +88,11 @@ var _ = Describe("package_stemcell", func() {
 				err := f.Parse(vcenterArgs)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitSuccess))
 
 				Expect(packagerFactory.NewPackagerCallCount()).To(Equal(1))
-				actualSourceConfig, _, _ := packagerFactory.NewPackagerArgsForCall(0)
+				actualSourceConfig, _, _, _ := packagerFactory.NewPackagerArgsForCall(0)
 				Expect(actualSourceConfig.URL).To(Equal("https://vcenter.test"))
 				Expect(actualSourceConfig.Username).To(Equal("test-user"))
 				Expect(actualSourceConfig.Password).To(Equal("verysecure"))
@@ -96,11 +106,11 @@ var _ = Describe("package_stemcell", func() {
 				err := f.Parse(longformOutputDirArgs)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitSuccess))
 
 				Expect(packagerFactory.NewPackagerCallCount()).To(Equal(1))
-				_, actualOutputConfig, _ := packagerFactory.NewPackagerArgsForCall(0)
+				_, actualOutputConfig, _, _ := packagerFactory.NewPackagerArgsForCall(0)
 				Expect(actualOutputConfig.OutputDir).To(Equal("some_output_dir"))
 			})
 
@@ -110,11 +120,11 @@ var _ = Describe("package_stemcell", func() {
 				err := f.Parse(shortformOutputDirArgs)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitSuccess))
 
 				Expect(packagerFactory.NewPackagerCallCount()).To(Equal(1))
-				_, actualOutputConfig, _ := packagerFactory.NewPackagerArgsForCall(0)
+				_, actualOutputConfig, _, _ := packagerFactory.NewPackagerArgsForCall(0)
 				Expect(actualOutputConfig.OutputDir).To(Equal("some_output_dir"))
 				Expect(actualOutputConfig.StemcellVersion).To(Equal("2019.2"))
 				Expect(actualOutputConfig.Os).To(Equal("2019"))
@@ -128,11 +138,11 @@ var _ = Describe("package_stemcell", func() {
 				err := f.Parse(args)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitSuccess))
 
 				Expect(packagerFactory.NewPackagerCallCount()).To(Equal(1))
-				_, actualOutputConfig, _ := packagerFactory.NewPackagerArgsForCall(0)
+				_, actualOutputConfig, _, _ := packagerFactory.NewPackagerArgsForCall(0)
 				Expect(actualOutputConfig.StemcellVersion).To(Equal("1803.27.36"))
 
 				Expect(oSAndVersionGetter.GetVersionWithPatchNumberCallCount()).To(Equal(1))
@@ -141,86 +151,82 @@ var _ = Describe("package_stemcell", func() {
 			})
 
 			It("package is not called if the OS is invalid", func() {
-				oSAndVersionGetter.GetOsReturns("2017")
+				getOsReturnValue := "2017"
+				oSAndVersionGetter.GetOsReturns(getOsReturnValue)
 
 				err := f.Parse(defaultArgs)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitFailure))
 
 				Expect(packager.PackageCallCount()).To(Equal(0))
 
-				Expect(packagerMessenger.InvalidOutputConfigCallCount()).To(Equal(1))
-				receivedError := packagerMessenger.InvalidOutputConfigArgsForCall(0)
-				Expect(receivedError.Error()).To(MatchRegexp("2017"))
+				expectedMessage := fmt.Sprintf("versioning error; parsed os version is: %s", getOsReturnValue)
+				Eventually(errBuf).Should(Say(expectedMessage))
 			})
 
 			It("package is not called if the packager factory returns an error", func() {
-				packagerFactory.NewPackagerReturns(nil, errors.New("Couldn't make a packager!"))
+				newPackagerErr := errors.New("fake-new-packager-error")
+				packagerFactory.NewPackagerReturns(nil, newPackagerErr)
 
 				err := f.Parse(defaultArgs)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitFailure))
 
 				Expect(packagerFactory.NewPackagerCallCount()).To(Equal(1))
 				Expect(packager.PackageCallCount()).To(Equal(0))
 
-				Expect(packagerMessenger.CannotCreatePackagerCallCount()).To(Equal(1))
-				receivedError := packagerMessenger.CannotCreatePackagerArgsForCall(0)
-				Expect(receivedError).To(MatchError("Couldn't make a packager!"))
+				Eventually(errBuf).Should(Say(newPackagerErr.Error()))
 			})
 
 			It("package is not called if there is no free space", func() {
-				packager.ValidateFreeSpaceForPackageReturns(errors.New("No space!"))
+				validateFreeSpaceErr := errors.New("fake-validate-free-space-error")
+				packager.ValidateFreeSpaceForPackageReturns(validateFreeSpaceErr)
 
 				err := f.Parse(defaultArgs)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitFailure))
 
 				Expect(packager.ValidateFreeSpaceForPackageCallCount()).To(Equal(1))
 				Expect(packager.PackageCallCount()).To(Equal(0))
 
-				Expect(packagerMessenger.DoesNotHaveEnoughSpaceCallCount()).To(Equal(1))
-				receivedError := packagerMessenger.DoesNotHaveEnoughSpaceArgsForCall(0)
-				Expect(receivedError).To(MatchError("No space!"))
+				Eventually(errBuf).Should(Say(validateFreeSpaceErr.Error()))
 			})
 
 			It("package is not called if source parameters are not valid", func() {
-				packager.ValidateSourceParametersReturns(errors.New("invalid source parameters"))
+				validateSourceParamsErr := errors.New("fake-invalid-source-params-error")
+				packager.ValidateSourceParametersReturns(validateSourceParamsErr)
 
 				err := f.Parse(defaultArgs)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitFailure))
 
 				Expect(packager.ValidateSourceParametersCallCount()).To(Equal(1))
 				Expect(packager.PackageCallCount()).To(Equal(0))
 
-				Expect(packagerMessenger.SourceParametersAreInvalidCallCount()).To(Equal(1))
-				receivedError := packagerMessenger.SourceParametersAreInvalidArgsForCall(0)
-				Expect(receivedError).To(MatchError("invalid source parameters"))
+				Eventually(errBuf).Should(Say(validateSourceParamsErr.Error()))
 			})
 
 			It("exits with failure if package returns an error", func() {
-				packager.PackageReturns(errors.New("Didn't make it"))
+				packageErr := errors.New("fake-package-error")
+				packager.PackageReturns(packageErr)
 
 				err := f.Parse(defaultArgs)
 				Expect(err).ToNot(HaveOccurred())
 
-				exitStatus := PkgCmd.Execute(context.Background(), f)
+				exitStatus := packageCmd.Execute(context.Background(), f)
 				Expect(exitStatus).To(Equal(subcommands.ExitFailure))
 
 				Expect(packager.PackageCallCount()).To(Equal(1))
 
-				Expect(packagerMessenger.PackageFailedCallCount()).To(Equal(1))
-				receivedError := packagerMessenger.PackageFailedArgsForCall(0)
-				Expect(receivedError).To(MatchError("Didn't make it"))
+				Eventually(errBuf).Should(Say(packageErr.Error()))
 			})
 		})
 	})
