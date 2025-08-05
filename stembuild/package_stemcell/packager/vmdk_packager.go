@@ -16,6 +16,7 @@ import (
 
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/colorlogger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/filesystem"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/package_stemcell/config"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/package_stemcell/ovftool"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/templates"
@@ -32,6 +33,7 @@ type VmdkPackager struct {
 	Stop         chan struct{}
 	BuildOptions config.VmdkOptions
 	Logger       colorlogger.Logger
+	Messenger    messenger.Messenger
 }
 
 var ErrInterrupt = errors.New("interrupt")
@@ -332,26 +334,25 @@ func (c *VmdkPackager) catchInterruptSignal() {
 	for sig := range ch {
 		c.Logger.Printf("received signal: %s", sig)
 		if stopping {
-			fmt.Fprintf(os.Stderr, "received second (%s) signal - exiting now\n", sig) //nolint:errcheck
-			c.Cleanup()                                                                // remove temp dir
+			c.Messenger.PrintErr(fmt.Sprintf("received second (%s) signal - exiting now\n", sig))
+			c.Cleanup()
 			os.Exit(1)
 		}
 		stopping = true
-		fmt.Fprintf(os.Stderr, "received (%s) signal cleaning up\n", sig) //nolint:errcheck
+		c.Messenger.PrintErr(fmt.Sprintf("received (%s) signal cleaning up\n", sig))
 		c.StopConfig()
 	}
 }
 
 func (c *VmdkPackager) Package() error {
-
 	go c.catchInterruptSignal()
 
 	start := time.Now()
 
 	stemcellPath, err := c.ConvertVMDK()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s\n", err) //nolint:errcheck
-		c.Cleanup()                                // remove temp dir
+		c.Messenger.PrintErr(fmt.Sprintf("Error: %s\n", err))
+		c.Cleanup()
 		return err
 	}
 

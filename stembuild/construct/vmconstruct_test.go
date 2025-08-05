@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
+
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/construct"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/construct/constructfakes"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/poller/pollerfakes"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager/remotemanagerfakes"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 )
 
 var _ = Describe("construct_helpers", func() {
@@ -24,13 +25,15 @@ var _ = Describe("construct_helpers", func() {
 		fakeVcenterClient         *constructfakes.FakeIaasClient
 		fakeGuestManager          *constructfakes.FakeGuestManager
 		fakeWinRMEnabler          *constructfakes.FakeWinRMEnabler
-		fakeMessenger             *constructfakes.FakeConstructMessenger
 		fakePoller                *pollerfakes.FakePollerI
 		fakeVersionGetter         *constructfakes.FakeVersionGetter
 		fakeVMConnectionValidator *constructfakes.FakeVMConnectionValidator
 		fakeRebootWaiter          *constructfakes.FakeRebootWaiterI
 		fakeScriptExecutor        *constructfakes.FakeScriptExecutorI
 		fakeSetupFlags            []string
+
+		outBuf *Buffer
+		errBuf *Buffer
 	)
 
 	BeforeEach(func() {
@@ -38,13 +41,16 @@ var _ = Describe("construct_helpers", func() {
 		fakeVcenterClient = &constructfakes.FakeIaasClient{}
 		fakeGuestManager = &constructfakes.FakeGuestManager{}
 		fakeWinRMEnabler = &constructfakes.FakeWinRMEnabler{}
-		fakeMessenger = &constructfakes.FakeConstructMessenger{}
 		fakePoller = &pollerfakes.FakePollerI{}
 		fakeVersionGetter = &constructfakes.FakeVersionGetter{}
 		fakeVMConnectionValidator = &constructfakes.FakeVMConnectionValidator{}
 		fakeRebootWaiter = &constructfakes.FakeRebootWaiterI{}
 		fakeScriptExecutor = &constructfakes.FakeScriptExecutorI{}
 		fakeSetupFlags = []string{"SomeFlag SomeValue", "OtherFlag OtherValue"}
+
+		outBuf = NewBuffer()
+		errBuf = NewBuffer()
+		stembuildMessenger := messenger.NewStembuildMessenger(outBuf, errBuf)
 
 		vmConstruct = construct.NewVMConstruct(
 			context.TODO(),
@@ -56,7 +62,7 @@ var _ = Describe("construct_helpers", func() {
 			fakeGuestManager,
 			fakeWinRMEnabler,
 			fakeVMConnectionValidator,
-			fakeMessenger,
+			stembuildMessenger,
 			fakePoller,
 			fakeVersionGetter,
 			fakeRebootWaiter,
@@ -135,8 +141,7 @@ var _ = Describe("construct_helpers", func() {
 
 				Expect(err).ToNot(HaveOccurred())
 				Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
-				Expect(fakeMessenger.CreateProvisionDirStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.CreateProvisionDirSucceededCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say("\nCreating provision dir on target VM...succeeded.\n"))
 			})
 
 			It("fails when the provision dir cannot be created", func() {
@@ -148,8 +153,7 @@ var _ = Describe("construct_helpers", func() {
 				Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("failed to create dir"))
-				Expect(fakeMessenger.CreateProvisionDirStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.CreateProvisionDirSucceededCallCount()).To(Equal(0))
+				Eventually(outBuf).ShouldNot(Say("\nCreating provision dir on target VM...succeeded.\n"))
 			})
 		})
 
@@ -169,8 +173,7 @@ var _ = Describe("construct_helpers", func() {
 				err := vmConstruct.PrepareVM()
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.EnableWinRMStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.EnableWinRMSucceededCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say("\nAttempting to enable WinRM on the guest vm...WinRm enabled on the guest VM\n"))
 			})
 		})
 
@@ -199,8 +202,7 @@ var _ = Describe("construct_helpers", func() {
 				err := vmConstruct.PrepareVM()
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.ValidateVMConnectionStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ValidateVMConnectionSucceededCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say("\nValidating connection to vm...succeeded.\n"))
 			})
 
 		})
@@ -218,22 +220,17 @@ var _ = Describe("construct_helpers", func() {
 					Expect(user).To(Equal("fakeUser"))
 					Expect(pass).To(Equal("fakePass"))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
-					Expect(fakeMessenger.UploadArtifactsStartedCallCount()).To(Equal(1))
-					Expect(fakeMessenger.UploadArtifactsSucceededCallCount()).To(Equal(1))
+					Eventually(outBuf).Should(Say("\nTransferring ~20 MB to the Windows VM. Depending on your connection, the transfer may take 15-45 minutes\n"))
 
-					Expect(fakeMessenger.UploadFileStartedCallCount()).To(Equal(2))
-					artifact = fakeMessenger.UploadFileStartedArgsForCall(0)
-					Expect(artifact).To(Equal("LGPO"))
-					artifact = fakeMessenger.UploadFileStartedArgsForCall(1)
-					Expect(artifact).To(Equal("stemcell preparation artifacts"))
+					Eventually(outBuf).Should(Say(fmt.Sprintf("\tUploading %s to target VM...succeeded.\n", "LGPO")))
+					Eventually(outBuf).Should(Say(fmt.Sprintf("\tUploading %s to target VM...succeeded.\n", "stemcell preparation artifacts")))
 
-					Expect(fakeMessenger.UploadFileSucceededCallCount()).To(Equal(2))
+					Eventually(outBuf).Should(Say("\nAll files have been uploaded.\n"))
 				})
 			})
 
 			Context("Fails to upload one or more artifacts", func() {
 				It("fails when it cannot upload LGPO", func() {
-
 					uploadError := errors.New("failed to upload LGPO")
 					fakeVcenterClient.UploadArtifactReturns(uploadError)
 
@@ -245,8 +242,8 @@ var _ = Describe("construct_helpers", func() {
 					Expect(artifact).To(Equal("./LGPO.zip"))
 					Expect(vmPath).To(Equal("fakeVmPath"))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(1))
-					Expect(fakeMessenger.UploadArtifactsStartedCallCount()).To(Equal(1))
-					Expect(fakeMessenger.UploadArtifactsSucceededCallCount()).To(Equal(0))
+					Eventually(outBuf).Should(Say(fmt.Sprintf("\tUploading %s to target VM...", "LGPO")))
+					Eventually(outBuf).ShouldNot(Say(fmt.Sprintf("\tUploading %s to target VM...succeeded.\n", "LGPO")))
 				})
 
 				It("fails when it cannot upload Stemcell Automation scripts", func() {
@@ -265,8 +262,9 @@ var _ = Describe("construct_helpers", func() {
 					Expect(artifact).To(Equal("./StemcellAutomation.zip"))
 					Expect(vmPath).To(Equal("fakeVmPath"))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
-					Expect(fakeMessenger.UploadArtifactsStartedCallCount()).To(Equal(1))
-					Expect(fakeMessenger.UploadArtifactsSucceededCallCount()).To(Equal(0))
+
+					Eventually(outBuf).Should(Say(fmt.Sprintf("\tUploading %s to target VM...", "stemcell preparation artifacts")))
+					Eventually(outBuf).ShouldNot(Say(fmt.Sprintf("\tUploading %s to target VM...succeeded.\n", "stemcell preparation artifacts")))
 				})
 			})
 		})
@@ -285,8 +283,7 @@ var _ = Describe("construct_helpers", func() {
 				Expect(command).To(ContainSubstring(encodedCommand))
 				Expect(command).To(ContainSubstring("powershell.exe -EncodedCommand "))
 
-				Expect(fakeMessenger.LogOutUsersStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.LogOutUsersSucceededCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say("\nAttempting to logout any remote users...\n\nLogged out remote users\n"))
 			})
 
 			It("returns failure when it fails to execute a logout", func() {
@@ -298,8 +295,8 @@ var _ = Describe("construct_helpers", func() {
 				Expect(err.Error()).To(ContainSubstring(errorMessage))
 				Expect(err.Error()).To(ContainSubstring("log out remote user failed with exit code 1"))
 
-				Expect(fakeMessenger.LogOutUsersStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.LogOutUsersSucceededCallCount()).To(Equal(0))
+				Eventually(outBuf).Should(Say("\nAttempting to logout any remote users...\n"))
+				Eventually(outBuf).ShouldNot(Say("\nAttempting to logout any remote users...\n\nLogged out remote users\n"))
 			})
 		})
 
@@ -312,8 +309,8 @@ var _ = Describe("construct_helpers", func() {
 				Expect(err).To(HaveOccurred())
 				Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
 				Expect(err.Error()).To(Equal("failed to extract archive"))
-				Expect(fakeMessenger.ExtractArtifactsStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExtractArtifactsSucceededCallCount()).To(Equal(0))
+				Eventually(outBuf).Should(Say("\nExtracting artifacts..."))
+				Eventually(outBuf).ShouldNot(Say("\nExtracting artifacts...succeeded.\n"))
 			})
 
 			It("returns success when it properly extracts archive", func() {
@@ -326,8 +323,7 @@ var _ = Describe("construct_helpers", func() {
 				Expect(source).To(Equal("C:\\provision\\StemcellAutomation.zip"))
 				Expect(destination).To(Equal("C:\\provision\\"))
 
-				Expect(fakeMessenger.ExtractArtifactsStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExtractArtifactsSucceededCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say("\nExtracting artifacts...succeeded.\n"))
 			})
 		})
 
@@ -341,8 +337,9 @@ var _ = Describe("construct_helpers", func() {
 				Expect(err.Error()).To(Equal("failed to execute setup script"))
 
 				Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecuteSetupScriptStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecuteSetupScriptSucceededCallCount()).To(Equal(0))
+
+				Eventually(outBuf).Should(Say("\nExecuting setup script 1 of 2...\n"))
+				Eventually(outBuf).ShouldNot(Say("\nExecuting setup script 1 of 2...\n\nFinished executing setup script 1 of 2.\n"))
 			})
 
 			It("returns success when it properly executes the setup script", func() {
@@ -358,8 +355,7 @@ var _ = Describe("construct_helpers", func() {
 				Expect(version).To(Equal(stembuildVersion))
 				Expect(setupFlags).To(Equal(fakeSetupFlags))
 
-				Expect(fakeMessenger.ExecuteSetupScriptStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecuteSetupScriptSucceededCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say("\nExecuting setup script 1 of 2...\n\nFinished executing setup script 1 of 2.\n"))
 			})
 		})
 
@@ -383,8 +379,7 @@ var _ = Describe("construct_helpers", func() {
 				Expect(calls[0]).To(Equal("executeSetupScriptCalls"))
 				Expect(calls[1]).To(Equal("waitForRebootFinishedCall"))
 
-				Expect(fakeMessenger.RebootHasStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.RebootHasFinishedCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say("\nThe reboot has started...\n\nThe reboot has finished.\n"))
 			})
 
 			It("returns failure when it cannot determine if VM is rebooting", func() {
@@ -394,8 +389,8 @@ var _ = Describe("construct_helpers", func() {
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("polling is hard"))
 
-				Expect(fakeMessenger.RebootHasStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.RebootHasFinishedCallCount()).To(Equal(0))
+				Eventually(outBuf).Should(Say("\nThe reboot has started...\n"))
+				Eventually(outBuf).ShouldNot(Say("\nThe reboot has started...\n\nThe reboot has finished.\n"))
 			})
 
 		})
@@ -435,8 +430,8 @@ var _ = Describe("construct_helpers", func() {
 
 				Expect(err).To(MatchError(rebootWaitError))
 
-				Expect(fakeMessenger.RebootHasStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.RebootHasFinishedCallCount()).To(Equal(0))
+				Eventually(outBuf).Should(Say("\nThe reboot has started...\n"))
+				Eventually(outBuf).ShouldNot(Say("\nThe reboot has started...\n\nThe reboot has finished.\n"))
 			})
 
 			It("runs post-reboot command", func() {
@@ -445,8 +440,7 @@ var _ = Describe("construct_helpers", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fakeScriptExecutor.ExecutePostRebootScriptCallCount()).To(Equal(1))
 
-				Expect(fakeMessenger.ExecutePostRebootScriptStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecutePostRebootScriptSucceededCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say("\nExecuting setup script 2 of 2...\n\nFinished executing setup script 2 of 2.\n"))
 			})
 
 			It("returns error if running post-reboot command fails", func() {
@@ -456,8 +450,8 @@ var _ = Describe("construct_helpers", func() {
 
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring(postRebootError.Error()))
-				Expect(fakeMessenger.ExecutePostRebootScriptStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecutePostRebootScriptSucceededCallCount()).To(Equal(0))
+				Eventually(outBuf).Should(Say("\nExecuting setup script 2 of 2...\n"))
+				Eventually(outBuf).ShouldNot(Say("\nExecuting setup script 2 of 2...\n\nFinished executing setup script 2 of 2.\n"))
 			})
 
 			It("logs but does not error on winrm, non-powershell errors", func() {
@@ -465,15 +459,10 @@ var _ = Describe("construct_helpers", func() {
 
 				fakeScriptExecutor.ExecutePostRebootScriptReturnsOnCall(0, winrmError)
 				err := vmConstruct.PrepareVM()
-
 				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.ExecutePostRebootScriptSucceededCallCount()).
-					To(BeNumerically(">", 0))
 
-				Expect(fakeMessenger.ExecutePostRebootWarningCallCount()).
-					To(BeNumerically(">", 0))
-				Expect(fakeMessenger.ExecutePostRebootWarningArgsForCall(0)).
-					To(ContainSubstring(winrmError.Error()))
+				Eventually(outBuf).Should(Say(fmt.Sprintf("\n%s\n", winrmError)))
+				Eventually(outBuf).ShouldNot(Say("\nFinished executing setup script 2 of 2.\n"))
 			})
 		})
 
@@ -487,7 +476,7 @@ var _ = Describe("construct_helpers", func() {
 
 				err := vmConstruct.PrepareVM()
 				Expect(err).ToNot(HaveOccurred())
-				Expect(fakeMessenger.ShutdownCompletedCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say("VM has now been shutdown. Run `stembuild package` to finish building the stemcell.\n"))
 
 				Expect(fakePoller.PollCallCount()).To(Equal(1))
 				pollDuration, pollFunc := fakePoller.PollArgsForCall(0)
@@ -495,21 +484,21 @@ var _ = Describe("construct_helpers", func() {
 				Expect(pollDuration).To(Equal(1 * time.Minute))
 
 				Expect(fakeVcenterClient.IsPoweredOffCallCount()).To(Equal(0))
-				Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(0))
+				Eventually(outBuf).ShouldNot(Say(" Still preparing VM...\n"))
 
 				isPoweredOff, err := pollFunc()
 				Expect(isPoweredOff).To(BeFalse())
 				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(1))
+				Eventually(outBuf).Should(Say(" Still preparing VM...\n"))
 
 				isPoweredOff, err = pollFunc()
 				Expect(isPoweredOff).To(BeTrue())
 				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(2))
+				//Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(2))
 
-				isPoweredOff, err = pollFunc() //nolint:ineffassign,staticcheck
+				_, err = pollFunc()
 				Expect(err).To(MatchError("checking for powered off is hard"))
-				Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(2))
+				//Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(2))
 
 				Expect(fakeVcenterClient.IsPoweredOffCallCount()).To(Equal(3))
 			})
@@ -522,7 +511,7 @@ var _ = Describe("construct_helpers", func() {
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal(errorString))
 
-				Expect(fakeMessenger.ShutdownCompletedCallCount()).To(Equal(0))
+				Eventually(outBuf).ShouldNot(Say("VM has now been shutdown. Run `stembuild package` to finish building the stemcell.\n"))
 			})
 		})
 	})

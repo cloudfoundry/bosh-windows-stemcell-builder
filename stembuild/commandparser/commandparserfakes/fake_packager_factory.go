@@ -6,16 +6,18 @@ import (
 
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/colorlogger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/commandparser"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/package_stemcell/config"
 )
 
 type FakePackagerFactory struct {
-	NewPackagerStub        func(config.SourceConfig, config.OutputConfig, colorlogger.Logger) (commandparser.Packager, error)
+	NewPackagerStub        func(config.SourceConfig, config.OutputConfig, colorlogger.Logger, messenger.Messenger) (commandparser.Packager, error)
 	newPackagerMutex       sync.RWMutex
 	newPackagerArgsForCall []struct {
 		arg1 config.SourceConfig
 		arg2 config.OutputConfig
 		arg3 colorlogger.Logger
+		arg4 messenger.Messenger
 	}
 	newPackagerReturns struct {
 		result1 commandparser.Packager
@@ -29,20 +31,21 @@ type FakePackagerFactory struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakePackagerFactory) NewPackager(arg1 config.SourceConfig, arg2 config.OutputConfig, arg3 colorlogger.Logger) (commandparser.Packager, error) {
+func (fake *FakePackagerFactory) NewPackager(arg1 config.SourceConfig, arg2 config.OutputConfig, arg3 colorlogger.Logger, arg4 messenger.Messenger) (commandparser.Packager, error) {
 	fake.newPackagerMutex.Lock()
 	ret, specificReturn := fake.newPackagerReturnsOnCall[len(fake.newPackagerArgsForCall)]
 	fake.newPackagerArgsForCall = append(fake.newPackagerArgsForCall, struct {
 		arg1 config.SourceConfig
 		arg2 config.OutputConfig
 		arg3 colorlogger.Logger
-	}{arg1, arg2, arg3})
+		arg4 messenger.Messenger
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.NewPackagerStub
 	fakeReturns := fake.newPackagerReturns
-	fake.recordInvocation("NewPackager", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("NewPackager", []interface{}{arg1, arg2, arg3, arg4})
 	fake.newPackagerMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -56,17 +59,17 @@ func (fake *FakePackagerFactory) NewPackagerCallCount() int {
 	return len(fake.newPackagerArgsForCall)
 }
 
-func (fake *FakePackagerFactory) NewPackagerCalls(stub func(config.SourceConfig, config.OutputConfig, colorlogger.Logger) (commandparser.Packager, error)) {
+func (fake *FakePackagerFactory) NewPackagerCalls(stub func(config.SourceConfig, config.OutputConfig, colorlogger.Logger, messenger.Messenger) (commandparser.Packager, error)) {
 	fake.newPackagerMutex.Lock()
 	defer fake.newPackagerMutex.Unlock()
 	fake.NewPackagerStub = stub
 }
 
-func (fake *FakePackagerFactory) NewPackagerArgsForCall(i int) (config.SourceConfig, config.OutputConfig, colorlogger.Logger) {
+func (fake *FakePackagerFactory) NewPackagerArgsForCall(i int) (config.SourceConfig, config.OutputConfig, colorlogger.Logger, messenger.Messenger) {
 	fake.newPackagerMutex.RLock()
 	defer fake.newPackagerMutex.RUnlock()
 	argsForCall := fake.newPackagerArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakePackagerFactory) NewPackagerReturns(result1 commandparser.Packager, result2 error) {

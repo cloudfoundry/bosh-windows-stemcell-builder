@@ -1,6 +1,7 @@
 package packager_test
 
 import (
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -17,12 +18,16 @@ var _ = Describe("Factory", func() {
 		OutputDir:       "/tmp/outputDir",
 	}
 
-	var packagerFactory *packager.Factory
-	var logger colorlogger.Logger
+	var (
+		packagerFactory    *packager.Factory
+		logger             colorlogger.Logger
+		stembuildMessenger messenger.Messenger
+	)
 
 	BeforeEach(func() {
 		packagerFactory = &packager.Factory{}
 		logger = colorlogger.New(0, false, GinkgoWriter)
+		stembuildMessenger = messenger.NewStembuildMessenger(GinkgoWriter, GinkgoWriter)
 	})
 
 	Describe("GetPackager", func() {
@@ -32,7 +37,7 @@ var _ = Describe("Factory", func() {
 					Vmdk: "path/to/a/vmdk",
 				}
 
-				actualPackager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger)
+				actualPackager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger, stembuildMessenger)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(actualPackager).To(BeAssignableToTypeOf(&packager.VmdkPackager{}))
@@ -49,7 +54,7 @@ var _ = Describe("Factory", func() {
 					VmInventoryPath: "some-vm-inventory-path",
 				}
 
-				actualPackager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger)
+				actualPackager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger, stembuildMessenger)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(actualPackager).To(BeAssignableToTypeOf(&packager.VCenterPackager{}))
@@ -64,7 +69,7 @@ var _ = Describe("Factory", func() {
 					VmInventoryPath: "some-vm",
 				}
 
-				packager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger)
+				packager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger, stembuildMessenger)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("configuration provided for VMDK & vCenter sources"))
 				Expect(packager).To(BeNil())
@@ -79,7 +84,7 @@ var _ = Describe("Factory", func() {
 					URL:             "some-url",
 				}
 
-				packager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger)
+				packager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger, stembuildMessenger)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("missing vCenter configurations"))
 				Expect(packager).To(BeNil())
@@ -90,7 +95,7 @@ var _ = Describe("Factory", func() {
 			It("returns an error", func() {
 				sourceConfig := config.SourceConfig{}
 
-				packager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger)
+				packager, err := packagerFactory.NewPackager(sourceConfig, outputConfig, logger, stembuildMessenger)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(Equal("no configuration was provided"))
 				Expect(packager).To(BeNil())

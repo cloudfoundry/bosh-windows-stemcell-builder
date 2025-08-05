@@ -12,7 +12,9 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/colorlogger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/filesystem"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/package_stemcell/config"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/package_stemcell/packager"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/package_stemcell/packager/packagerfakes"
@@ -22,11 +24,13 @@ import (
 )
 
 var _ = Describe("VcenterPackager", func() {
-
-	var outputDir string
-	var sourceConfig config.SourceConfig
-	var outputConfig config.OutputConfig
-	var fakeVcenterClient *packagerfakes.FakeIaasClient
+	var (
+		outputDir         string
+		sourceConfig      config.SourceConfig
+		outputConfig      config.OutputConfig
+		fakeVcenterClient *packagerfakes.FakeIaasClient
+		vcenterPackager   *packager.VCenterPackager
+	)
 
 	BeforeEach(func() {
 		// Revert to manual cleanup which fails non-catastrophically on windows
@@ -36,6 +40,16 @@ var _ = Describe("VcenterPackager", func() {
 		sourceConfig = config.SourceConfig{Password: "password", URL: "url", Username: "username", VmInventoryPath: "path/valid-vm-name"}
 		outputConfig = config.OutputConfig{Os: "2019", StemcellVersion: "2019.00", OutputDir: outputDir}
 		fakeVcenterClient = &packagerfakes.FakeIaasClient{}
+		logger := colorlogger.New(0, false, GinkgoWriter)
+		stembuildMessenger := messenger.NewStembuildMessenger(GinkgoWriter, GinkgoWriter)
+
+		vcenterPackager = &packager.VCenterPackager{
+			SourceConfig: sourceConfig,
+			OutputConfig: outputConfig,
+			Client:       fakeVcenterClient,
+			Logger:       logger,
+			Messenger:    stembuildMessenger,
+		}
 	})
 
 	AfterEach(func() {
@@ -49,20 +63,19 @@ var _ = Describe("VcenterPackager", func() {
 	Context("ValidateSourceParameters", func() {
 		It("returns an error if the vCenter url is invalid", func() {
 			fakeVcenterClient.ValidateUrlReturns(errors.New("vcenter client url error"))
-			packager := packager.VCenterPackager{SourceConfig: sourceConfig, OutputConfig: outputConfig, Client: fakeVcenterClient}
 
-			err := packager.ValidateSourceParameters()
+			err := vcenterPackager.ValidateSourceParameters()
 
 			Expect(err).To(HaveOccurred())
 			Expect(fakeVcenterClient.ValidateUrlCallCount()).To(Equal(1))
 			Expect(err.Error()).To(Equal("vcenter client url error"))
 
 		})
+
 		It("returns an error if the vCenter credentials are not valid", func() {
 			fakeVcenterClient.ValidateCredentialsReturns(errors.New("vcenter client credential error"))
-			packager := packager.VCenterPackager{SourceConfig: sourceConfig, OutputConfig: outputConfig, Client: fakeVcenterClient}
 
-			err := packager.ValidateSourceParameters()
+			err := vcenterPackager.ValidateSourceParameters()
 
 			Expect(err).To(HaveOccurred())
 			Expect(fakeVcenterClient.ValidateCredentialsCallCount()).To(Equal(1))
@@ -71,42 +84,44 @@ var _ = Describe("VcenterPackager", func() {
 
 		It("returns an error if VM given does not exist ", func() {
 			fakeVcenterClient.FindVMReturns(errors.New("vcenter client vm error"))
-			packager := packager.VCenterPackager{SourceConfig: sourceConfig, OutputConfig: outputConfig, Client: fakeVcenterClient}
 
-			err := packager.ValidateSourceParameters()
+			err := vcenterPackager.ValidateSourceParameters()
 
 			Expect(err).To(HaveOccurred())
 			Expect(fakeVcenterClient.FindVMCallCount()).To(Equal(1))
 			Expect(err.Error()).To(Equal("vcenter client vm error"))
 		})
-		It("returns no error if all source parameters are valid", func() {
-			packager := packager.VCenterPackager{SourceConfig: sourceConfig, OutputConfig: outputConfig, Client: fakeVcenterClient}
 
-			err := packager.ValidateSourceParameters()
+		It("returns no error if all source parameters are valid", func() {
+			err := vcenterPackager.ValidateSourceParameters()
 
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
+
 	Context("ValidateFreeSpace", func() {
 		It("is a NOOP", func() {
-			packager := packager.VCenterPackager{SourceConfig: sourceConfig, OutputConfig: outputConfig, Client: fakeVcenterClient}
-			err := packager.ValidateFreeSpaceForPackage(&filesystem.OSFileSystem{})
+			err := vcenterPackager.ValidateFreeSpaceForPackage(&filesystem.OSFileSystem{})
 
 			Expect(err).To(Not(HaveOccurred()))
 		})
 	})
 
 	Describe("Package", func() {
-		var vcenterPackager *packager.VCenterPackager
-
 		AfterEach(func() {
-			os.RemoveAll("./valid-vm-name") //nolint:errcheck
-			os.RemoveAll("image")           //nolint:errcheck
+			ovfName := "./valid-vm-name"
+			err := os.RemoveAll(ovfName)
+			if err != nil {
+				By(fmt.Sprintf("removing '%s' failed: %s", ovfName, err))
+			}
+			imageFile := "image"
+			err = os.RemoveAll(imageFile)
+			if err != nil {
+				By(fmt.Sprintf("removing '%s' failed: %s", imageFile, err))
+			}
 		})
 
 		BeforeEach(func() {
-			vcenterPackager = &packager.VCenterPackager{SourceConfig: sourceConfig, OutputConfig: outputConfig, Client: fakeVcenterClient}
-
 			fakeVcenterClient.ExportVMStub = func(vmInventoryPath string, destination string) error {
 				vmName := path.Base(vmInventoryPath)
 				os.Mkdir(filepath.Join(destination, vmName), 0777) //nolint:errcheck
@@ -125,8 +140,8 @@ var _ = Describe("VcenterPackager", func() {
 			stemcellFilename := packager.StemcellFilename(vcenterPackager.OutputConfig.StemcellVersion, vcenterPackager.OutputConfig.Os)
 			stemcellFile := filepath.Join(vcenterPackager.OutputConfig.OutputDir, stemcellFilename)
 			_, err = os.Stat(stemcellFile)
-
 			Expect(err).NotTo(HaveOccurred())
+
 			var actualStemcellManifestContent string
 			expectedManifestContent := `---
 name: bosh-vsphere-esxi-windows2019-go_agent
@@ -145,6 +160,7 @@ stemcell_formats:
 			gzr, err := gzip.NewReader(fileReader)
 			Expect(err).ToNot(HaveOccurred())
 			defer gzr.Close() //nolint:errcheck
+
 			tarfileReader := tar.NewReader(gzr)
 			count := 0
 
@@ -173,7 +189,6 @@ stemcell_formats:
 					expectedManifestContent = fmt.Sprintf(expectedManifestContent, actualSha1.Sum(nil))
 
 				default:
-
 					Fail(fmt.Sprintf("Found unknown file: %s", filepath.Base(header.Name)))
 				}
 			}
@@ -229,9 +244,8 @@ stemcell_formats:
 		})
 
 		It("Returns a error message if exporting the VM fails", func() {
-			packager := packager.VCenterPackager{SourceConfig: sourceConfig, OutputConfig: outputConfig, Client: fakeVcenterClient}
 			fakeVcenterClient.ExportVMReturns(errors.New("some client error"))
-			err := packager.Package()
+			err := vcenterPackager.Package()
 
 			Expect(fakeVcenterClient.ExportVMCallCount()).To(Equal(1))
 			vmPath, _ := fakeVcenterClient.ExportVMArgsForCall(0)

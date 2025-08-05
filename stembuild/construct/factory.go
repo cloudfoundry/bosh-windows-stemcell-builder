@@ -2,7 +2,6 @@ package construct
 
 import (
 	"context"
-	"os"
 
 	"github.com/pkg/errors"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/construct/config"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli/iaas_clients"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/poller"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/version"
@@ -19,11 +19,9 @@ import (
 type Factory struct {
 }
 
-func (f *Factory) New(config config.SourceConfig, vCenterManager commandparser.VCenterManager) (commandparser.VmConstruct, error) {
+func (f *Factory) New(config config.SourceConfig, vCenterManager commandparser.VCenterManager, messenger messenger.Messenger) (commandparser.VmConstruct, error) {
 	runner := &iaas_cli.GovcRunner{}
 	client := iaas_clients.NewVcenterClient(config.VCenterUsername, config.VCenterPassword, config.VCenterUrl, config.CaCertFile, runner)
-
-	messenger := NewMessenger(os.Stdout)
 
 	ctx := context.Background()
 	err := vCenterManager.Login(ctx)

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/google/subcommands"
 
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/colorlogger"
@@ -23,7 +24,7 @@ type OSAndVersionGetter interface {
 
 //counterfeiter:generate . PackagerFactory
 type PackagerFactory interface {
-	NewPackager(sourceConfig config.SourceConfig, outputConfig config.OutputConfig, logger colorlogger.Logger) (Packager, error)
+	NewPackager(sourceConfig config.SourceConfig, outputConfig config.OutputConfig, logger colorlogger.Logger, messenger messenger.Messenger) (Packager, error)
 }
 
 //counterfeiter:generate . Packager
@@ -33,29 +34,22 @@ type Packager interface {
 	ValidateSourceParameters() error
 }
 
-//counterfeiter:generate . PackagerMessenger
-type PackagerMessenger interface {
-	InvalidOutputConfig(error)
-	CannotCreatePackager(error)
-	DoesNotHaveEnoughSpace(error)
-	SourceParametersAreInvalid(error)
-	PackageFailed(error)
-}
-
 type PackageCmd struct {
 	GlobalFlags        *GlobalFlags
 	sourceConfig       config.SourceConfig
 	outputConfig       config.OutputConfig
 	osAndVersionGetter OSAndVersionGetter
 	packagerFactory    PackagerFactory
-	packagerMessenger  PackagerMessenger
+	logger             colorlogger.Logger
+	messenger          messenger.Messenger
 }
 
-func NewPackageCommand(o OSAndVersionGetter, p PackagerFactory, m PackagerMessenger) *PackageCmd {
+func NewPackageCommand(o OSAndVersionGetter, p PackagerFactory, logger colorlogger.Logger, messenger messenger.Messenger) *PackageCmd {
 	return &PackageCmd{
 		osAndVersionGetter: o,
 		packagerFactory:    p,
-		packagerMessenger:  m,
+		logger:             logger,
+		messenger:          messenger,
 	}
 }
 
@@ -115,41 +109,35 @@ func (p *PackageCmd) SetFlags(f *flag.FlagSet) {
 }
 
 func (p *PackageCmd) Execute(_ context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-
-	logLevel := colorlogger.NONE
-	if p.GlobalFlags.Debug {
-		logLevel = colorlogger.DEBUG
-	}
-
 	p.setOSandStemcellVersions()
 
 	err := p.outputConfig.ValidateConfig()
 	if err != nil {
-		p.packagerMessenger.InvalidOutputConfig(err)
+		p.messenger.PrintErr(err.Error())
 		return subcommands.ExitFailure
 	}
 
-	logger := colorlogger.New(logLevel, p.GlobalFlags.Color, os.Stderr)
-	packager, err := p.packagerFactory.NewPackager(p.sourceConfig, p.outputConfig, logger)
+	packager, err := p.packagerFactory.NewPackager(p.sourceConfig, p.outputConfig, p.logger, p.messenger)
 	if err != nil {
-		p.packagerMessenger.CannotCreatePackager(err)
+		p.messenger.PrintErr(err.Error())
 		return subcommands.ExitFailure
 	}
 
 	err = packager.ValidateFreeSpaceForPackage(&filesystem.OSFileSystem{})
 	if err != nil {
-		p.packagerMessenger.DoesNotHaveEnoughSpace(err)
+		p.messenger.PrintErr(err.Error())
 		return subcommands.ExitFailure
 	}
 
 	err = packager.ValidateSourceParameters()
 	if err != nil {
-		p.packagerMessenger.SourceParametersAreInvalid(err)
+		p.messenger.PrintErr(err.Error())
 		return subcommands.ExitFailure
 	}
 
-	if err := packager.Package(); err != nil {
-		p.packagerMessenger.PackageFailed(err)
+	err = packager.Package()
+	if err != nil {
+		p.messenger.PrintErr(err.Error())
 		return subcommands.ExitFailure
 	}
 

@@ -6,14 +6,16 @@ import (
 
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/commandparser"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/construct/config"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 )
 
 type FakeVMPreparerFactory struct {
-	NewStub        func(config.SourceConfig, commandparser.VCenterManager) (commandparser.VmConstruct, error)
+	NewStub        func(config.SourceConfig, commandparser.VCenterManager, messenger.Messenger) (commandparser.VmConstruct, error)
 	newMutex       sync.RWMutex
 	newArgsForCall []struct {
 		arg1 config.SourceConfig
 		arg2 commandparser.VCenterManager
+		arg3 messenger.Messenger
 	}
 	newReturns struct {
 		result1 commandparser.VmConstruct
@@ -27,19 +29,20 @@ type FakeVMPreparerFactory struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeVMPreparerFactory) New(arg1 config.SourceConfig, arg2 commandparser.VCenterManager) (commandparser.VmConstruct, error) {
+func (fake *FakeVMPreparerFactory) New(arg1 config.SourceConfig, arg2 commandparser.VCenterManager, arg3 messenger.Messenger) (commandparser.VmConstruct, error) {
 	fake.newMutex.Lock()
 	ret, specificReturn := fake.newReturnsOnCall[len(fake.newArgsForCall)]
 	fake.newArgsForCall = append(fake.newArgsForCall, struct {
 		arg1 config.SourceConfig
 		arg2 commandparser.VCenterManager
-	}{arg1, arg2})
+		arg3 messenger.Messenger
+	}{arg1, arg2, arg3})
 	stub := fake.NewStub
 	fakeReturns := fake.newReturns
-	fake.recordInvocation("New", []interface{}{arg1, arg2})
+	fake.recordInvocation("New", []interface{}{arg1, arg2, arg3})
 	fake.newMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -53,17 +56,17 @@ func (fake *FakeVMPreparerFactory) NewCallCount() int {
 	return len(fake.newArgsForCall)
 }
 
-func (fake *FakeVMPreparerFactory) NewCalls(stub func(config.SourceConfig, commandparser.VCenterManager) (commandparser.VmConstruct, error)) {
+func (fake *FakeVMPreparerFactory) NewCalls(stub func(config.SourceConfig, commandparser.VCenterManager, messenger.Messenger) (commandparser.VmConstruct, error)) {
 	fake.newMutex.Lock()
 	defer fake.newMutex.Unlock()
 	fake.NewStub = stub
 }
 
-func (fake *FakeVMPreparerFactory) NewArgsForCall(i int) (config.SourceConfig, commandparser.VCenterManager) {
+func (fake *FakeVMPreparerFactory) NewArgsForCall(i int) (config.SourceConfig, commandparser.VCenterManager, messenger.Messenger) {
 	fake.newMutex.RLock()
 	defer fake.newMutex.RUnlock()
 	argsForCall := fake.newArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeVMPreparerFactory) NewReturns(result1 commandparser.VmConstruct, result2 error) {

@@ -1,6 +1,7 @@
 package construct_test
 
 import (
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
@@ -13,11 +14,13 @@ import (
 var _ = Describe("Factory", func() {
 	Describe("GetVMPreparer", func() {
 		var (
-			factory *construct.Factory
+			factory            *construct.Factory
+			stembuildMessenger messenger.Messenger
 		)
 
 		BeforeEach(func() {
 			factory = &construct.Factory{}
+			stembuildMessenger = messenger.NewStembuildMessenger(GinkgoWriter, GinkgoWriter)
 		})
 
 		It("should return a New", func() {
@@ -33,7 +36,7 @@ var _ = Describe("Factory", func() {
 				VmInventoryPath: "some-vm-inventory-path",
 			}
 
-			vmPreparer, err := factory.New(sourceConfig, fakeVCenterManager)
+			vmPreparer, err := factory.New(sourceConfig, fakeVCenterManager, stembuildMessenger)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(vmPreparer).To(BeAssignableToTypeOf(&construct.VMConstruct{}))
 		})
@@ -45,7 +48,7 @@ var _ = Describe("Factory", func() {
 			fakeVCenterManager.LoginReturns(loginFailure)
 			sourceConfig := config.SourceConfig{}
 
-			vmPreparer, err := factory.New(sourceConfig, fakeVCenterManager)
+			vmPreparer, err := factory.New(sourceConfig, fakeVCenterManager, stembuildMessenger)
 
 			Expect(vmPreparer).To(BeNil())
 			Expect(err).To(HaveOccurred())
