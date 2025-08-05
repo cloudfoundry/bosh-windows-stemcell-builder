@@ -8,7 +8,7 @@ export OUTPUT_DIR=${ROOT_DIR}/output
 
 CLONE_NAME_PREFIX="construct-${JOB_OS_NAME}-integration-ci-${OS_LINE}"
 CLONE_NAME_SUFFIX=$(mktemp -u XXXXXX)
-CLONE_NAME=${CLONE_NAME_PREFIX}${CLONE_NAME_SUFFIX}
+CLONE_NAME="${CLONE_NAME_PREFIX}-${CLONE_NAME_SUFFIX}"
 
 export CLONE_NAME_PREFIX
 export CLONE_NAME_SUFFIX
@@ -26,7 +26,6 @@ govc vm.clone \
 
 govc vm.customize \
   -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}" \
-  -ip "${VM_IP}" \
   -org "${VM_ORG_NAME}" \
   -username "${VM_USERNAME}" \
   "${VM_CUSTOMIZATION_NAME}"
