@@ -64,12 +64,12 @@ func (r *CancelReader) Read(p []byte) (int, error) {
 	}
 }
 
-// returns a io.Writer that returns an error when VmdkPackager c is stopped
+// Writer returns a io.Writer that returns an error when VmdkPackager c is stopped
 func (c *VmdkPackager) Writer(w io.Writer) *CancelWriter {
 	return &CancelWriter{w: w, stop: c.Stop}
 }
 
-// returns a io.Reader that returns an error when VmdkPackager c is stopped
+// Reader returns a io.Reader that returns an error when VmdkPackager c is stopped
 func (c *VmdkPackager) Reader(r io.Reader) *CancelReader {
 	return &CancelReader{r: r, stop: c.Stop}
 }

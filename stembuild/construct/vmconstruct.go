@@ -340,7 +340,7 @@ func EncodePowershellCommand(command []byte) string {
 	for _, utf16char := range utf16Command {
 		b := make([]byte, 2)
 		binary.LittleEndian.PutUint16(b, utf16char)
-		byteCommand.Write(b) // This write never returns an error.
+		byteCommand.Write(b)
 	}
 	return base64.StdEncoding.EncodeToString(byteCommand.Bytes())
 }
