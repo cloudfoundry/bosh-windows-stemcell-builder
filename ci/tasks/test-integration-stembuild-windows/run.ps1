@@ -23,7 +23,6 @@ $env:TMP=$TMP_DIR
 $env:TEMP=$TMP_DIR
 $env:SystemTemp=$TMP_DIR
 
-$env:TARGET_VM_IP = $TARGET_VM_IP
 $env:STEMBUILD_VERSION = cat $ROOT_DIR/version/version
 
 Set-Location stemcell-builder\stembuild
