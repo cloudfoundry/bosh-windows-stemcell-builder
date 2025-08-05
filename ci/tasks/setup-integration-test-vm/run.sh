@@ -39,7 +39,9 @@ FOUND_IP_ADDRESS=
 
 while [ -z "${FOUND_IP_ADDRESS}" ]; do
 	sleep 10
-	FOUND_IP_ADDRESS=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}" | jq -r '.virtualMachines[0].guest.ipAddress')
+	VM_INFO=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}")
+
+	FOUND_IP_ADDRESS=$(echo "${VM_INFO}" | jq -r '.virtualMachines[0].guest.ipAddress')
 
   echo "Current IP Addresses:"
 	echo "${VM_INFO}" | jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]?"
