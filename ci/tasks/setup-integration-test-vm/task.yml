@@ -3,7 +3,6 @@ platform: linux
 
 inputs:
 - name: bosh-windows-stemcell-builder-ci
-- name: nimbus-ips
 
 outputs:
 - name: integration-vm-name

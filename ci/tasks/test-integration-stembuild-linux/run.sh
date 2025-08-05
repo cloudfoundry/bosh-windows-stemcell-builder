@@ -18,7 +18,6 @@ export TARGET_VM_IP
 export VM_NAME
 
 STEMBUILD_VERSION=$(cat version/version)
-TARGET_VM_IP=$(cat nimbus-ips/name)
 VM_NAME=$(cat integration-vm-name/name)
 
 echo "Using Existing VM IP/Name: ${TARGET_VM_IP}/${VM_NAME}"

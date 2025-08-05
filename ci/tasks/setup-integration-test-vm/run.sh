@@ -6,18 +6,16 @@ export GOVC_URL="${VCENTER_ADMIN_CREDENTIAL_URL}"
 ROOT_DIR=$(pwd)
 export OUTPUT_DIR=${ROOT_DIR}/output
 
-VM_IP=$(cat nimbus-ips/name)
 CLONE_NAME_PREFIX="construct-${JOB_OS_NAME}-integration-ci-${OS_LINE}"
-CLONE_NAME_SUFFIX=$(echo "${VM_IP}" | cut -d . -f 4)
+CLONE_NAME_SUFFIX=$(mktemp -u XXXXXX)
 CLONE_NAME=${CLONE_NAME_PREFIX}${CLONE_NAME_SUFFIX}
 
-export VM_IP
 export CLONE_NAME_PREFIX
 export CLONE_NAME_SUFFIX
 export CLONE_NAME
 
 echo "${CLONE_NAME}" > integration-vm-name/name
-echo "Creating VM ${CLONE_NAME} with IP: ${VM_IP}"
+echo "Creating VM ${CLONE_NAME}"
 
 govc vm.clone \
   -vm "${BASE_VM_IPATH}" \
@@ -36,18 +34,15 @@ govc vm.customize \
 govc vm.power -on \
   -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}"
 
-echo Waiting for VM to be configured with expected IP address...
+echo Waiting for VM to be configured with IP address...
 SECONDS=0
 FOUND_IP_ADDRESS=
 
-while [ "${VM_IP}" != "${FOUND_IP_ADDRESS}" ]; do
+while [ -z "${FOUND_IP_ADDRESS}" ]; do
 	sleep 10
-	VM_INFO=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}")
+	FOUND_IP_ADDRESS=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}" | jq -r '.virtualMachines[0].guest.ipAddress')
 
-	FOUND_IP_ADDRESS=$(echo "${VM_INFO}" |
-	    jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]? |select(. == \"${VM_IP}\")")
-
-    echo "Current IP Addresses:"
+  echo "Current IP Addresses:"
 	echo "${VM_INFO}" | jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]?"
 
 	if [ ${SECONDS} -gt 600 ] ; then
