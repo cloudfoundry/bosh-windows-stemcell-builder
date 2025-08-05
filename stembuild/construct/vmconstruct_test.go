@@ -32,7 +32,7 @@ var _ = Describe("construct_helpers", func() {
 		fakeScriptExecutor        *constructfakes.FakeScriptExecutorI
 		fakeSetupFlags            []string
 	)
-	const rawLogoffCommand = `&{If([string]::IsNullOrEmpty($(Get-WmiObject win32_computersystem).username)) {Write-Host "No users logged in." } Else {Write-Host "Logging out user."; $(Get-WmiObject win32_operatingsystem).Win32Shutdown(0) 1> $null}}`
+
 	BeforeEach(func() {
 		fakeRemoteManager = &remotemanagerfakes.FakeRemoteManager{}
 		fakeVcenterClient = &constructfakes.FakeIaasClient{}
@@ -73,12 +73,10 @@ var _ = Describe("construct_helpers", func() {
 
 		fakeGuestManager.DownloadFileInGuestReturns(versionBuffer, 3, nil)
 		fakeGuestManager.StartProgramInGuestReturns(0, nil)
-
 	})
 
 	Describe("ScriptExecutor", func() {
 		It("executes setup script with correct arguments", func() {
-
 			e := construct.NewScriptExecutor(fakeRemoteManager)
 			version := "11.11.11"
 			err := e.ExecuteSetupScript(version, fakeSetupFlags)
@@ -128,7 +126,6 @@ var _ = Describe("construct_helpers", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("winrm connection event"))
 		})
-
 	})
 
 	Describe("PrepareVM", func() {
@@ -178,7 +175,6 @@ var _ = Describe("construct_helpers", func() {
 		})
 
 		Describe("connect to VM", func() {
-
 			It("checks for WinRM connectivity after WinRM enabled", func() {
 				var calls []string
 
@@ -233,7 +229,6 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeMessenger.UploadFileSucceededCallCount()).To(Equal(2))
 				})
-
 			})
 
 			Context("Fails to upload one or more artifacts", func() {
@@ -255,7 +250,6 @@ var _ = Describe("construct_helpers", func() {
 				})
 
 				It("fails when it cannot upload Stemcell Automation scripts", func() {
-
 					uploadError := errors.New("failed to upload stemcell automation")
 					fakeVcenterClient.UploadArtifactReturnsOnCall(0, nil)
 					fakeVcenterClient.UploadArtifactReturnsOnCall(1, uploadError)
@@ -278,6 +272,8 @@ var _ = Describe("construct_helpers", func() {
 		})
 
 		Describe("logs out users", func() {
+			var rawLogoffCommand = `&{If([string]::IsNullOrEmpty($(Get-WmiObject win32_computersystem).username)) {Write-Host "No users logged in." } Else {Write-Host "Logging out user."; $(Get-WmiObject win32_operatingsystem).Win32Shutdown(0) 1> $null}}`
+
 			It("returns success when active user is logged out", func() {
 				fakeRemoteManager.ExecuteCommandReturnsOnCall(0, 0, nil)
 
@@ -292,8 +288,9 @@ var _ = Describe("construct_helpers", func() {
 				Expect(fakeMessenger.LogOutUsersStartedCallCount()).To(Equal(1))
 				Expect(fakeMessenger.LogOutUsersSucceededCallCount()).To(Equal(1))
 			})
+
 			It("returns failure when it fails to execute a logout", func() {
-				errorMessage := "Unable to execute command"
+				errorMessage := "unable to execute command"
 				fakeRemoteManager.ExecuteCommandReturnsOnCall(0, 1, errors.New(errorMessage))
 
 				err := vmConstruct.PrepareVM()
@@ -332,7 +329,6 @@ var _ = Describe("construct_helpers", func() {
 				Expect(fakeMessenger.ExtractArtifactsStartedCallCount()).To(Equal(1))
 				Expect(fakeMessenger.ExtractArtifactsSucceededCallCount()).To(Equal(1))
 			})
-
 		})
 
 		Describe("can execute setup scripts", func() {
@@ -365,8 +361,8 @@ var _ = Describe("construct_helpers", func() {
 				Expect(fakeMessenger.ExecuteSetupScriptStartedCallCount()).To(Equal(1))
 				Expect(fakeMessenger.ExecuteSetupScriptSucceededCallCount()).To(Equal(1))
 			})
-
 		})
+
 		Describe("can check if vm is rebooting", func() {
 			It("waits for reboot finished after the setup script has been executed", func() {
 				var calls []string
@@ -444,7 +440,6 @@ var _ = Describe("construct_helpers", func() {
 			})
 
 			It("runs post-reboot command", func() {
-
 				err := vmConstruct.PrepareVM()
 
 				Expect(err).NotTo(HaveOccurred())
@@ -463,8 +458,8 @@ var _ = Describe("construct_helpers", func() {
 				Expect(err.Error()).To(ContainSubstring(postRebootError.Error()))
 				Expect(fakeMessenger.ExecutePostRebootScriptStartedCallCount()).To(Equal(1))
 				Expect(fakeMessenger.ExecutePostRebootScriptSucceededCallCount()).To(Equal(0))
-
 			})
+
 			It("logs but does not error on winrm, non-powershell errors", func() {
 				winrmError := errors.New("winrm connection event: some EOF error")
 
@@ -480,7 +475,6 @@ var _ = Describe("construct_helpers", func() {
 				Expect(fakeMessenger.ExecutePostRebootWarningArgsForCall(0)).
 					To(ContainSubstring(winrmError.Error()))
 			})
-
 		})
 
 		Describe("can check that the VM is powered off", func() {
