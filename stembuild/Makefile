@@ -1,6 +1,6 @@
 GOSRC = $(shell find . -name "*.go" ! -name "*test.go" ! -name "*fake*" ! -path "./integration/*")
 STEMCELL_VERSION = $(shell echo "$${STEMBUILD_VERSION}")
-LD_FLAGS = "-w -s -X github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/version.Version=${STEMCELL_VERSION}"
+LD_FLAGS = "-w -s -X github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/version.Current=${STEMCELL_VERSION}"
 
 ifeq ($(OS),Windows_NT)
 	COMMAND = out/stembuild.exe
@@ -31,7 +31,7 @@ out/stembuild.exe : assets $(GOSRC)
 	GOOS=windows CGO_ENABLED=0 go build -o out/stembuild.exe -ldflags $(LD_FLAGS) .
 
 clean :
-	rm -rf version/version.go assets/StemcellAutomation.zip out/*
+	rm -rf assets/StemcellAutomation.zip out/*
 
 units : stubbed-stemcell-automation-zip
 	go run github.com/onsi/ginkgo/v2/ginkgo run -r --randomize-all --randomize-suites --keep-going --skip-package integration,iaas_cli

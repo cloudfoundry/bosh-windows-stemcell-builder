@@ -47,7 +47,7 @@ func (f *Factory) New(config config.SourceConfig, vCenterManager commandparser.V
 		GuestManager: guestManager,
 		Unarchiver:   &archive.Zip{},
 	}
-	versionGetter := version.NewVersionGetter()
+	versionGetter := version.New()
 
 	winRmClientFactory := remotemanager.NewWinRmClientFactory(config.GuestVmIp, config.GuestVMUsername, config.GuestVMPassword)
 	remoteManager := remotemanager.NewWinRM(config.GuestVmIp, config.GuestVMUsername, config.GuestVMPassword, winRmClientFactory)
