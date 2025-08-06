@@ -200,16 +200,6 @@ func (fake *FakePackagerMessenger) SourceParametersAreInvalidArgsForCall(i int) 
 func (fake *FakePackagerMessenger) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.cannotCreatePackagerMutex.RLock()
-	defer fake.cannotCreatePackagerMutex.RUnlock()
-	fake.doesNotHaveEnoughSpaceMutex.RLock()
-	defer fake.doesNotHaveEnoughSpaceMutex.RUnlock()
-	fake.invalidOutputConfigMutex.RLock()
-	defer fake.invalidOutputConfigMutex.RUnlock()
-	fake.packageFailedMutex.RLock()
-	defer fake.packageFailedMutex.RUnlock()
-	fake.sourceParametersAreInvalidMutex.RLock()
-	defer fake.sourceParametersAreInvalidMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

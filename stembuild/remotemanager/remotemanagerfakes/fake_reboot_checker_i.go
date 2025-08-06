@@ -83,8 +83,6 @@ func (fake *FakeRebootCheckerI) RebootHasFinishedReturnsOnCall(i int, result1 bo
 func (fake *FakeRebootCheckerI) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.rebootHasFinishedMutex.RLock()
-	defer fake.rebootHasFinishedMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

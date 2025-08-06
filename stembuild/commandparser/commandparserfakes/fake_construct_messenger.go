@@ -145,14 +145,6 @@ func (fake *FakeConstructMessenger) LGPONotFoundCalls(stub func()) {
 func (fake *FakeConstructMessenger) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.argumentsNotProvidedMutex.RLock()
-	defer fake.argumentsNotProvidedMutex.RUnlock()
-	fake.cannotConnectToVMMutex.RLock()
-	defer fake.cannotConnectToVMMutex.RUnlock()
-	fake.cannotPrepareVMMutex.RLock()
-	defer fake.cannotPrepareVMMutex.RUnlock()
-	fake.lGPONotFoundMutex.RLock()
-	defer fake.lGPONotFoundMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

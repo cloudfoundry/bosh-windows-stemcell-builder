@@ -167,10 +167,6 @@ func (fake *FakeScriptExecutorI) ExecuteSetupScriptReturnsOnCall(i int, result1 
 func (fake *FakeScriptExecutorI) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.executePostRebootScriptMutex.RLock()
-	defer fake.executePostRebootScriptMutex.RUnlock()
-	fake.executeSetupScriptMutex.RLock()
-	defer fake.executeSetupScriptMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -78,8 +78,6 @@ func (fake *FakeVmConstruct) PrepareVMReturnsOnCall(i int, result1 error) {
 func (fake *FakeVmConstruct) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.prepareVMMutex.RLock()
-	defer fake.prepareVMMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -418,16 +418,6 @@ func (fake *FakeIaasClient) WaitForExitReturnsOnCall(i int, result1 int, result2
 func (fake *FakeIaasClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.isPoweredOffMutex.RLock()
-	defer fake.isPoweredOffMutex.RUnlock()
-	fake.makeDirectoryMutex.RLock()
-	defer fake.makeDirectoryMutex.RUnlock()
-	fake.startMutex.RLock()
-	defer fake.startMutex.RUnlock()
-	fake.uploadArtifactMutex.RLock()
-	defer fake.uploadArtifactMutex.RUnlock()
-	fake.waitForExitMutex.RLock()
-	defer fake.waitForExitMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

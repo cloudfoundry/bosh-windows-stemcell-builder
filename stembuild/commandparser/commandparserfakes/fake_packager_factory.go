@@ -98,8 +98,6 @@ func (fake *FakePackagerFactory) NewPackagerReturnsOnCall(i int, result1 command
 func (fake *FakePackagerFactory) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.newPackagerMutex.RLock()
-	defer fake.newPackagerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

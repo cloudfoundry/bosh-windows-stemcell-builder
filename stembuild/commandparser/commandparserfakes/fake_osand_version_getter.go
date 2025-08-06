@@ -213,12 +213,6 @@ func (fake *FakeOSAndVersionGetter) GetVersionWithPatchNumberReturnsOnCall(i int
 func (fake *FakeOSAndVersionGetter) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getOsMutex.RLock()
-	defer fake.getOsMutex.RUnlock()
-	fake.getVersionMutex.RLock()
-	defer fake.getVersionMutex.RUnlock()
-	fake.getVersionWithPatchNumberMutex.RLock()
-	defer fake.getVersionWithPatchNumberMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
