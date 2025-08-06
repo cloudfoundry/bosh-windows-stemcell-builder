@@ -97,8 +97,6 @@ func (fake *FakeZipUnarchiver) UnzipReturnsOnCall(i int, result1 []byte, result2
 func (fake *FakeZipUnarchiver) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.unzipMutex.RLock()
-	defer fake.unzipMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

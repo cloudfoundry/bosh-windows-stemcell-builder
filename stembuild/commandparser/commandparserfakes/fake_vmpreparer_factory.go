@@ -95,8 +95,6 @@ func (fake *FakeVMPreparerFactory) NewReturnsOnCall(i int, result1 commandparser
 func (fake *FakeVMPreparerFactory) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.newMutex.RLock()
-	defer fake.newMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

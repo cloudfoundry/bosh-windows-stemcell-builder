@@ -93,8 +93,6 @@ func (fake *FakeWinRMClientFactoryI) BuildReturnsOnCall(i int, result1 remoteman
 func (fake *FakeWinRMClientFactoryI) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.buildMutex.RLock()
-	defer fake.buildMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

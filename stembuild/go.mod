@@ -4,7 +4,6 @@ go 1.23.0
 
 require (
 	github.com/concourse/pool-resource v1.1.1
-	github.com/golang/mock v1.6.0
 	github.com/google/subcommands v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/masterzen/winrm v0.0.0-20240702205601-3fad6e106085
