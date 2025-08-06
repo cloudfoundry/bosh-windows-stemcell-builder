@@ -3,13 +3,13 @@ package commandparser
 import (
 	"context"
 	"flag"
-	"fmt"
 	"io"
 	"os"
 	"path"
 
 	"github.com/google/subcommands"
 
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/version"
 )
 
@@ -50,37 +50,29 @@ func (h *stembuildHelp) Usage() string {
 	return h.commander.HelpCommand().Usage()
 }
 
-func (h *stembuildHelp) Execute(c context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
-	switch f.NArg() {
+func (h *stembuildHelp) Execute(ctx context.Context, flagSet *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
+	switch flagSet.NArg() {
 	case 0:
 		h.Explain(h.commander.Output)
 		return subcommands.ExitSuccess
 
 	default:
-		return h.commander.HelpCommand().Execute(c, f, args)
+		return h.commander.HelpCommand().Execute(ctx, flagSet, args)
 	}
 }
 
-func (h *stembuildHelp) Explain(w io.Writer) {
+func (h *stembuildHelp) Explain(output io.Writer) {
+	helpMessenger := messenger.NewHelpMessenger(output)
 
-	fmt.Fprintf(w, "%s version %s, Windows Stemcell Building Tool\n\n", path.Base(os.Args[0]), version.Current) //nolint:errcheck
-	fmt.Fprintf(w, "Usage: %s <global options> <command> <command flags>\n\n", path.Base(os.Args[0]))           //nolint:errcheck
+	helpMessenger.UsagePreamble(path.Base(os.Args[0]), version.Current)
 
-	fmt.Fprint(w, "Commands:\n") //nolint:errcheck
+	helpMessenger.PrintCommandPreamble()
 	for _, command := range *h.commands {
-		if len(command.Name()) < 5 { // This help align the synopses when the commands are of different lengths
-			fmt.Fprintf(w, "  %s\t\t%s\n", command.Name(), command.Synopsis()) //nolint:errcheck
-		} else {
-			fmt.Fprintf(w, "  %s\t%s\n", command.Name(), command.Synopsis()) //nolint:errcheck
-		}
+		helpMessenger.PrintCommand(command.Name(), command.Synopsis())
 	}
 
-	fmt.Fprint(w, "\nGlobal Options:\n") //nolint:errcheck
+	helpMessenger.PrintGlobalFlagPreamble()
 	h.topLevelFlags.VisitAll(func(f *flag.Flag) {
-		if len(f.Name) > 1 {
-			fmt.Fprintf(w, "  -%s\t%s\n", f.Name, f.Usage) //nolint:errcheck
-		} else {
-			fmt.Fprintf(w, "  -%s\t\t%s\n", f.Name, f.Usage) //nolint:errcheck
-		}
+		helpMessenger.PrintGlobalFlag(f.Name, f.Usage)
 	})
 }
