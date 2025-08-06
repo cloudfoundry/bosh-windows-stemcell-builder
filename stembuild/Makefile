@@ -33,18 +33,17 @@ out/stembuild.exe : assets $(GOSRC)
 clean :
 	rm -rf version/version.go assets/StemcellAutomation.zip out/*
 
-
 units : stubbed-stemcell-automation-zip
 	go run github.com/onsi/ginkgo/v2/ginkgo run -r --randomize-all --randomize-suites --keep-going --skip-package integration,iaas_cli
 
 iaas_cli :
 	go run github.com/onsi/ginkgo/v2/ginkgo run -r --randomize-all --randomize-suites --keep-going --flake-attempts 2 iaas_cli
 
+integration : stubbed-stemcell-automation-zip
+	go run github.com/onsi/ginkgo/v2/ginkgo run -r --timeout 3h -vv --randomize-all --keep-going --flake-attempts 2 integration
+
 integration-build : stubbed-stemcell-automation-zip $(GOSRC)
 	go build -o $(COMMAND) -ldflags $(LD_FLAGS) .
-
-integration : stubbed-stemcell-automation-zip
-	go run github.com/onsi/ginkgo/v2/ginkgo run -r -vv --timeout 3h --randomize-all --keep-going --flake-attempts 2 integration
 
 stubbed-stemcell-automation-zip :
 	$(CP) integration/construct/assets/StemcellAutomation.zip assets/
