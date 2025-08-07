@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"path"
 	"strings"
@@ -26,9 +27,25 @@ func main() {
 	fs.BoolVar(&gf.Color, "color", false, "Colorize debug output")
 	fs.BoolVar(&gf.ShowVersion, "version", false, "Show Stembuild version")
 	fs.BoolVar(&gf.ShowVersion, "v", false, "Stembuild version (shorthand)")
+
 	commander := subcommands.NewCommander(fs, path.Base(os.Args[0]))
 
 	stembuildMessenger := messenger.NewStembuildMessenger(commander.Output, commander.Error)
+
+	stembuildExecutable := path.Base(os.Args[0])
+	stembuildArgs := os.Args[1:]
+
+	err := fs.Parse(stembuildArgs)
+	if err != nil {
+		stembuildMessenger.PrintErr(fmt.Sprintf("Unable to parse args: %v", stembuildArgs))
+		os.Exit(1)
+	}
+
+	if gf.ShowVersion {
+		stembuildMessenger.PrintOut(fmt.Sprintf("%s version %s, Windows Stemcell Building Tool\n\n", stembuildExecutable, version.Current))
+		os.Exit(0)
+	}
+
 	logLevel := colorlogger.NONE
 	if gf.Debug {
 		logLevel = colorlogger.DEBUG
@@ -39,16 +56,19 @@ func main() {
 	for _, env := range envs {
 		envName := strings.Split(env, "=")[0]
 		if strings.HasPrefix(envName, "GOVC_") || strings.HasPrefix(envName, "GOVMOMI_") {
-			stembuildMessenger.EnvironmentVariableWarning(envName)
+			stembuildMessenger.PrintErr(fmt.Sprintf("Warning: The following environment variable is set and might override flags provided to stembuild: %s\n", envName))
 		}
 	}
 
 	s := "./StemcellAutomation.zip"
-	err := os.WriteFile(s, assets.StemcellAutomation, 0644)
+	err = os.WriteFile(s, assets.StemcellAutomation, 0644)
 	if err != nil {
-		stembuildMessenger.StemcellAutomationWarning()
+		stembuildMessenger.PrintErr("Unable to write StemcellAutomation.zip")
 		os.Exit(1)
 	}
+	defer os.Remove(s) //nolint:errcheck
+
+	ctx := context.Background()
 
 	var commands []subcommands.Command
 	helpCmd := commandparser.NewStembuildHelp(commander, fs, &commands)
@@ -60,7 +80,7 @@ func main() {
 	commander.Register(packageCmd, "")
 	commands = append(commands, packageCmd)
 
-	constructCmd := commandparser.NewConstructCmd(context.Background(), &construct.Factory{}, &vcenter_manager.ManagerFactory{}, &commandparser.ConstructValidator{}, stembuildMessenger)
+	constructCmd := commandparser.NewConstructCmd(ctx, &construct.Factory{}, &vcenter_manager.ManagerFactory{}, &commandparser.ConstructValidator{}, stembuildMessenger)
 	constructCmd.GlobalFlags = &gf
 	commander.Register(constructCmd, "")
 	commands = append(commands, constructCmd)
@@ -68,15 +88,5 @@ func main() {
 	// Override the default usage text of Google's Subcommand with our own
 	fs.Usage = func() { helpCmd.Explain(commander.Error) }
 
-	fs.Parse(os.Args[1:]) //nolint:errcheck
-	if gf.ShowVersion {
-		stembuildMessenger.VersionInfo(path.Base(os.Args[0]), version.Current)
-		os.Remove(s) //nolint:errcheck
-		os.Exit(0)
-	}
-
-	ctx := context.Background()
-	i := int(commander.Execute(ctx))
-	os.Remove(s) //nolint:errcheck
-	os.Exit(i)
+	os.Exit(int(commander.Execute(ctx)))
 }
