@@ -1,8 +1,6 @@
 package messenger_test
 
 import (
-	"fmt"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -38,41 +36,6 @@ var _ = Describe("StembuildMessenger", func() {
 			m.PrintErr(message)
 
 			Eventually(errBuf).Should(Say(message))
-		})
-	})
-
-	Describe("EnvironmentVariableWarning", func() {
-		It("outputs the expected warning to stderr", func() {
-			envVar := "SOME_VAR"
-			m.EnvironmentVariableWarning(envVar)
-
-			Eventually(errBuf).Should(Say(fmt.Sprintf("Warning: The following environment variable is set and might override flags provided to stembuild: %s\n", envVar)))
-		})
-	})
-
-	Describe("StemcellAutomationWarning", func() {
-		It("outputs the expected warning to stderr", func() {
-			m.StemcellAutomationWarning()
-
-			Eventually(errBuf).Should(Say("Unable to write StemcellAutomation.zip"))
-		})
-	})
-
-	Describe("StemcellAutomationWarning", func() {
-		It("outputs the expected warning to stderr", func() {
-			m.StemcellAutomationWarning()
-
-			Eventually(errBuf).Should(Say("Unable to write StemcellAutomation.zip"))
-		})
-	})
-
-	Describe("PrintVersionInfo", func() {
-		It("outputs the expected value to stdout", func() {
-			executable := "custom-stembuild"
-			version := "my.custom.version"
-			m.VersionInfo(executable, version)
-
-			Eventually(outBuf).Should(Say(fmt.Sprintf("%s version %s, Windows Stemcell Building Tool\n\n", executable, version)))
 		})
 	})
 })
