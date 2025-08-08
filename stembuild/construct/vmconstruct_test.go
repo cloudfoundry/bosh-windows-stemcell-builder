@@ -15,7 +15,6 @@ import (
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/construct/constructfakes"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/poller/pollerfakes"
-	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager/remotemanagerfakes"
 )
 
@@ -106,59 +105,6 @@ var _ = Describe("construct_helpers", func() {
 			fakeSetupFlags,
 		)
 		vmConstruct.RebootWaitTime = 0
-	})
-
-	Describe("ScriptExecutor", func() {
-		It("executes setup script with correct arguments", func() {
-			e := construct.NewScriptExecutor(fakeRemoteManager)
-			version := "11.11.11"
-			err := e.ExecuteSetupScript(version, fakeSetupFlags)
-			executeCommandCallArg := fakeRemoteManager.ExecuteCommandArgsForCall(0)
-
-			Expect(err).NotTo(HaveOccurred())
-			Expect(executeCommandCallArg).To(ContainSubstring("powershell"))
-			Expect(executeCommandCallArg).To(ContainSubstring("Setup.ps1"))
-			Expect(executeCommandCallArg).To(ContainSubstring(" -Version " + version))
-			Expect(executeCommandCallArg).To(ContainSubstring(" -SomeFlag SomeValue"))
-			Expect(executeCommandCallArg).To(ContainSubstring(" -OtherFlag OtherValue"))
-		})
-
-		It("executes post-reboot script with correct arguments", func() {
-			e := construct.NewScriptExecutor(fakeRemoteManager)
-			superLongTimeout := 24 * time.Hour
-			err := e.ExecutePostRebootScript(superLongTimeout)
-			executeCommandCallArg, timeout := fakeRemoteManager.ExecuteCommandWithTimeoutArgsForCall(0)
-
-			Expect(err).NotTo(HaveOccurred())
-			Expect(executeCommandCallArg).To(ContainSubstring("powershell"))
-			Expect(executeCommandCallArg).To(ContainSubstring("PostReboot.ps1"))
-			Expect(timeout).To(Equal(superLongTimeout))
-		})
-
-		It("returns an error when there is a powershell script execution error", func() {
-			e := construct.NewScriptExecutor(fakeRemoteManager)
-			superLongTimeout := 24 * time.Hour
-			powershellErrorPrefix := errors.New(remotemanager.PowershellExecutionErrorMessage)
-			powershellErr := fmt.Errorf("%s: %s", powershellErrorPrefix, "a command failed to run")
-			fakeRemoteManager.ExecuteCommandWithTimeoutReturns(2, powershellErr)
-
-			err := e.ExecutePostRebootScript(superLongTimeout)
-
-			Expect(err).To(MatchError(powershellErr))
-		})
-
-		It("wraps a non-powershell execution error", func() {
-			e := construct.NewScriptExecutor(fakeRemoteManager)
-			superLongTimeout := 24 * time.Hour
-			winRMError := errors.New("some EOF thing")
-
-			fakeRemoteManager.ExecuteCommandWithTimeoutReturns(1, winRMError)
-
-			err := e.ExecutePostRebootScript(superLongTimeout)
-
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("winrm connection event"))
-		})
 	})
 
 	Describe("PrepareVM", func() {

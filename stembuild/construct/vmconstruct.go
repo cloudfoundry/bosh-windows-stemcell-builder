@@ -252,44 +252,6 @@ func (c *VMConstruct) logOutUsers() error {
 	return nil
 }
 
-type ScriptExecutor struct {
-	remoteManager remotemanager.RemoteManager
-}
-
-func NewScriptExecutor(remoteManager remotemanager.RemoteManager) *ScriptExecutor {
-	return &ScriptExecutor{
-		remoteManager,
-	}
-}
-
-func (e *ScriptExecutor) ExecuteSetupScript(stembuildVersion string, setupFlags []string) error {
-	var automationSetupScriptArgs []string
-	automationSetupScriptArgs = append(automationSetupScriptArgs, fmt.Sprintf("-Version %s", stembuildVersion))
-
-	for _, arg := range setupFlags {
-		automationSetupScriptArgs = append(automationSetupScriptArgs, fmt.Sprintf("-%s", arg))
-	}
-
-	powershellCommand := fmt.Sprintf("powershell.exe %s %s", stemcellAutomationSetupScript, strings.Join(automationSetupScriptArgs, " "))
-	_, err := e.remoteManager.ExecuteCommand(powershellCommand)
-	return err
-}
-
-func (e *ScriptExecutor) ExecutePostRebootScript(timeout time.Duration) error {
-	_, err := e.remoteManager.ExecuteCommandWithTimeout("powershell.exe "+stemcellAutomationPostRebootScript, timeout)
-
-	if err != nil && strings.Contains(err.Error(), remotemanager.PowershellExecutionErrorMessage) {
-		return err
-	}
-
-	if err != nil {
-		return fmt.Errorf("winrm connection event: %s", err)
-	}
-
-	return nil
-
-}
-
 func (c *VMConstruct) isPoweredOff(duration time.Duration) error {
 	const timeStampFormat = "2006-01-02T15:04:05.999999-07:00"
 	err := c.poller.Poll(duration, func() (bool, error) {
