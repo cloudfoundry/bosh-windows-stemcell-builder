@@ -165,10 +165,6 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
-- name: govmomi
-  type: git
-  source:
-    uri: https://github.com/vmware/govmomi.git
 
 # type: docker-image
 - name: bosh-windows-stemcell-builder-ci-docker-image
@@ -865,13 +861,19 @@ jobs:
     file: bosh-windows-stemcell-builder-ci/ci/tasks/test-integration-stembuild-windows/task.yml
     timeout: 3h
     params:
-      VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
+      CONTRACT_TEST_VM_NAME: stembuild_base_vm_2019_
+      CONTRACT_TEST_VM_PASSWORD: ((stembuild_vm_user.password))
+      CONTRACT_TEST_VM_USERNAME: ((stembuild_vm_user.username))
+
       GOVC_DATASTORE: ((nimbus_windows-demo_ds))
       GOVC_NETWORK: internal-network
       GOVC_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
+
       VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
+      VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
       VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
       VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
+
       VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
       VM_USERNAME: ((stembuild_vm_user.username))
       VM_PASSWORD: ((stembuild_vm_user.password))
@@ -936,7 +938,6 @@ jobs:
       - get: blobstore-gcs-cli
       - get: windows-bsdtar
       - get: windows-winsw
-      - get: govmomi
   - put: version
     inputs: detect
     resource: stembuild-linux-build-number
@@ -955,20 +956,6 @@ jobs:
       - task: unit-test
         file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-linux/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-      - task: contract-test
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/test-contract-stembuild-linux/task.yml
-        image: bosh-windows-stemcell-builder-ci-image
-        tags: [windows-nimbus]
-        params:
-          VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
-          VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
-          PACKAGE_TEST_VM_NAME: stembuild-package-integration-tests-base-vm
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-          VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
-          VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
-          CONTRACT_TEST_VM_NAME: stembuild_base_vm_2019_
-          CONTRACT_TEST_VM_PASSWORD: ((stembuild_vm_user.password))
-          CONTRACT_TEST_VM_USERNAME: ((stembuild_vm_user.username))
       - task: setup-integration-test-vm
         file: bosh-windows-stemcell-builder-ci/ci/tasks/setup-integration-test-vm/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -994,13 +981,19 @@ jobs:
     tags: [windows-nimbus]
     timeout: 3h
     params:
-      VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
+      CONTRACT_TEST_VM_NAME: stembuild_base_vm_2019_
+      CONTRACT_TEST_VM_PASSWORD: ((stembuild_vm_user.password))
+      CONTRACT_TEST_VM_USERNAME: ((stembuild_vm_user.username))
+
       GOVC_DATASTORE: ((nimbus_windows-demo_ds))
       GOVC_NETWORK: internal-network
       GOVC_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
+
       VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
+      VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
       VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
       VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
+
       VM_FOLDER: /dc0/vm/bosh-windows-ci-vms-and-templates
       VM_USERNAME: ((stembuild_vm_user.username))
       VM_PASSWORD: ((stembuild_vm_user.password))

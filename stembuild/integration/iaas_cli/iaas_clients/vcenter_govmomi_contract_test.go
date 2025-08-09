@@ -1,37 +1,35 @@
-package iaas_clients
+package iaas_clients_test
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli/iaas_clients/guest_manager"
-	vcenterclientfactory "github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli/iaas_clients/vcenter_manager"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
+
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli/iaas_clients/guest_manager"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli/iaas_clients/vcenter_manager"
 )
 
 var _ = Describe("VcenterClient", func() {
-	const powershell = "C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
+	const powershell = `C:\Windows\System32\WindowsPowerShell\V1.0\powershell.exe`
 
 	var (
-		ctx            = context.TODO()
-		managerFactory = &vcenterclientfactory.ManagerFactory{}
-		factoryConfig  *vcenterclientfactory.FactoryConfig
+		managerFactory = &vcenter_manager.ManagerFactory{}
+		factoryConfig  *vcenter_manager.FactoryConfig
 	)
 
 	Describe("StartProgram", func() {
 		BeforeEach(func() {
-			factoryConfig = &vcenterclientfactory.FactoryConfig{
+			factoryConfig = &vcenter_manager.FactoryConfig{
 				VCenterServer: envMustExist(VcenterUrl),
 				Username:      envMustExist(VcenterUsername),
 				Password:      envMustExist(VcenterPassword),
-				ClientCreator: &vcenterclientfactory.ClientCreator{},
-				FinderCreator: &vcenterclientfactory.GovmomiFinderCreator{},
+				ClientCreator: &vcenter_manager.ClientCreator{},
+				FinderCreator: &vcenter_manager.GovmomiFinderCreator{},
 			}
 		})
 
@@ -42,7 +40,7 @@ var _ = Describe("VcenterClient", func() {
 			err = vCenterManager.Login(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
-			vm, err := vCenterManager.FindVM(ctx, TestVmPath)
+			vm, err := vCenterManager.FindVM(ctx, clonedVmPath)
 			Expect(err).ToNot(HaveOccurred())
 
 			opsManager := vCenterManager.OperationsManager(ctx, vm)
@@ -98,7 +96,7 @@ var _ = Describe("VcenterClient", func() {
 			It("fails to create a vcenter manager", func() {
 				workingDir, err := os.Getwd()
 				Expect(err).NotTo(HaveOccurred())
-				fakeCertPath := filepath.Join(workingDir, "fixtures", "fakecert")
+				fakeCertPath := filepath.Join(workingDir, "fixtures", "fake-cert")
 
 				factoryConfig.RootCACertPath = fakeCertPath
 				managerFactory.SetConfig(*factoryConfig)
@@ -114,12 +112,12 @@ var _ = Describe("VcenterClient", func() {
 		var guestManager *guest_manager.GuestManager
 
 		BeforeEach(func() {
-			factoryConfig = &vcenterclientfactory.FactoryConfig{
+			factoryConfig = &vcenter_manager.FactoryConfig{
 				VCenterServer: envMustExist(VcenterUrl),
 				Username:      envMustExist(VcenterUsername),
 				Password:      envMustExist(VcenterPassword),
-				ClientCreator: &vcenterclientfactory.ClientCreator{},
-				FinderCreator: &vcenterclientfactory.GovmomiFinderCreator{},
+				ClientCreator: &vcenter_manager.ClientCreator{},
+				FinderCreator: &vcenter_manager.GovmomiFinderCreator{},
 			}
 			factoryConfig.RootCACertPath = ""
 			managerFactory.SetConfig(*factoryConfig)
@@ -130,7 +128,7 @@ var _ = Describe("VcenterClient", func() {
 			err = vCenterManager.Login(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
-			vm, err := vCenterManager.FindVM(ctx, TestVmPath)
+			vm, err := vCenterManager.FindVM(ctx, clonedVmPath)
 			Expect(err).ToNot(HaveOccurred())
 
 			opsManager := vCenterManager.OperationsManager(ctx, vm)
@@ -141,7 +139,7 @@ var _ = Describe("VcenterClient", func() {
 		})
 
 		Context("specified file exists", func() {
-			var fileToDownload = "C:\\Windows\\dummy.txt"
+			var fileToDownload = `C:\Windows\dummy.txt`
 			var expectedContents = "infinite content"
 
 			BeforeEach(func() {
@@ -172,7 +170,7 @@ var _ = Describe("VcenterClient", func() {
 
 		Context("specified file does not exist", func() {
 			It("returns an error", func() {
-				_, _, err := guestManager.DownloadFileInGuest(ctx, "C:\\Windows\\non-existent-file.txt")
+				_, _, err := guestManager.DownloadFileInGuest(ctx, `C:\Windows\non-existent-file.txt`)
 				Expect(err.Error()).To(ContainSubstring("vcenter_client - unable to download file"))
 			})
 		})

@@ -1,4 +1,4 @@
-package packager
+package packager_test
 
 import (
 	"archive/tar"
@@ -12,6 +12,8 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/package_stemcell/packager"
 )
 
 var _ = Describe("Packager Utility", func() {
@@ -50,7 +52,7 @@ var _ = Describe("Packager Utility", func() {
 
 			tarball := filepath.Join(destinationDir, "tarball")
 
-			sha1Sum, err := TarGenerator(tarball, sourceDir)
+			sha1Sum, err := packager.TarGenerator(tarball, sourceDir)
 
 			Expect(err).NotTo(HaveOccurred())
 
@@ -108,7 +110,7 @@ stemcell_formats:
 - vsphere-ovf
 - vsphere-ova
 `
-			result := CreateManifest("1", "version", "sha1sum")
+			result := packager.CreateManifest("1", "version", "sha1sum")
 			Expect(result).To(Equal(expectedManifest))
 		})
 	})
@@ -116,7 +118,7 @@ stemcell_formats:
 	Context("StemcellFileName", func() {
 		It("formats a file name appropriately", func() {
 			expectedName := "bosh-stemcell-2019.00-vsphere-esxi-windows2019-go_agent.tgz"
-			Expect(StemcellFilename("2019.00", "2019")).To(Equal(expectedName))
+			Expect(packager.StemcellFilename("2019.00", "2019")).To(Equal(expectedName))
 		})
 	})
 })
