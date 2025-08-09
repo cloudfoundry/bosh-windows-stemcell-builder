@@ -3,10 +3,10 @@ package iaas_cli_test
 import (
 	"strings"
 
-	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli"
 )
 
 var _ = Describe("GovcCli", func() {
@@ -18,10 +18,7 @@ var _ = Describe("GovcCli", func() {
 		})
 
 		It("lists the devices for a known VCenter VM", func() {
-			out, _, err := runner.RunWithOutput([]string{"device.ls", "-vm", targetVMPath, "-u", vCenterCredentialUrl})
-
-			Expect(err).NotTo(HaveOccurred())
-			devices := strings.Split(`pci-100            VirtualPCIController          PCI controller 0
+			const expectedOutput = `pci-100            VirtualPCIController          PCI controller 0
 ide-200            VirtualIDEController          IDE 0
 ide-201            VirtualIDEController          IDE 1
 ps2-300            VirtualPS2Controller          PS2 controller 0
@@ -35,9 +32,12 @@ ethernet-0         VirtualE1000e                 internal-network
 vmci-12000         VirtualMachineVMCIDevice      Device on the virtual machine PCI bus that provides support for the virtual machine communication interface
 ahci-15000         VirtualAHCIController         AHCI
 cdrom-16000        VirtualCdrom                  Remote device
-`, "\n")
+`
+			out, _, err := runner.RunWithOutput([]string{"device.ls", "-vm", targetVMPath, "-u", vCenterCredentialUrl})
+			Expect(err).NotTo(HaveOccurred())
 
-			for _, device := range devices {
+			expectedDeviceList := strings.Split(expectedOutput, "\n")
+			for _, device := range expectedDeviceList {
 				Expect(out).Should(ContainSubstring(device))
 			}
 		})

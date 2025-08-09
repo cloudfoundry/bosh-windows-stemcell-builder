@@ -34,10 +34,7 @@ clean :
 	rm -rf assets/StemcellAutomation.zip out/*
 
 units : stubbed-stemcell-automation-zip
-	go run github.com/onsi/ginkgo/v2/ginkgo run -r --randomize-all --randomize-suites --keep-going --skip-package integration,iaas_cli
-
-iaas_cli :
-	go run github.com/onsi/ginkgo/v2/ginkgo run -r --randomize-all --randomize-suites --keep-going --flake-attempts 2 iaas_cli
+	go run github.com/onsi/ginkgo/v2/ginkgo run -r --randomize-all --randomize-suites --keep-going --skip-package integration
 
 integration : stubbed-stemcell-automation-zip
 	go run github.com/onsi/ginkgo/v2/ginkgo run -r --timeout 3h -vv --randomize-all --keep-going --flake-attempts 2 integration

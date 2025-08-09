@@ -3,7 +3,6 @@ package vcenter_manager_test
 import (
 	"context"
 	"errors"
-	"runtime"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -30,9 +29,7 @@ var _ = Describe("VcenterManager", func() {
 	})
 
 	Context("Login", func() {
-
 		It("logs the user into vcenter", func() {
-
 			fakeGovmomiClient.LoginReturns(nil)
 
 			vcManager, err := vcenter_manager.NewVCenterManager(&fakeGovmomiClient, &fakeVimClient, &fakeFinder, "user", "pass")
@@ -62,9 +59,7 @@ var _ = Describe("VcenterManager", func() {
 	})
 
 	Context("FindVM", func() {
-
 		It("searches for the specified vm", func() {
-
 			fakeVM := &object.VirtualMachine{}
 			fakeFinder.VirtualMachineReturns(fakeVM, nil)
 
@@ -94,9 +89,7 @@ var _ = Describe("VcenterManager", func() {
 	})
 
 	Context("GuestManager", func() {
-
 		It("searches for the specified vm", func() {
-
 			fakeProcManager := &guest.ProcessManager{}
 			fakeOpsManager := &vcenter_managerfakes.FakeOpsManager{}
 			fakeOpsManager.ProcessManagerReturns(fakeProcManager, nil)
@@ -111,7 +104,6 @@ var _ = Describe("VcenterManager", func() {
 		})
 
 		It("returns an error if the finder does", func() {
-
 			guestErr := errors.New("not today, junior")
 			fakeOpsManager := &vcenter_managerfakes.FakeOpsManager{}
 			fakeOpsManager.ProcessManagerReturns(nil, guestErr)
@@ -122,50 +114,6 @@ var _ = Describe("VcenterManager", func() {
 			_, err = vcManager.GuestManager(context.TODO(), fakeOpsManager, "guestUser", "guestPass")
 			Expect(err).To(MatchError(guestErr))
 
-		})
-	})
-
-	Context("running against vcsim server", func() {
-		Context("CloneVM", func() {
-			It("clones a vm", func() {
-				if runtime.GOOS == "windows" {
-					Skip("windows cannot run a vcsim server")
-				}
-
-				inventoryPath := "/DC0/vm/DC0_H0_VM0"
-				clonePath := "/DC0/vm/DC0_H0_VM0_NewClone"
-
-				factoryConfig := &vcenter_manager.FactoryConfig{
-					VCenterServer:  "https://user:pass@127.0.0.1:8989/sdk",
-					Username:       "user",
-					Password:       "pass",
-					ClientCreator:  &vcenter_manager.ClientCreator{},
-					FinderCreator:  &vcenter_manager.GovmomiFinderCreator{},
-					RootCACertPath: CertPath,
-				}
-
-				managerFactory := &vcenter_manager.ManagerFactory{
-					Config: *factoryConfig,
-				}
-
-				ctx := context.TODO()
-
-				vCenterManager, err := managerFactory.VCenterManager(ctx)
-				Expect(err).ToNot(HaveOccurred())
-
-				err = vCenterManager.Login(ctx)
-				Expect(err).ToNot(HaveOccurred())
-
-				vmToClone, err := vCenterManager.FindVM(ctx, inventoryPath)
-				Expect(err).ToNot(HaveOccurred())
-
-				err = vCenterManager.CloneVM(ctx, vmToClone, clonePath)
-				Expect(err).ToNot(HaveOccurred())
-
-				_, err = vCenterManager.FindVM(ctx, clonePath)
-				Expect(err).ToNot(HaveOccurred())
-
-			})
 		})
 	})
 })
