@@ -24,6 +24,12 @@ govc vm.clone \
   -folder "${CLONE_FOLDER}" \
   -on=false "${CLONE_NAME}"
 
+govc vm.customize \
+  -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}" \
+  -org "${VM_ORG_NAME}" \
+  -username "${VM_USERNAME}" \
+  "${VM_CUSTOMIZATION_NAME}"
+
 govc vm.power -on \
   -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}"
 
