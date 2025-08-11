@@ -37,7 +37,7 @@ echo Waiting for VM to be configured with IP address...
 SECONDS=0
 FOUND_IP_ADDRESS=
 
-while [ -z "${FOUND_IP_ADDRESS}" ]; do
+while [ -z "$FOUND_IP_ADDRESS" ] || [ "$FOUND_IP_ADDRESS" = "null" ]; do
 	sleep 10
 	VM_INFO=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}")
 
