@@ -13,11 +13,18 @@ VM_NAME="${VCENTER_VM_FOLDER}/${VM_NAME}"
 
 echo "Fetching IP for VM: $VM_NAME..."
 
-VM_IP=$(govc vm.info -json "$VM_NAME" | jq -r '.virtualMachines[0].guest.ipAddress')
+SECONDS=0
+VM_IP=
 
-if [ -z "$VM_IP" ]; then
-  echo "Error: could not retrieve IP address for VM '$VM_NAME'."
-  exit 1
-fi
+while [ -z "${VM_IP}" ]; do
+  VM_IP=$(govc vm.info -json "$VM_NAME" | jq -r '.virtualMachines[0].guest.ipAddress')
+
+  if [ ${SECONDS} -gt ${TIMEOUT} ] ; then
+     echo "Error: could not retrieve IP address for VM '$VM_NAME'."
+    exit 1
+  fi
+
+  sleep 10
+done
 
 echo -n "${VM_IP}" > vm-ip/ip
