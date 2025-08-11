@@ -50,3 +50,6 @@ while [ -z "${FOUND_IP_ADDRESS}" ]; do
 		exit 1
 	fi
 done
+
+echo "Wait for 5 mins until guest customization is complete"
+sleep 300
