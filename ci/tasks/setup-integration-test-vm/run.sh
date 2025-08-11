@@ -33,23 +33,34 @@ govc vm.customize \
 govc vm.power -on \
   -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}"
 
-echo Waiting for VM to be configured with IP address...
+echo "Waiting for VM to be configured with IP address..."
 SECONDS=0
 FOUND_IP_ADDRESS=
 
-while [ -z "$FOUND_IP_ADDRESS" ] || [ "$FOUND_IP_ADDRESS" = "null" ]; do
-	sleep 10
-	VM_INFO=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}")
-
-	FOUND_IP_ADDRESS=$(echo "${VM_INFO}" | jq -r '.virtualMachines[0].guest.ipAddress')
+while [ -z "$FOUND_IP_ADDRESS" ] || [ "$FOUND_IP_ADDRESS" == "null" ]; do
+  VM_INFO=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}")
+  FOUND_IP_ADDRESS=$(echo "${VM_INFO}" | jq -r '.virtualMachines[0].guest.ipAddress')
 
   echo "Current IP Addresses:"
-	echo "${VM_INFO}" | jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]?"
+  echo "${VM_INFO}" | jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]?"
 
-	if [ ${SECONDS} -gt 600 ] ; then
-		exit 1
-	fi
+  if [ ${SECONDS} -gt 600 ] ; then
+    exit 1
+  fi
+  sleep 10
 done
 
-echo "Wait for 5 mins until guest customization is complete"
-sleep 300
+echo "Waiting for VM guest customization to complete..."
+SECONDS=0
+GUEST_CUSTOMIZATION_STATUS=
+
+while [ "$GUEST_CUSTOMIZATION_STATUS" != "TOOLSDEPLOYPKG_SUCCEEDED" ]; do
+  GUEST_CUSTOMIZATION_STATUS=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}" | jq -r '.virtualMachines[0].guest.customizationInfo.customizationStatus')
+
+  if [ ${SECONDS} -gt 600 ] ; then
+    exit 1
+  fi
+  sleep 30
+done
+
+echo "Integration VM setup complete"
