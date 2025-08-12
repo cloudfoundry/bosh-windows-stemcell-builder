@@ -12,8 +12,6 @@ $env:PATH += ";c:\var\vcap\packages\git\usr\bin"
 $ROOT_DIR=Get-Location
 Write-Host "ROOT: $ROOT_DIR"
 
-$env:VM_NAME= cat $ROOT_DIR/integration-vm-name/name
-
 $TMP_DIR=Join-Path $ROOT_DIR tmp
 
 Write-Host *** creating and setting temp environment variable to $TMP_DIR***
@@ -23,8 +21,13 @@ $env:TMP=$TMP_DIR
 $env:TEMP=$TMP_DIR
 $env:SystemTemp=$TMP_DIR
 
+$env:VM_NAME= cat $ROOT_DIR/integration-vm-name/name
 $env:TARGET_VM_IP = cat $ROOT_DIR/nimbus-ips/name
 $env:STEMBUILD_VERSION = cat $ROOT_DIR/version/version
+
+$vcenterCertPath="$TMP_DIR\vcenter_ca.crt"
+Write-Output $env:VCENTER_CA_CERT > $vcenterCertPath
+$env:GOVC_TLS_CA_CERTS=$vcenterCertPath
 
 Set-Location stemcell-builder\stembuild
 
