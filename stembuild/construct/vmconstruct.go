@@ -71,7 +71,6 @@ func NewVMConstruct(
 	scriptExecutor ScriptExecutorI,
 	setupFlags []string,
 ) *VMConstruct {
-
 	return &VMConstruct{
 		ctx:                   ctx,
 		remoteManager:         remoteManager,
@@ -114,6 +113,7 @@ type GuestManager interface {
 type IaasClient interface {
 	UploadArtifact(vmInventoryPath, artifact, destination, username, password string) error
 	MakeDirectory(vmInventoryPath, path, username, password string) error
+	Run(vmInventoryPath, username, password string, commandArgs []string) error
 	Start(vmInventoryPath, username, password, command string, args ...string) (string, error)
 	WaitForExit(vmInventoryPath, username, password, pid string) (int, error)
 	IsPoweredOff(vmInventoryPath string) (bool, error)
@@ -142,6 +142,13 @@ func (c *VMConstruct) PrepareVM() error {
 		return err
 	}
 	c.messenger.PrintOut("\nAll files have been uploaded.\n")
+
+	c.messenger.PrintOut("\nInstalling OpenSSH on target VM...")
+	err = c.installOpenSSH()
+	if err != nil {
+		return err
+	}
+	c.messenger.PrintOut("OpenSSH install succeeded.\n")
 
 	c.messenger.PrintOut("\nAttempting to enable WinRM on the guest vm...")
 	err = c.winRMEnabler.Enable()
@@ -268,6 +275,12 @@ func (c *VMConstruct) isPoweredOff(duration time.Duration) error {
 		return isPoweredOff, nil
 	})
 	return err
+}
+
+func (c *VMConstruct) installOpenSSH() error {
+	const installOpenSSHCommand = `"Add-WindowsCapability -Online -Name (Get-WindowsCapability -Online -Name OpenSSH.Server* | ForEach-Object Name)"`
+
+	return c.Client.Run(c.vmInventoryPath, c.vmUsername, c.vmPassword, []string{powershellExePath, installOpenSSHCommand})
 }
 
 func EncodePowershellCommand(command []byte) string {

@@ -166,6 +166,19 @@ func (c *VcenterClient) IsPoweredOff(vmInventoryPath string) (bool, error) {
 	return false, nil
 }
 
+func (c *VcenterClient) Run(vmInventoryPath, username, password string, commandAndArgs []string) error {
+	args := c.buildGovcCommand(append([]string{"guest.run", "-l", vmCredentials(username, password), "-vm", vmInventoryPath}, commandAndArgs...)...)
+	_, exitCode, err := c.Runner.RunWithOutput(args)
+	if err != nil {
+		return fmt.Errorf("vcenter_client - '%v' return an error '%s'", args, err)
+	}
+	if exitCode != 0 {
+		return fmt.Errorf("vcenter_client - '%v' exited with '%d'", args, exitCode)
+	}
+
+	return nil
+}
+
 func (c *VcenterClient) Start(vmInventoryPath, username, password, command string, args ...string) (string, error) {
 	cmdArgs := c.buildGovcCommand(append([]string{"guest.start", "-l", vmCredentials(username, password), "-vm", vmInventoryPath, command}, args...)...)
 	pid, exitCode, err := c.Runner.RunWithOutput(cmdArgs)

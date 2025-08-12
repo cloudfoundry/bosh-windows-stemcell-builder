@@ -372,6 +372,56 @@ ethernet-0         VirtualE1000e                 internal-network
 			})
 		})
 
+		Describe("Run", func() {
+			var baseArgs []string
+			var commandArgs []string
+
+			BeforeEach(func() {
+				baseArgs = []string{"guest.run", "-u", vcenterAuthUrl(vcenterUsername, vcenterPassword, vcenterUrl), "-l", "user:pass", "-vm", "validVMPath"}
+				commandArgs = []string{"fake-command", "fake-arg1", "fake-arg2", "fake-arg3"}
+			})
+
+			It("Runs the command provided", func() {
+				runner.RunWithOutputReturns("fake-open-ssh-install-output", 0, nil)
+
+				err := vcenterClient.Run("validVMPath", "user", "pass", commandArgs)
+				Expect(err).To(Not(HaveOccurred()))
+
+				expectedArgs := append(baseArgs, commandArgs...)
+				Expect(runner.RunWithOutputArgsForCall(0)).To(Equal(expectedArgs))
+			})
+
+			Context("when running the command returns a non-zero exit code", func() {
+				It("returns an error", func() {
+					exitCode := 42
+					runner.RunWithOutputReturns("", exitCode, nil)
+
+					err := vcenterClient.Run("validVMPath", "user", "pass", commandArgs)
+					Expect(err).To(HaveOccurred())
+
+					expectedArgs := append(baseArgs, commandArgs...)
+					Expect(err.Error()).To(Equal(fmt.Sprintf("vcenter_client - '%v' exited with '%d'", expectedArgs, exitCode)))
+				})
+			})
+
+			Context("when running the command returns an error", func() {
+				var runWithOutputError error
+
+				BeforeEach(func() {
+					runWithOutputError = errors.New("fake-run-with-output-error")
+				})
+
+				It("returns the error", func() {
+					runner.RunWithOutputReturns("", 0, runWithOutputError)
+
+					expectedArgs := append(baseArgs, commandArgs...)
+
+					err := vcenterClient.Run("validVMPath", "user", "pass", commandArgs)
+					Expect(err.Error()).To(Equal(fmt.Sprintf("vcenter_client - '%v' return an error '%s'", expectedArgs, runWithOutputError)))
+				})
+			})
+		})
+
 		Describe("Start", func() {
 			It("runs the command on the vm", func() {
 				runner.RunWithOutputReturns("1856\n", 0, nil) // govc add '\n' to the output
