@@ -32,7 +32,7 @@ func (p *nonWaitingPoller) Poll(_ time.Duration, loopFunc func() (bool, error)) 
 	return nil
 }
 
-var _ = Describe("construct_helpers", func() {
+var _ = Describe("VMConstruct", func() {
 	var (
 		outBuf *Buffer
 		errBuf *Buffer
@@ -125,7 +125,7 @@ var _ = Describe("construct_helpers", func() {
 					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
-					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(0))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(0))
 				})
 
 				It("it logs the attempt", func() {
@@ -141,7 +141,7 @@ var _ = Describe("construct_helpers", func() {
 					Expect(vmConstruct.PrepareVM()).To(Succeed())
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
-					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 				})
 
 				It("it logs success", func() {
@@ -244,6 +244,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(0))
 				})
 
 				It("it logs the attempt", func() {
@@ -261,13 +262,78 @@ var _ = Describe("construct_helpers", func() {
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
-					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 				})
 
 				It("it logs success", func() {
 					Expect(vmConstruct.PrepareVM()).To(Succeed())
 
 					Eventually(outBuf).Should(Say("\tUploading stemcell preparation artifacts to target VM...succeeded.\n"))
+				})
+			})
+		})
+
+		Describe("it installs Microsoft's OpenSSH", func() {
+			Context("when it fails", func() {
+				var installOpenSshErr error
+				BeforeEach(func() {
+					installOpenSshErr = errors.New("fake-install-open-ssh-error")
+					fakeVcenterClient.RunReturns(installOpenSshErr)
+				})
+
+				It("returns the error", func() {
+					err := vmConstruct.PrepareVM()
+					Expect(err).To(Equal(installOpenSshErr))
+				})
+
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(0))
+				})
+
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Eventually(outBuf).Should(Say("\nInstalling OpenSSH on target VM..."))
+					Eventually(outBuf).ShouldNot(Say("\nInstalling OpenSSH on target VM...OpenSSH install succeeded.\n"))
+				})
+			})
+
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+				})
+
+				It("invokes VCenterClient.Run() as expected", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					expectedCommandArgs := []string{
+						`C:\Windows\System32\WindowsPowerShell\V1.0\powershell.exe`,
+						`"Add-WindowsCapability -Online -Name (Get-WindowsCapability -Online -Name OpenSSH.Server* | ForEach-Object Name)"`,
+					}
+
+					actualVmInventoryPath, actualVmUsername, actualVmPassword, actualCommandArgs :=
+						fakeVcenterClient.RunArgsForCall(0)
+
+					Expect(actualVmInventoryPath).To(Equal(vmInventoryPath))
+					Expect(actualVmUsername).To(Equal(vmUsername))
+					Expect(actualVmPassword).To(Equal(vmPassword))
+					Expect(actualCommandArgs).To(Equal(expectedCommandArgs))
+				})
+
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("\nInstalling OpenSSH on target VM...OpenSSH install succeeded.\n"))
 				})
 			})
 		})
@@ -332,6 +398,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(0))
@@ -351,6 +418,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -382,6 +450,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -402,6 +471,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -450,6 +520,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -471,6 +542,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -515,6 +587,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -537,6 +610,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -571,6 +645,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -594,6 +669,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -634,6 +710,7 @@ var _ = Describe("construct_helpers", func() {
 
 						Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 						Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+						Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 						Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 						Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 						Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -668,6 +745,7 @@ var _ = Describe("construct_helpers", func() {
 
 						Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 						Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+						Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 						Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 						Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 						Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
@@ -693,6 +771,7 @@ var _ = Describe("construct_helpers", func() {
 
 					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeVcenterClient.RunCallCount()).To(Equal(1))
 					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
 					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
 					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))

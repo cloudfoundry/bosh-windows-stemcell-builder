@@ -35,6 +35,20 @@ type FakeIaasClient struct {
 	makeDirectoryReturnsOnCall map[int]struct {
 		result1 error
 	}
+	RunStub        func(string, string, string, []string) error
+	runMutex       sync.RWMutex
+	runArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 []string
+	}
+	runReturns struct {
+		result1 error
+	}
+	runReturnsOnCall map[int]struct {
+		result1 error
+	}
 	StartStub        func(string, string, string, string, ...string) (string, error)
 	startMutex       sync.RWMutex
 	startArgsForCall []struct {
@@ -211,6 +225,75 @@ func (fake *FakeIaasClient) MakeDirectoryReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.makeDirectoryReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIaasClient) Run(arg1 string, arg2 string, arg3 string, arg4 []string) error {
+	var arg4Copy []string
+	if arg4 != nil {
+		arg4Copy = make([]string, len(arg4))
+		copy(arg4Copy, arg4)
+	}
+	fake.runMutex.Lock()
+	ret, specificReturn := fake.runReturnsOnCall[len(fake.runArgsForCall)]
+	fake.runArgsForCall = append(fake.runArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 []string
+	}{arg1, arg2, arg3, arg4Copy})
+	stub := fake.RunStub
+	fakeReturns := fake.runReturns
+	fake.recordInvocation("Run", []interface{}{arg1, arg2, arg3, arg4Copy})
+	fake.runMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIaasClient) RunCallCount() int {
+	fake.runMutex.RLock()
+	defer fake.runMutex.RUnlock()
+	return len(fake.runArgsForCall)
+}
+
+func (fake *FakeIaasClient) RunCalls(stub func(string, string, string, []string) error) {
+	fake.runMutex.Lock()
+	defer fake.runMutex.Unlock()
+	fake.RunStub = stub
+}
+
+func (fake *FakeIaasClient) RunArgsForCall(i int) (string, string, string, []string) {
+	fake.runMutex.RLock()
+	defer fake.runMutex.RUnlock()
+	argsForCall := fake.runArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeIaasClient) RunReturns(result1 error) {
+	fake.runMutex.Lock()
+	defer fake.runMutex.Unlock()
+	fake.RunStub = nil
+	fake.runReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIaasClient) RunReturnsOnCall(i int, result1 error) {
+	fake.runMutex.Lock()
+	defer fake.runMutex.Unlock()
+	fake.RunStub = nil
+	if fake.runReturnsOnCall == nil {
+		fake.runReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.runReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
