@@ -42,13 +42,15 @@ type VMConstruct struct {
 	SetupFlags            []string
 }
 
-const provisionDir = "C:\\provision\\"
+const powershellExePath = `C:\Windows\System32\WindowsPowerShell\V1.0\powershell.exe`
+
+const provisionDir = `C:\provision\`
 const stemcellAutomationName = "StemcellAutomation.zip"
 const stemcellAutomationDest = provisionDir + stemcellAutomationName
 const lgpoDest = provisionDir + "LGPO.zip"
 const stemcellAutomationSetupScript = provisionDir + "Setup.ps1"
 const stemcellAutomationPostRebootScript = provisionDir + "PostReboot.ps1"
-const powershell = "C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
+
 const boshPsModules = "bosh-psmodules.zip"
 const winRMPsScript = "BOSH.WinRM.psm1"
 
