@@ -16,7 +16,7 @@ function Write-Log
     Write-Host $msg
 }
 
-function Setup
+function Setup()
 {
     param(
         [String]$Version,
@@ -34,7 +34,7 @@ function Setup
     InstallOpenSSH
     Extract-LGPO
     Install-SecurityPoliciesAndRegistries
-    EnableOpenSSH
+    Enable-SSHD
     InstallCFFeatures
     RemoveAvailableWindowsFeatures
 
@@ -71,8 +71,7 @@ function PostReboot
     RunQuickerDism
 }
 
-function RunQuickerDism
-{
+function RunQuickerDism {
     param(
         [bool]$IgnoreErrors = $False
     )
@@ -127,6 +126,7 @@ function RemoveAvailableWindowsFeatures
     Remove-Available-Windows-Features
 }
 
+
 function InstallCFCell
 {
     try
@@ -161,7 +161,7 @@ function InstallOpenSSH
 {
     try
     {
-        Install-SSHD
+        Install-SSHD -SSHZipFile ".\OpenSSH-Win64.zip"
         Write-Log "OpenSSH successfully installed"
     }
     catch [Exception]
@@ -172,7 +172,7 @@ function InstallOpenSSH
     }
 }
 
-# Set-RegKeys contains registry changes related to fixing bugs: zombieload, and meltdown
+#This function contains all our registry changes related to fixing the zombieload and meltdown bugs
 function Set-RegKeys
 {
     $PathExists = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\QualityCompat'
@@ -213,14 +213,14 @@ function CleanUpVM
     }
 }
 
-function Is-Special
+function Is-Special()
 {
     param ([parameter(Mandatory = $true)] [string]$c)
 
     return $c -cmatch '[!-/:-@[-`{-~]'
 }
 
-function Valid-Password
+function Valid-Password()
 {
     param ([parameter(Mandatory = $true)] [string]$Password)
 
@@ -396,19 +396,64 @@ function Remove-SSHKeys
     Pop-Location
 }
 
-function EnableOpenSSH
+function Invoke-LGPO
 {
-    try
+    param (
+        [string]$LGPOPath = $( Throw "Provide LGPO path" ),
+        [string]$InfFilePath = $( Throw "Provide Inf file path" )
+    )
+    & $LGPOPath /s $InfFilePath
+}
+
+function Enable-SSHD
+{
+    if ((Get-NetFirewallRule | where { $_.DisplayName -ieq 'SSH' }) -eq $null)
     {
-        Enable-SSHD
-        Write-Log "OpenSSH successfully installed"
+        "Creating firewall rule for SSH"
+        New-NetFirewallRule -Protocol TCP -LocalPort 22 -Direction Inbound -Action Allow -DisplayName SSH
     }
-    catch [Exception]
+    else
     {
-        Write-Log $_.Exception.Message
-        Write-Log "Failed to execute Enable-SSHD powershell cmdlet. See 'c:\provision\log.log' for more info."
-        throw $_.Exception
+        "Firewall rule for SSH already exists"
     }
+
+    $InfFilePath = "$env:WINDIR\Temp\enable-ssh.inf"
+
+    $InfFileContents = @'
+[Unicode]
+Unicode=yes
+[Version]
+signature=$CHICAGO$
+Revision=1:w
+[Registry Values]
+[System Access]
+[Privilege Rights]
+SeDenyNetworkLogonRight=*S-1-5-32-546
+SeAssignPrimaryTokenPrivilege=*S-1-5-19,*S-1-5-20,*S-1-5-80-3847866527-469524349-687026318-516638107-1125189541
+'@
+    $LGPOPath = "$env:WINDIR\LGPO.exe"
+    if (Test-Path $LGPOPath)
+    {
+        Out-File -FilePath $InfFilePath -Encoding unicode -InputObject $InfFileContents -Force
+        try
+        {
+            Invoke-LGPO -LGPOPath $LGPOPath -InfFilePath $InfFilePath
+        }
+        catch
+        {
+            throw "LGPO.exe failed with: $_.Exception.Message"
+        }
+    }
+    else
+    {
+        "Did not find $LGPOPath. Assuming existing security policies are sufficient to support ssh."
+    }
+
+    Set-Service -Name sshd -StartupType Automatic
+    # ssh-agent is not the same as ssh-agent in *nix openssh
+    Set-Service -Name ssh-agent -StartupType Automatic
+
+    Remove-SSHKeys
 }
 
 function Install-SecurityPoliciesAndRegistries
@@ -467,4 +512,5 @@ function Create-VersionFile
         Write-Log "Failed to execute Create-VersionFile command"
         throw $_.Exception
     }
+
 }
