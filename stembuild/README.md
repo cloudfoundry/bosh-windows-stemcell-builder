@@ -240,6 +240,7 @@ You will need to construct `assets/StemcellAutomation.zip`. This file represents
 **assets/StemcellAutomation.zip files:**
 | File | Source / Description |
 |-|-|
+| OpenSSH-Win64.zip     | https://github.com/PowerShell/Win32-OpenSSH/releases |
 | bosh-psmodules.zip    | https://github.com/cloudfoundry/bosh-psmodules/tree/master/modules |
 | agent.zip             | A zip constructed using various BOSH executables. See list of necessary files below. |
 | deps.json             | A JSON file with the SHA256 checksums and optionally the version for each component in this zip. See format below. |
@@ -261,6 +262,9 @@ You will need to construct `assets/StemcellAutomation.zip`. This file represents
 **deps.json format:**
 ```json
 {
+  "OpenSSH-Win64.zip": {
+    "sha": "SOME-SHA256"
+  },
   "bosh-psmodules.zip": {
     "sha": "SOME-SHA256"
   },
@@ -276,6 +280,7 @@ You will need to construct `assets/StemcellAutomation.zip`. This file represents
 
 Once you have these files, run:
 ```bash
+OPENSSH_ZIP="OpenSSH-Win64.zip" \
 BOSH_PSMODULES_ZIP="bosh-psmodules.zip" \
 AGENT_ZIP="agent.zip" \
 DEPS_JSON="deps.json" \
