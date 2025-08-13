@@ -9,7 +9,7 @@ export OUTPUT_DIR=${ROOT_DIR}/output
 VM_IP=$(cat nimbus-ips/name)
 CLONE_NAME_PREFIX="construct-${JOB_OS_NAME}-integration-ci-${OS_LINE}"
 CLONE_NAME_SUFFIX=$(echo "${VM_IP}" | cut -d . -f 4)
-CLONE_NAME=${CLONE_NAME_PREFIX}${CLONE_NAME_SUFFIX}
+CLONE_NAME=${CLONE_NAME_PREFIX}-${CLONE_NAME_SUFFIX}
 
 export VM_IP
 export CLONE_NAME_PREFIX

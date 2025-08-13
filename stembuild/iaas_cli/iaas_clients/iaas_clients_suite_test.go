@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/vmware/govmomi/object"
@@ -60,7 +59,7 @@ var _ = BeforeSuite(func() {
 	vmToClone, err := vCenterManager.FindVM(CTX, testVmPath)
 	Expect(err).ToNot(HaveOccurred())
 
-	TestVmPath = testVmPath + fmt.Sprintf("%s", uuid.New())[0:8] //nolint:staticcheck
+	TestVmPath = fmt.Sprintf("%s-%s", testVmPath, time.Now().Format("2006-01-02T15h04s05"))
 
 	err = vCenterManager.CloneVM(CTX, vmToClone, TestVmPath)
 	Expect(err).ToNot(HaveOccurred())
