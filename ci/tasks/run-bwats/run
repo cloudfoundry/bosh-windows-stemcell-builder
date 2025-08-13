@@ -23,6 +23,10 @@ if [ "$SECURITY_COMPLIANCE_APPLIED" != "true" ] ; then
   SECURITY_COMPLIANCE_APPLIED="false"
 fi
 
+if [ "$SKIP_CLEANUP" != "true" ] ; then
+  SKIP_CLEANUP="false"
+fi
+
 pushd stemcell-builder/acceptance_test
   export CONFIG_JSON=config.json
   cat > "${CONFIG_JSON}" <<-END_OF_CONFIG
@@ -44,7 +48,8 @@ pushd stemcell-builder/acceptance_test
     "ssh_disabled_by_default": $SSH_DISABLED_BY_DEFAULT,
     "default_username" : "$DEFAULT_USERNAME",
     "default_password" : "$DEFAULT_PASSWORD",
-    "security_compliance_applied": $SECURITY_COMPLIANCE_APPLIED
+    "security_compliance_applied": $SECURITY_COMPLIANCE_APPLIED,
+    "skip_cleanup": $SKIP_CLEANUP
   }
 END_OF_CONFIG
 
