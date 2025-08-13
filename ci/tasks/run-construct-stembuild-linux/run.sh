@@ -1,25 +1,27 @@
 #!/usr/bin/env bash
-set -ex
+set -eu -o pipefail
+set -x
 
+ROOT_DIR="$( pwd )"
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
-source ${SCRIPT_DIR}/../../common-scripts/update_nimbus_urls_and_cert.sh
+source "${SCRIPT_DIR}/../../common-scripts/update_nimbus_urls_and_cert.sh"
 
-cat > ca.crt <<END_OF_CERT
-$VCENTER_CA_CERT
-END_OF_CERT
+cp lgpo-binary/LGPO*.zip "${ROOT_DIR}/LGPO.zip"
 
-pushd stembuild-untested-linux
-  mv stembuild* stembuild
-popd
-mv stembuild-untested-linux/stembuild .
+ca_cert_file="${ROOT_DIR}/vcenter_ca.crt"
+echo "${VCENTER_CA_CERT}" > "${ca_cert_file}"
 
-mv lgpo-binary/LGPO*.zip LGPO.zip
+cp stembuild-untested-linux/stembuild* "${ROOT_DIR}/stembuild"
+chmod 500 "${ROOT_DIR}/stembuild"
 
-chmod 500 stembuild
-./stembuild construct \
-  -vcenter-url ${VCENTER_BASE_URL} -vcenter-username ${VCENTER_USERNAME} -vcenter-password ${VCENTER_PASSWORD} \
-  -vcenter-ca-certs ca.crt \
-  -vm-inventory-path ${VCENTER_VM_FOLDER}/${STEMBUILD_BASE_VM_NAME} \
-  -vm-ip ${STEMBUILD_BASE_VM_IP} -vm-username ${STEMBUILD_BASE_VM_USERNAME} -vm-password ${STEMBUILD_BASE_VM_PASSWORD} \
+./stembuild -debug construct \
+  -vcenter-url "${VCENTER_BASE_URL}" \
+    -vcenter-username "${VCENTER_USERNAME}" \
+    -vcenter-password "${VCENTER_PASSWORD}" \
+  -vcenter-ca-certs "${ca_cert_file}" \
+  -vm-inventory-path "${VCENTER_VM_FOLDER}/${STEMBUILD_BASE_VM_NAME}" \
+  -vm-ip "${STEMBUILD_BASE_VM_IP}" \
+    -vm-username "${STEMBUILD_BASE_VM_USERNAME}" \
+    -vm-password "${STEMBUILD_BASE_VM_PASSWORD}" \
   -setup-arg FailOnInstallWUCerts
