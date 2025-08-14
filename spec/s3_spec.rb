@@ -3,7 +3,7 @@ require 'fileutils'
 
 describe S3 do
   describe 'instance methods' do
-    before :each do
+    before(:each) do
       s3_resource = double(:s3_resource)
       allow(Aws::S3::Resource).to receive(:new).and_return(s3_resource)
       s3_bucket = double(:s3_bucket)

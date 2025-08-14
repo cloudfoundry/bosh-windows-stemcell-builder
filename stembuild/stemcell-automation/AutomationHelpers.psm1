@@ -413,7 +413,6 @@ function EnableOpenSSH
         Write-Log "Failed to execute Enable-SSHD powershell cmdlet. See 'c:\provision\log.log' for more info."
         throw $_.Exception
     }
-
 }
 
 function Install-SecurityPoliciesAndRegistries
@@ -472,5 +471,4 @@ function Create-VersionFile
         Write-Log "Failed to execute Create-VersionFile command"
         throw $_.Exception
     }
-
 }

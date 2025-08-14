@@ -13,7 +13,7 @@ function Enable-SSHD
         "Removing firewall rule: 'OpenSSH-Server-In-TCP'"
         Remove-NetFirewallRule -Name "OpenSSH-Server-In-TCP"
     }
-    Write-Output "Creating firewall rule 'OpenSSH-Server-In-TCP'"
+    Write-Log "Creating firewall rule 'OpenSSH-Server-In-TCP'"
     New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -Profile Any -LocalPort 22
 
     Set-Service -Name sshd -StartupType Automatic
@@ -24,7 +24,7 @@ function Enable-SSHD
 
 function Remove-SSHKeys
 {
-    "Removing any existing host keys"
+    Write-Log "Removing any existing host keys"
     Remove-Item -Path "$env:ProgramData\ssh\ssh_host_*" -ErrorAction Ignore
 }
 
@@ -38,8 +38,8 @@ function Edit-DefaultOpenSSHConfig
     Copy-Item -Path $ConfigPath -Destination "$ConfigPath.bak"
 
     $OriginalConfig = Get-Content $ConfigPath
-    Write-Output "Original SSH config at $ConfigPath :"
-    Write-Output $OriginalConfig
+    Write-Log "Original SSH config at $ConfigPath :"
+    Write-Log "$OriginalConfig"
 
     $ModifiedConfig = $OriginalConfig `
         | ForEach-Object{ $_ -replace ".*Match Group administrators.*", "#$&" } `
@@ -47,8 +47,8 @@ function Edit-DefaultOpenSSHConfig
         | ForEach-Object{ $_ -replace ".*AuthorizedKeysFile __PROGRAMDATA__/ssh/administrators_authorized_keys.*", "#$&" } `
         | ForEach-Object{ $_ -replace "#RekeyLimit default none", "$&`r`n# Disable cipher to mitigate CVE-2023-48795`r`nCiphers -chacha20-poly1305@openssh.com`r`n" }
 
-    Write-Output "Modified SSH config at $ConfigPath :"
-    Write-Output $ModifiedConfig
+    Write-Log "Modified SSH config at $ConfigPath :"
+    Write-Log "$ModifiedConfig"
 
     Remove-Item -Force $ConfigPath
     Out-File -FilePath $ConfigPath -InputObject $ModifiedConfig -Encoding UTF8

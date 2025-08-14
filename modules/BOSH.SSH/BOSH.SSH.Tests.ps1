@@ -1,4 +1,8 @@
 BeforeAll {
+    Remove-Module -Name BOSH.Utils -ErrorAction Ignore
+    Import-Module ../BOSH.Utils/BOSH.Utils.psm1
+
+    Remove-Module -Name BOSH.SSH -ErrorAction Ignore
     Import-Module ./BOSH.SSH.psm1
 
     function Get-FileEncoding
@@ -49,6 +53,7 @@ BeforeAll {
 
 Describe "BOSH.SSH" {
     BeforeEach {
+        Mock -ModuleName BOSH.Utils Write-Log { }
         Mock -ModuleName BOSH.SSH Write-Log { }
     }
 
@@ -198,13 +203,14 @@ Ciphers -chacha20-poly1305@openssh.com
 
             Mock Remove-NetFirewallRule { } -ModuleName BOSH.SSH -Verifiable -ParameterFilter { $Name -eq "OpenSSH-Server-In-TCP" }
             Mock New-NetFirewallRule { } -ModuleName BOSH.SSH -Verifiable -ParameterFilter {
-                        $Name -eq "OpenSSH-Server-In-TCP" -and
+                $Name -eq "OpenSSH-Server-In-TCP" -and
                         $Enabled -eq "True" -and
                         $Direction -eq "Inbound" -and
                         $Protocol -eq "TCP" -and
                         $Action -eq "Allow" -and
                         $Profile -eq "Any" -and
-                        $LocalPort -eq 22 }
+                        $LocalPort -eq 22
+            }
             Enable-SSHD
             Assert-MockCalled Remove-NetFirewallRule -ModuleName BOSH.SSH -Times 1
             Assert-MockCalled New-NetFirewallRule -ModuleName BOSH.SSH -Times 1

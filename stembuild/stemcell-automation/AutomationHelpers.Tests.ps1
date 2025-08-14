@@ -1,9 +1,6 @@
-# We import module BOSH.SSH to ensure that we get the Install-SSHD function it defines. Starting with
-# OpenSSH 9.1, there is a conflicting install-sshd.ps1 script that takes precedence instead if you do
-# not load the module.
 BeforeAll {
-    Import-Module ../../modules/BOSH.SSH
     Import-Module ../../modules/BOSH.Utils
+    Import-Module ../../modules/BOSH.SSH
     Import-Module ../../modules/BOSH.CFCell
     Import-Module ../../modules/BOSH.Agent
     Import-Module ../../modules/BOSH.CFCell
@@ -45,7 +42,7 @@ Describe "AutomationHelpers" {
 
             if (!(Get-Command "Restart-Computer" -errorAction SilentlyContinue))
             {
-                function Restart-Computer()
+                function Restart-Computer
                 {
                     throw "what is happening I should never be invoked"
                 }
@@ -152,7 +149,7 @@ Describe "AutomationHelpers" {
                     Mock -ModuleName AutomationHelpers -CommandName Install-WUCerts {
                         throw "Something went wrong trying to Install-WUCerts"
                     }
-                    Mock -ModuleName AutomationHelpers -CommandName Write-Log { }
+
 
                     { Setup -FailOnInstallWUCerts } | Should -Throw
 
@@ -1185,7 +1182,8 @@ Describe "AutomationHelpers" {
     }
 
     Describe "Install-WUCerts" {
-        It "executes the Get-WUCerts powershell cmdlet" {
+        BeforeAll {
+        }It "executes the Get-WUCerts powershell cmdlet" {
             Mock -ModuleName AutomationHelpers -CommandName Get-WUCerts { }
 
             { Install-WUCerts } | Should -Not -Throw

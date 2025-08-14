@@ -32,3 +32,8 @@ if (-not (Get-Command Enable-WinRM -errorAction SilentlyContinue))
 
 Write-Log "Invoking WinRM"
 Enable-WinRM
+
+Write-Log "Install OpenSSH.Server"
+Write-Log (Get-WindowsCapability -Online -Name "OpenSSH.Server*" | Format-List | Out-String)
+Add-WindowsCapability -Online -Name (Get-WindowsCapability -Online -Name "OpenSSH.Server*" | ForEach-Object Name)
+Write-Log (Get-WindowsCapability -Online -Name "OpenSSH.Server*" | Format-List | Out-String)
