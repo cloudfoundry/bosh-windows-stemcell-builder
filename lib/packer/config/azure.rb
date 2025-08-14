@@ -45,7 +45,8 @@ module Packer
             "winrm_use_ssl" => "true",
             "winrm_insecure" => "true",
             "winrm_timeout" => "1h",
-            "winrm_username" => "packer"
+            "winrm_username" => "packer",
+            "custom_script" => 'powershell -ExecutionPolicy Unrestricted -NoProfile -NonInteractive -Command "Add-WindowsCapability -Online -Name (Get-WindowsCapability -Online -Name OpenSSH.Server* | ForEach-Object Name)"'
           }
         ]
       end

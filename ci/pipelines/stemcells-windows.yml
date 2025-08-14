@@ -218,19 +218,12 @@ resources:
       password: ((docker.password))
 
   # type: github-release
-  - name: openssh-release
-    type: github-release
-    source:
-      owner: PowerShell
-      repository: Win32-OpenSSH
-      access_token: ((github_public_repo_token))
-      tag_filter: v([^v].*)
   - name: stemcell-builder-github-release
-    type: github-release
-    source:
-      owner: cloudfoundry
-      repository: bosh-windows-stemcell-builder
-      access_token: ((github_public_repo_token))
+  type: github-release
+  source:
+    owner: cloudfoundry
+    repository: bosh-windows-stemcell-builder
+    access_token: ((github_public_repo_token))
 
   - name: bosh-agent-release
     type: metalink-repository
@@ -816,20 +809,18 @@ jobs:
               tags: [*worker_tag]
             - get: bosh-windows-stemcell-builder-ci-image
               tags: [*worker_tag]
-            - get: open-ssh
-              resource: openssh-release
             - get: stemcell-builder
-              passed: [build]
-              tags: [*worker_tag]
-            - get: version
-              resource: stembuild-windows-build-number
-              passed: [build]
-              trigger: true
-              tags: [*worker_tag]
-            - get: main-version
-              passed: [build]
-              tags: [*worker_tag]
-            - get: bosh-agent-release
+        passed: [build]
+        tags: [*worker_tag]
+      - get: version
+        resource: stembuild-windows-build-number
+        passed: [build]
+        trigger: true
+        tags: [*worker_tag]
+      - get: main-version
+        passed: [build]
+        tags: [*worker_tag]
+      - get: bosh-agent-release
               passed: [build]
             - get: ovftool
             - get: blobstore-dav-cli
@@ -947,20 +938,18 @@ jobs:
               tags: [*worker_tag]
             - get: bosh-windows-stemcell-builder-ci-image
               tags: [*worker_tag]
-            - get: open-ssh
-              resource: openssh-release
             - get: stemcell-builder
-              passed: [build]
-              tags: [*worker_tag]
-            - get: version
-              resource: stembuild-linux-build-number
-              passed: [build]
-              trigger: true
-              tags: [*worker_tag]
-            - get: main-version
-              passed: [build]
-              tags: [*worker_tag]
-            - get: bosh-agent-release
+        passed: [build]
+        tags: [*worker_tag]
+      - get: version
+        resource: stembuild-linux-build-number
+        passed: [build]
+        trigger: true
+        tags: [*worker_tag]
+      - get: main-version
+        passed: [build]
+        tags: [*worker_tag]
+      - get: bosh-agent-release
               passed: [build]
             - get: ovftool
             - get: blobstore-dav-cli
@@ -1429,15 +1418,12 @@ jobs:
             - get: main-version
               passed: [build]
               tags: [*worker_tag]
-            - get: sshd
-              resource: openssh-release
             - get: bosh-agent-release
-              passed: [build]
-            - get: blobstore-dav-cli
-            - get: blobstore-s3-cli
-            - get: blobstore-gcs-cli
-            - get: windows-winsw
-      - task: lgpo-binary
+        passed: [build]
+      - get: blobstore-dav-cli
+      - get: blobstore-s3-cli
+      - get: blobstore-gcs-cli
+      - get: windows-winsw- task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
       - put: version
@@ -1619,15 +1605,12 @@ jobs:
             - get: main-version
               passed: [wuts-aws]
               tags: [*worker_tag]
-            - get: sshd
-              resource: openssh-release
             - get: bosh-agent-release
-              passed: [wuts-aws]
-            - get: blobstore-dav-cli
-            - get: blobstore-s3-cli
-            - get: blobstore-gcs-cli
-            - get: windows-winsw
-      - task: lgpo-binary
+        passed: [wuts-aws]
+      - get: blobstore-dav-cli
+      - get: blobstore-s3-cli
+      - get: blobstore-gcs-cli
+      - get: windows-winsw- task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
       - task: build-agent-zip
@@ -1789,15 +1772,12 @@ jobs:
             - get: main-version
               passed: [build]
               tags: [*worker_tag]
-            - get: sshd
-              resource: openssh-release
             - get: bosh-agent-release
-              passed: [build]
-            - get: blobstore-dav-cli
-            - get: blobstore-s3-cli
-            - get: blobstore-gcs-cli
-            - get: windows-winsw
-      - task: lgpo-binary
+        passed: [build]
+      - get: blobstore-dav-cli
+      - get: blobstore-s3-cli
+      - get: blobstore-gcs-cli
+      - get: windows-winsw- task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
       - put: version
@@ -1995,15 +1975,12 @@ jobs:
             - get: main-version
               passed: [build]
               tags: [*worker_tag]
-            - get: sshd
-              resource: openssh-release
             - get: bosh-agent-release
-              passed: [build]
-            - get: blobstore-dav-cli
-            - get: blobstore-s3-cli
-            - get: blobstore-gcs-cli
-            - get: windows-winsw
-      - task: lgpo-binary
+        passed: [build]
+      - get: blobstore-dav-cli
+      - get: blobstore-s3-cli
+      - get: blobstore-gcs-cli
+      - get: windows-winsw- task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
       - put: version

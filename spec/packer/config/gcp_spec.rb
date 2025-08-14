@@ -37,14 +37,12 @@ RSpec.describe Packer::Config::Gcp do
         "zone" => "us-west1-c",
         "disk_size" => 32,
         "machine_type" => "some-vm-type",
-        "omit_external_ip" => false,
         "communicator" => "winrm",
         "winrm_username" => "winrmuser",
-        "winrm_use_ssl" => false,
         "winrm_timeout" => "1h",
         "state_timeout" => "10m",
         "metadata" => {
-          "sysprep-specialize-script-url" => "https://raw.githubusercontent.com/cloudfoundry/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1",
+          "sysprep-specialize-script-ps1" => File.read(setup_winrm_script),
           "name" => "some-vm-prefix-#{Time.now.to_i}"
         }
       }
@@ -120,8 +118,8 @@ RSpec.describe Packer::Config::Gcp do
         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
         {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
-        {"type" => "file", "source" => "../sshd/OpenSSH-Win64.zip", "destination" => "C:\\provision\\OpenSSH-Win64.zip"},
-        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell -IaaS gcp"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD"]},
         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
         {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
         {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"]},
@@ -142,9 +140,9 @@ RSpec.describe Packer::Config::Gcp do
         provisioners.detect { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{build_version}'") }
       ).not_to(be_nil, "Expect provisioners to include New-VersionFile")
 
-      line_by_line_provisioners = provisioners.delete_if { |x| x["destination"] == "C:\\windows\\LGPO.exe" }
-      line_by_line_provisioners =
-        line_by_line_provisioners.delete_if { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{build_version}'") }
+        line_by_line_provisioners = provisioners.delete_if { |x| x["destination"] == "C:\\windows\\LGPO.exe" }
+        line_by_line_provisioners =
+          line_by_line_provisioners.delete_if { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{build_version}'") }
 
       expect(line_by_line_provisioners).to eq(expected_provisioners_base)
     end

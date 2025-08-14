@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-openssh_win64_sha256="$(shasum -a 256 open-ssh/OpenSSH-Win64.zip | cut -d " " -f 1)"
-openssh_win64_version="$(cat open-ssh/version)"
-
 psmodules_sha256="$(shasum -a 256 psmodules-zip-output/bosh-psmodules.zip | cut -d " " -f 1)"
 psmodules_version="$(cat version/version)"
 
@@ -15,10 +12,6 @@ lgpo_version="3"
 
 cat <<EOF > deps-file/deps.json
 {
-  "OpenSSH-Win64.zip": {
-    "sha": "${openssh_win64_sha256}",
-    "version": "${openssh_win64_version}"
-  },
   "bosh-psmodules.zip": {
     "sha": "${psmodules_sha256}",
     "version": "${psmodules_version}"
