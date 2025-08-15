@@ -7,13 +7,6 @@ inputs:
   - name: version
   - name: amis
   - name: default-stemcell
-  - name: bosh-agent-release
-  - name: blobstore-dav-cli
-  - name: blobstore-s3-cli
-  - name: blobstore-gcs-cli
-  - name: windows-bsdtar
-  - name: windows-winsw
-
 
 outputs:
   - name: copied-regional-stemcells
@@ -30,4 +23,3 @@ params:
   VERSION_DIR: ../version
   AMIS_DIR: ../amis
   DEFAULT_STEMCELL_DIR: ../default-stemcell
-  BOSH_AGENT_DIR: bosh-agent-release
