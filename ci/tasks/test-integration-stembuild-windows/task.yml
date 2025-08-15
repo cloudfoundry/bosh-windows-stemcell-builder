@@ -5,7 +5,6 @@ inputs:
 - name: bosh-windows-stemcell-builder-ci
 - name: stemcell-builder
 - name: version
-- name: nimbus-ips
 - name: integration-vm-name
 
 outputs:
@@ -31,3 +30,4 @@ params:
   PACKAGE_TEST_BASE_VM_NAME:
   OS_LINE:
   SKIP_CLEANUP: false
+  TARGET_VM_IP:

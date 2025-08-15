@@ -16,7 +16,6 @@ chmod +x "${ROOT_DIR}/ovftool/VMware-ovftool-4.2.0-5965791-lin.x86_64.bundle"
 "${ROOT_DIR}/ovftool/VMware-ovftool-4.2.0-5965791-lin.x86_64.bundle" --eulas-agreed --required
 
 export TARGET_VM_IP
-TARGET_VM_IP=$(cat nimbus-ips/name)
 export VM_NAME
 VM_NAME=$(cat integration-vm-name/name)
 echo "Using VM @ IPAddr: ${VM_NAME}@${TARGET_VM_IP}"

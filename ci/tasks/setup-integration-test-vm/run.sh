@@ -6,12 +6,17 @@ export GOVC_URL="${VCENTER_ADMIN_CREDENTIAL_URL}"
 ROOT_DIR=$(pwd)
 export OUTPUT_DIR=${ROOT_DIR}/output
 
-VM_IP=$(cat nimbus-ips/name)
+CLONE_NAME_PREFIX="construct-${JOB_OS_NAME}-integration-ci-${OS_LINE}"
+CLONE_NAME_SUFFIX=$(mktemp -u XXXXXX)
+CLONE_NAME="${CLONE_NAME_PREFIX}-${CLONE_NAME_SUFFIX}"
 
-CLONE_NAME="stembuild-${JOB_OS_NAME}-${OS_LINE}-${VM_IP}"
+export CLONE_NAME_PREFIX
+export CLONE_NAME_SUFFIX
+export CLONE_NAME
+
 echo "${CLONE_NAME}" > integration-vm-name/name
+echo "Creating VM ${CLONE_NAME}"
 
-echo "Cloning ${BASE_VM_IPATH} to ${CLONE_NAME}"
 govc vm.clone \
   -vm "${BASE_VM_IPATH}" \
   -ds "${CLONE_DATASTORE}" \
@@ -22,7 +27,6 @@ govc vm.clone \
 echo "Customizing ${CLONE_NAME}"
 govc vm.customize \
   -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}" \
-  -ip "${VM_IP}" \
   -org "${VM_ORG_NAME}" \
   -username "${VM_USERNAME}" \
   "${VM_CUSTOMIZATION_NAME}"
@@ -30,21 +34,34 @@ govc vm.customize \
 govc vm.power -on \
   -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}"
 
-echo "Waiting 10 min for ${CLONE_NAME} to be configured with ${VM_IP}"
+echo "Waiting for VM to be configured with IP address..."
 SECONDS=0
 FOUND_IP_ADDRESS=
 
-while [ "${VM_IP}" != "${FOUND_IP_ADDRESS}" ]; do
-	sleep 10
-	VM_INFO=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}")
-
-	FOUND_IP_ADDRESS=$(echo "${VM_INFO}" |
-	    jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]? |select(. == \"${VM_IP}\")")
+while [ -z "$FOUND_IP_ADDRESS" ] || [ "$FOUND_IP_ADDRESS" == "null" ]; do
+  VM_INFO=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}")
+  FOUND_IP_ADDRESS=$(echo "${VM_INFO}" | jq -r '.virtualMachines[0].guest.ipAddress')
 
   echo "Current IP Addresses:"
-	echo "${VM_INFO}" | jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]?"
+  echo "${VM_INFO}" | jq -r ".virtualMachines[0].guest.net[0].ipAddress | .[]?"
 
-	if [ ${SECONDS} -gt 600 ] ; then
-		exit 1
-	fi
+  if [ ${SECONDS} -gt 600 ] ; then
+    exit 1
+  fi
+  sleep 10
 done
+
+echo "Waiting for VM guest customization to complete..."
+SECONDS=0
+GUEST_CUSTOMIZATION_STATUS=
+
+while [ "$GUEST_CUSTOMIZATION_STATUS" != "TOOLSDEPLOYPKG_SUCCEEDED" ]; do
+  GUEST_CUSTOMIZATION_STATUS=$(govc vm.info -json "${CLONE_FOLDER}"/"${CLONE_NAME}" | jq -r '.virtualMachines[0].guest.customizationInfo.customizationStatus')
+
+  if [ ${SECONDS} -gt 600 ] ; then
+    exit 1
+  fi
+  sleep 30
+done
+
+echo "Integration VM setup complete"
