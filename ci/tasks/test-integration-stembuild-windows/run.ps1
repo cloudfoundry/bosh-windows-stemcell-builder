@@ -22,7 +22,6 @@ $env:TEMP=$TMP_DIR
 $env:SystemTemp=$TMP_DIR
 
 $env:VM_NAME= cat $ROOT_DIR/integration-vm-name/name
-$env:TARGET_VM_IP = cat $ROOT_DIR/nimbus-ips/name
 $env:STEMBUILD_VERSION = cat $ROOT_DIR/version/version
 
 $vcenterCertPath="$TMP_DIR\vcenter_ca.crt"

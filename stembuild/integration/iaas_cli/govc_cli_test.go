@@ -31,7 +31,7 @@ lsilogic-sas-1000  VirtualLsiLogicSASController  LSI Logic SAS
 ethernet-0         VirtualE1000e                 internal-network
 vmci-12000         VirtualMachineVMCIDevice      Device on the virtual machine PCI bus that provides support for the virtual machine communication interface
 ahci-15000         VirtualAHCIController         AHCI
-cdrom-16000        VirtualCdrom                  Remote device
+cdrom-16000        VirtualCdrom                  Remote ATAPI
 `
 			out, _, err := runner.RunWithOutput([]string{"device.ls", "-vm", targetVMPath, "-u", vCenterCredentialUrl})
 			Expect(err).NotTo(HaveOccurred())
