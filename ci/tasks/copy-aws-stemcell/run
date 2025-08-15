@@ -19,11 +19,6 @@ else
   set -x
 fi
 
-CONCOURSE_ROOT="$(pwd)"
-
-"${CONCOURSE_ROOT}/bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/run.sh"
-"${CONCOURSE_ROOT}/bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/run.sh"
-
 pushd stemcell-builder
   bundle install --without test
 
