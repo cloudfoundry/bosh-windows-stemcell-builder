@@ -236,9 +236,9 @@ function Clear-ProxySettings
 {
     $regKeyConnections = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections"
     $item = Get-Item $regKeyConnections
-    if ($item.Property)
+    if ($item.Property -contains "DefaultConnectionSettings")
     {
-        Remove-ItemProperty "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections" -Name "DefaultConnectionSettings"
+        Remove-ItemProperty -Path $regKeyConnections -Name "DefaultConnectionSettings"
 
         #We need to pipe the command through Out-String in order to convert its output into a proper string
         $reset_proxy = (& cmd.exe /c "netsh winhttp reset proxy") | Out-String

@@ -425,8 +425,8 @@ Describe "BOSH.Utils" {
 
             $item = Get-Item $regKeyConnections
 
-            #DefaultConnectionSettings is actually added to a "Property" object
-            $item.Property | Should -Be $null
+            #DefaultConnectionSettings should be removed
+            $item.Property -contains "DefaultConnectionSettings" | Should -Be $false
 
             #We need to pipe the netsh command through Out-String in order to convert its output into a proper string
             $output = (netsh winhttp show proxy) | Out-String
