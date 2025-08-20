@@ -303,14 +303,6 @@ resources:
   source:
     bucket: bosh-gcscli-artifacts
     regexp: bosh-gcscli-(.*)-windows-amd64.exe
-- name: windows-bsdtar
-  type: s3
-  source:
-    bucket: bosh-windows-dependencies
-    regexp: tar-(.*).exe
-    access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
-    secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
-    aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
 - name: windows-winsw
   type: s3
   source:
@@ -638,7 +630,6 @@ jobs:
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
-      - get: windows-bsdtar
       - get: windows-winsw
   - task: test-stemcell-builder
     file: bosh-windows-stemcell-builder-ci/ci/tasks/test-stemcell-builder/task.yml
@@ -792,7 +783,6 @@ jobs:
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
-      - get: windows-bsdtar
       - get: windows-winsw
   - put: version
     inputs: detect
@@ -914,7 +904,6 @@ jobs:
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
-      - get: windows-bsdtar
       - get: windows-winsw
       - get: govmomi
   - put: version
@@ -1391,7 +1380,6 @@ jobs:
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
-      - get: windows-bsdtar
       - get: windows-winsw
   - put: version
     inputs: detect
@@ -1581,7 +1569,6 @@ jobs:
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
-      - get: windows-bsdtar
       - get: windows-winsw
   - task: create-packer-ci-key
     image: bosh-windows-stemcell-builder-ci-image
@@ -1752,7 +1739,6 @@ jobs:
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
-      - get: windows-bsdtar
       - get: windows-winsw
   - put: version
     inputs: detect
@@ -1954,7 +1940,6 @@ jobs:
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
-      - get: windows-bsdtar
       - get: windows-winsw
   - put: version
     inputs: detect
@@ -2177,7 +2162,6 @@ jobs:
       - get: blobstore-dav-cli
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
-      - get: windows-bsdtar
       - get: windows-winsw
 #      - get: boshio-input
 #        resource: boshio

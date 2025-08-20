@@ -29,7 +29,6 @@ cp "${bosh_agent_resource_dir}/bosh-agent-pipe-${bosh_agent_resource_version}-wi
 cp "${CONCOURSE_ROOT}"/blobstore-gcs-cli/bosh-gcscli-*.exe "${zip_deps_dir}/bosh-blobstore-gcs.exe"
 cp "${CONCOURSE_ROOT}"/blobstore-dav-cli/davcli-*.exe "${zip_deps_dir}/bosh-blobstore-dav.exe"
 cp "${CONCOURSE_ROOT}"/blobstore-s3-cli/s3cli-*.exe "${zip_deps_dir}/bosh-blobstore-s3.exe"
-cp "${CONCOURSE_ROOT}"/windows-bsdtar/tar-*.exe "${zip_deps_dir}/tar.exe"
 cp "${CONCOURSE_ROOT}"/windows-winsw/WinSW.NET461.exe "${zip_deps_dir}/job-service-wrapper.exe"
 
 pushd "${zip_dir}"
