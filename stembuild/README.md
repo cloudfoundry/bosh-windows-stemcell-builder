@@ -254,7 +254,6 @@ You will need to construct `assets/StemcellAutomation.zip`. This file represents
 | deps/bosh-blobstore-gcs.exe  | https://github.com/cloudfoundry/bosh-gcscli |
 | deps/bosh-blobstore-dav.exe  | https://github.com/cloudfoundry/bosh-davcli |
 | deps/bosh-blobstore-s3.exe   | https://github.com/cloudfoundry/bosh-s3cli |
-| deps/tar.exe                 | https://github.com/cloudfoundry/bsdtar/ |
 | deps/job-service-wrapper.exe | https://github.com/bosh-dep-forks/winsw |
 | service_wrapper.exe          | https://github.com/bosh-dep-forks/winsw |
 | service_wrapper.xml          | https://github.com/cloudfoundry/bosh-agent/blob/main/integration/windows/fixtures/service_wrapper.xml |

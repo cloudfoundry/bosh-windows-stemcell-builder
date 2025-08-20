@@ -90,7 +90,6 @@ function Verify-Dependencies {
   [void] $files.AddRange((
       "bosh-blobstore-s3.exe",
       "bosh-blobstore-dav.exe",
-      "tar.exe",
       "job-service-wrapper.exe"
   ))
 
