@@ -4,7 +4,6 @@ platform: linux
 inputs:
   - name: bosh-windows-stemcell-builder-ci
   - name: stemcell-builder
-  - name: open-ssh
   - name: deps-file
   - name: bosh-agent
   - name: psmodules-zip-output

@@ -7,7 +7,6 @@ inputs:
   - name: base-amis
   - name: version
   - name: lgpo-binary
-  - name: sshd
   - name: packer-ci-private-key
   - name: bosh-agent-release
   - name: blobstore-dav-cli
