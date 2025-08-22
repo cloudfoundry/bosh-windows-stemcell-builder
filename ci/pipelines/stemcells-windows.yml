@@ -1177,6 +1177,7 @@ jobs:
         STEMCELL_OS: *windows_os_version
         VM_EXTENSIONS: ""
         VM_TYPE: default # TODO: Add "put" output of this passing test to release candidates bucket (?)
+        WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
 
 - name: create-stembuild-windows-stemcell
   serial: true
@@ -1347,6 +1348,7 @@ jobs:
             STEMCELL_OS: *windows_os_version
             VM_EXTENSIONS: ""
             VM_TYPE: default
+            WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
 
 - name: create-aws
   serial: true
