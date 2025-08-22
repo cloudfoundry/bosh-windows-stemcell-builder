@@ -201,10 +201,12 @@ resources:
 # type: github-release
 - name: stemcell-builder-github-release
   type: github-release
+  tags: [*worker_tag]
   source:
-    owner: cloudfoundry
+    access_token: ((svc-bosh-ecosystem-ghe-personal-access-token))
+    github_api_url: https://github.gwd.broadcom.net/api/v3
+    owner: TNZ
     repository: bosh-windows-stemcell-builder
-    access_token: ((github_public_repo_token))
 
 - name: bosh-agent-release
   type: metalink-repository
