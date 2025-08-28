@@ -428,7 +428,7 @@ function Verify-TimeZone {
   }
 }
 
-#Verify-LGPO
+Verify-LGPO
 Verify-Dependencies
 Verify-Acls
 Verify-Services
