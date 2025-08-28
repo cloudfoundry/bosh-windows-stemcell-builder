@@ -79,10 +79,25 @@ function Verify-LGPO
     }
   }
 
+  $ErrorActionPreference = "Continue"
+
+  $errorCount = 0
   Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "\n\n"
+  $errorCount += $LASTEXITCODE
   Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "\n\n"
+  $errorCount += $LASTEXITCODE
   Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "\n"
+  $errorCount += $LASTEXITCODE
   Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "\n"
+  $errorCount += $LASTEXITCODE
+
+  $ErrorActionPreference = "Stop"
+
+  if (-not $errorCount -eq 0)
+  {
+    Write-Error "LGPO checks failed"
+    return 1
+  }
 }
 
 function Verify-Dependencies {
