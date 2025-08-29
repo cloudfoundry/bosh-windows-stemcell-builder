@@ -201,8 +201,8 @@ function Set-ProxySettings
         [byte[]]$data = [System.Text.Encoding]::ASCII.GetBytes($text);
 
         $regKeyConnections = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections"
-        Set-ItemProperty -Path $regKeyConnections -Name "DefaultConnectionSettings" -Value $data -ErrorVariable err 2>&1 | Out-Null
-        Write-Host "Added the IE registry key"
+        Write-Log "Running: 'Set-ItemProperty -Path $regKeyConnections -Name DefaultConnectionSettings -Value ([System.Text.Encoding]::ASCII.GetBytes($text))'"
+        Set-ItemProperty -Path $regKeyConnections -Name "DefaultConnectionSettings" -Value $data -ErrorVariable err
         if ($err -ne "")
         {
             throw "Failed to set proxy settings: $( $err )"
