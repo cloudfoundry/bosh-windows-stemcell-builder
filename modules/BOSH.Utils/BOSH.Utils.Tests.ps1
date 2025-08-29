@@ -1,4 +1,5 @@
 BeforeAll {
+    Remove-Module -Name BOSH.Utils -ErrorAction Ignore
     Import-Module ./BOSH.Utils.psm1
 
     # As of now, this function only supports DWords and Strings.
@@ -303,8 +304,7 @@ Describe "BOSH.Utils" {
         }
     }
 
-    # TODO resolve
-    Describe "Disable-DCOM" -Tag 'Focused' {
+    Describe "Disable-DCOM" {
         It "Disables the use of DCOM" {
             $DCOMPath = 'HKLM:\Software\Microsoft\OLE'
             $oldDCOMValue = (Get-ItemProperty -Path $DCOMPath).'EnableDCOM'
@@ -379,9 +379,7 @@ Describe "BOSH.Utils" {
                 $( $args[0] -join "," ) -eq $( $args[1] -join "," )
             }
 
-            Mock Set-ItemProperty {
-                "Property set"
-            } -ModuleName BOSH.Utils
+            Mock Set-ItemProperty { "Property set" } -ModuleName BOSH.Utils
 
             { Set-ProxySettings "http-proxy" "https-proxy" "bypass-list" } | Should -Not -Throw
 
@@ -401,10 +399,7 @@ Describe "BOSH.Utils" {
         }
 
         It "exits when the registry can't be set or there's an error because the arguments are wrong" {
-            Mock Set-ItemProperty {
-                Write-Error "Property not set"
-            } -ModuleName BOSH.Utils
-
+            Mock Set-ItemProperty { Write-Error "Property not set" } -ModuleName BOSH.Utils
 
             { Set-ProxySettings "http-proxy" "https-proxy" "bypass-list" } | Should -Throw "Failed to set proxy settings: Property not set"
         }
@@ -417,9 +412,10 @@ Describe "BOSH.Utils" {
 
         It "Should remove proxy settings if they were set" {
             $regKeyConnections = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections"
-            Set-ItemProperty -Path $regKeyConnections -Name "DefaultConnectionSettings" -Value "test-value" -ErrorVariable err 2>&1 | Out-Null
+            Set-ItemProperty -Path $regKeyConnections -Name "DefaultConnectionSettings" -Value "test-value" -ErrorVariable err
+            $err | Should -Be $null
 
-            $set_proxy = & cmd.exe /c "netsh winhttp set proxy proxy-server=`"127.0.0.1`""
+            & cmd.exe /c "netsh winhttp set proxy proxy-server=`"127.0.0.1`""
 
             Clear-ProxySettings
 
