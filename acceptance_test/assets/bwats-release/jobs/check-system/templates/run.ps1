@@ -82,14 +82,14 @@ function Verify-LGPO
   $ErrorActionPreference = "Continue"
 
   $errorCount = 0
-  Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "\n\n"
-  $errorCount += $LASTEXITCODE
-  Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "\n\n"
-  $errorCount += $LASTEXITCODE
-  Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "\n"
-  $errorCount += $LASTEXITCODE
-  Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "\n"
-  $errorCount += $LASTEXITCODE
+  $result = Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "\n\n"
+  $errorCount += $result
+  $result = Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "\n\n"
+  $errorCount += $result
+  $result = Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "\n"
+  $errorCount += $result
+  $result = Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "\n"
+  $errorCount += $result
 
   $ErrorActionPreference = "Stop"
 
