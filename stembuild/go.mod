@@ -7,7 +7,7 @@ require (
 	github.com/google/subcommands v1.2.0
 	github.com/masterzen/winrm v0.0.0-20250819055755-20c0798bc988
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.3
-	github.com/onsi/ginkgo/v2 v2.25.2
+	github.com/onsi/ginkgo/v2 v2.25.3
 	github.com/onsi/gomega v1.38.2
 	github.com/packer-community/winrmcp v0.0.0-20221126162354-6e900dd2c68f
 	github.com/pkg/errors v0.9.1
