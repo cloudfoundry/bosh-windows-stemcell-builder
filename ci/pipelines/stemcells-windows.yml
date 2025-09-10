@@ -2324,7 +2324,7 @@ jobs:
       PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
       PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
       PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
-      OFFER_NOTIFICATION_EMAIL: boshwindows@groups.vmware.com
+      OFFER_NOTIFICATION_EMAIL: tas-bosh-ecosystem.pdl@broadcom.com
 # TODO: replace `upload-image-and-start-publishing` with the two tasks below
 #  - task: azure-image-upload
 #    file: bosh-windows-stemcell-builder-ci/ci/tasks/azure-image-upload/task.yml
@@ -2352,7 +2352,7 @@ jobs:
 #      PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
 #      PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
 #      PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
-#      OFFER_NOTIFICATION_EMAIL: boshwindows@groups.vmware.com
+#      OFFER_NOTIFICATION_EMAIL: tas-bosh-ecosystem.pdl@broadcom.com
 
 - name: publish-azure-offer
   serial: true
