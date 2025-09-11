@@ -71,7 +71,7 @@ function Enable-LocalSecurityPolicy
             $PolicySource = (Join-Path $PSScriptRoot "cis-merge-2019")
         }
         "windows2025" {
-            $PolicySource = (Join-Path $PSScriptRoot "cis-merge-2019")
+            $PolicySource = (Join-Path $PSScriptRoot "cis-merge-2025")
         }
         Default {
             Throw "Policy backup filepath could not be determined from OS: $OsVersion"
