@@ -337,7 +337,7 @@ Describe "BOSH.Sysprep" {
         BeforeEach {
             Mock -ModuleName BOSH.Sysprep -CommandName Get-OSVersion { $OsVersion }
 
-            $expectedPolicyDir = Join-Path $PSScriptRoot "cis-merge-2019"
+            $expectedPolicyDir = Join-Path $PSScriptRoot "cis-merge-2025"
             $domainSysVolDir = "$expectedPolicyDir/DomainSysvol"
             $machinePolicyDir = "$domainSysVolDir/GPO/Machine"
             $userPolicyDir = "$domainSysVolDir/GPO/User"
