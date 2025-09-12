@@ -155,7 +155,6 @@ resources:
   type: git
   source:
     uri: https://github.com/cloudfoundry/windows-utilities-release.git
-    branch: remove-sshd-config
 - name: govmomi
   type: git
   source:
