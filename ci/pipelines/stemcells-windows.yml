@@ -2167,6 +2167,12 @@ jobs:
       - get: windows-winsw
 #      - get: boshio-input
 #        resource: boshio
+  - task: build-agent-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+  - task: build-psmodules-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
   - task: copy-public-stemcells
     timeout: 1h30m
     attempts: 3
