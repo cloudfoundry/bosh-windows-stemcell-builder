@@ -1377,6 +1377,12 @@ jobs:
     params:
       pre: build
     tags: [*worker_tag]
+  - task: build-agent-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+  - task: build-psmodules-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
   - task: create-packer-ci-key
     image: bosh-windows-stemcell-builder-ci-image
     file: bosh-windows-stemcell-builder-ci/ci/tasks/create-packer-ci-key/task.yml
