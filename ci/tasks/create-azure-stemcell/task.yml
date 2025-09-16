@@ -12,7 +12,8 @@ inputs:
   - name: blobstore-s3-cli
   - name: blobstore-gcs-cli
   - name: windows-winsw
-
+  - name: bosh-agent
+  - name: psmodules-zip-output
 
 outputs:
   - name: bosh-windows-stemcell
