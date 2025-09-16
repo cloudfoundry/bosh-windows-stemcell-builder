@@ -8,10 +8,10 @@ popd
 
 CONCOURSE_ROOT="$(pwd)"
 
-"${CONCOURSE_ROOT}/bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/run.sh"
-"${CONCOURSE_ROOT}/bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/run.sh"
-
 pushd stemcell-builder
+  mkdir -p build
+  cp "${CONCOURSE_ROOT}/psmodules-zip-output/bosh-psmodules.zip" "${CONCOURSE_ROOT}/bosh-agent/agent.zip" build
+
   bundle install --without test
 
   rake build:gcp

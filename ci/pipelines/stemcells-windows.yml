@@ -1738,6 +1738,12 @@ jobs:
     params:
       pre: build
     tags: [*worker_tag]
+  - task: build-agent-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+  - task: build-psmodules-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
   - task: create-azure-stemcell
     attempts: 3
     file: bosh-windows-stemcell-builder-ci/ci/tasks/create-azure-stemcell/task.yml
@@ -1937,6 +1943,12 @@ jobs:
     params:
       pre: build
     tags: [*worker_tag]
+  - task: build-agent-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+  - task: build-psmodules-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
   - task: create-gcp-stemcell
     attempts: 3
     file: bosh-windows-stemcell-builder-ci/ci/tasks/create-gcp-stemcell/task.yml

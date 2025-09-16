@@ -28,7 +28,6 @@ CONCOURSE_ROOT="$(pwd)"
 pushd stemcell-builder
   mkdir -p build
   cp "${CONCOURSE_ROOT}/psmodules-zip-output/bosh-psmodules.zip" "${CONCOURSE_ROOT}/bosh-agent/agent.zip" build
-  ls -l build
 
   bundle install --without test
 
