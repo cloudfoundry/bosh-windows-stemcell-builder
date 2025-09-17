@@ -1566,6 +1566,12 @@ jobs:
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
       - get: windows-winsw
+  - task: build-agent-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+  - task: build-psmodules-zip
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
   - task: create-aws-govcloud-stemcell
     timeout: 1h30m
     file: bosh-windows-stemcell-builder-ci/ci/tasks/create-aws-stemcell/task.yml
