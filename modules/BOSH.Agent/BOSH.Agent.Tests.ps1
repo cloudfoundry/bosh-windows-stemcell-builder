@@ -21,15 +21,42 @@ Describe "BOSH.Account" {
 
 
     Describe "Copy-Agent" {
+        BeforeAll {
+            $fixtureDir = (New-TempDir)
+            $agentDir = (Join-Path $fixtureDir "agent")
+            New-Item -Path $agentDir -ItemType Directory -Force
+            New-Item -Path (Join-Path -Path $agentDir -ChildPath "bosh-agent.exe" ) -ItemType File
+            New-Item -Path (Join-Path -Path $agentDir -ChildPath "service_wrapper.exe" ) -ItemType File
+            New-Item -Path (Join-Path -Path $agentDir -ChildPath "service_wrapper.xml" ) -ItemType File
+            $agentDepsDir = (Join-Path $agentDir "deps")
+            New-Item -Path $agentDepsDir -ItemType Directory -Force
+            New-Item -Path (Join-Path -Path $agentDepsDir -ChildPath "bosh-blobstore-dav.exe" ) -ItemType File
+            New-Item -Path (Join-Path -Path $agentDepsDir -ChildPath "bosh-blobstore-gcs.exe" ) -ItemType File
+            New-Item -Path (Join-Path -Path $agentDepsDir -ChildPath "bosh-blobstore-s3.exe" ) -ItemType File
+            New-Item -Path (Join-Path -Path $agentDepsDir -ChildPath "job-service-wrapper.exe" ) -ItemType File
+            New-Item -Path (Join-Path -Path $agentDepsDir -ChildPath "pipe.exe" ) -ItemType File
+
+            $agentZipPath = (Join-Path $fixtureDir "bosh-agent.zip")
+            $compress = @{
+                Path = (Join-Path -Path $agentDir -ChildPath "*")
+                CompressionLevel = "Fastest"
+                DestinationPath = $agentZipPath
+            }
+            Compress-Archive @compress
+        }
+
         BeforeEach {
             $installDir = (New-TempDir)
             $boshDir = (Join-Path $installDir "bosh")
             $vcapDir = (Join-Path $installDir (Join-Path "var" (Join-Path "vcap" "bosh")))
-            $agentZipPath = (Join-Path $PSScriptRoot (Join-Path "fixtures" "bosh-agent.zip"))
         }
 
         AfterEach {
             Remove-Item -Recurse -Force $installDir
+        }
+
+        AfterAll {
+            Remove-Item -Recurse -Force $fixtureDir
         }
 
         Context "when installDir is not provided" {
