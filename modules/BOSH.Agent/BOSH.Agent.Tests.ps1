@@ -91,6 +91,7 @@ Describe "BOSH.Account" {
             Test-Path (Join-Path $depsDir "bosh-blobstore-dav.exe") | Should -Be $True
             Test-Path (Join-Path $depsDir "bosh-blobstore-s3.exe") | Should -Be $True
             Test-Path (Join-Path $depsDir "bosh-blobstore-gcs.exe") | Should -Be $True
+            Test-Path (Join-Path $depsDir "tar.exe") | Should -Be $True
         }
     }
 
