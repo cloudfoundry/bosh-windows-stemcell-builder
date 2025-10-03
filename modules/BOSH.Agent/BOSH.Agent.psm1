@@ -67,6 +67,8 @@ function Copy-Agent
     Open-Zip $agentZipPath $boshDir
     Move-Item (Join-Path $boshDir (Join-Path "deps" "*")) $depsDir
     Remove-Item -Path (Join-Path $boshDir "deps") -Force
+
+    New-Item -Path (Join-Path $depsDir "tar.exe") -ItemType SymbolicLink -V "C:\Windows\system32\tar.exe"
 }
 
 
