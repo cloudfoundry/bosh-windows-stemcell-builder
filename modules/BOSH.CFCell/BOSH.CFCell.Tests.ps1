@@ -109,20 +109,6 @@ Describe "BOSH.CFCell" {
 
             Should -Invoke -ModuleName BOSH.CFCell -CommandName Uninstall-WindowsFeature
         }
-
-        Describe "tar.exe for Windows Diego Cells" {
-            BeforeEach {
-                $installDir = (New-TempDir)
-                $depsDir = (Join-Path -Path $installDir -ChildPath "var" -AdditionalChildPath ("vcap", "bosh", "bin") )
-            }
-
-            It "symlinks tar to \var\vcap\bosh\bin for backwards compatibility" {
-                { Install-CFFeatures -IaaS "ignored" } | Should -Not -Throw
-
-                Test-Path (Join-Path $depsDir "tar.exe") | Should -Be $True
-            }
-
-        }
     }
 
     Describe "Remove-DockerPackage" {
