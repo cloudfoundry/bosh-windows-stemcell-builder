@@ -30,11 +30,6 @@ function Install-CFFeatures
     Write-Log "Setting WinRM startup type to automatic"
     Get-Service | Where-Object { $_.Name -eq "WinRM" } | Set-Service -StartupType Automatic
 
-    Write-Log "Creating symlink to system tar.exe"
-    $link = "C:\var\vcap\bosh\bin\tar.exe"
-    $target = "C:\Windows\system32\tar.exe"
-    New-Item -Path $link -ItemType SymbolicLink -V $target
-
     if ($ForceReboot -eq $true)
     {
         Restart-Computer
