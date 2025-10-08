@@ -101,21 +101,21 @@ function Protect-Dir
     )
 
     Write-Log "Protect-Dir: Grant Administrator"
-    cmd.exe /c cacls.exe $path /T /E /P Administrators:F
+    cmd.exe /c icacls.exe $path /T /L /inheritancelevel:e /grant:r Administrators:F
     if ($LASTEXITCODE -ne 0)
     {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
     Write-Log "Protect-Dir: Remove BUILTIN\Users"
-    cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\Users"
+    cmd.exe /c icacls.exe $path /T /L /inheritancelevel:r /remove:g "BUILTIN\Users"
     if ($LASTEXITCODE -ne 0)
     {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
     Write-Log "Protect-Dir: Remove BUILTIN\IIS_IUSRS"
-    cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\IIS_IUSRS"
+    cmd.exe /c icacls.exe $path /T /L /inheritancelevel:r /remove:g "BUILTIN\IIS_IUSRS"
     if ($LASTEXITCODE -ne 0)
     {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
@@ -138,21 +138,21 @@ function Protect-Path
     )
 
     Write-Log "Protect-Path: Grant Administrator"
-    cmd.exe /c cacls.exe $path /E /P Administrators:F
+    cmd.exe /c icacls.exe $path /L /grant:r Administrators:F
     if ($LASTEXITCODE -ne 0)
     {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
     Write-Log "Protect-Path: Remove BUILTIN\Users"
-    cmd.exe /c cacls.exe $path /E /R "BUILTIN\Users"
+    cmd.exe /c cacls.exe $path /L /remove:g "BUILTIN\Users"
     if ($LASTEXITCODE -ne 0)
     {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
     Write-Log "Protect-Path: Remove BUILTIN\IIS_IUSRS"
-    cmd.exe /c cacls.exe $path /E /R "BUILTIN\IIS_IUSRS"
+    cmd.exe /c cacls.exe $path /L /remove:g "BUILTIN\IIS_IUSRS"
     if ($LASTEXITCODE -ne 0)
     {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
