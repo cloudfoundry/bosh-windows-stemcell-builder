@@ -13,7 +13,7 @@ set -x
 resolved_stemcell_path=$(readlink -f ${STEMCELL_PATH})
 json_safe_bosh_ca_cert="${BOSH_CA_CERT//$'\n'/\\n}"
 
-pushd stemcell-builder/acceptance_test
+pushd bosh-windows-stemcell-acceptance-tests/acceptance_test
   export CONFIG_JSON=config.json
 
   cat > "${CONFIG_JSON}" <<-END_OF_CONFIG

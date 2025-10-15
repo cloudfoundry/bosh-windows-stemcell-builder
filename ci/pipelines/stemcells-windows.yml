@@ -126,6 +126,7 @@ resources:
     branch: *bosh_windows_stemcell_builder_branch
     ignore_paths:
       - ci/
+      - acceptance_test/
     username: bosh-admin-bot
     password: ((github_public_repo_token))
 - name: bosh-windows-stemcell-builder-ci
@@ -136,6 +137,16 @@ resources:
     branch: *bosh_windows_stemcell_builder_branch
     paths:
       - ci/
+    username: bosh-admin-bot
+    password: ((github_public_repo_token))
+- name: bosh-windows-stemcell-acceptance-tests
+  type: git
+  tags: [*worker_tag]
+  source:
+    uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
+    branch: *bosh_windows_stemcell_builder_branch
+    paths:
+      - acceptance_test/
     username: bosh-admin-bot
     password: ((github_public_repo_token))
 - name: bosh-windows-stemcell-builder-dockerfiles
@@ -1113,6 +1124,8 @@ jobs:
       steps:
       - get: bosh-windows-stemcell-builder-ci
         tags: [*worker_tag]
+      - get: bosh-windows-stemcell-acceptance-tests
+        tags: [*worker_tag]
       - get: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag]
       - get: stemcell-builder
@@ -1277,6 +1290,8 @@ jobs:
         fail_fast: true
         steps:
           - get: bosh-windows-stemcell-builder-ci
+            tags: [*worker_tag]
+          - get: bosh-windows-stemcell-acceptance-tests
             tags: [*worker_tag]
           - get: bosh-windows-stemcell-builder-ci-image
             tags: [*worker_tag]
@@ -1444,6 +1459,8 @@ jobs:
       fail_fast: true
       steps:
       - get: bosh-windows-stemcell-builder-ci
+        tags: [*worker_tag]
+      - get: bosh-windows-stemcell-acceptance-tests
         tags: [*worker_tag]
       - get: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag]
@@ -1614,6 +1631,8 @@ jobs:
       fail_fast: true
       steps:
       - get: bosh-windows-stemcell-builder-ci
+        tags: [*worker_tag]
+      - get: bosh-windows-stemcell-acceptance-tests
         tags: [*worker_tag]
       - get: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag]
@@ -1790,6 +1809,8 @@ jobs:
       fail_fast: true
       steps:
       - get: bosh-windows-stemcell-builder-ci
+        tags: [*worker_tag]
+      - get: bosh-windows-stemcell-acceptance-tests
         tags: [*worker_tag]
       - get: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag]
@@ -1983,6 +2004,8 @@ jobs:
         resource: gcp-untested
         passed: [create-gcp]
       - get: bosh-windows-stemcell-builder-ci
+        tags: [*worker_tag]
+      - get: bosh-windows-stemcell-acceptance-tests
         tags: [*worker_tag]
       - get: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag]
