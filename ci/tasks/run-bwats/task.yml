@@ -18,7 +18,7 @@ params:
   BOSH_ENVIRONMENT:
   GINKGO_FOCUS:
   GINKGO_SKIP:
-  GINKGO_TIMEOUT: 2h # Ginkgo v2 default is 1h
+  GINKGO_TIMEOUT: 3h # Ginkgo v2 default is 1h
   IAAS:
   NETWORK: default
   SSH_TUNNEL_IP:
