@@ -90,7 +90,7 @@ var _ = AfterSuite(func() {
 		return
 	}
 
-	err := boshCommand.Run(fmt.Sprintf("--deployment=%s delete-deployment --force", deploymentName))
+	err := boshCommand.Run(fmt.Sprintf("--deployment=%s delete-deployment", deploymentName))
 	Expect(err).NotTo(HaveOccurred())
 	err = boshCommand.Run(fmt.Sprintf("delete-stemcell %s/%s", stemcellName, stemcellVersion))
 	Expect(err).NotTo(HaveOccurred())
@@ -162,7 +162,7 @@ var _ = Describe("BOSH Windows", func() {
 		var slowCompilingDeploymentName string
 
 		AfterEach(func() {
-			err := boshCommand.Run(fmt.Sprintf("--deployment=%s delete-deployment --force", slowCompilingDeploymentName))
+			err := boshCommand.Run(fmt.Sprintf("--deployment=%s delete-deployment", slowCompilingDeploymentName))
 			Expect(err).NotTo(HaveOccurred())
 		})
 
