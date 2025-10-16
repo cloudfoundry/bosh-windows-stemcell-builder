@@ -446,18 +446,6 @@ func (fake *FakeRemoteManager) UploadArtifactReturnsOnCall(i int, result1 error)
 func (fake *FakeRemoteManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.canLoginVMMutex.RLock()
-	defer fake.canLoginVMMutex.RUnlock()
-	fake.canReachVMMutex.RLock()
-	defer fake.canReachVMMutex.RUnlock()
-	fake.executeCommandMutex.RLock()
-	defer fake.executeCommandMutex.RUnlock()
-	fake.executeCommandWithTimeoutMutex.RLock()
-	defer fake.executeCommandWithTimeoutMutex.RUnlock()
-	fake.extractArchiveMutex.RLock()
-	defer fake.extractArchiveMutex.RUnlock()
-	fake.uploadArtifactMutex.RLock()
-	defer fake.uploadArtifactMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

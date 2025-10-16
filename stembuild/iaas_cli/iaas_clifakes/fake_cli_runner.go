@@ -179,10 +179,6 @@ func (fake *FakeCliRunner) RunWithOutputReturnsOnCall(i int, result1 string, res
 func (fake *FakeCliRunner) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.runMutex.RLock()
-	defer fake.runMutex.RUnlock()
-	fake.runWithOutputMutex.RLock()
-	defer fake.runWithOutputMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

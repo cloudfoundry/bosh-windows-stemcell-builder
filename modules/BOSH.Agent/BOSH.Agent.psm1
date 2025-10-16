@@ -67,6 +67,13 @@ function Copy-Agent
     Open-Zip $agentZipPath $boshDir
     Move-Item (Join-Path $boshDir (Join-Path "deps" "*")) $depsDir
     Remove-Item -Path (Join-Path $boshDir "deps") -Force
+
+    # Although we previously removed bsdtar in favor of the system tar that
+    # comes with windows, some older garden-runc releases (< v1.76.0) still
+    # expect tar to live there. This preserves backwards compatability. We can
+    # likely rip this out again once we're out of some reasonable window where
+    # someone will still be running an older garden-runc release
+    Copy-Item "C:\Windows\system32\tar.exe" -Destination (Join-Path $depsDir "tar.exe")
 }
 
 
@@ -255,7 +262,7 @@ function Set-Path
 
 function Enable-AgentService
 {
-    Write-Log "Disabling bosh agent service"
+    Write-Log "Enabling bosh agent service"
     Set-Service bosh-agent -StartupType automatic
 }
 

@@ -171,10 +171,6 @@ func (fake *FakeOpsManager) ProcessManagerReturnsOnCall(i int, result1 *guest.Pr
 func (fake *FakeOpsManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.fileManagerMutex.RLock()
-	defer fake.fileManagerMutex.RUnlock()
-	fake.processManagerMutex.RLock()
-	defer fake.processManagerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

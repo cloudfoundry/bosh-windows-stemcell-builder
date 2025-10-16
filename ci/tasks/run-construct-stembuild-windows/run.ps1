@@ -1,27 +1,31 @@
+Set-PSDebug -Trace 2
+
 $ErrorActionPreference = "Stop";
 trap { Exit 1 }
+
+$ROOT_DIR=Get-Location
 
 Import-Module ./bosh-windows-stemcell-builder-ci/ci/common-scripts/setup-windows-container.psm1
 Set-TmpDir
 Set-VCenterHostAndCert
 
-$env:VCENTER_CA_CERT | Set-Content ca.crt
+Copy-Item lgpo-binary/LGPO*.zip "$ROOT_DIR\LGPO.zip"
 
-pushd stembuild-untested-windows
-    Move-Item stembuild* stembuild.exe
-popd
+$ca_cert_file="$ROOT_DIR\ca.crt"
+$env:VCENTER_CA_CERT | Set-Content "$ca_cert_file"
 
-Move-Item stembuild-untested-windows/stembuild.exe .
+Copy-Item -Path stembuild-untested-windows/stembuild* "$ROOT_DIR\stembuild.exe"
+ICACLS "$ROOT_DIR\stembuild.exe" /grant:r "users:(RX)" /C
 
-Move-Item lgpo-binary/LGPO*.zip LGPO.zip
-
-ICACLS stembuild.exe /grant:r "users:(RX)" /C
-
-Write-Host ".\stembuild.exe construct -vcenter-url $env:VCENTER_BASE_URL -vcenter-username $env:VCENTER_USERNAME -vcenter-password <redacted> -vm-inventory-path $env:VCENTER_VM_FOLDER/$env:STEMBUILD_BASE_VM_NAME -vm-ip $env:STEMBUILD_BASE_VM_IP -vm-username $env:STEMBUILD_BASE_VM_USERNAME -vm-password STEMBUILD_BASE_VM_PASSWORD -vcenter-ca-certs ca.crt"
-.\stembuild.exe construct `
-    -vcenter-url $env:VCENTER_BASE_URL -vcenter-username $env:VCENTER_USERNAME -vcenter-password $env:VCENTER_PASSWORD `
-    -vcenter-ca-certs ca.crt `
+.\stembuild.exe -debug construct `
+    -vcenter-url $env:VCENTER_BASE_URL `
+        -vcenter-username $env:VCENTER_USERNAME `
+        -vcenter-password $env:VCENTER_PASSWORD `
+    -vcenter-ca-certs $ca_cert_file `
     -vm-inventory-path $env:VCENTER_VM_FOLDER/$env:STEMBUILD_BASE_VM_NAME `
-    -vm-ip $env:STEMBUILD_BASE_VM_IP -vm-username $env:STEMBUILD_BASE_VM_USERNAME -vm-password $env:STEMBUILD_BASE_VM_PASSWORD `
+    -vm-ip $env:STEMBUILD_BASE_VM_IP `
+        -vm-username $env:STEMBUILD_BASE_VM_USERNAME `
+        -vm-password $env:STEMBUILD_BASE_VM_PASSWORD `
     -setup-arg FailOnInstallWUCerts
+
 exit $LASTEXITCODE

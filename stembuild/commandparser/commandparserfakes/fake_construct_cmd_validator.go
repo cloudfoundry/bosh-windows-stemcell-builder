@@ -150,10 +150,6 @@ func (fake *FakeConstructCmdValidator) PopulatedArgsReturnsOnCall(i int, result1
 func (fake *FakeConstructCmdValidator) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.lGPOInDirectoryMutex.RLock()
-	defer fake.lGPOInDirectoryMutex.RUnlock()
-	fake.populatedArgsMutex.RLock()
-	defer fake.populatedArgsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -5,7 +5,7 @@ inputs:
   - name: bosh-windows-stemcell-builder-ci
 
 outputs:
-- name: vm-ip
+  - name: vm-ip
 
 run:
   path: bosh-windows-stemcell-builder-ci/ci/tasks/fetch-vm-ip/run.sh

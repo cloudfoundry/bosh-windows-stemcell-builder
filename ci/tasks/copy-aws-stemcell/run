@@ -19,8 +19,6 @@ else
   set -x
 fi
 
-CONCOURSE_ROOT="$(pwd)"
-
 pushd stemcell-builder
   bundle install --without test
 

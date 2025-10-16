@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/colorlogger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/filesystem"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/package_stemcell/config"
 )
 
@@ -29,6 +30,7 @@ type VCenterPackager struct {
 	OutputConfig config.OutputConfig
 	Client       IaasClient
 	Logger       colorlogger.Logger
+	Messenger    messenger.Messenger
 }
 
 func (v VCenterPackager) Package() error {
@@ -57,7 +59,7 @@ func (v VCenterPackager) Package() error {
 		return errors.New("failed to export the prepared VM")
 	}
 
-	fmt.Println("Converting VMDK into stemcell")
+	v.Messenger.PrintOut("Converting VMDK into stemcell")
 	vmName := path.Base(v.SourceConfig.VmInventoryPath)
 	shaSum, err := TarGenerator(filepath.Join(stemcellDir, "image"), filepath.Join(workingDir, vmName)) //nolint:ineffassign,staticcheck
 	manifestContents := CreateManifest(v.OutputConfig.Os, v.OutputConfig.StemcellVersion, shaSum)
@@ -70,7 +72,7 @@ func (v VCenterPackager) Package() error {
 	stemcellFilename := StemcellFilename(v.OutputConfig.StemcellVersion, v.OutputConfig.Os)
 	_, err = TarGenerator(filepath.Join(v.OutputConfig.OutputDir, stemcellFilename), stemcellDir) //nolint:ineffassign,staticcheck
 
-	fmt.Printf("Stemcell successfully created: %s\n", stemcellFilename)
+	v.Messenger.PrintOut(fmt.Sprintf("Stemcell successfully created: %s\n", stemcellFilename))
 	return nil
 }
 

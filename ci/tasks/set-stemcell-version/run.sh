@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-version="$(cat version/version)"
+version="$(cut -d '.' -f1-2 < version/version)"
+echo "Using version: ${version}"
 
 pushd bosh-windows-stemcell
   echo "BEGIN Files in $(pwd)"

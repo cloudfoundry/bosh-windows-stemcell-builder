@@ -3,6 +3,7 @@
 .envrc
 .vscode
 
+stembuild/out/
 stembuild/stembuild
 stembuild/stembuild.exe
 stembuild/StemcellAutomation.zip

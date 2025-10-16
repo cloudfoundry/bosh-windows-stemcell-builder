@@ -214,12 +214,6 @@ func (fake *FakePackager) ValidateSourceParametersReturnsOnCall(i int, result1 e
 func (fake *FakePackager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.packageMutex.RLock()
-	defer fake.packageMutex.RUnlock()
-	fake.validateFreeSpaceForPackageMutex.RLock()
-	defer fake.validateFreeSpaceForPackageMutex.RUnlock()
-	fake.validateSourceParametersMutex.RLock()
-	defer fake.validateSourceParametersMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/google/subcommands"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/commandparser"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/commandparser/commandparserfakes"
@@ -137,16 +140,21 @@ var _ = Describe("construct", func() {
 
 	Describe("Execute", func() {
 
-		var f *flag.FlagSet
-		var gf *commandparser.GlobalFlags
-		var ConstrCmd *commandparser.ConstructCmd
-		var emptyContext context.Context
+		var (
+			f  *flag.FlagSet
+			gf *commandparser.GlobalFlags
 
-		var fakeFactory *commandparserfakes.FakeVMPreparerFactory
-		var fakeVmConstruct *commandparserfakes.FakeVmConstruct
-		var fakeValidator *commandparserfakes.FakeConstructCmdValidator
-		var fakeMessenger *commandparserfakes.FakeConstructMessenger
-		var fakeManagerFactory *commandparserfakes.FakeManagerFactory
+			ConstrCmd    *commandparser.ConstructCmd
+			emptyContext context.Context
+
+			outBuf *Buffer
+			errBuf *Buffer
+
+			fakeFactory        *commandparserfakes.FakeVMPreparerFactory
+			fakeVmConstruct    *commandparserfakes.FakeVmConstruct
+			fakeValidator      *commandparserfakes.FakeConstructCmdValidator
+			fakeManagerFactory *commandparserfakes.FakeManagerFactory
+		)
 
 		BeforeEach(func() {
 			f = flag.NewFlagSet("test", flag.ExitOnError)
@@ -155,11 +163,14 @@ var _ = Describe("construct", func() {
 			fakeFactory = &commandparserfakes.FakeVMPreparerFactory{}
 			fakeVmConstruct = &commandparserfakes.FakeVmConstruct{}
 			fakeValidator = &commandparserfakes.FakeConstructCmdValidator{}
-			fakeMessenger = &commandparserfakes.FakeConstructMessenger{}
 			fakeManagerFactory = &commandparserfakes.FakeManagerFactory{}
 			fakeFactory.NewReturns(fakeVmConstruct, nil)
 
-			ConstrCmd = commandparser.NewConstructCmd(context.Background(), fakeFactory, fakeManagerFactory, fakeValidator, fakeMessenger)
+			outBuf = NewBuffer()
+			errBuf = NewBuffer()
+			stembuildMessenger := messenger.NewStembuildMessenger(outBuf, errBuf)
+
+			ConstrCmd = commandparser.NewConstructCmd(context.Background(), fakeFactory, fakeManagerFactory, fakeValidator, stembuildMessenger)
 			ConstrCmd.SetFlags(f)
 			ConstrCmd.GlobalFlags = gf
 			emptyContext = context.Background()
@@ -185,7 +196,7 @@ var _ = Describe("construct", func() {
 				exitStatus := ConstrCmd.Execute(emptyContext, f)
 
 				Expect(exitStatus).To(Equal(subcommands.ExitFailure))
-				Expect(fakeMessenger.ArgumentsNotProvidedCallCount()).To(Equal(1))
+				Eventually(errBuf).Should(Say("Not all required parameters were provided. See stembuild --help for more details"))
 			})
 		})
 
@@ -197,7 +208,7 @@ var _ = Describe("construct", func() {
 				exitStatus := ConstrCmd.Execute(emptyContext, f)
 
 				Expect(exitStatus).To(Equal(subcommands.ExitFailure))
-				Expect(fakeMessenger.LGPONotFoundCallCount()).To(Equal(1))
+				Eventually(errBuf).Should(Say("Could not find LGPO.zip in the current directory"))
 			})
 		})
 
@@ -205,12 +216,13 @@ var _ = Describe("construct", func() {
 			It("should return an error", func() {
 				fakeValidator.PopulatedArgsReturns(true)
 				fakeValidator.LGPOInDirectoryReturns(true)
-				fakeVmConstruct.PrepareVMReturns(errors.New("some error"))
+				prepareVmErr := errors.New("fake-prepare-error")
+				fakeVmConstruct.PrepareVMReturns(prepareVmErr)
 
 				exitStatus := ConstrCmd.Execute(emptyContext, f)
 
 				Expect(exitStatus).To(Equal(subcommands.ExitFailure))
-				Expect(fakeMessenger.CannotPrepareVMCallCount()).To(Equal(1))
+				Eventually(errBuf).Should(Say(fmt.Sprintf("Could not prepare VM: %s", prepareVmErr)))
 			})
 		})
 	})

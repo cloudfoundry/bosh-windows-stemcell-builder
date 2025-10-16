@@ -3,8 +3,10 @@ function Set-TmpDir
     $working_directory = Get-Location
     $guid = $( New-Guid ).Guid
     $temp_directory=Join-Path -Path $working_directory.path -ChildPath "temp-$guid"
+    Write-Host *** Creating and setting temp environment variables to $temp_directory ***
     New-Item -Path $temp_directory -ItemType Directory
     $env:TMP=$temp_directory
+    $env:TEMP=$temp_directory
     $env:SystemTemp=$temp_directory
 }
 

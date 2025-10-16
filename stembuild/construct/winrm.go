@@ -35,7 +35,7 @@ func (w *WinRMManager) Enable() error {
 
 	base64WinRM := EncodePowershellCommand(rawWinRMwtCmd)
 
-	pid, err := w.GuestManager.StartProgramInGuest(context.Background(), powershell, fmt.Sprintf("-EncodedCommand %s", base64WinRM))
+	pid, err := w.GuestManager.StartProgramInGuest(context.Background(), powershellExePath, fmt.Sprintf("-EncodedCommand %s", base64WinRM))
 	if err != nil {
 		return fmt.Errorf(failureString, err)
 	}

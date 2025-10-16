@@ -6,7 +6,6 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,7 +32,7 @@ var _ = Describe("Package", func() {
 
 	BeforeEach(func() {
 		vcenterFolder := helpers.EnvMustExist(vcenterFolderVariable)
-		packageTestVMName := fmt.Sprintf("stembuild-package-test-%d", rand.Int())
+		packageTestVMName := fmt.Sprintf("stembuild-package-test-%s", time.Now().Format("2006-01-02T15h04s05"))
 
 		baseVMWithPath := strings.Join([]string{vcenterFolder, baseVMName}, "/")
 		vmPath = strings.Join([]string{vcenterFolder, packageTestVMName}, "/")

@@ -24,6 +24,7 @@ govc vm.clone \
   -folder "${CLONE_FOLDER}" \
   -on=false "${CLONE_NAME}"
 
+echo "Customizing ${CLONE_NAME}"
 govc vm.customize \
   -vm.ipath "${CLONE_FOLDER}"/"${CLONE_NAME}" \
   -org "${VM_ORG_NAME}" \

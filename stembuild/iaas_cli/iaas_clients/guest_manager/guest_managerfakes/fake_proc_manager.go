@@ -248,12 +248,6 @@ func (fake *FakeProcManager) StartProgramReturnsOnCall(i int, result1 int64, res
 func (fake *FakeProcManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.clientMutex.RLock()
-	defer fake.clientMutex.RUnlock()
-	fake.listProcessesMutex.RLock()
-	defer fake.listProcessesMutex.RUnlock()
-	fake.startProgramMutex.RLock()
-	defer fake.startProgramMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

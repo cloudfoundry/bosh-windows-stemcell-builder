@@ -93,6 +93,7 @@ func (c *VcenterClient) ListDevices(vmInventoryPath string) ([]string, error) {
 
 	return devices, nil
 }
+
 func (c *VcenterClient) RemoveDevice(vmInventoryPath string, deviceName string) error {
 	args := c.buildGovcCommand("device.remove", "-vm", vmInventoryPath, deviceName)
 	errCode := c.Runner.Run(args)
@@ -128,8 +129,7 @@ func (c *VcenterClient) ExportVM(vmInventoryPath string, destination string) err
 }
 
 func (c *VcenterClient) UploadArtifact(vmInventoryPath, artifact, destination, username, password string) error {
-	vmCredentials := fmt.Sprintf("%s:%s", username, password)
-	args := c.buildGovcCommand("guest.upload", "-f", "-l", vmCredentials, "-vm", vmInventoryPath, artifact, destination)
+	args := c.buildGovcCommand("guest.upload", "-f", "-l", vmCredentials(username, password), "-vm", vmInventoryPath, artifact, destination)
 	errCode := c.Runner.Run(args)
 	if errCode != 0 {
 		return fmt.Errorf("vcenter_client - %s could not be uploaded", artifact)
@@ -139,75 +139,13 @@ func (c *VcenterClient) UploadArtifact(vmInventoryPath, artifact, destination, u
 }
 
 func (c *VcenterClient) MakeDirectory(vmInventoryPath, path, username, password string) error {
-	vmCredentials := fmt.Sprintf("%s:%s", username, password)
-
-	args := c.buildGovcCommand("guest.mkdir", "-l", vmCredentials, "-vm", vmInventoryPath, "-p", path)
+	args := c.buildGovcCommand("guest.mkdir", "-l", vmCredentials(username, password), "-vm", vmInventoryPath, "-p", path)
 	errCode := c.Runner.Run(args)
 	if errCode != 0 {
 		return fmt.Errorf("vcenter_client - directory `%s` could not be created", path)
 	}
 
 	return nil
-}
-
-func (c *VcenterClient) Start(vmInventoryPath, username, password, command string, args ...string) (string, error) {
-	vmCredentials := fmt.Sprintf("%s:%s", username, password)
-
-	cmdArgs := c.buildGovcCommand(append([]string{"guest.start", "-l", vmCredentials, "-vm", vmInventoryPath, command}, args...)...)
-	pid, exitCode, err := c.Runner.RunWithOutput(cmdArgs)
-	if err != nil {
-		return "", fmt.Errorf("vcenter_client - failed to run '%s': %s", command, err)
-	}
-	if exitCode != 0 {
-		return "", fmt.Errorf("vcenter_client - '%s' returned exit code: %d", command, exitCode)
-	}
-
-	return strings.TrimSuffix(pid, "\n"), nil // trim since govc outputs the pid with an '\n' in the output
-}
-
-type govcPS struct {
-	ProcessInfo []struct {
-		Name      string
-		Pid       int
-		Owner     string
-		CmdLine   string
-		StartTime string
-		EndTime   string
-		ExitCode  int
-	}
-}
-
-func (c *VcenterClient) WaitForExit(vmInventoryPath, username, password, pid string) (int, error) {
-	vmCredentials := fmt.Sprintf("%s:%s", username, password)
-	args := c.buildGovcCommand("guest.ps", "-l", vmCredentials, "-vm", vmInventoryPath, "-p", pid, "-X", "-json")
-	output, exitCode, err := c.Runner.RunWithOutput(args)
-	if err != nil {
-		return 0, fmt.Errorf("vcenter_client - failed to fetch exit code for PID %s: %s", pid, err)
-	}
-	if exitCode != 0 {
-		return 0, fmt.Errorf("vcenter_client - fetching PID %s returned with exit code: %d", pid, exitCode)
-	}
-
-	ps := govcPS{}
-	err = json.Unmarshal([]byte(output), &ps)
-	if err != nil {
-		return 0, fmt.Errorf("vcenter_client - received bad JSON output for PID %s: %s", pid, output)
-	}
-	if len(ps.ProcessInfo) != 1 {
-		return 0, fmt.Errorf("vcenter_client - couldn't get exit code for PID %s", pid)
-	}
-
-	return ps.ProcessInfo[0].ExitCode, nil
-}
-
-func (c *VcenterClient) buildGovcCommand(args ...string) []string {
-	commonArgs := []string{"-u", c.credentialUrl}
-	if c.caCertFile != "" {
-		commonArgs = append(commonArgs, fmt.Sprintf("-tls-ca-certs=%s", c.caCertFile))
-	}
-	args = append(args[:1], append(commonArgs, args[1:]...)...)
-
-	return args
 }
 
 func (c *VcenterClient) IsPoweredOff(vmInventoryPath string) (bool, error) {
@@ -226,4 +164,65 @@ func (c *VcenterClient) IsPoweredOff(vmInventoryPath string) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func (c *VcenterClient) Start(vmInventoryPath, username, password, command string, args ...string) (string, error) {
+	cmdArgs := c.buildGovcCommand(append([]string{"guest.start", "-l", vmCredentials(username, password), "-vm", vmInventoryPath, command}, args...)...)
+	pid, exitCode, err := c.Runner.RunWithOutput(cmdArgs)
+	if err != nil {
+		return "", fmt.Errorf("vcenter_client - failed to run '%s': %s", command, err)
+	}
+	if exitCode != 0 {
+		return "", fmt.Errorf("vcenter_client - '%s' returned exit code: %d", command, exitCode)
+	}
+
+	return strings.TrimSuffix(pid, "\n"), nil // trim since govc outputs the pid with an '\n' in the output
+}
+
+func (c *VcenterClient) WaitForExit(vmInventoryPath, username, password, pid string) (int, error) {
+	args := c.buildGovcCommand("guest.ps", "-l", vmCredentials(username, password), "-vm", vmInventoryPath, "-p", pid, "-X", "-json")
+	output, exitCode, err := c.Runner.RunWithOutput(args)
+	if err != nil {
+		return 0, fmt.Errorf("vcenter_client - failed to fetch exit code for PID %s: %s", pid, err)
+	}
+	if exitCode != 0 {
+		return 0, fmt.Errorf("vcenter_client - fetching PID %s returned with exit code: %d", pid, exitCode)
+	}
+
+	var processInfos govcProcessInfos
+	err = json.Unmarshal([]byte(output), &processInfos)
+	if err != nil {
+		return 0, fmt.Errorf("vcenter_client - received bad JSON output for PID %s: %s", pid, output)
+	}
+	if len(processInfos.ProcessInfo) != 1 {
+		return 0, fmt.Errorf("vcenter_client - couldn't get exit code for PID %s", pid)
+	}
+
+	return processInfos.ProcessInfo[0].ExitCode, nil
+}
+
+func (c *VcenterClient) buildGovcCommand(args ...string) []string {
+	commonArgs := []string{"-u", c.credentialUrl}
+	if c.caCertFile != "" {
+		commonArgs = append(commonArgs, fmt.Sprintf("-tls-ca-certs=%s", c.caCertFile))
+	}
+	args = append(args[:1], append(commonArgs, args[1:]...)...)
+
+	return args
+}
+
+func vmCredentials(username, password string) string {
+	return fmt.Sprintf("%s:%s", username, password)
+}
+
+type govcProcessInfos struct {
+	ProcessInfo []struct {
+		Name      string
+		Pid       int
+		Owner     string
+		CmdLine   string
+		StartTime string
+		EndTime   string
+		ExitCode  int
+	}
 }

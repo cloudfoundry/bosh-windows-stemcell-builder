@@ -8,12 +8,18 @@ import (
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/commandparser"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/iaas_cli/iaas_clients"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/package_stemcell/config"
 )
 
 type Factory struct{}
 
-func (f *Factory) NewPackager(sourceConfig config.SourceConfig, outputConfig config.OutputConfig, logger colorlogger.Logger) (commandparser.Packager, error) {
+func (f *Factory) NewPackager(
+	sourceConfig config.SourceConfig,
+	outputConfig config.OutputConfig,
+	logger colorlogger.Logger,
+	messenger messenger.Messenger,
+) (commandparser.Packager, error) {
 	source, err := sourceConfig.GetSource()
 	if err != nil {
 		return nil, err
@@ -35,6 +41,7 @@ func (f *Factory) NewPackager(sourceConfig config.SourceConfig, outputConfig con
 			OutputConfig: outputConfig,
 			Client:       client,
 			Logger:       logger,
+			Messenger:    messenger,
 		}, nil
 	case config.VMDK:
 		options :=
@@ -49,6 +56,7 @@ func (f *Factory) NewPackager(sourceConfig config.SourceConfig, outputConfig con
 			Stop:         make(chan struct{}),
 			BuildOptions: options,
 			Logger:       logger,
+			Messenger:    messenger,
 		}, nil
 	default:
 		return nil, errors.New("unable to determine packager")

@@ -328,14 +328,6 @@ func (fake *FakeVCenterManager) OperationsManagerReturnsOnCall(i int, result1 *g
 func (fake *FakeVCenterManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.findVMMutex.RLock()
-	defer fake.findVMMutex.RUnlock()
-	fake.guestManagerMutex.RLock()
-	defer fake.guestManagerMutex.RUnlock()
-	fake.loginMutex.RLock()
-	defer fake.loginMutex.RUnlock()
-	fake.operationsManagerMutex.RLock()
-	defer fake.operationsManagerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

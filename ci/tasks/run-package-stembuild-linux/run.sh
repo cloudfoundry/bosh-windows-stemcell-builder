@@ -2,33 +2,28 @@
 set -eu -o pipefail
 set -x
 
+ROOT_DIR="$( pwd )"
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 source "${SCRIPT_DIR}/../../common-scripts/update_nimbus_urls_and_cert.sh"
 
-cat > ca.crt <<END_OF_CERT
-$VCENTER_CA_CERT
-END_OF_CERT
+build_version="$(cat build-number/number)"
+build_patch="$(echo "${build_version}" | cut -d . -f3,4)"
+build_date="$(date -u +"%Y%m%d%H%M")"
+patch_version="${build_patch}${build_date}"
 
-pushd stembuild-untested-linux
-  mv stembuild* stembuild
-popd
-mv stembuild-untested-linux/stembuild .
+ca_cert_file="${ROOT_DIR}/vcenter_ca.crt"
+echo "${VCENTER_CA_CERT}" > "${ca_cert_file}"
 
-chmod 500 stembuild
+cp stembuild-untested-linux/stembuild* "${ROOT_DIR}/stembuild"
+chmod 500 "${ROOT_DIR}/stembuild"
 
-version="$(cat build-number/number)"
-stemcell_build_number="$(date -u +"%Y%m%d%H%M")"
-IFS='.' read -r -a array <<< "$version"
-patch_version="${array[2]}.${array[3]}${stemcell_build_number}"
-
-./stembuild package \
-  -vcenter-ca-certs ca.crt \
+./stembuild -debug package \
   -vcenter-url "${VCENTER_BASE_URL}" \
-  -vcenter-username "${VCENTER_USERNAME}" \
-  -vcenter-password "${VCENTER_PASSWORD}" \
+    -vcenter-username "${VCENTER_USERNAME}" \
+    -vcenter-password "${VCENTER_PASSWORD}" \
+  -vcenter-ca-certs "${ca_cert_file}" \
   -vm-inventory-path "${VCENTER_VM_FOLDER}/${STEMBUILD_BASE_VM_NAME}" \
   -patch-version "${patch_version}"
 
 mv *.tgz stembuild-built-stemcell
-

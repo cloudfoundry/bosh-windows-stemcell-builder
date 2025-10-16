@@ -6,529 +6,829 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/construct"
-	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/construct/constructfakes"
-	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/poller/pollerfakes"
-	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager"
-	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager/remotemanagerfakes"
-
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/poller"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
+
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/construct"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/construct/constructfakes"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/poller/pollerfakes"
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager/remotemanagerfakes"
 )
+
+type nonWaitingPoller struct{}
+
+func (p *nonWaitingPoller) Poll(_ time.Duration, loopFunc func() (bool, error)) error {
+	poll := true
+	for poll {
+		out, err := loopFunc()
+		if err != nil {
+			return err
+		}
+		poll = !out
+	}
+	return nil
+}
 
 var _ = Describe("construct_helpers", func() {
 	var (
+		outBuf *Buffer
+		errBuf *Buffer
+
+		testPoller          poller.PollerI
+		useNonWaitingPoller bool
+
+		ctx                       context.Context
 		fakeRemoteManager         *remotemanagerfakes.FakeRemoteManager
+		vmUsername                string
+		vmPassword                string
+		vmInventoryPath           string
 		vmConstruct               *construct.VMConstruct
 		fakeVcenterClient         *constructfakes.FakeIaasClient
 		fakeGuestManager          *constructfakes.FakeGuestManager
 		fakeWinRMEnabler          *constructfakes.FakeWinRMEnabler
-		fakeMessenger             *constructfakes.FakeConstructMessenger
 		fakePoller                *pollerfakes.FakePollerI
 		fakeVersionGetter         *constructfakes.FakeVersionGetter
 		fakeVMConnectionValidator *constructfakes.FakeVMConnectionValidator
+		stembuildMessenger        messenger.Messenger
 		fakeRebootWaiter          *constructfakes.FakeRebootWaiterI
 		fakeScriptExecutor        *constructfakes.FakeScriptExecutorI
 		fakeSetupFlags            []string
 	)
-	const rawLogoffCommand = `&{If([string]::IsNullOrEmpty($(Get-WmiObject win32_computersystem).username)) {Write-Host "No users logged in." } Else {Write-Host "Logging out user."; $(Get-WmiObject win32_operatingsystem).Win32Shutdown(0) 1> $null}}`
+
 	BeforeEach(func() {
+		outBuf = NewBuffer()
+		errBuf = NewBuffer()
+
+		ctx = context.TODO()
 		fakeRemoteManager = &remotemanagerfakes.FakeRemoteManager{}
+		vmUsername = "fakeUser"
+		vmPassword = "fakePass"
+		vmInventoryPath = "fakeVmPath"
 		fakeVcenterClient = &constructfakes.FakeIaasClient{}
 		fakeGuestManager = &constructfakes.FakeGuestManager{}
 		fakeWinRMEnabler = &constructfakes.FakeWinRMEnabler{}
-		fakeMessenger = &constructfakes.FakeConstructMessenger{}
 		fakePoller = &pollerfakes.FakePollerI{}
 		fakeVersionGetter = &constructfakes.FakeVersionGetter{}
 		fakeVMConnectionValidator = &constructfakes.FakeVMConnectionValidator{}
+		stembuildMessenger = messenger.NewStembuildMessenger(outBuf, errBuf)
 		fakeRebootWaiter = &constructfakes.FakeRebootWaiterI{}
 		fakeScriptExecutor = &constructfakes.FakeScriptExecutorI{}
 		fakeSetupFlags = []string{"SomeFlag SomeValue", "OtherFlag OtherValue"}
 
+		useNonWaitingPoller = false
+	})
+
+	JustBeforeEach(func() {
+		testPoller = fakePoller
+		if useNonWaitingPoller {
+			testPoller = &nonWaitingPoller{}
+		}
+
 		vmConstruct = construct.NewVMConstruct(
-			context.TODO(),
+			ctx,
 			fakeRemoteManager,
-			"fakeUser",
-			"fakePass",
-			"fakeVmPath",
+			vmUsername,
+			vmPassword,
+			vmInventoryPath,
 			fakeVcenterClient,
 			fakeGuestManager,
 			fakeWinRMEnabler,
 			fakeVMConnectionValidator,
-			fakeMessenger,
-			fakePoller,
+			stembuildMessenger,
+			testPoller,
 			fakeVersionGetter,
 			fakeRebootWaiter,
 			fakeScriptExecutor,
 			fakeSetupFlags,
 		)
 		vmConstruct.RebootWaitTime = 0
-
-		fakeGuestManager.StartProgramInGuestReturnsOnCall(0, 0, nil)
-		fakeGuestManager.ExitCodeForProgramInGuestReturnsOnCall(0, 0, nil)
-		versionBuffer := NewBuffer()
-		_, err := versionBuffer.Write([]byte("dev"))
-		Expect(err).NotTo(HaveOccurred())
-
-		fakeGuestManager.DownloadFileInGuestReturns(versionBuffer, 3, nil)
-		fakeGuestManager.StartProgramInGuestReturns(0, nil)
-
-	})
-
-	Describe("ScriptExecutor", func() {
-		It("executes setup script with correct arguments", func() {
-
-			e := construct.NewScriptExecutor(fakeRemoteManager)
-			version := "11.11.11"
-			err := e.ExecuteSetupScript(version, fakeSetupFlags)
-			executeCommandCallArg := fakeRemoteManager.ExecuteCommandArgsForCall(0)
-
-			Expect(err).NotTo(HaveOccurred())
-			Expect(executeCommandCallArg).To(ContainSubstring("powershell"))
-			Expect(executeCommandCallArg).To(ContainSubstring("Setup.ps1"))
-			Expect(executeCommandCallArg).To(ContainSubstring(" -Version " + version))
-			Expect(executeCommandCallArg).To(ContainSubstring(" -SomeFlag SomeValue"))
-			Expect(executeCommandCallArg).To(ContainSubstring(" -OtherFlag OtherValue"))
-		})
-
-		It("executes post-reboot script with correct arguments", func() {
-			e := construct.NewScriptExecutor(fakeRemoteManager)
-			superLongTimeout := 24 * time.Hour
-			err := e.ExecutePostRebootScript(superLongTimeout)
-			executeCommandCallArg, timeout := fakeRemoteManager.ExecuteCommandWithTimeoutArgsForCall(0)
-
-			Expect(err).NotTo(HaveOccurred())
-			Expect(executeCommandCallArg).To(ContainSubstring("powershell"))
-			Expect(executeCommandCallArg).To(ContainSubstring("PostReboot.ps1"))
-			Expect(timeout).To(Equal(superLongTimeout))
-		})
-
-		It("returns an error when there is a powershell script execution error", func() {
-			e := construct.NewScriptExecutor(fakeRemoteManager)
-			superLongTimeout := 24 * time.Hour
-			powershellErrorPrefix := errors.New(remotemanager.PowershellExecutionErrorMessage)
-			powershellErr := fmt.Errorf("%s: %s", powershellErrorPrefix, "a command failed to run")
-			fakeRemoteManager.ExecuteCommandWithTimeoutReturns(2, powershellErr)
-
-			err := e.ExecutePostRebootScript(superLongTimeout)
-
-			Expect(err).To(MatchError(powershellErr))
-		})
-
-		It("wraps a non-powershell execution error", func() {
-			e := construct.NewScriptExecutor(fakeRemoteManager)
-			superLongTimeout := 24 * time.Hour
-			winRMError := errors.New("some EOF thing")
-
-			fakeRemoteManager.ExecuteCommandWithTimeoutReturns(1, winRMError)
-
-			err := e.ExecutePostRebootScript(superLongTimeout)
-
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("winrm connection event"))
-		})
-
 	})
 
 	Describe("PrepareVM", func() {
-		Describe("can create provision directory", func() {
-			It("creates it successfully", func() {
-				err := vmConstruct.PrepareVM()
-
-				Expect(err).ToNot(HaveOccurred())
-				Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
-				Expect(fakeMessenger.CreateProvisionDirStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.CreateProvisionDirSucceededCallCount()).To(Equal(1))
-			})
-
-			It("fails when the provision dir cannot be created", func() {
-				mkDirError := errors.New("failed to create dir")
-				fakeVcenterClient.MakeDirectoryReturns(mkDirError)
-
-				err := vmConstruct.PrepareVM()
-
-				Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to create dir"))
-				Expect(fakeMessenger.CreateProvisionDirStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.CreateProvisionDirSucceededCallCount()).To(Equal(0))
-			})
-		})
-
-		Describe("enable WinRM", func() {
-			It("returns failure when it fails to enable winrm", func() {
-				execError := errors.New("failed to enable winRM")
-				fakeWinRMEnabler.EnableReturns(execError)
-
-				err := vmConstruct.PrepareVM()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to enable winRM"))
-
-				Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
-			})
-
-			It("logs that winrm was successfully enabled", func() {
-				err := vmConstruct.PrepareVM()
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.EnableWinRMStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.EnableWinRMSucceededCallCount()).To(Equal(1))
-			})
-		})
-
-		Describe("connect to VM", func() {
-
-			It("checks for WinRM connectivity after WinRM enabled", func() {
-				var calls []string
-
-				fakeWinRMEnabler.EnableCalls(func() error {
-					calls = append(calls, "enableWinRMCall")
-					return nil
+		Describe("creates provision directory", func() {
+			Context("when it fails", func() {
+				var makeDirectoryErr error
+				BeforeEach(func() {
+					makeDirectoryErr = errors.New("fake-make-directory-error")
+					fakeVcenterClient.MakeDirectoryReturns(makeDirectoryErr)
 				})
 
-				fakeVMConnectionValidator.ValidateCalls(func() error {
-					calls = append(calls, "validateVMConnCall")
-					return nil
-				})
-
-				err := vmConstruct.PrepareVM()
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(calls[0]).To(Equal("enableWinRMCall"))
-				Expect(calls[1]).To(Equal("validateVMConnCall"))
-			})
-
-			It("logs that it successfully validated the vm connection", func() {
-				err := vmConstruct.PrepareVM()
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.ValidateVMConnectionStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ValidateVMConnectionSucceededCallCount()).To(Equal(1))
-			})
-
-		})
-
-		Describe("can upload artifacts", func() {
-			Context("Upload all artifacts correctly", func() {
-				It("passes successfully", func() {
-
+				It("returns the error", func() {
 					err := vmConstruct.PrepareVM()
-					Expect(err).ToNot(HaveOccurred())
-					vmPath, artifact, dest, user, pass := fakeVcenterClient.UploadArtifactArgsForCall(0)
-					Expect(artifact).To(Equal("./LGPO.zip"))
-					Expect(vmPath).To(Equal("fakeVmPath"))
-					Expect(dest).To(Equal("C:\\provision\\LGPO.zip"))
-					Expect(user).To(Equal("fakeUser"))
-					Expect(pass).To(Equal("fakePass"))
-					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
-					Expect(fakeMessenger.UploadArtifactsStartedCallCount()).To(Equal(1))
-					Expect(fakeMessenger.UploadArtifactsSucceededCallCount()).To(Equal(1))
-
-					Expect(fakeMessenger.UploadFileStartedCallCount()).To(Equal(2))
-					artifact = fakeMessenger.UploadFileStartedArgsForCall(0)
-					Expect(artifact).To(Equal("LGPO"))
-					artifact = fakeMessenger.UploadFileStartedArgsForCall(1)
-					Expect(artifact).To(Equal("stemcell preparation artifacts"))
-
-					Expect(fakeMessenger.UploadFileSucceededCallCount()).To(Equal(2))
+					Expect(err).To(Equal(makeDirectoryErr))
 				})
 
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(0))
+				})
+
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Eventually(outBuf).Should(Say("\nCreating provision dir on target VM..."))
+					Eventually(outBuf).ShouldNot(Say("\nCreating provision dir on target VM...succeeded.\n"))
+				})
 			})
 
-			Context("Fails to upload one or more artifacts", func() {
-				It("fails when it cannot upload LGPO", func() {
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
 
-					uploadError := errors.New("failed to upload LGPO")
-					fakeVcenterClient.UploadArtifactReturns(uploadError)
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+				})
 
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("\nCreating provision dir on target VM...succeeded.\n"))
+				})
+			})
+		})
+
+		Describe("uploads LGPO.zip", func() {
+			It("invokes the artifact uploader as expected", func() {
+				Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+				actualVmInventoryPath, actualArtifact, actualDestination, actualVmUsername, actualVmPassword :=
+					fakeVcenterClient.UploadArtifactArgsForCall(0)
+
+				Expect(actualVmInventoryPath).To(Equal(vmInventoryPath))
+				Expect(actualArtifact).To(Equal("./LGPO.zip"))
+				Expect(actualDestination).To(Equal(`C:\provision\LGPO.zip`))
+				Expect(actualVmUsername).To(Equal(vmUsername))
+				Expect(actualVmPassword).To(Equal(vmPassword))
+			})
+
+			Context("when it fails", func() {
+				var uploadLgpoErr error
+
+				BeforeEach(func() {
+					uploadLgpoErr = errors.New("fake-upload-lgpo-error")
+					fakeVcenterClient.UploadArtifactReturnsOnCall(0, uploadLgpoErr)
+				})
+
+				It("returns the error", func() {
 					err := vmConstruct.PrepareVM()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(Equal("failed to upload LGPO"))
+					Expect(err).To(Equal(uploadLgpoErr))
+				})
 
-					vmPath, artifact, _, _, _ := fakeVcenterClient.UploadArtifactArgsForCall(0)
-					Expect(artifact).To(Equal("./LGPO.zip"))
-					Expect(vmPath).To(Equal("fakeVmPath"))
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(1))
-					Expect(fakeMessenger.UploadArtifactsStartedCallCount()).To(Equal(1))
-					Expect(fakeMessenger.UploadArtifactsSucceededCallCount()).To(Equal(0))
 				})
 
-				It("fails when it cannot upload Stemcell Automation scripts", func() {
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
 
-					uploadError := errors.New("failed to upload stemcell automation")
-					fakeVcenterClient.UploadArtifactReturnsOnCall(0, nil)
-					fakeVcenterClient.UploadArtifactReturnsOnCall(1, uploadError)
+					Eventually(outBuf).Should(Say("\tUploading LGPO to target VM..."))
+					Eventually(outBuf).ShouldNot(Say("\tUploading LGPO to target VM...succeeded.\n"))
+				})
+			})
 
-					err := vmConstruct.PrepareVM()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(Equal("failed to upload stemcell automation"))
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
 
-					vmPath, artifact, _, _, _ := fakeVcenterClient.UploadArtifactArgsForCall(0)
-					Expect(artifact).To(Equal("./LGPO.zip"))
-					Expect(vmPath).To(Equal("fakeVmPath"))
-					vmPath, artifact, _, _, _ = fakeVcenterClient.UploadArtifactArgsForCall(1)
-					Expect(artifact).To(Equal("./StemcellAutomation.zip"))
-					Expect(vmPath).To(Equal("fakeVmPath"))
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
 					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
-					Expect(fakeMessenger.UploadArtifactsStartedCallCount()).To(Equal(1))
-					Expect(fakeMessenger.UploadArtifactsSucceededCallCount()).To(Equal(0))
+				})
+
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("\tUploading LGPO to target VM...succeeded.\n"))
+				})
+			})
+		})
+
+		Describe("uploads StemcellAutomation.zip", func() {
+			It("invokes the artifact uploader as expected", func() {
+				Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+				actualVmInventoryPath, actualArtifact, actualDestination, actualVmUsername, actualVmPassword :=
+					fakeVcenterClient.UploadArtifactArgsForCall(1)
+
+				Expect(actualVmInventoryPath).To(Equal(vmInventoryPath))
+				Expect(actualArtifact).To(Equal("./StemcellAutomation.zip"))
+				Expect(actualDestination).To(Equal(`C:\provision\StemcellAutomation.zip`))
+				Expect(actualVmUsername).To(Equal(vmUsername))
+				Expect(actualVmPassword).To(Equal(vmPassword))
+			})
+
+			Context("when it fails", func() {
+				var uploadStemcellAutomationErr error
+
+				BeforeEach(func() {
+					uploadStemcellAutomationErr = errors.New("fake-upload-stemcell-automation-error")
+
+					fakeVcenterClient.UploadArtifactReturnsOnCall(0, nil)
+					fakeVcenterClient.UploadArtifactReturnsOnCall(1, uploadStemcellAutomationErr)
+				})
+
+				It("returns the error", func() {
+					err := vmConstruct.PrepareVM()
+					Expect(err).To(Equal(uploadStemcellAutomationErr))
+				})
+
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+				})
+
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Eventually(outBuf).Should(Say("\tUploading stemcell preparation artifacts to target VM..."))
+					Eventually(outBuf).ShouldNot(Say("\tUploading stemcell preparation artifacts to target VM...succeeded.\n"))
+				})
+			})
+
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+				})
+
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("\tUploading stemcell preparation artifacts to target VM...succeeded.\n"))
+				})
+			})
+		})
+
+		Describe("enables WinRM", func() {
+			Context("when it fails", func() {
+				var enableErr error
+				BeforeEach(func() {
+					enableErr = errors.New("fake-enable-winrm-error")
+					fakeWinRMEnabler.EnableReturns(enableErr)
+				})
+
+				It("returns the error", func() {
+					err := vmConstruct.PrepareVM()
+					Expect(err).To(Equal(enableErr))
+				})
+
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(0))
+				})
+
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Eventually(outBuf).Should(Say("\nAttempting to enable WinRM on the guest vm..."))
+					Eventually(outBuf).ShouldNot(Say("WinRm enabled on the guest VM\n"))
+				})
+			})
+
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+				})
+
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("WinRm enabled on the guest VM\n"))
+				})
+			})
+		})
+
+		Describe("validates VM connection", func() {
+			Context("when it fails", func() {
+				var validateErr error
+				BeforeEach(func() {
+					validateErr = errors.New("fake-validate-connection-error")
+					fakeVMConnectionValidator.ValidateReturns(validateErr)
+				})
+
+				It("returns the error", func() {
+					err := vmConstruct.PrepareVM()
+					Expect(err).To(Equal(validateErr))
+				})
+
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(0))
+				})
+
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Eventually(outBuf).Should(Say("\nValidating connection to vm..."))
+					Eventually(outBuf).ShouldNot(Say("\nValidating connection to vm...succeeded.\n"))
+				})
+			})
+
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+				})
+
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("\nValidating connection to vm...succeeded.\n"))
+				})
+			})
+		})
+
+		Describe("extracts artifacts", func() {
+			Context("when it fails", func() {
+				var extractErr error
+				BeforeEach(func() {
+					extractErr = errors.New("fake-extract-error")
+					fakeRemoteManager.ExtractArchiveReturns(extractErr)
+				})
+
+				It("returns the error", func() {
+					err := vmConstruct.PrepareVM()
+					Expect(err).To(Equal(extractErr))
+				})
+
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(0))
+				})
+
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Eventually(outBuf).Should(Say("\nExtracting artifacts..."))
+					Eventually(outBuf).ShouldNot(Say("\nExtracting artifacts...succeeded.\n"))
+				})
+			})
+
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+				})
+
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("\nExtracting artifacts...succeeded.\n"))
 				})
 			})
 		})
 
 		Describe("logs out users", func() {
-			It("returns success when active user is logged out", func() {
-				fakeRemoteManager.ExecuteCommandReturnsOnCall(0, 0, nil)
-
-				err := vmConstruct.PrepareVM()
-				Expect(err).ToNot(HaveOccurred())
-				command := fakeRemoteManager.ExecuteCommandArgsForCall(0)
-
+			It("constructs the expected powershell command", func() {
+				rawLogoffCommand := `&{If([string]::IsNullOrEmpty($(Get-WmiObject win32_computersystem).username)) {Write-Host "No users logged in." } Else {Write-Host "Logging out user."; $(Get-WmiObject win32_operatingsystem).Win32Shutdown(0) 1> $null}}`
 				encodedCommand := construct.EncodePowershellCommand([]byte(rawLogoffCommand))
-				Expect(command).To(ContainSubstring(encodedCommand))
-				Expect(command).To(ContainSubstring("powershell.exe -EncodedCommand "))
 
-				Expect(fakeMessenger.LogOutUsersStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.LogOutUsersSucceededCallCount()).To(Equal(1))
+				expectedCommand := fmt.Sprintf("powershell.exe -EncodedCommand %s", encodedCommand)
+
+				Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+				executeCommandArg := fakeRemoteManager.ExecuteCommandArgsForCall(0)
+				Expect(executeCommandArg).To(Equal(expectedCommand))
 			})
-			It("returns failure when it fails to execute a logout", func() {
-				errorMessage := "Unable to execute command"
-				fakeRemoteManager.ExecuteCommandReturnsOnCall(0, 1, errors.New(errorMessage))
 
-				err := vmConstruct.PrepareVM()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring(errorMessage))
-				Expect(err.Error()).To(ContainSubstring("log out remote user failed with exit code 1"))
+			Context("when it fails", func() {
+				var executePowershellCommandErr error
+				var executePowershellCommandExitCode int
+				BeforeEach(func() {
+					executePowershellCommandErr = errors.New("fake-execute-powershell-command-error")
+					executePowershellCommandExitCode = 90210
+					fakeRemoteManager.ExecuteCommandReturns(executePowershellCommandExitCode, executePowershellCommandErr)
+				})
 
-				Expect(fakeMessenger.LogOutUsersStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.LogOutUsersSucceededCallCount()).To(Equal(0))
+				It("returns an error wrapping the original that includes the exit code", func() {
+					err := vmConstruct.PrepareVM()
+
+					Expect(err.Error()).To(ContainSubstring(executePowershellCommandErr.Error()))
+					Expect(err.Error()).To(ContainSubstring(fmt.Sprintf("log out remote user failed with exit code %d", executePowershellCommandExitCode)))
+				})
+
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(0))
+				})
+
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Eventually(outBuf).Should(Say("\nAttempting to logout any remote users...\n"))
+					Eventually(outBuf).ShouldNot(Say("\nAttempting to logout any remote users...\n\nLogged out remote users\n"))
+				})
+			})
+
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
+				})
+
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("\nAttempting to logout any remote users...\n\nLogged out remote users\n"))
+				})
 			})
 		})
 
-		Describe("can extract archives", func() {
-			It("returns failure when it fails to extract archive", func() {
-				extractError := errors.New("failed to extract archive")
-				fakeRemoteManager.ExtractArchiveReturns(extractError)
-
-				err := vmConstruct.PrepareVM()
-				Expect(err).To(HaveOccurred())
-				Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
-				Expect(err.Error()).To(Equal("failed to extract archive"))
-				Expect(fakeMessenger.ExtractArtifactsStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExtractArtifactsSucceededCallCount()).To(Equal(0))
-			})
-
-			It("returns success when it properly extracts archive", func() {
-				fakeRemoteManager.ExtractArchiveReturns(nil)
-
-				err := vmConstruct.PrepareVM()
-				Expect(err).ToNot(HaveOccurred())
-				Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
-				source, destination := fakeRemoteManager.ExtractArchiveArgsForCall(0)
-				Expect(source).To(Equal("C:\\provision\\StemcellAutomation.zip"))
-				Expect(destination).To(Equal("C:\\provision\\"))
-
-				Expect(fakeMessenger.ExtractArtifactsStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExtractArtifactsSucceededCallCount()).To(Equal(1))
-			})
-
-		})
-
-		Describe("can execute setup scripts", func() {
-			It("returns failure when it fails to execute setup script", func() {
-				execError := errors.New("failed to execute setup script")
-				fakeScriptExecutor.ExecuteSetupScriptReturnsOnCall(0, execError)
-
-				err := vmConstruct.PrepareVM()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("failed to execute setup script"))
-
-				Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecuteSetupScriptStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecuteSetupScriptSucceededCallCount()).To(Equal(0))
-			})
-
-			It("returns success when it properly executes the setup script", func() {
+		Describe("executing setup script 1 of 2", func() {
+			It("invokes the script with the expected args", func() {
 				stembuildVersion := "2019.123.456"
 				fakeVersionGetter.GetVersionReturns(stembuildVersion)
 
-				err := vmConstruct.PrepareVM()
-				Expect(err).ToNot(HaveOccurred())
-
-				Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
+				Expect(vmConstruct.PrepareVM()).To(Succeed())
 
 				version, setupFlags := fakeScriptExecutor.ExecuteSetupScriptArgsForCall(0)
 				Expect(version).To(Equal(stembuildVersion))
 				Expect(setupFlags).To(Equal(fakeSetupFlags))
-
-				Expect(fakeMessenger.ExecuteSetupScriptStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecuteSetupScriptSucceededCallCount()).To(Equal(1))
 			})
 
-		})
-		Describe("can check if vm is rebooting", func() {
-			It("waits for reboot finished after the setup script has been executed", func() {
-				var calls []string
-
-				fakeRebootWaiter.WaitForRebootFinishedCalls(func() error {
-					calls = append(calls, "waitForRebootFinishedCall")
-					return nil
+			Context("when it fails", func() {
+				var executeSetupScriptErr error
+				BeforeEach(func() {
+					executeSetupScriptErr = errors.New("fake-execute-setup-script-error")
+					fakeScriptExecutor.ExecuteSetupScriptReturns(executeSetupScriptErr)
 				})
 
-				fakeScriptExecutor.ExecuteSetupScriptCalls(func(version string, setupFlags []string) error {
-					calls = append(calls, "executeSetupScriptCalls")
-					return nil
+				It("returns the error", func() {
+					err := vmConstruct.PrepareVM()
+					Expect(err).To(Equal(executeSetupScriptErr))
 				})
 
-				err := vmConstruct.PrepareVM()
-				Expect(err).NotTo(HaveOccurred())
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
 
-				Expect(calls[0]).To(Equal("executeSetupScriptCalls"))
-				Expect(calls[1]).To(Equal("waitForRebootFinishedCall"))
-
-				Expect(fakeMessenger.RebootHasStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.RebootHasFinishedCallCount()).To(Equal(1))
-			})
-
-			It("returns failure when it cannot determine if VM is rebooting", func() {
-				fakeRebootWaiter.WaitForRebootFinishedReturnsOnCall(0, errors.New("polling is hard"))
-
-				err := vmConstruct.PrepareVM()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("polling is hard"))
-
-				Expect(fakeMessenger.RebootHasStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.RebootHasFinishedCallCount()).To(Equal(0))
-			})
-
-		})
-
-		Describe("can execute post-reboot script", func() {
-			It("checks that the reboot has completed before the post reboot script is executed", func() {
-				var calls []string
-
-				fakeRebootWaiter.WaitForRebootFinishedCalls(func() error {
-					calls = append(calls, "waitForRebootFinishedCall")
-					return nil
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
+					Expect(fakeRebootWaiter.WaitForRebootFinishedCallCount()).To(Equal(0))
 				})
 
-				fakeScriptExecutor.ExecutePostRebootScriptCalls(func(duration time.Duration) error {
-					calls = append(calls, "executePostRebootScriptCalls")
-					return nil
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+					Eventually(outBuf).Should(Say("\nExecuting setup script 1 of 2...\n"))
+					Eventually(outBuf).ShouldNot(Say("\nExecuting setup script 1 of 2...\n\nFinished executing setup script 1 of 2.\n\nWinRM has been disconnected so the VM can reboot.\n"))
+				})
+			})
+
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
+					Expect(fakeRebootWaiter.WaitForRebootFinishedCallCount()).To(Equal(1))
 				})
 
-				err := vmConstruct.PrepareVM()
-				Expect(err).NotTo(HaveOccurred())
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
 
-				Expect(calls[0]).To(Equal("waitForRebootFinishedCall"))
-				Expect(calls[1]).To(Equal("executePostRebootScriptCalls"))
+					Eventually(outBuf).Should(Say("\nExecuting setup script 1 of 2...\n\nFinished executing setup script 1 of 2.\n\nWinRM has been disconnected so the VM can reboot.\n"))
+				})
 			})
-
-			It("waits for reboot", func() {
-				err := vmConstruct.PrepareVM()
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeRebootWaiter.WaitForRebootFinishedCallCount()).To(Equal(1))
-			})
-
-			It("returns error if waiting for reboot fails", func() {
-				rebootWaitError := errors.New("reboot waiting failed :(")
-				fakeRebootWaiter.WaitForRebootFinishedReturns(rebootWaitError)
-				err := vmConstruct.PrepareVM()
-
-				Expect(err).To(MatchError(rebootWaitError))
-
-				Expect(fakeMessenger.RebootHasStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.RebootHasFinishedCallCount()).To(Equal(0))
-			})
-
-			It("runs post-reboot command", func() {
-
-				err := vmConstruct.PrepareVM()
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeScriptExecutor.ExecutePostRebootScriptCallCount()).To(Equal(1))
-
-				Expect(fakeMessenger.ExecutePostRebootScriptStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecutePostRebootScriptSucceededCallCount()).To(Equal(1))
-			})
-
-			It("returns error if running post-reboot command fails", func() {
-				postRebootError := errors.New("failed to execute command")
-				fakeScriptExecutor.ExecutePostRebootScriptReturnsOnCall(0, postRebootError)
-				err := vmConstruct.PrepareVM()
-
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring(postRebootError.Error()))
-				Expect(fakeMessenger.ExecutePostRebootScriptStartedCallCount()).To(Equal(1))
-				Expect(fakeMessenger.ExecutePostRebootScriptSucceededCallCount()).To(Equal(0))
-
-			})
-			It("logs but does not error on winrm, non-powershell errors", func() {
-				winrmError := errors.New("winrm connection event: some EOF error")
-
-				fakeScriptExecutor.ExecutePostRebootScriptReturnsOnCall(0, winrmError)
-				err := vmConstruct.PrepareVM()
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.ExecutePostRebootScriptSucceededCallCount()).
-					To(BeNumerically(">", 0))
-
-				Expect(fakeMessenger.ExecutePostRebootWarningCallCount()).
-					To(BeNumerically(">", 0))
-				Expect(fakeMessenger.ExecutePostRebootWarningArgsForCall(0)).
-					To(ContainSubstring(winrmError.Error()))
-			})
-
 		})
 
-		Describe("can check that the VM is powered off", func() {
-			It("runs every minute and returns successfully if polling succeeds", func() {
-				fakePoller.PollReturns(nil)
+		Describe("waiting for vm to reboot", func() {
+			Context("when it fails", func() {
+				var waitForRebootFinishedErr error
+				BeforeEach(func() {
+					waitForRebootFinishedErr = errors.New("fake-wait-for-reboot-finished-error")
+					fakeRebootWaiter.WaitForRebootFinishedReturns(waitForRebootFinishedErr)
+				})
 
-				fakeVcenterClient.IsPoweredOffReturnsOnCall(0, false, nil)
-				fakeVcenterClient.IsPoweredOffReturnsOnCall(1, true, nil)
-				fakeVcenterClient.IsPoweredOffReturnsOnCall(2, false, errors.New("checking for powered off is hard"))
+				It("returns the error", func() {
+					err := vmConstruct.PrepareVM()
+					Expect(err).To(Equal(waitForRebootFinishedErr))
+				})
 
-				err := vmConstruct.PrepareVM()
-				Expect(err).ToNot(HaveOccurred())
-				Expect(fakeMessenger.ShutdownCompletedCallCount()).To(Equal(1))
+				It("does not execute the next step", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
 
-				Expect(fakePoller.PollCallCount()).To(Equal(1))
-				pollDuration, pollFunc := fakePoller.PollArgsForCall(0)
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
+					Expect(fakeRebootWaiter.WaitForRebootFinishedCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecutePostRebootScriptCallCount()).To(Equal(0))
+				})
 
-				Expect(pollDuration).To(Equal(1 * time.Minute))
+				It("it logs the attempt", func() {
+					Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
 
-				Expect(fakeVcenterClient.IsPoweredOffCallCount()).To(Equal(0))
-				Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(0))
-
-				isPoweredOff, err := pollFunc()
-				Expect(isPoweredOff).To(BeFalse())
-				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(1))
-
-				isPoweredOff, err = pollFunc()
-				Expect(isPoweredOff).To(BeTrue())
-				Expect(err).NotTo(HaveOccurred())
-				Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(2))
-
-				isPoweredOff, err = pollFunc() //nolint:ineffassign,staticcheck
-				Expect(err).To(MatchError("checking for powered off is hard"))
-				Expect(fakeMessenger.WaitingForShutdownCallCount()).To(Equal(2))
-
-				Expect(fakeVcenterClient.IsPoweredOffCallCount()).To(Equal(3))
+					Eventually(outBuf).Should(Say("\nThe reboot has started...\n"))
+					Eventually(outBuf).ShouldNot(Say("\nThe reboot has started...\n\nThe reboot has finished.\n"))
+				})
 			})
 
-			It("returns failure when it cannot determine VM power state", func() {
-				errorString := "cannot determine VM state"
-				fakePoller.PollReturnsOnCall(0, errors.New(errorString))
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
 
-				err := vmConstruct.PrepareVM()
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal(errorString))
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
+					Expect(fakeRebootWaiter.WaitForRebootFinishedCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecutePostRebootScriptCallCount()).To(Equal(1))
+				})
 
-				Expect(fakeMessenger.ShutdownCompletedCallCount()).To(Equal(0))
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("\nThe reboot has started...\n\nThe reboot has finished.\n"))
+				})
+			})
+		})
+
+		Describe("executing setup script 2 of 2", func() {
+			BeforeEach(func() {
+				fakePoller.PollStub = func(duration time.Duration, pollFunc func() (bool, error)) error {
+					_, err := pollFunc()
+					Expect(err).NotTo(HaveOccurred())
+					return nil
+				}
+			})
+
+			Context("script execution returns an error", func() {
+				var executePostRebootScriptErr error
+
+				Context("and the error contains 'winrm connection event'", func() {
+					BeforeEach(func() {
+						executePostRebootScriptErr = errors.New("winrm connection event: nothing-here-matters")
+						fakeScriptExecutor.ExecutePostRebootScriptReturns(executePostRebootScriptErr)
+					})
+
+					It("executes the next step", func() {
+						Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+						Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+						Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+						Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+						Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+						Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+						Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+						Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
+						Expect(fakeRebootWaiter.WaitForRebootFinishedCallCount()).To(Equal(1))
+						Expect(fakeScriptExecutor.ExecutePostRebootScriptCallCount()).To(Equal(1))
+						Expect(fakeVcenterClient.IsPoweredOffCallCount()).To(Equal(1))
+					})
+
+					It("logs but does not error on winrm, non-powershell errors", func() {
+						Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+						Eventually(outBuf).Should(Say(fmt.Sprintf("\n%s\n", executePostRebootScriptErr)))
+					})
+				})
+
+				Context("and the error DOES NOT contain 'winrm connection event'", func() {
+					BeforeEach(func() {
+						executePostRebootScriptErr = errors.New("fake-execute-post-reboot-script-error")
+						fakeScriptExecutor.ExecutePostRebootScriptReturns(executePostRebootScriptErr)
+					})
+
+					It("returns an error wrapping the original", func() {
+						err := vmConstruct.PrepareVM()
+
+						Expect(err.Error()).To(Equal(fmt.Sprintf("failure in post-reboot script: %s", executePostRebootScriptErr)))
+					})
+
+					It("does not execute the next step", func() {
+						Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+						Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+						Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+						Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+						Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+						Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+						Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+						Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
+						Expect(fakeRebootWaiter.WaitForRebootFinishedCallCount()).To(Equal(1))
+						Expect(fakeScriptExecutor.ExecutePostRebootScriptCallCount()).To(Equal(1))
+						Expect(fakeVcenterClient.IsPoweredOffCallCount()).To(Equal(0))
+					})
+
+					It("it logs the attempt", func() {
+						Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+						Eventually(outBuf).Should(Say("\nExecuting setup script 2 of 2...\n"))
+						Eventually(outBuf).ShouldNot(Say("\nExecuting setup script 2 of 2...\n\nFinished executing setup script 2 of 2.\n"))
+					})
+				})
+			})
+
+			Context("when it succeeds", func() {
+				It("executes the next step", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Expect(fakeVcenterClient.MakeDirectoryCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.UploadArtifactCallCount()).To(Equal(2))
+					Expect(fakeWinRMEnabler.EnableCallCount()).To(Equal(1))
+					Expect(fakeVMConnectionValidator.ValidateCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExtractArchiveCallCount()).To(Equal(1))
+					Expect(fakeRemoteManager.ExecuteCommandCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecuteSetupScriptCallCount()).To(Equal(1))
+					Expect(fakeRebootWaiter.WaitForRebootFinishedCallCount()).To(Equal(1))
+					Expect(fakeScriptExecutor.ExecutePostRebootScriptCallCount()).To(Equal(1))
+					Expect(fakeVcenterClient.IsPoweredOffCallCount()).To(Equal(1))
+				})
+
+				It("it logs success", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+					Eventually(outBuf).Should(Say("\nExecuting setup script 2 of 2...\n\nFinished executing setup script 2 of 2.\n"))
+				})
+			})
+		})
+
+		Describe("polls the VM's powered off state", func() {
+			Describe("poller invocation", func() {
+				It("invokes the poller with the expected args", func() {
+					Expect(vmConstruct.PrepareVM()).To(Succeed())
+					Eventually(outBuf).Should(Say("VM has now been shutdown. Run `stembuild package` to finish building the stemcell.\n"))
+
+					Expect(fakePoller.PollCallCount()).To(Equal(1))
+					pollDuration, _ := fakePoller.PollArgsForCall(0)
+
+					Expect(pollDuration).To(Equal(time.Minute))
+				})
+			})
+
+			Describe("polled function", func() {
+				BeforeEach(func() {
+					useNonWaitingPoller = true
+				})
+
+				Context("when the VM fails to power off", func() {
+					var isPoweredOffErr error
+
+					BeforeEach(func() {
+						isPoweredOffErr = errors.New("power-off-failed")
+					})
+
+					Context("on the first attempt", func() {
+						BeforeEach(func() {
+							fakeVcenterClient.IsPoweredOffReturns(false, isPoweredOffErr)
+						})
+
+						It("returns the error", func() {
+							err := vmConstruct.PrepareVM()
+							Expect(err).To(MatchError(isPoweredOffErr))
+						})
+
+						It("does not print subsequent logs", func() {
+							Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+							Eventually(outBuf).ShouldNot(Say("Still preparing VM...\n"))
+							Eventually(outBuf).ShouldNot(Say("VM has now been shutdown. Run `stembuild package` to finish building the stemcell.\n"))
+						})
+					})
+
+					Context("on a subsequent attempt", func() {
+						BeforeEach(func() {
+							fakeVcenterClient.IsPoweredOffReturnsOnCall(0, false, nil)
+							fakeVcenterClient.IsPoweredOffReturnsOnCall(1, false, isPoweredOffErr)
+						})
+
+						It("returns the error", func() {
+							err := vmConstruct.PrepareVM()
+							Expect(err).To(MatchError(isPoweredOffErr))
+						})
+
+						It("logs a polling attempt", func() {
+							Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+							Eventually(outBuf).Should(Say("Still preparing VM...\n"))
+						})
+
+						It("does not print subsequent logs", func() {
+							Expect(vmConstruct.PrepareVM()).NotTo(Succeed())
+
+							Eventually(outBuf).ShouldNot(Say("VM has now been shutdown. Run `stembuild package` to finish building the stemcell.\n"))
+						})
+					})
+				})
+
+				Context("when the VM successfully powers off", func() {
+					Context("on the first attempt", func() {
+						BeforeEach(func() {
+							fakeVcenterClient.IsPoweredOffReturnsOnCall(0, true, nil)
+						})
+
+						It("executes the is-powered-off func once", func() {
+							Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+							Expect(fakeVcenterClient.IsPoweredOffCallCount()).To(Equal(1))
+						})
+
+						It("does not log a polling attempt", func() {
+							Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+							Eventually(outBuf).Should(Say("Still preparing VM...\n"))
+						})
+
+						It("prints subsequent logs", func() {
+							Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+							Eventually(outBuf).ShouldNot(Say("VM has now been shutdown. Run `stembuild package` to finish building the stemcell.\n"))
+						})
+					})
+
+					Context("on a subsequent attempt", func() {
+						BeforeEach(func() {
+							fakeVcenterClient.IsPoweredOffReturnsOnCall(0, false, nil)
+							fakeVcenterClient.IsPoweredOffReturnsOnCall(1, true, nil)
+						})
+
+						It("executes the is-powered-off func twice", func() {
+							Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+							Expect(fakeVcenterClient.IsPoweredOffCallCount()).To(Equal(2))
+						})
+
+						It("logs a polling attempt", func() {
+							Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+							Eventually(outBuf).Should(Say("Still preparing VM...\n"))
+						})
+
+						It("prints subsequent logs", func() {
+							Expect(vmConstruct.PrepareVM()).To(Succeed())
+
+							Eventually(outBuf).ShouldNot(Say("VM has now been shutdown. Run `stembuild package` to finish building the stemcell.\n"))
+						})
+					})
+				})
 			})
 		})
 	})

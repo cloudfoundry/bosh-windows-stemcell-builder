@@ -261,12 +261,6 @@ func (fake *FakeGuestManager) StartProgramInGuestReturnsOnCall(i int, result1 in
 func (fake *FakeGuestManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.downloadFileInGuestMutex.RLock()
-	defer fake.downloadFileInGuestMutex.RUnlock()
-	fake.exitCodeForProgramInGuestMutex.RLock()
-	defer fake.exitCodeForProgramInGuestMutex.RUnlock()
-	fake.startProgramInGuestMutex.RLock()
-	defer fake.startProgramInGuestMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

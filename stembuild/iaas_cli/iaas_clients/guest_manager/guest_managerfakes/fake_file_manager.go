@@ -178,10 +178,6 @@ func (fake *FakeFileManager) TransferURLReturnsOnCall(i int, result1 *url.URL, r
 func (fake *FakeFileManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.initiateFileTransferFromGuestMutex.RLock()
-	defer fake.initiateFileTransferFromGuestMutex.RUnlock()
-	fake.transferURLMutex.RLock()
-	defer fake.transferURLMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -97,8 +97,6 @@ func (fake *FakeVim25ClientCreator) NewClientReturnsOnCall(i int, result1 *vim25
 func (fake *FakeVim25ClientCreator) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.newClientMutex.RLock()
-	defer fake.newClientMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

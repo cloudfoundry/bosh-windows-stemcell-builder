@@ -406,16 +406,6 @@ func (fake *FakeFinder) VirtualMachineReturnsOnCall(i int, result1 *object.Virtu
 func (fake *FakeFinder) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.datacenterOrDefaultMutex.RLock()
-	defer fake.datacenterOrDefaultMutex.RUnlock()
-	fake.folderOrDefaultMutex.RLock()
-	defer fake.folderOrDefaultMutex.RUnlock()
-	fake.resourcePoolOrDefaultMutex.RLock()
-	defer fake.resourcePoolOrDefaultMutex.RUnlock()
-	fake.setDatacenterMutex.RLock()
-	defer fake.setDatacenterMutex.RUnlock()
-	fake.virtualMachineMutex.RLock()
-	defer fake.virtualMachineMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

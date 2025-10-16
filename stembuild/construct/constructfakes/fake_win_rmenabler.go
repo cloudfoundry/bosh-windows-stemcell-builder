@@ -78,8 +78,6 @@ func (fake *FakeWinRMEnabler) EnableReturnsOnCall(i int, result1 error) {
 func (fake *FakeWinRMEnabler) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.enableMutex.RLock()
-	defer fake.enableMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

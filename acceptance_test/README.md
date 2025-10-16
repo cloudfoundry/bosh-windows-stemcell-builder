@@ -24,8 +24,6 @@ You can create a `config.json` file, eg:
   "vm_extensions": "<comma separated string of options, e.g. 50GB_ephemeral_disk>",
   "network": "<network from bosh cloud config>",
   "skip_cleanup": "<skip cleanup - if this is false all unused stemcells are deleted>"
-  "ssh_disabled_by_default": "check ssh daemon default startup type - if true then it checks that the startup type is DISABLED. If false or missing, checks startup type is AUTOMATIC",
-  "security_compliance_applied": "check that Microsoft Baseline policies have been applied"
 }
 ```
 

@@ -11,6 +11,7 @@ import (
 	"time"
 	"unicode/utf16"
 
+	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/messenger"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/poller"
 	"github.com/cloudfoundry/bosh-windows-stemcell-builder/stembuild/remotemanager"
 )
@@ -32,7 +33,7 @@ type VMConstruct struct {
 	vmPassword            string
 	winRMEnabler          WinRMEnabler
 	vmConnectionValidator VMConnectionValidator
-	messenger             ConstructMessenger
+	messenger             messenger.Messenger
 	poller                poller.PollerI
 	versionGetter         VersionGetter
 	rebootWaiter          RebootWaiterI
@@ -41,13 +42,15 @@ type VMConstruct struct {
 	SetupFlags            []string
 }
 
-const provisionDir = "C:\\provision\\"
+const powershellExePath = `C:\Windows\System32\WindowsPowerShell\V1.0\powershell.exe`
+
+const provisionDir = `C:\provision\`
 const stemcellAutomationName = "StemcellAutomation.zip"
 const stemcellAutomationDest = provisionDir + stemcellAutomationName
 const lgpoDest = provisionDir + "LGPO.zip"
 const stemcellAutomationSetupScript = provisionDir + "Setup.ps1"
 const stemcellAutomationPostRebootScript = provisionDir + "PostReboot.ps1"
-const powershell = "C:\\Windows\\System32\\WindowsPowerShell\\V1.0\\powershell.exe"
+
 const boshPsModules = "bosh-psmodules.zip"
 const winRMPsScript = "BOSH.WinRM.psm1"
 
@@ -61,7 +64,7 @@ func NewVMConstruct(
 	guestManager GuestManager,
 	winRMEnabler WinRMEnabler,
 	vmConnectionValidator VMConnectionValidator,
-	messenger ConstructMessenger,
+	messenger messenger.Messenger,
 	poller poller.PollerI,
 	versionGetter VersionGetter,
 	rebootWaiter RebootWaiterI,
@@ -126,34 +129,6 @@ type VMConnectionValidator interface {
 	Validate() error
 }
 
-//counterfeiter:generate . ConstructMessenger
-type ConstructMessenger interface {
-	CreateProvisionDirStarted()
-	CreateProvisionDirSucceeded()
-	UploadArtifactsStarted()
-	UploadArtifactsSucceeded()
-	EnableWinRMStarted()
-	EnableWinRMSucceeded()
-	ValidateVMConnectionStarted()
-	ValidateVMConnectionSucceeded()
-	ExtractArtifactsStarted()
-	ExtractArtifactsSucceeded()
-	ExecuteSetupScriptStarted()
-	ExecuteSetupScriptSucceeded()
-	RebootHasStarted()
-	RebootHasFinished()
-	ExecutePostRebootScriptStarted()
-	ExecutePostRebootScriptSucceeded()
-	ExecutePostRebootWarning(warning string)
-	UploadFileStarted(artifact string)
-	UploadFileSucceeded()
-	WaitingForShutdown()
-	ShutdownCompleted()
-	WinRMDisconnectedForReboot()
-	LogOutUsersStarted()
-	LogOutUsersSucceeded()
-}
-
 func (c *VMConstruct) PrepareVM() error {
 	stembuildVersion := c.versionGetter.GetVersion()
 
@@ -161,102 +136,101 @@ func (c *VMConstruct) PrepareVM() error {
 	if err != nil {
 		return err
 	}
-	c.messenger.UploadArtifactsStarted()
+	c.messenger.PrintOut("\nTransferring ~20 MB to the Windows VM. Depending on your connection, the transfer may take 15-45 minutes\n")
 	err = c.uploadArtifacts()
 	if err != nil {
 		return err
 	}
-	c.messenger.UploadArtifactsSucceeded()
+	c.messenger.PrintOut("\nAll files have been uploaded.\n")
 
-	c.messenger.EnableWinRMStarted()
+	c.messenger.PrintOut("\nAttempting to enable WinRM on the guest vm...")
 	err = c.winRMEnabler.Enable()
 	if err != nil {
 		return err
 	}
-	c.messenger.EnableWinRMSucceeded()
+	c.messenger.PrintOut("WinRm enabled on the guest VM\n")
 
-	c.messenger.ValidateVMConnectionStarted()
+	c.messenger.PrintOut("\nValidating connection to vm...")
 	err = c.vmConnectionValidator.Validate()
 	if err != nil {
 		return err
 	}
-	c.messenger.ValidateVMConnectionSucceeded()
+	c.messenger.PrintOut("succeeded.\n")
 
-	c.messenger.ExtractArtifactsStarted()
+	c.messenger.PrintOut("\nExtracting artifacts...")
 	err = c.extractArchive()
 	if err != nil {
 		return err
 	}
-	c.messenger.ExtractArtifactsSucceeded()
+	c.messenger.PrintOut("succeeded.\n")
 
-	c.messenger.LogOutUsersStarted()
+	c.messenger.PrintOut("\nAttempting to logout any remote users...\n")
 	err = c.logOutUsers()
 	if err != nil {
 		return err
 	}
-	c.messenger.LogOutUsersSucceeded()
+	c.messenger.PrintOut("\nLogged out remote users\n")
 
-	c.messenger.ExecuteSetupScriptStarted()
+	c.messenger.PrintOut("\nExecuting setup script 1 of 2...\n")
 	err = c.scriptExecutor.ExecuteSetupScript(stembuildVersion, c.SetupFlags)
 	if err != nil {
 		return err
 	}
-	c.messenger.ExecuteSetupScriptSucceeded()
-	c.messenger.WinRMDisconnectedForReboot()
+	c.messenger.PrintOut("\nFinished executing setup script 1 of 2.\n")
+	c.messenger.PrintOut("\nWinRM has been disconnected so the VM can reboot.\n")
 
-	c.messenger.RebootHasStarted()
+	c.messenger.PrintOut("\nThe reboot has started...\n")
 	time.Sleep(c.RebootWaitTime)
 	err = c.rebootWaiter.WaitForRebootFinished()
 	if err != nil {
 		return err
 	}
-	c.messenger.RebootHasFinished()
+	c.messenger.PrintOut("\nThe reboot has finished.\n")
 
-	c.messenger.ExecutePostRebootScriptStarted()
+	c.messenger.PrintOut("\nExecuting setup script 2 of 2...\n")
 	err = c.scriptExecutor.ExecutePostRebootScript(24 * time.Hour)
 	if err != nil {
 		if strings.Contains(err.Error(), "winrm connection event") {
-			c.messenger.ExecutePostRebootWarning(err.Error())
+			c.messenger.PrintOut(fmt.Sprintf("\n%s\n", err.Error()))
 		} else {
 			return fmt.Errorf("failure in post-reboot script: %s", err)
 		}
 	}
-
-	c.messenger.ExecutePostRebootScriptSucceeded()
+	c.messenger.PrintOut("\nFinished executing setup script 2 of 2.\n")
 
 	err = c.isPoweredOff(time.Minute)
 	if err != nil {
 		return err
 	}
-	c.messenger.ShutdownCompleted()
+	c.messenger.PrintOut("VM has now been shutdown. Run `stembuild package` to finish building the stemcell.\n")
 
 	return nil
 }
 
 func (c *VMConstruct) createProvisionDirectory() error {
-	c.messenger.CreateProvisionDirStarted()
+	c.messenger.PrintOut("\nCreating provision dir on target VM...")
 	err := c.Client.MakeDirectory(c.vmInventoryPath, provisionDir, c.vmUsername, c.vmPassword)
 	if err != nil {
 		return err
 	}
-	c.messenger.CreateProvisionDirSucceeded()
+	c.messenger.PrintOut("succeeded.\n")
 	return nil
 }
 
 func (c *VMConstruct) uploadArtifacts() error {
-	c.messenger.UploadFileStarted("LGPO")
+	c.messenger.PrintOut(fmt.Sprintf("\tUploading %s to target VM...", "LGPO"))
 	err := c.Client.UploadArtifact(c.vmInventoryPath, "./LGPO.zip", lgpoDest, c.vmUsername, c.vmPassword)
 	if err != nil {
 		return err
 	}
-	c.messenger.UploadFileSucceeded()
+	c.messenger.PrintOut("succeeded.\n")
 
-	c.messenger.UploadFileStarted("stemcell preparation artifacts")
+	c.messenger.PrintOut(fmt.Sprintf("\tUploading %s to target VM...", "stemcell preparation artifacts"))
 	err = c.Client.UploadArtifact(c.vmInventoryPath, fmt.Sprintf("./%s", stemcellAutomationName), stemcellAutomationDest, c.vmUsername, c.vmPassword)
 	if err != nil {
 		return err
 	}
-	c.messenger.UploadFileSucceeded()
+	c.messenger.PrintOut("succeeded.\n")
 
 	return nil
 }
@@ -280,45 +254,8 @@ func (c *VMConstruct) logOutUsers() error {
 	return nil
 }
 
-type ScriptExecutor struct {
-	remoteManager remotemanager.RemoteManager
-}
-
-func NewScriptExecutor(remoteManager remotemanager.RemoteManager) *ScriptExecutor {
-	return &ScriptExecutor{
-		remoteManager,
-	}
-}
-
-func (e *ScriptExecutor) ExecuteSetupScript(stembuildVersion string, setupFlags []string) error {
-	var automationSetupScriptArgs []string
-	automationSetupScriptArgs = append(automationSetupScriptArgs, fmt.Sprintf("-Version %s", stembuildVersion))
-
-	for _, arg := range setupFlags {
-		automationSetupScriptArgs = append(automationSetupScriptArgs, fmt.Sprintf("-%s", arg))
-	}
-
-	powershellCommand := fmt.Sprintf("powershell.exe %s %s", stemcellAutomationSetupScript, strings.Join(automationSetupScriptArgs, " "))
-	_, err := e.remoteManager.ExecuteCommand(powershellCommand)
-	return err
-}
-
-func (e *ScriptExecutor) ExecutePostRebootScript(timeout time.Duration) error {
-	_, err := e.remoteManager.ExecuteCommandWithTimeout("powershell.exe "+stemcellAutomationPostRebootScript, timeout)
-
-	if err != nil && strings.Contains(err.Error(), remotemanager.PowershellExecutionErrorMessage) {
-		return err
-	}
-
-	if err != nil {
-		return fmt.Errorf("winrm connection event: %s", err)
-	}
-
-	return nil
-
-}
-
 func (c *VMConstruct) isPoweredOff(duration time.Duration) error {
+	const timeStampFormat = "2006-01-02T15:04:05.999999-07:00"
 	err := c.poller.Poll(duration, func() (bool, error) {
 		isPoweredOff, err := c.Client.IsPoweredOff(c.vmInventoryPath)
 
@@ -326,7 +263,7 @@ func (c *VMConstruct) isPoweredOff(duration time.Duration) error {
 			return false, err
 		}
 
-		c.messenger.WaitingForShutdown()
+		c.messenger.PrintOut(fmt.Sprintf("%s Still preparing VM...\n", time.Now().Format(timeStampFormat)))
 
 		return isPoweredOff, nil
 	})
@@ -340,7 +277,7 @@ func EncodePowershellCommand(command []byte) string {
 	for _, utf16char := range utf16Command {
 		b := make([]byte, 2)
 		binary.LittleEndian.PutUint16(b, utf16char)
-		byteCommand.Write(b) // This write never returns an error.
+		byteCommand.Write(b)
 	}
 	return base64.StdEncoding.EncodeToString(byteCommand.Bytes())
 }

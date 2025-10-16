@@ -1,6 +1,8 @@
 package filesystem
 
-//go:generate go run github.com/golang/mock/mockgen -source=filesystem.go -destination=mock/mock_filesystem.go FileSystem
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate . FileSystem
 type FileSystem interface {
 	GetAvailableDiskSpace(path string) (uint64, error)
 }
