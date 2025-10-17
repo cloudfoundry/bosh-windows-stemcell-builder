@@ -99,7 +99,6 @@ function Verify-Dependencies {
 }
 
 function Verify-Acls {
-    $windowsVersion = Get-OSVersion
     $expectedacls = New-Object System.Collections.ArrayList
     [void] $expectedacls.AddRange((
     "${env:COMPUTERNAME}\Administrator,Allow",
@@ -107,15 +106,10 @@ function Verify-Acls {
     "BUILTIN\Administrators,Allow",
     "CREATOR OWNER,Allow",
     "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow",
-    "NT SERVICE\TrustedInstaller,Allow"
+    "NT SERVICE\TrustedInstaller,Allow",
+    "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow",
+    "NT AUTHORITY\Authenticated Users,Allow"
     ))
-
-    Write-Host "Adding ${windowsVersion} ACLs"
-    # File in C:\Program Files\OpenSSH end up with the ACLs
-    # "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow".
-    # so we add them here
-    $expectedacls.Add("APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow")
-    $expectedacls.Add("NT AUTHORITY\Authenticated Users,Allow")
 
     function Check-Acls {
         param([string]$path)
