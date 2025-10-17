@@ -10,63 +10,60 @@ function Get-Config {
 
 function Verify-LGPO
 {
-  echo "Running this function Verify-LGPO"
-  echo "Verifying that expected policies have been applied"
+  Write-Host "Running this function Verify-LGPO"
+  Write-Host "Verifying that expected policies have been applied"
 
   lgpo /b $PSScriptRoot
-  $LgpoDir = "$PSScriptRoot\" + (Get-ChildItem $PSScriptRoot -Directory | ?{ $_.Name -match "{*}" } | select -First 1).Name
+  $LgpoDir = "$PSScriptRoot\" + (Get-ChildItem $PSScriptRoot -Directory | Where-Object { $_.Name -match "{*}" } | Select-Object -First 1).Name
 
   $OutputDir = "$PSScriptRoot\lgpo_test"
-  mkdir $OutputDir
+  New-Item -ItemType Directory -Path $OutputDir -Force
 
   lgpo /parse /m "$LgpoDir\DomainSysvol\GPO\Machine\registry.pol" > "$OutputDir\machine_registry.unedited.txt"
-  Get-Content "$OutputDir\machine_registry.unedited.txt" | select -Skip 3 > "$OutputDir\machine_registry.txt"
+  Get-Content "$OutputDir\machine_registry.unedited.txt" | Select-Object -Skip 3 > "$OutputDir\machine_registry.txt"
 
   lgpo /parse /u "$LgpoDir\DomainSysvol\GPO\User\registry.pol" > "$OutputDir\user_registry.unedited.txt"
-  Get-Content "$OutputDir\user_registry.unedited.txt" | select -Skip 3 > "$OutputDir\user_registry.txt"
+  Get-Content "$OutputDir\user_registry.unedited.txt" | Select-Object -Skip 3 > "$OutputDir\user_registry.txt"
 
-  copy "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv" "$OutputDir"
+  Copy-Item "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv" "$OutputDir"
   $Csv = Import-Csv "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv"
-  $Include = $Csv[0].psobject.properties | select -ExpandProperty Name -Skip 1
-  $Csv | select $Include | export-csv "$OutputDir\audit.csv" -NoTypeInformation
+  $Include = $Csv[0].psobject.properties | Select-Object -ExpandProperty Name -Skip 1
+  $Csv | Select-Object $Include | export-csv "$OutputDir\audit.csv" -NoTypeInformation
 
-  copy "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\SecEdit\GptTmpl.inf" "$OutputDir"
+  Copy-Item "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\SecEdit\GptTmpl.inf" "$OutputDir"
 
   function Compare-LGPOPolicies
   {
     Param (
-      [string] $ActualPoliciesFile = (Throw "ActualPoliciesFile param required"),
-      [string] $ExpectedPoliciesFile = (Throw "ExpectedPoliciesFile param required"),
-      [string] $PolicyDelimiter = (Throw "PolicyDelimiter param required")
+        [Parameter(Mandatory)]
+        [string] $ActualPoliciesFile,
+        [Parameter(Mandatory)]
+        [string] $ExpectedPoliciesFile,
+        [Parameter(Mandatory)]
+        [string] $PolicyDelimiter
     )
     Write-Host "actual policies $ActualPoliciesFile"
     Write-Host "expected policies $ExpectedPoliciesFile"
 
     $delims = [char[]]"`r`n`t "
-    $ActualPolicies = (Get-Content $ActualPoliciesFile -Raw).Replace("`r`n","`n")
-    $ActualPoliciesArray = ( [regex]::split($ActualPolicies, $PolicyDelimiter) | foreach {
-    $_.Trim($delims)
-    } )
+    $ActualPolicies = (Get-Content $ActualPoliciesFile -Raw).Replace("`r`n", "`n")
+    $ActualPoliciesArray = ([regex]::split($ActualPolicies, $PolicyDelimiter) | ForEach-Object { $_.Trim($delims) })
 
-    $ExpectedPolicies = (Get-Content $ExpectedPoliciesFile -Raw).Replace("`r`n","`n")
-    $ExpectedPoliciesArray = ( [regex]::split($ExpectedPolicies, $PolicyDelimiter) | foreach {
-    $_.Trim($delims)
-    } )
+    $ExpectedPolicies = (Get-Content $ExpectedPoliciesFile -Raw).Replace("`r`n", "`n")
+    $ExpectedPoliciesArray = ([regex]::split($ExpectedPolicies, $PolicyDelimiter) | ForEach-Object { $_.Trim($delims) })
 
     $count = 0
     foreach ($policy in $ExpectedPoliciesArray) {
-    if ($policy -notin $ActualPoliciesArray) {
-    Write-Error "Actual policies do not include policy: $policy"
-    $count += 1
-    }
+      if ($policy -notin $ActualPoliciesArray) {
+        Write-Error "Actual policies do not include policy: $policy"
+        $count += 1
+      }
     }
     if (-not $count -eq 0) {
-    Write-Error "There are missing policies"
-    return 1
+      Write-Error "There are missing policies"
+      return 1
     }
   }
-
-  $newLineDelimiter = [System.Environment]::NewLine
 
   $OsVersion = Get-OSVersion
   switch ($OsVersion)
@@ -95,7 +92,7 @@ function Verify-Dependencies {
 
   Get-ChildItem $BOSH_BIN | ForEach-Object {
     Write-Host "Checking for $_.Name"
-    $files.remove($_.Name)
+    $files.Remove($_.Name)
   }
 
   If ($files.Count -gt 0) {
@@ -128,10 +125,10 @@ function Verify-Acls {
 
       $errCount = 0
 
-      Get-ChildItem -Path $path -Recurse | foreach {
+      Get-ChildItem -Path $path -Recurse | ForEach-Object {
         $name = $_.FullName
         If (-Not ($_.Attributes -match "ReparsePoint")) {
-          Get-Acl $name | Select -ExpandProperty Access | ForEach-Object {
+          Get-Acl $name | Select-Object -ExpandProperty Access | ForEach-Object {
             $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
             If (-Not $expectedacls.Contains($ident)) {
               $errCount += 1
@@ -177,34 +174,34 @@ function Verify-Services {
 }
 
 function Verify-FirewallRules {
-  function get-firewall {
-    param([string] $profile)
-    $firewall = (Get-NetFirewallProfile -Name $profile)
-    $result = "{0},{1},{2}" -f $profile,$firewall.DefaultInboundAction,$firewall.DefaultOutboundAction
+  function Get-FirewallProfile {
+    param([string] $ProfileName)
+    $firewall = (Get-NetFirewallProfile -Name $ProfileName)
+    $result = "{0},{1},{2}" -f $ProfileName,$firewall.DefaultInboundAction,$firewall.DefaultOutboundAction
     return $result
   }
 
-  function check-firewall {
-    param([string] $profile)
-    $firewall = (get-firewall $profile)
+  function Test-FirewallProfile {
+    param([string] $ProfileName)
+    $firewall = (Get-FirewallProfile $ProfileName)
     Write-Host $firewall
-    if ($firewall -ne "$profile,Block,Allow") {
+    if ($firewall -ne "$ProfileName,Block,Allow") {
       Write-Host $firewall
-      Write-Error "Unable to set $profile Profile"
+      Write-Error "Unable to set $ProfileName Profile"
       Exit 1
     }
   }
 
-  check-firewall "public"
-  check-firewall "private"
-  check-firewall "domain"
+  Test-FirewallProfile "public"
+  Test-FirewallProfile "private"
+  Test-FirewallProfile "domain"
 
 }
 
 function Verify-MetadataFirewallRule {
   $MetadataServerAllowRules = Get-NetFirewallRule -Enabled True -Direction Outbound | Get-NetFirewallAddressFilter | Where-Object -FilterScript { $_.RemoteAddress -Eq '169.254.169.254' }
-  If ($MetadataServerAllowRules -Ne $null) {
-    $RuleNames = $MetadataServerAllowRules | foreach { $_.InstanceID }
+  If ($null -Ne $MetadataServerAllowRules) {
+    $RuleNames = $MetadataServerAllowRules | ForEach-Object { $_.InstanceID }
     If ($RuleNames.Count -ne 2 ) {
       Write-Error "Expected 2 firewall rules"
       $RuleNames
@@ -223,10 +220,11 @@ function Verify-MetadataFirewallRule {
 
 function Verify-InstalledFeatures {
   function Assert-IsInstalled {
-    param (
-      [string] $feature= (Throw "feature param required")
-    )
-    If (!(Get-WindowsFeature $feature).Installed) {
+      param (
+          [Parameter(Mandatory)]
+          [string] $feature
+      )
+      If (!(Get-WindowsFeature $feature).Installed) {
       Write-Error "Failed to find $feature"
       Exit 1
     } else {
@@ -234,10 +232,11 @@ function Verify-InstalledFeatures {
     }
   }
   function Assert-IsNotInstalled {
-    param (
-      [string] $feature= (Throw "feature param required")
-    )
-    If (!(Get-WindowsFeature $feature).Installed) {
+      param (
+          [Parameter(Mandatory)]
+          [string] $feature
+      )
+      If (!(Get-WindowsFeature $feature).Installed) {
       Write-Host "Feature $feature is not installed"
     } else {
       Write-Error "Feature $feature is installed"
@@ -252,8 +251,8 @@ function Verify-InstalledFeatures {
 function Verify-ProvisionerDeleted {
   $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
   $user = "Provisioner"
-  $existing = $adsi.Children | where {$_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
-  if ( $existing -eq $null){
+  $existing = $adsi.Children | Where-Object {$_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
+  if ($null -eq $existing) {
     Write-Host "$user user is deleted"
   } else {
     Write-Error "$user user still exists. Please run 'Remove-Account -User $user'"
@@ -266,43 +265,43 @@ function Verify-NetBIOSDisabled {
   $nbtstat = nbtstat.exe -n
   "results for nbtstat: $nbtstat"
 
-  $nbtstat | foreach {
-      $DisabledNetBIOS = $DisabledNetBIOS -or $_ -like '*No names in cache*'
+  $nbtstat | ForEach-Object {
+    $DisabledNetBIOS = $DisabledNetBIOS -or $_ -like '*No names in cache*'
   }
 }
 
 function Verify-AgentBehavior {
-  $agent = Get-Service | Where { $_.Name -eq 'bosh-agent' }
-  if ($agent -eq $null) {
-      Write-Error "Missing service: bosh-agent"
-      Exit 1
+  $agent = Get-Service | Where-Object { $_.Name -eq 'bosh-agent' }
+  if ($null -eq $agent) {
+    Write-Error "Missing service: bosh-agent"
+    Exit 1
   }
   if ($agent.StartType -ne "Automatic") {
-      Write-Error "verify-agent-start-type: bosh-agent start type is not 'Automatic' got: '$($agent.StartType.ToString())'"
-      Exit 1
+    Write-Error "verify-agent-start-type: bosh-agent start type is not 'Automatic' got: '$($agent.StartType.ToString())'"
+    Exit 1
   }
 
   $RegPath="HKLM:\SYSTEM\CurrentControlSet\Services\bosh-agent"
 
-  if ((Get-ItemProperty  $RegPath).DelayedAutostart -ne 1) {
-      Write-Error "verify-agent-start-type: Expected DelayedAutostart to equal 1"
-      Exit 1
+  if ((Get-ItemProperty $RegPath).DelayedAutostart -ne 1) {
+    Write-Error "verify-agent-start-type: Expected DelayedAutostart to equal 1"
+    Exit 1
   }
 
   $ServicesPipeTimeoutPath = "HKLM:\SYSTEM\CurrentControlSet\Control"
-  if ((Get-ItemProperty  $ServicesPipeTimeoutPath).ServicesPipeTimeout -ne 60000) {
-      Write-Error "Error: expected ServicesPipeTimeout to equal 60s"
-      Exit 1
+  if ((Get-ItemProperty $ServicesPipeTimeoutPath).ServicesPipeTimeout -ne 60000) {
+    Write-Error "Error: expected ServicesPipeTimeout to equal 60s"
+    Exit 1
   }
 
   if ((Get-Service wuauserv).Status -ne "Stopped") {
-      Write-Error "Error: expected wuauserv service to be Stopped"
-      Exit 1
+    Write-Error "Error: expected wuauserv service to be Stopped"
+    Exit 1
   }
 
   $StartType = (Get-Service wuauserv).StartType
   if ($StartType -ne "Disabled") {
-      Write-Host "Warning: wuauserv service StartType is not disabled: ${StartType}"
+    Write-Host "Warning: wuauserv service StartType is not disabled: ${StartType}"
   }
 }
 
@@ -323,7 +322,7 @@ function Verify-RandomPassword {
 }
 
 function Verify-NTPSync {
-  echo "Verifying NTP sync works correctly"
+  Write-Host "Verifying NTP sync works correctly"
   w32tm /query /configuration
 
   Set-Date -Date (Get-Date).AddHours(-8)
@@ -331,23 +330,23 @@ function Verify-NTPSync {
 
   $TimeSetCorrectly = $false
 
-  for ($i=0; $i -lt 10; $i++) {
-      Sleep 1
+  for ($i = 0; $i -lt 10; $i++) {
+    Sleep 1
 
-      w32tm /resync /rediscover
-      w32tm /resync
+    w32tm /resync /rediscover
+    w32tm /resync
 
-      if ((Get-Date) -le $OutOfSyncTime) {
-          Write-Host "Time not reset correctly via NTP on attempt $($i+1) of 10: $(Get-Date) less than or equal to $OutOfSyncTime"
-      } else {
-          $TimeSetCorrectly = $true
-          break
-      }
+    if ((Get-Date) -le $OutOfSyncTime) {
+      Write-Host "Time not reset correctly via NTP on attempt $($i+1) of 10: $(Get-Date) less than or equal to $OutOfSyncTime"
+    } else {
+      $TimeSetCorrectly = $true
+      break
+    }
   }
 
   if (-not $TimeSetCorrectly) {
-      Write-Error "Time not reset correctly via NTP after 10 attempts"
-      Exit 1
+    Write-Error "Time not reset correctly via NTP after 10 attempts"
+    Exit 1
   }
 }
 
@@ -367,18 +366,18 @@ function Verify-PSVersion5 {
   $PSMajorVersion = $PSVersionTable.PSVersion.Major
 
   if ($PSMajorVersion -lt 5) {
-    Write-Error "Powershell Major version is $PSMajorVersion. It should be at least 5"
+    Write-Error "PowerShell Major version is $PSMajorVersion. It should be at least 5"
     Exit 1
   }
 
-  Write-Host "Powershell is up to date: Version is: $($PSVersiontable.PSversion)"
+  Write-Host "PowerShell is up to date: Version is: $($PSVersionTable.PSVersion)"
 }
 
 function Verify-VersionFile {
   $VersionFileExists = Test-Path "C:\\var\\vcap\\bosh\\etc\\stemcell_version" -PathType Leaf
 
   if (-Not $VersionFileExists) {
-    Write-Error "Version file does not exits at path C:\\var\\vcap\\bosh\\etc\\stemcell_version"
+    Write-Error "Version file does not exist at path C:\\var\\vcap\\bosh\\etc\\stemcell_version"
     Exit 1
   }
 
