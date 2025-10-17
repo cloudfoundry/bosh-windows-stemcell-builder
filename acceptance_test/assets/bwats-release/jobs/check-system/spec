@@ -10,10 +10,8 @@ templates:
   2019-expected-policies/GptTmpl.inf: test-2019/GptTmpl.inf
   2019-expected-policies/machine_registry.txt: test-2019/machine_registry.txt
   2019-expected-policies/user_registry.txt: test-2019/user_registry.txt
-  AuditPolicies.Tests.ps1: bin/AuditPolicies.Tests.ps1
 
 packages:
-- pester
 - lgpo
 
 properties:
