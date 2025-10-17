@@ -395,6 +395,82 @@ function Test-TimeZone {
     }
 }
 
+function Test-AuditPolicies {
+    $expectedAuditPolicies = @{
+        'Credential Validation' = 'Success and Failure';
+        'Security Group Management' = 'Success';
+        'User Account Management' = 'Success and Failure';
+        'Plug and Play Events' = 'Success';
+        'Process Creation' = 'Success';
+        'Account Lockout' = 'Failure';
+        'Group Membership' = 'Success';
+        'Logon' = 'Success and Failure';
+        'Other Logon/Logoff Events' = 'Success and Failure';
+        'Special Logon' = 'Success';
+        'Detailed File Share' = 'Failure';
+        'File Share' = 'Success and Failure';
+        'Other Object Access Events' = 'Success and Failure';
+        'Removable Storage' = 'Success and Failure';
+        'Audit Policy Change' = 'Success';
+        'Authentication Policy Change' = 'Success';
+        'MPSSVC Rule-Level Policy Change' = 'Success and Failure';
+        'Other Policy Change Events' = 'Failure';
+        'Sensitive Privilege Use' = 'Success and Failure';
+        'Other System Events' = 'Success and Failure';
+        'Security State Change' = 'Success';
+        'Security System Extension' = 'Success';
+        'System Integrity' = 'Success and Failure';
+    }
+
+    $backupDir = "$env:TMP/policyBackup-$([System.Guid]::NewGuid() )"
+    New-Item -ItemType Directory -Path $backupDir
+    C:\var\vcap\packages\lgpo\lgpo\LGPO.exe /b $backupDir
+
+    $backupPaths = (Get-ChildItem $backupDir)
+    if ($backupPaths.Count -ne 1) {
+        Write-Error "Expected exactly 1 backup directory, but found $( $backupPaths.Count )"
+        Exit 1
+    }
+
+    $policyPath = "$backupDir\$( $backupPaths.Name )\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv"
+
+    if (-not (Test-Path $policyPath)) {
+        Write-Error "Audit policy file does not exist at: $policyPath"
+        Exit 1
+    }
+
+    Write-Host "Loading actual policies from: $policyPath"
+    $actualPolicies = Import-Csv $policyPath
+
+    $failedTests = 0
+    foreach ($policyName in $expectedAuditPolicies.keys) {
+        $expectedValue = $expectedAuditPolicies[$policyName]
+        $actualPolicy = $actualPolicies | Where-Object { $_.Subcategory -eq $policyName }
+
+        Write-Host "Checking audit policy '$policyName' is set to '$expectedValue'..."
+        if ($null -eq $actualPolicy -or $actualPolicy.Count -eq 0) {
+            Write-Error "Audit policy subcategory '$policyName' should exist but was not found"
+            $failedTests++
+            continue
+        }
+
+        $actualValue = $actualPolicy.'Inclusion Setting'
+        if ($actualValue -ne $expectedValue) {
+            Write-Error "Audit policy '$policyName' is set to '$actualValue' but expected '$expectedValue'"
+            $failedTests++
+        } else {
+            Write-Host "✓ Audit policy '$policyName' is correctly set to '$expectedValue'"
+        }
+
+        if ($failedTests -gt 0) {
+            Write-Error "Audit policies verification failed with $failedTests error(s)"
+            Exit 1
+        }
+    }
+}
+
+# END function definitions
+
 Test-LGPO
 Test-Dependencies
 Test-Acls
@@ -412,10 +488,6 @@ Test-PSVersion5
 Test-VersionFile
 Test-TimeZone
 
-Import-Module C:\var\vcap\packages\pester\Pester\Pester.psd1
-$pesterResults = Invoke-Pester $PSScriptRoot/AuditPolicies.Tests.ps1 -PassThru
-if ($pesterResults.FailedCount -gt 0) {
-    Exit 1
-}
+Test-AuditPolicies
 
 Exit 0
