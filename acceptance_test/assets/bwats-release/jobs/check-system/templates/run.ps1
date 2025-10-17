@@ -8,8 +8,8 @@ function Get-Config {
     return $config
 }
 
-function Verify-LGPO {
-    Write-Host "Running this function Verify-LGPO"
+function Test-LGPO {
+    Write-Host "Running this function Test-LGPO"
     Write-Host "Verifying that expected policies have been applied"
 
     lgpo /b $PSScriptRoot
@@ -76,7 +76,7 @@ function Verify-LGPO {
     Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "\n"
 }
 
-function Verify-Dependencies {
+function Test-Dependencies {
     $BOSH_BIN = "C:\\var\\vcap\\bosh\\bin"
     Write-Host "Checking $BOSH_BIN dependencies"
 
@@ -98,7 +98,7 @@ function Verify-Dependencies {
     }
 }
 
-function Verify-Acls {
+function Test-Acls {
     $expectedacls = New-Object System.Collections.ArrayList
     [void] $expectedacls.AddRange((
     "${env:COMPUTERNAME}\Administrator,Allow",
@@ -111,7 +111,7 @@ function Verify-Acls {
     "NT AUTHORITY\Authenticated Users,Allow"
     ))
 
-    function Check-Acls {
+    function Test-FolderAcls {
         param([string]$path)
 
         $errCount = 0
@@ -132,17 +132,17 @@ function Verify-Acls {
     }
 
     $errCount = 0
-    $errCount += Check-Acls "C:\var"
-    $errCount += Check-Acls "C:\bosh"
-    $errCount += Check-Acls "C:\Windows\Panther\Unattend"
-    $errCount += Check-Acls "C:\Program Files\OpenSSH"
+    $errCount += Test-FolderAcls "C:\var"
+    $errCount += Test-FolderAcls "C:\bosh"
+    $errCount += Test-FolderAcls "C:\Windows\Panther\Unattend"
+    $errCount += Test-FolderAcls "C:\Program Files\OpenSSH"
     if ($errCount -ne 0) {
         Write-Error "FAILED: $errCount"
         Exit 1
     }
 }
 
-function Verify-Services {
+function Test-Services {
     If ((Get-Service WinRM).Status -ne "Stopped") {
         $msg = "WinRM is not Stopped. It is {0}" -f $( Get-Service WinRM ).Status
         Write-Error $msg
@@ -164,7 +164,7 @@ function Verify-Services {
     }
 }
 
-function Verify-FirewallRules {
+function Test-FirewallRules {
     function Get-FirewallProfile {
         param([string] $ProfileName)
         $firewall = (Get-NetFirewallProfile -Name $ProfileName)
@@ -188,7 +188,7 @@ function Verify-FirewallRules {
     Test-FirewallProfile "domain"
 }
 
-function Verify-MetadataFirewallRule {
+function Test-MetadataFirewallRule {
     $MetadataServerAllowRules = Get-NetFirewallRule -Enabled True -Direction Outbound | Get-NetFirewallAddressFilter | Where-Object -FilterScript { $_.RemoteAddress -Eq '169.254.169.254' }
 
     If ($null -Ne $MetadataServerAllowRules) {
@@ -209,7 +209,7 @@ function Verify-MetadataFirewallRule {
     }
 }
 
-function Verify-InstalledFeatures {
+function Test-InstalledFeatures {
     function Assert-IsInstalled {
         param (
             [Parameter(Mandatory)]
@@ -239,7 +239,7 @@ function Verify-InstalledFeatures {
     Assert-IsNotInstalled "Windows-Defender"
 }
 
-function Verify-ProvisionerDeleted {
+function Test-ProvisionerDeleted {
     $adsi = [ADSI]"WinNT://$env:COMPUTERNAME"
     $user = "Provisioner"
     $existing = $adsi.Children | Where-Object { $_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
@@ -251,7 +251,7 @@ function Verify-ProvisionerDeleted {
     }
 }
 
-function Verify-NetBIOSDisabled {
+function Test-NetBIOSDisabled {
     $DisabledNetBIOS = $false
     $nbtstat = nbtstat.exe -n
     "results for nbtstat: $nbtstat"
@@ -261,21 +261,21 @@ function Verify-NetBIOSDisabled {
     }
 }
 
-function Verify-AgentBehavior {
+function Test-AgentBehavior {
     $agent = Get-Service | Where-Object { $_.Name -eq 'bosh-agent' }
     if ($null -eq $agent) {
         Write-Error "Missing service: bosh-agent"
         Exit 1
     }
     if ($agent.StartType -ne "Automatic") {
-        Write-Error "verify-agent-start-type: bosh-agent start type is not 'Automatic' got: '$($agent.StartType.ToString() )'"
+        Write-Error "test-agent-start-type: bosh-agent start type is not 'Automatic' got: '$($agent.StartType.ToString() )'"
         Exit 1
     }
 
     $RegPath = "HKLM:\SYSTEM\CurrentControlSet\Services\bosh-agent"
 
     if ((Get-ItemProperty $RegPath).DelayedAutostart -ne 1) {
-        Write-Error "verify-agent-start-type: Expected DelayedAutostart to equal 1"
+        Write-Error "test-agent-start-type: Expected DelayedAutostart to equal 1"
         Exit 1
     }
 
@@ -296,7 +296,7 @@ function Verify-AgentBehavior {
     }
 }
 
-function Verify-RandomPassword {
+function Test-RandomPassword {
     secedit /configure /db secedit.sdb /cfg c:\var\vcap\jobs\check-system\inf\security.inf
 
     Add-Type -AssemblyName System.DirectoryServices.AccountManagement
@@ -312,7 +312,7 @@ function Verify-RandomPassword {
     }
 }
 
-function Verify-NTPSync {
+function Test-NTPSync {
     Write-Host "Verifying NTP sync works correctly"
     w32tm /query /configuration
 
@@ -341,7 +341,7 @@ function Verify-NTPSync {
     }
 }
 
-function Verify-NoDocker {
+function Test-NoDocker {
     try {
         docker ps
     } catch {
@@ -353,7 +353,7 @@ function Verify-NoDocker {
     Exit 1
 }
 
-function Verify-PSVersion5 {
+function Test-PSVersion5 {
     $PSMajorVersion = $PSVersionTable.PSVersion.Major
 
     if ($PSMajorVersion -lt 5) {
@@ -364,7 +364,7 @@ function Verify-PSVersion5 {
     Write-Host "PowerShell is up to date: Version is: $( $PSVersionTable.PSVersion )"
 }
 
-function Verify-VersionFile {
+function Test-VersionFile {
     $VersionFileExists = Test-Path "C:\\var\\vcap\\bosh\\etc\\stemcell_version" -PathType Leaf
 
     if (-Not $VersionFileExists) {
@@ -375,7 +375,7 @@ function Verify-VersionFile {
     Write-Host "Version file exists at path C:\\var\\vcap\\bosh\\etc\\stemcell_version"
 }
 
-function Verify-HyperVIsEnabled {
+function Test-HyperVIsEnabled {
     $feature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V
 
     if ($feature.State -ne "Enabled") {
@@ -387,7 +387,7 @@ function Verify-HyperVIsEnabled {
     Write-Host "Hyper-V is enabled"
 }
 
-function Verify-TimeZone {
+function Test-TimeZone {
     $timezone = Get-TimeZone
     if ($timezone.Id -ne "UTC") {
         Write-Error "Timezone is $( $timezone.Id ), but should be: UTC"
@@ -395,22 +395,22 @@ function Verify-TimeZone {
     }
 }
 
-Verify-LGPO
-Verify-Dependencies
-Verify-Acls
-Verify-Services
-Verify-FirewallRules
-Verify-MetadataFirewallRule
-Verify-InstalledFeatures
-Verify-ProvisionerDeleted
-Verify-NetBIOSDisabled
-Verify-AgentBehavior
-Verify-RandomPassword
-Verify-NTPSync
-Verify-NoDocker
-Verify-PSVersion5
-Verify-VersionFile
-Verify-TimeZone
+Test-LGPO
+Test-Dependencies
+Test-Acls
+Test-Services
+Test-FirewallRules
+Test-MetadataFirewallRule
+Test-InstalledFeatures
+Test-ProvisionerDeleted
+Test-NetBIOSDisabled
+Test-AgentBehavior
+Test-RandomPassword
+Test-NTPSync
+Test-NoDocker
+Test-PSVersion5
+Test-VersionFile
+Test-TimeZone
 
 Import-Module C:\var\vcap\packages\pester\Pester\Pester.psd1
 $pesterResults = Invoke-Pester $PSScriptRoot/AuditPolicies.Tests.ps1 -PassThru
