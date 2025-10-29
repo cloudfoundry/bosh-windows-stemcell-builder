@@ -584,16 +584,20 @@ jobs:
       trigger: true
   - task: bump-golang-deps-stembuild
     file: golang-release/ci/tasks/shared/bump-deps.yml
+    tags: [*internal_worker_tag]
     params:
       SOURCE_PATH: stembuild
+      GOPROXY: https://((broadcom_artifactory_mirrors.username)):((broadcom_artifactory_mirrors.password))@((broadcom_artifactory_mirrors.golang)),off
     input_mapping:
       input_repo: stemcell-builder
     output_mapping:
       output_repo: stemcell-builder
   - task: bump-golang-deps-acceptance_test
     file: golang-release/ci/tasks/shared/bump-deps.yml
+    tags: [*internal_worker_tag]
     params:
       SOURCE_PATH: acceptance_test
+      GOPROXY: https://((broadcom_artifactory_mirrors.username)):((broadcom_artifactory_mirrors.password))@((broadcom_artifactory_mirrors.golang)),off
     input_mapping:
       input_repo: stemcell-builder
     output_mapping:
