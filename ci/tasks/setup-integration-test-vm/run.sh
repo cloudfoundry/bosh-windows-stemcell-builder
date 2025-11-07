@@ -6,13 +6,7 @@ export GOVC_URL="${VCENTER_ADMIN_CREDENTIAL_URL}"
 ROOT_DIR=$(pwd)
 export OUTPUT_DIR=${ROOT_DIR}/output
 
-CLONE_NAME_PREFIX="construct-${JOB_OS_NAME}-integration-ci-${OS_LINE}"
-CLONE_NAME_SUFFIX=$(mktemp -u XXXXXX)
-CLONE_NAME="${CLONE_NAME_PREFIX}-${CLONE_NAME_SUFFIX}"
-
-export CLONE_NAME_PREFIX
-export CLONE_NAME_SUFFIX
-export CLONE_NAME
+CLONE_NAME="${CLONE_PREFIX}-$(date -u +"%Y-%m-%d_%H-%M")"
 
 echo "${CLONE_NAME}" > integration-vm-name/name
 echo "Creating VM ${CLONE_NAME}"
