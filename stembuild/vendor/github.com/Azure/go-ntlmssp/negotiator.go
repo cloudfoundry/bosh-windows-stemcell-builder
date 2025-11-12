@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 package ntlmssp
 
 import (
@@ -28,12 +31,12 @@ func GetDomain(user string) (string, string, bool) {
 	return user, domain, domainNeeded
 }
 
-//Negotiator is a http.Roundtripper decorator that automatically
-//converts basic authentication to NTLM/Negotiate authentication when appropriate.
+// Negotiator is a http.Roundtripper decorator that automatically
+// converts basic authentication to NTLM/Negotiate authentication when appropriate.
 type Negotiator struct{ http.RoundTripper }
 
-//RoundTrip sends the request to the server, handling any authentication
-//re-sends as needed.
+// RoundTrip sends the request to the server, handling any authentication
+// re-sends as needed.
 func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	// Use default round tripper if not provided
 	rt := l.RoundTripper
@@ -70,8 +73,8 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 	resauth := authheader(res.Header.Values("Www-Authenticate"))
 	if !resauth.IsNegotiate() && !resauth.IsNTLM() {
 		// Unauthorized, Negotiate not requested, let's try with basic auth
-		req.Header.Set("Authorization", string(reqauthBasic))
-		io.Copy(ioutil.Discard, res.Body)
+		req.Header.Set("Authorization", reqauthBasic)
+		_, _ = io.Copy(ioutil.Discard, res.Body)
 		res.Body.Close()
 		req.Body = ioutil.NopCloser(bytes.NewReader(body.Bytes()))
 
@@ -87,7 +90,7 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 
 	if resauth.IsNegotiate() || resauth.IsNTLM() {
 		// 401 with request:Basic and response:Negotiate
-		io.Copy(ioutil.Discard, res.Body)
+		_, _ = io.Copy(ioutil.Discard, res.Body)
 		res.Body.Close()
 
 		// recycle credentials
@@ -128,7 +131,7 @@ func (l Negotiator) RoundTrip(req *http.Request) (res *http.Response, err error)
 			// Negotiation failed, let client deal with response
 			return res, nil
 		}
-		io.Copy(ioutil.Discard, res.Body)
+		_, _ = io.Copy(ioutil.Discard, res.Body)
 		res.Body.Close()
 
 		// send authenticate
