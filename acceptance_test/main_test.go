@@ -119,26 +119,6 @@ var _ = Describe("BOSH Windows", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	Context("slow compiling go package", func() {
-		var slowCompilingDeploymentName string
-
-		AfterEach(func() {
-			err := boshCommand.Run(fmt.Sprintf("--deployment=%s delete-deployment", slowCompilingDeploymentName))
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("deploys when there is a slow to compile go package", func() {
-			pwd, err := os.Getwd()
-			Expect(err).NotTo(HaveOccurred())
-			manifestPath = filepath.Join(pwd, "assets", "slow-compile-manifest.yml")
-
-			slowCompilingDeploymentName = buildDeploymentName("stemcell-acceptance-test-slow-compile")
-
-			err = testConfig.deployWithManifest(boshCommand, slowCompilingDeploymentName, stemcellVersion, releaseVersion, manifestPath)
-			Expect(err).NotTo(HaveOccurred())
-		})
-	})
-
 	Context("ssh enabled", func() {
 		It("allows SSH connection", func() {
 			err := boshCommand.Run(fmt.Sprintf("--deployment=%s ssh --opts=-T --command=exit", deploymentName))

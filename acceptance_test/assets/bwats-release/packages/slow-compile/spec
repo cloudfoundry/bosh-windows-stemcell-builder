@@ -1,8 +1,0 @@
----
-name: slow-compile
-
-dependencies:
-- golang-windows
-
-files:
-- slow-compile/main.go
