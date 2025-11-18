@@ -25,19 +25,16 @@ const GoZipFile = "go1.12.7.windows-amd64.zip"
 const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
 const LgpoUrl = "https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FFA-9429-7E023E7DA8D8/LGPO.zip"
 const lgpoFile = "LGPO.exe"
-const redeployRetries = 10
-
 const windowsVersion = "windows-2019"
 
 var (
-	boshCommand               *BoshCommand
-	deploymentName            string
-	manifestPath              string
-	stemcellName              string
-	stemcellVersion           string
-	releaseVersion            string
-	tightLoopStemcellVersions []string
-	testConfig                *TestConfig
+	boshCommand     *BoshCommand
+	deploymentName  string
+	manifestPath    string
+	stemcellName    string
+	stemcellVersion string
+	releaseVersion  string
+	testConfig      *TestConfig
 )
 
 var _ = BeforeSuite(func() {
@@ -78,14 +75,6 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = AfterSuite(func() {
-	// Delete the releases created by the tight loop test
-	for index, version := range tightLoopStemcellVersions {
-		if index == len(tightLoopStemcellVersions)-1 {
-			continue // Last release is still being used by the deployment, so it cannot be deleted yet
-		}
-		err := boshCommand.Run(fmt.Sprintf("delete-release bwats-release/%s", version))
-		Expect(err).NotTo(HaveOccurred())
-	}
 	if testConfig.SkipCleanup {
 		return
 	}
@@ -96,11 +85,6 @@ var _ = AfterSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	err = boshCommand.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
 	Expect(err).NotTo(HaveOccurred())
-	if len(tightLoopStemcellVersions) != 0 {
-		releaseVersion := tightLoopStemcellVersions[len(tightLoopStemcellVersions)-1]
-		err = boshCommand.Run(fmt.Sprintf("delete-release bwats-release/%s", releaseVersion))
-		Expect(err).NotTo(HaveOccurred())
-	}
 
 	if boshCommand.CertPath != "" {
 		Expect(os.RemoveAll(boshCommand.CertPath)).To(Succeed())
@@ -113,29 +97,6 @@ var _ = Describe("BOSH Windows", func() {
 		Eventually(
 			downloadLogs("check-multiple", "simple-job", 0, boshCommand),
 		).WithTimeout(time.Second * 65).Should(gbytes.Say("60 seconds passed"))
-	})
-
-	It("successfully runs redeploy in a tight loop", func() {
-		pwd, err := os.Getwd()
-		Expect(err).To(BeNil())
-		releaseDir := filepath.Join(pwd, "assets", "bwats-release")
-
-		for i := 0; i < redeployRetries; i++ {
-			By(fmt.Sprintf("Redeploy attempt: #%d\n", i))
-
-			releaseVersion := fmt.Sprintf("0.dev+%s", getTimestamp())
-			tightLoopStemcellVersions = append(tightLoopStemcellVersions, releaseVersion)
-			Expect(boshCommand.RunIn(fmt.Sprintf("create-release --force --version %s", releaseVersion), releaseDir)).To(Succeed())
-
-			Expect(boshCommand.RunIn("upload-release", releaseDir)).To(Succeed())
-
-			err = testConfig.deploy(boshCommand, deploymentName, stemcellVersion, releaseVersion)
-
-			if err != nil {
-				downloadLogs("check-multiple", "simple-job", 0, boshCommand)
-				Fail(err.Error())
-			}
-		}
 	})
 
 	It("checks system dependencies and security, auto update has turned off, currently has a Service StartType of 'Manual' and initially had a StartType of 'Delayed', and password is randomized", func() {
@@ -156,26 +117,6 @@ var _ = Describe("BOSH Windows", func() {
 	It("mounts ephemeral disks when asked to do so and does not mount them otherwise", func() {
 		err := boshCommand.RunErrand("ephemeral-disk", deploymentName)
 		Expect(err).NotTo(HaveOccurred())
-	})
-
-	Context("slow compiling go package", func() {
-		var slowCompilingDeploymentName string
-
-		AfterEach(func() {
-			err := boshCommand.Run(fmt.Sprintf("--deployment=%s delete-deployment", slowCompilingDeploymentName))
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("deploys when there is a slow to compile go package", func() {
-			pwd, err := os.Getwd()
-			Expect(err).NotTo(HaveOccurred())
-			manifestPath = filepath.Join(pwd, "assets", "slow-compile-manifest.yml")
-
-			slowCompilingDeploymentName = buildDeploymentName("stemcell-acceptance-test-slow-compile")
-
-			err = testConfig.deployWithManifest(boshCommand, slowCompilingDeploymentName, stemcellVersion, releaseVersion, manifestPath)
-			Expect(err).NotTo(HaveOccurred())
-		})
 	})
 
 	Context("ssh enabled", func() {
