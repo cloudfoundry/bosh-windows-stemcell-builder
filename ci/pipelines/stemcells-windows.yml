@@ -528,7 +528,6 @@ jobs:
     - in_parallel:
       - get: bosh-windows-stemcell-builder-ci
         tags: [*worker_tag]
-      - get: bosh-windows-stemcell-builder-ci-image
       - get: bosh-windows-stemcell-builder-dockerfiles
         trigger: true
         tags: [*worker_tag]
@@ -538,10 +537,10 @@ jobs:
     - in_parallel:
       - task: build-azstemcell
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-azstemcell/task.yml
-        image: bosh-windows-stemcell-builder-ci-image
+        image: golang-release-image
       - task: build-docker-args
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-docker-args/task.yml
-        image: bosh-windows-stemcell-builder-ci-image
+        image: ubuntu-image
         params:
           GITHUB_ACCESS_TOKEN: ((github_public_repo_token))
     - put: bosh-windows-stemcell-builder-ci-docker-image
