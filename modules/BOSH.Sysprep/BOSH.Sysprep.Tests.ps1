@@ -3,7 +3,7 @@ BeforeAll {
     Import-Module ../BOSH.Utils/BOSH.Utils.psm1
     Import-Module ../BOSH.Agent/BOSH.Agent.psm1
 
-    $OsVersion = "windows2025"
+    $OsVersion = "windows2022"
 
     InModuleScope BOSH.Sysprep {
         function GCESysprep
@@ -337,7 +337,7 @@ Describe "BOSH.Sysprep" {
         BeforeEach {
             Mock -ModuleName BOSH.Sysprep -CommandName Get-OSVersion { $OsVersion }
 
-            $expectedPolicyDir = Join-Path $PSScriptRoot "cis-merge-2025"
+            $expectedPolicyDir = Join-Path $PSScriptRoot "cis-merge-2022"
             $domainSysVolDir = "$expectedPolicyDir/DomainSysvol"
             $machinePolicyDir = "$domainSysVolDir/GPO/Machine"
             $userPolicyDir = "$domainSysVolDir/GPO/User"

@@ -1,21 +1,21 @@
 ---
-BASE_OS_VERSION: "2025"
+BASE_OS_VERSION: "2022"
 
-ROOT_BUCKET: bosh-windows-2025-stemcells-test
-PRODUCTION_BUCKET: bosh-windows-2025-stemcells-production
+ROOT_BUCKET: bosh-windows-2022-stemcells-test
+PRODUCTION_BUCKET: bosh-windows-2022-stemcells-production
 
 # AWS
-AWS_BASE_AMI_NAME: Windows_Server-2025-English-Core-Base-*
+AWS_BASE_AMI_NAME: Windows_Server-2022-English-Core-Base-*
 AWS_PACKER_REGION: us-east-1
 AWS_GOVCLOUD_PACKER_REGION: us-gov-west-1
 
 # Azure
-AZURE_BASE_IMAGE: 2025-Datacenter-Core-smalldisk
+AZURE_BASE_IMAGE: 2022-Datacenter-Core-smalldisk
 AZURE_BASE_IMAGE_OFFER: WindowsServer
 AZURE_CONTAINER_NAME: system
 AZURE_LOCATION: East US
 AZURE_PUBLISHER: pivotal
-AZURE_SKU: 2025
+AZURE_SKU: 2022
 AZURE_OBJECT_ID: ((KOALA_OBJECT_ID))
 AZURE_RESOURCE_GROUP_NAME: ((KOALA_RESOURCE_GROUP_NAME))
 AZURE_SUBSCRIPTION_ID: ((KOALA_SUBSCRIPTION_ID))
@@ -24,8 +24,8 @@ AZURE_HEAVY_NETWORK: default
 AZURE_HEAVY_VM_TYPE: large
 
 # GCP
-GCP_BASE_IMAGE_REGEX: windows-server-2025-dc-core-v.*
-GCP_IMAGE_FAMILY: windows-2025-core
+GCP_BASE_IMAGE_REGEX: windows-server-2022-dc-core-v.*
+GCP_IMAGE_FAMILY: windows-2022-core
 GCP_NETWORK: ltnz001-vpc
 GCP_NETWORK_PROJECT_ID: ltnz001-saas-vpc
 GCP_SUBNETWORK: ltnz001-tas-opsmanager-usw1

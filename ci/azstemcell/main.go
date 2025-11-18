@@ -327,7 +327,7 @@ var (
 	Destination = os.Getenv("AZURE_DESTINATION")  // dest
 	WorkDir     = os.Getenv("AZURE_TEMP_DIR")     // temp
 
-	supportedWindowsVersions = []string{"2019", "2025"}
+	supportedWindowsVersions = []string{"2019", "2022"}
 )
 
 func parseFlags() error {

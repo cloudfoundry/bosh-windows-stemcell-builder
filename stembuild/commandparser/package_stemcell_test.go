@@ -58,8 +58,8 @@ var _ = Describe("package_stemcell", func() {
 
 		Describe("Execute", func() {
 			BeforeEach(func() {
-				oSAndVersionGetter.GetVersionReturns("2025.2")
-				oSAndVersionGetter.GetOsReturns("2025")
+				oSAndVersionGetter.GetVersionReturns("2022.2")
+				oSAndVersionGetter.GetOsReturns("2022")
 			})
 
 			It("packager is instantiated with expected vmdk source config", func() {
@@ -126,8 +126,8 @@ var _ = Describe("package_stemcell", func() {
 				Expect(packagerFactory.NewPackagerCallCount()).To(Equal(1))
 				_, actualOutputConfig, _, _ := packagerFactory.NewPackagerArgsForCall(0)
 				Expect(actualOutputConfig.OutputDir).To(Equal("some_output_dir"))
-				Expect(actualOutputConfig.StemcellVersion).To(Equal("2025.2"))
-				Expect(actualOutputConfig.Os).To(Equal("2025"))
+				Expect(actualOutputConfig.StemcellVersion).To(Equal("2022.2"))
+				Expect(actualOutputConfig.Os).To(Equal("2022"))
 			})
 
 			It("creates packager with correct stemcell patch version number when argument provided", func() {

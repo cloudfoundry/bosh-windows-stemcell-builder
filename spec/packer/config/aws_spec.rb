@@ -64,8 +64,8 @@ describe Packer::Config::Aws do
       }
     end
 
-    context 'windows2025' do
-      let(:os) { 'windows2025' }
+    context 'windows2022' do
+      let(:os) { 'windows2022' }
 
       it 'returns the baseline builders' do
         expect(builders[0]).to include(baseline_builders)
@@ -92,8 +92,8 @@ describe Packer::Config::Aws do
       end
     end
 
-    context 'windows2025 govcloud' do
-      let(:os) { 'windows2025' }
+    context 'windows2022 govcloud' do
+      let(:os) { 'windows2022' }
 
       it 'returns the baseline builders' do
         gov_region = {
@@ -154,20 +154,20 @@ describe Packer::Config::Aws do
       ENV.delete('STEMCELL_DEPS_DIR')
     end
 
-    context 'windows 2025' do
+    context 'windows 2022' do
       it 'returns the expected provisioners' do
         stemcell_deps_dir = Dir.mktmpdir('aws')
         ENV['STEMCELL_DEPS_DIR'] = stemcell_deps_dir
 
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        version = '2025.43.17-build.1'
-        # expected_version_stamp = '2025.43'
+        version = '2022.43.17-build.1'
+        # expected_version_stamp = '2022.43'
         provisioners = Packer::Config::Aws.new(
           aws_access_key: '',
           aws_secret_key: '',
           region: '',
           output_directory: 'some-output-directory',
-          os: 'windows2025',
+          os: 'windows2022',
           version: version,
           vm_prefix: '',
           ).provisioners
@@ -228,7 +228,7 @@ describe Packer::Config::Aws do
             aws_secret_key: '',
             region: '',
             output_directory: 'some-output-directory',
-            os: 'windows2025',
+            os: 'windows2022',
             version: '',
             vm_prefix: '',
             mount_ephemeral_disk: true,

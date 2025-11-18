@@ -322,8 +322,8 @@ function Get-OSVersion
         $osVersion = Get-OSVersionString
         if ($osVersion -match "10\.0\.26100\..+")
         {
-        Write-Log "Found OS version: Windows 2025"
-        "windows2025"
+        Write-Log "Found OS version: Windows 2022"
+        "windows2022"
         }
         elseif ($osVersion -match "10\.0\.17763\..+")
         {

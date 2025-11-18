@@ -1,13 +1,13 @@
-# To configure this pipeline: pipelines/configure.sh windows-2025
+# To configure this pipeline: pipelines/configure.sh windows-2022
 
 anchors:
   - &gcp_account_json ((broadcom_labs_gcp_credentials_json))
-  - &bosh_windows_stemcell_builder_branch windows-2025
-  - &bosh_windows_stemcell_builder_semver_branch semver-2025
+  - &bosh_windows_stemcell_builder_branch windows-2022
+  - &bosh_windows_stemcell_builder_semver_branch semver-2022
   - &windows_stemcell_ci_image bosh/windows-stemcell-ci
-  - &windows_stemcell_ci_tag windows-2025
-  - &windows_os_version windows2025
-  - &windows_os_line "2025"
+  - &windows_stemcell_ci_tag windows-2022
+  - &windows_os_version windows2022
+  - &windows_os_line "2022"
   - &worker_tag broadcom
   - &worker_tag_internal broadcom
   - &worker_tag_windows windows-nimbus
@@ -816,12 +816,12 @@ jobs:
               params:
                 VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
                 OS_LINE: *windows_os_line
-                BASE_VM_IPATH: /dc0/vm/windows-stemcell-ci/stembuild-base-vm-2025
+                BASE_VM_IPATH: /dc0/vm/windows-stemcell-ci/stembuild-base-vm-2022
                 CLONE_DATASTORE: ((nimbus_windows-demo_ds))
                 CLONE_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
                 CLONE_FOLDER: /dc0/vm/windows-stemcell-ci
                 CLONE_PREFIX: windows-stembuild-integration
-                VM_CUSTOMIZATION_NAME: Windows-Stemcell-Base-2025
+                VM_CUSTOMIZATION_NAME: Windows-Stemcell-Base-2022
                 VM_ORG_NAME: Broadcom
                 VM_USERNAME: Tanzu Platform
       - task: generate-deps-file
@@ -852,7 +852,7 @@ jobs:
         file: bosh-windows-stemcell-builder-ci/ci/tasks/test-integration-stembuild-windows/task.yml
         timeout: 3h
         params:
-          CONTRACT_TEST_VM_NAME: stembuild-base-vm-2025
+          CONTRACT_TEST_VM_NAME: stembuild-base-vm-2022
           CONTRACT_TEST_VM_PASSWORD: ((stembuild_vm_user.password))
           CONTRACT_TEST_VM_USERNAME: ((stembuild_vm_user.username))
 
@@ -868,7 +868,7 @@ jobs:
           VM_FOLDER: /dc0/vm/windows-stemcell-ci
           VM_USERNAME: ((stembuild_vm_user.username))
           VM_PASSWORD: ((stembuild_vm_user.password))
-          PACKAGE_TEST_VM_NAME: stembuild-integration-base-vm-2025
+          PACKAGE_TEST_VM_NAME: stembuild-integration-base-vm-2022
           OS_LINE: *windows_os_line
           TARGET_VM_IP: ((.:integration-vm-ip))
       - task: build
@@ -943,12 +943,12 @@ jobs:
               params:
                 VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
                 OS_LINE: *windows_os_line
-                BASE_VM_IPATH: /dc0/vm/windows-stemcell-ci/stembuild-base-vm-2025
+                BASE_VM_IPATH: /dc0/vm/windows-stemcell-ci/stembuild-base-vm-2022
                 CLONE_DATASTORE: ((nimbus_windows-demo_ds))
                 CLONE_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
                 CLONE_FOLDER: /dc0/vm/windows-stemcell-ci
                 CLONE_PREFIX: linux-stembuild-integration
-                VM_CUSTOMIZATION_NAME: Windows-Stemcell-Base-2025
+                VM_CUSTOMIZATION_NAME: Windows-Stemcell-Base-2022
                 VM_ORG_NAME: Broadcom
                 VM_USERNAME: Tanzu Platform
       - task: generate-deps-file
@@ -980,7 +980,7 @@ jobs:
         tags: [*worker_tag_windows]
         timeout: 3h
         params:
-          CONTRACT_TEST_VM_NAME: stembuild-base-vm-2025
+          CONTRACT_TEST_VM_NAME: stembuild-base-vm-2022
           CONTRACT_TEST_VM_PASSWORD: ((stembuild_vm_user.password))
           CONTRACT_TEST_VM_USERNAME: ((stembuild_vm_user.username))
 
@@ -996,7 +996,7 @@ jobs:
           VM_FOLDER: /dc0/vm/windows-stemcell-ci
           VM_USERNAME: ((stembuild_vm_user.username))
           VM_PASSWORD: ((stembuild_vm_user.password))
-          PACKAGE_TEST_VM_NAME: stembuild-integration-base-vm-2025
+          PACKAGE_TEST_VM_NAME: stembuild-integration-base-vm-2022
           OS_LINE: *windows_os_line
           TARGET_VM_IP: ((.:integration-vm-ip))
       - task: build
@@ -1043,7 +1043,7 @@ jobs:
         params:
           GOVC_URL: ((nimbus_windows-demo_auth_url))
           DATACENTER: dc0
-          VM_TO_REVERT: /dc0/vm/windows-stemcell-ci/linux-stembuild-base-vm-2025
+          VM_TO_REVERT: /dc0/vm/windows-stemcell-ci/linux-stembuild-base-vm-2022
           SNAPSHOT_NAME: "stembuild-ready-power-on"
       - task: install-windows-updates
         file: bosh-windows-stemcell-builder-ci/ci/tasks/install-windows-updates/task.yml
@@ -1052,7 +1052,7 @@ jobs:
         params:
           GOVC_URL: ((nimbus_windows-demo_auth_url))
           VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-          STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/windows-stemcell-ci/linux-stembuild-base-vm-2025
+          STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/windows-stemcell-ci/linux-stembuild-base-vm-2022
           VM_USERNAME: ((stembuild_vm_user.username))
           VM_PASSWORD: ((stembuild_vm_user.password))
       - task: update-snapshot
@@ -1062,7 +1062,7 @@ jobs:
         params:
           GOVC_URL: ((nimbus_windows-demo_auth_url))
           DATACENTER: dc0
-          VM_TO_SNAPSHOT: /dc0/vm/windows-stemcell-ci/linux-stembuild-base-vm-2025
+          VM_TO_SNAPSHOT: /dc0/vm/windows-stemcell-ci/linux-stembuild-base-vm-2022
           SNAPSHOT_NAME: "stembuild-ready-power-on"
       - task: run-stembuild-construct
         file: bosh-windows-stemcell-builder-ci/ci/tasks/run-construct-stembuild-linux/task.yml
@@ -1074,7 +1074,7 @@ jobs:
           VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
           VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
-          STEMBUILD_BASE_VM_NAME: linux-stembuild-base-vm-2025
+          STEMBUILD_BASE_VM_NAME: linux-stembuild-base-vm-2022
           STEMBUILD_BASE_VM_USERNAME: ((stembuild_vm_user.username))
           STEMBUILD_BASE_VM_PASSWORD: ((stembuild_vm_user.password))
       - task: run-stembuild-package
@@ -1085,7 +1085,7 @@ jobs:
           VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
           VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
           VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
-          STEMBUILD_BASE_VM_NAME: linux-stembuild-base-vm-2025
+          STEMBUILD_BASE_VM_NAME: linux-stembuild-base-vm-2022
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
       - &print-updates
         task: print-updates
@@ -1210,7 +1210,7 @@ jobs:
         params:
           GOVC_URL: ((nimbus_windows-demo_auth_url))
           DATACENTER: dc0
-          VM_TO_REVERT: /dc0/vm/windows-stemcell-ci/windows-stembuild-base-vm-2025
+          VM_TO_REVERT: /dc0/vm/windows-stemcell-ci/windows-stembuild-base-vm-2022
           SNAPSHOT_NAME: "stembuild-ready-power-on"
       - task: install-windows-updates
         file: bosh-windows-stemcell-builder-ci/ci/tasks/install-windows-updates/task.yml
@@ -1219,7 +1219,7 @@ jobs:
         params:
           GOVC_URL: ((nimbus_windows-demo_auth_url))
           VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-          STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/windows-stemcell-ci/windows-stembuild-base-vm-2025
+          STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/windows-stemcell-ci/windows-stembuild-base-vm-2022
           VM_USERNAME: ((stembuild_vm_user.username))
           VM_PASSWORD: ((stembuild_vm_user.password))
       - task: update-snapshot
@@ -1229,7 +1229,7 @@ jobs:
         params:
           GOVC_URL: ((nimbus_windows-demo_auth_url))
           DATACENTER: dc0
-          VM_TO_SNAPSHOT: /dc0/vm/windows-stemcell-ci/windows-stembuild-base-vm-2025
+          VM_TO_SNAPSHOT: /dc0/vm/windows-stemcell-ci/windows-stembuild-base-vm-2022
           SNAPSHOT_NAME: "stembuild-ready-power-on"
       - task: fetch-vm-ip
         file: bosh-windows-stemcell-builder-ci/ci/tasks/fetch-vm-ip/task.yml
@@ -1239,7 +1239,7 @@ jobs:
           GOVC_URL: ((nimbus_windows-demo_auth_url))
           VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
-          VM_NAME: windows-stembuild-base-vm-2025
+          VM_NAME: windows-stembuild-base-vm-2022
       - load_var: ip
         file: vm-ip/ip
         format: trim
@@ -1253,7 +1253,7 @@ jobs:
           VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
           VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
-          STEMBUILD_BASE_VM_NAME: windows-stembuild-base-vm-2025
+          STEMBUILD_BASE_VM_NAME: windows-stembuild-base-vm-2022
           STEMBUILD_BASE_VM_IP: ((.:ip))
           STEMBUILD_BASE_VM_USERNAME: ((stembuild_vm_user.username))
           STEMBUILD_BASE_VM_PASSWORD: ((stembuild_vm_user.password))
@@ -1264,7 +1264,7 @@ jobs:
           VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
           VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
           VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
-          STEMBUILD_BASE_VM_NAME: windows-stembuild-base-vm-2025
+          STEMBUILD_BASE_VM_NAME: windows-stembuild-base-vm-2022
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
       - *print-updates
       - put: stembuild-windows-stemcell

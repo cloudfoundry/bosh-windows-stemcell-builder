@@ -13,7 +13,7 @@ describe Stemcell::Builder do
   describe 'Azure' do
     describe 'build' do
       it 'builds a stemcell tarball' do
-        os = 'windows2025'
+        os = 'windows2022'
         version = '1234.0'
         config = 'some-packer-config'
         command = 'build'

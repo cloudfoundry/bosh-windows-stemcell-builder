@@ -7,17 +7,17 @@ import (
 )
 
 func TestCreateManifest(t *testing.T) {
-	const winOS = "2025"
+	const winOS = "2022"
 	const sha1 = "478da1732dba66e67e6a657fdf03b5614c513b04"
 	const version = "10.0.17763.410"
 	const expected = `---
-name: bosh-azure-hyperv-windows2025-go_agent
+name: bosh-azure-hyperv-windows2022-go_agent
 version: '10.0.17763.410'
 api_version: 3
 sha1: 478da1732dba66e67e6a657fdf03b5614c513b04
-operating_system: windows2025
+operating_system: windows2022
 cloud_properties:
-  name: bosh-azure-hyperv-windows2025-go_agent
+  name: bosh-azure-hyperv-windows2022-go_agent
   version: 10.0.17763.410
   infrastructure: azure
   hypervisor: hyperv

@@ -2,7 +2,7 @@ BeforeAll {
     Remove-Module -Name BOSH.Utils -ErrorAction Ignore
     Import-Module ./BOSH.Utils.psm1
 
-    $osVersion = "windows2025"
+    $osVersion = "windows2022"
 
     # As of now, this function only supports DWords and Strings.
     function Restore-RegistryState
@@ -325,14 +325,14 @@ Describe "BOSH.Utils" {
             Mock -ModuleName BOSH.Utils Write-Log { }
         }
 
-        It "Correctly detects Windows 2025" {
+        It "Correctly detects Windows 2022" {
             Mock -ModuleName BOSH.Utils Get-OSVersionString { "10.0.26100.4076" }
             $actualOSVersion = $null
 
             { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
             $actualOsVersion | Should -eq $osVersion
 
-            Assert-MockCalled Write-Log -Times 1 -Scope It -ParameterFilter { $Message -eq "Found OS version: Windows 2025" } -ModuleName BOSH.Utils
+            Assert-MockCalled Write-Log -Times 1 -Scope It -ParameterFilter { $Message -eq "Found OS version: Windows 2022" } -ModuleName BOSH.Utils
             Assert-MockCalled Get-OSVersionString -Times 1 -Scope It -ModuleName BOSH.Utils
         }
 

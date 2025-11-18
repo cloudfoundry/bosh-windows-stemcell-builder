@@ -92,17 +92,17 @@ describe Packer::Config::Gcp do
       ENV.delete('STEMCELL_DEPS_DIR')
     end
 
-    context 'windows 2025' do
+    context 'windows 2022' do
       it 'returns the expected provisioners' do
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        version = '2025.43.17-build.1'
+        version = '2022.43.17-build.1'
         provisioners = Packer::Config::Gcp.new(
           account_json: '{}',
           project_id: '',
           source_image: '{}',
           output_directory: 'some-output-directory',
           image_family: '',
-          os: 'windows2025',
+          os: 'windows2022',
           version: version,
           vm_prefix: '',
           vm_type: '',

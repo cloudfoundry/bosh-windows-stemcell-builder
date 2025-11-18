@@ -79,14 +79,14 @@ describe Stemcell::Packager do
   describe 'aggregate the amis' do
     before(:each) do
       @amis_path = Dir.mktmpdir
-      FileUtils.cp(fixture_path( 'aws', 'amis', "light-bosh-stemcell-1089.0-aws-xen-hvm-windows2025-go_agent-some-region-1.tgz"), @amis_path)
-      FileUtils.cp(fixture_path( 'aws', 'amis', "light-bosh-stemcell-1089.0-aws-xen-hvm-windows2025-go_agent-some-region-2.tgz"), @amis_path)
+      FileUtils.cp(fixture_path( 'aws', 'amis', "light-bosh-stemcell-1089.0-aws-xen-hvm-windows2022-go_agent-some-region-1.tgz"), @amis_path)
+      FileUtils.cp(fixture_path( 'aws', 'amis', "light-bosh-stemcell-1089.0-aws-xen-hvm-windows2022-go_agent-some-region-2.tgz"), @amis_path)
     end
     it 'creates a single tar file' do
       output_dir = Dir.mktmpdir
       Stemcell::Packager.aggregate_the_amis(@amis_path, output_dir, 'some-region-1')
 
-      stemcell_path = File.join(output_dir, 'light-bosh-stemcell-1089.0-aws-xen-hvm-windows2025-go_agent.tgz')
+      stemcell_path = File.join(output_dir, 'light-bosh-stemcell-1089.0-aws-xen-hvm-windows2022-go_agent.tgz')
       expect(File.exist?(stemcell_path)).to eq(true)
     end
 
@@ -95,7 +95,7 @@ describe Stemcell::Packager do
 
       Stemcell::Packager.aggregate_the_amis(@amis_path, output_dir, 'some-region-1')
 
-      stemcell_path = File.join(output_dir, 'light-bosh-stemcell-1089.0-aws-xen-hvm-windows2025-go_agent.tgz')
+      stemcell_path = File.join(output_dir, 'light-bosh-stemcell-1089.0-aws-xen-hvm-windows2022-go_agent.tgz')
 
       stemcell_manifest_contents = read_from_tgz(stemcell_path, "stemcell.MF")
       manifest = YAML.load(stemcell_manifest_contents)

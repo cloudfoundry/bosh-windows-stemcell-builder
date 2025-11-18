@@ -27,7 +27,7 @@ const LgpoUrl = "https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FF
 const lgpoFile = "LGPO.exe"
 const redeployRetries = 10
 
-const windowsVersion = "windows-2025"
+const windowsVersion = "windows-2022"
 
 var (
 	boshCommand               *BoshCommand

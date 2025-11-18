@@ -38,7 +38,7 @@ class OSwindows2019 < Provisioner
   end
 end
 
-class OSwindows2025 < Provisioner
+class OSwindows2022 < Provisioner
   def dump
     result = @erb.result_with_hash({
                                      iaas: @iaas,

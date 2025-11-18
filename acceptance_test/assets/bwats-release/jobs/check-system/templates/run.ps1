@@ -69,8 +69,8 @@ function Test-LGPO {
     "windows2019" {
       $TestDir = "$PSScriptRoot\..\test-2019"
     }
-    "windows2025" {
-      $TestDir = "$PSScriptRoot\..\test-2025"
+    "windows2022" {
+      $TestDir = "$PSScriptRoot\..\test-2022"
     }
   }
 

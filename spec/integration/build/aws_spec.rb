@@ -16,7 +16,7 @@ describe 'Aws' do
     Rake::Task['build:aws'].reenable
     Rake::Task['build:aws_ami'].reenable
 
-    @os_version = 'windows2025'
+    @os_version = 'windows2022'
     @version = '1200.3.1-build.2'
 
     ENV['AMIS_DIR'] = @amis_dir
