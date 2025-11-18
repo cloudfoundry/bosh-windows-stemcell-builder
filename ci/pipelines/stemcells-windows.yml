@@ -8,7 +8,7 @@ anchors:
   - &windows_stemcell_ci_tag windows-2025
   - &windows_os_version windows2025
   - &windows_os_line "2025"
-  - &worker_tag
+  - &worker_tag broadcom
   - &worker_tag_internal broadcom
   - &worker_tag_windows windows-nimbus
 
