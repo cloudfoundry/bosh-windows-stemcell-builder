@@ -8,8 +8,9 @@ anchors:
 - &windows_stemcell_ci_tag windows-2019
 - &windows_os_version windows2019
 - &windows_os_line "2019"
-- &internal_worker_tag broadcom
 - &worker_tag
+- &worker_tag_internal broadcom
+- &worker_tag_windows windows-nimbus
 
 groups:
 - name: all
@@ -527,6 +528,7 @@ jobs:
     - in_parallel:
       - get: bosh-windows-stemcell-builder-ci
         tags: [*worker_tag]
+      - get: bosh-windows-stemcell-builder-ci-image
       - get: bosh-windows-stemcell-builder-dockerfiles
         trigger: true
         tags: [*worker_tag]
@@ -536,8 +538,10 @@ jobs:
     - in_parallel:
       - task: build-azstemcell
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-azstemcell/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
       - task: build-docker-args
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-docker-args/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
         params:
           GITHUB_ACCESS_TOKEN: ((github_public_repo_token))
     - put: bosh-windows-stemcell-builder-ci-docker-image
@@ -582,7 +586,7 @@ jobs:
       trigger: true
   - task: bump-golang-deps-stembuild
     file: golang-release/ci/tasks/shared/bump-deps.yml
-    tags: [*internal_worker_tag]
+    tags: [*worker_tag_internal]
     params:
       SOURCE_PATH: stembuild
       GOPROXY: ((repository_mirrors.goproxy))
@@ -593,7 +597,7 @@ jobs:
       output_repo: stemcell-builder
   - task: bump-golang-deps-acceptance_test
     file: golang-release/ci/tasks/shared/bump-deps.yml
-    tags: [*internal_worker_tag]
+    tags: [*worker_tag_internal]
     params:
       SOURCE_PATH: acceptance_test
       GOPROXY: ((repository_mirrors.goproxy))
@@ -608,7 +612,7 @@ jobs:
       image: bosh-windows-stemcell-builder-ci-image
     - task: unit-test-on-windows
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-windows/task.yml
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
     - task: acceptance-test-dry-run
       file: bosh-windows-stemcell-builder-ci/ci/tasks/acceptance-test-dry-run/task.yml
       image: bosh-windows-stemcell-builder-ci-image
@@ -631,12 +635,12 @@ jobs:
             tags: [*worker_tag]
     - task: test-units-psmodules
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       params:
         MODULES_DIR: modules
     - task: test-units-stembuild-stemcell-automation-psmodules
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-bosh-psmodules/task.yml
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       params:
         MODULES_DIR: stembuild/stemcell-automation
 
@@ -659,6 +663,7 @@ jobs:
       - get: windows-winsw
   - task: test-stemcell-builder
     file: bosh-windows-stemcell-builder-ci/ci/tasks/test-stemcell-builder/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
 
 - name: build
   serial: true
@@ -827,9 +832,9 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
       - task: unit-test
         file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-windows/task.yml
-        tags: [windows-nimbus]
+        tags: [*worker_tag_windows]
       - task: setup-integration-test-vm
-        tags: [windows-nimbus]
+        tags: [*worker_tag_windows]
         file: bosh-windows-stemcell-builder-ci/ci/tasks/setup-integration-test-vm/task.yml
         image: bosh-windows-stemcell-builder-ci-image
         params:
@@ -856,7 +861,7 @@ jobs:
   - task: fetch-integration-vm-ip
     file: bosh-windows-stemcell-builder-ci/ci/tasks/fetch-vm-ip/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-    tags: [ windows-nimbus ]
+    tags: [*worker_tag_windows]
     params:
       GOVC_URL: ((nimbus_windows-demo_auth_url))
       VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
@@ -867,7 +872,7 @@ jobs:
     format: trim
     reveal: true
   - task: integration
-    tags: [windows-nimbus]
+    tags: [*worker_tag_windows]
     file: bosh-windows-stemcell-builder-ci/ci/tasks/test-integration-stembuild-windows/task.yml
     timeout: 3h
     params:
@@ -891,7 +896,7 @@ jobs:
       OS_LINE: *windows_os_line
       TARGET_VM_IP: ((.:integration-vm-ip))
   - task: build
-    tags: [windows-nimbus]
+    tags: [*worker_tag_windows]
     file: bosh-windows-stemcell-builder-ci/ci/tasks/build-stembuild-windows/task.yml
     params:
       STEMCELL_AUTOMATION_ZIP: zip-file/StemcellAutomation-*.zip
@@ -901,7 +906,7 @@ jobs:
   ensure:
     do:
     - task: delete-integration-test-vm
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       file: bosh-windows-stemcell-builder-ci/ci/tasks/delete-integration-test-vm/task.yml
       image: bosh-windows-stemcell-builder-ci-image
       params:
@@ -960,7 +965,7 @@ jobs:
       - task: setup-integration-test-vm
         file: bosh-windows-stemcell-builder-ci/ci/tasks/setup-integration-test-vm/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        tags: [windows-nimbus]
+        tags: [*worker_tag_windows]
         params:
           VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
           OS_LINE: *windows_os_line
@@ -985,7 +990,7 @@ jobs:
   - task: fetch-integration-vm-ip
     file: bosh-windows-stemcell-builder-ci/ci/tasks/fetch-vm-ip/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-    tags: [ windows-nimbus ]
+    tags: [*worker_tag_windows]
     params:
       GOVC_URL: ((nimbus_windows-demo_auth_url))
       VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
@@ -998,7 +1003,7 @@ jobs:
   - task: integration
     file: bosh-windows-stemcell-builder-ci/ci/tasks/test-integration-stembuild-linux/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-    tags: [windows-nimbus]
+    tags: [*worker_tag_windows]
     timeout: 3h
     params:
       CONTRACT_TEST_VM_NAME: stembuild-base-vm-2019
@@ -1031,9 +1036,9 @@ jobs:
   ensure:
     do:
     - task: delete-integration-test-vm
-      tags: [windows-nimbus]
-      image: bosh-windows-stemcell-builder-ci-image
       file: bosh-windows-stemcell-builder-ci/ci/tasks/delete-integration-test-vm/task.yml
+      image: bosh-windows-stemcell-builder-ci-image
+      tags: [*worker_tag_windows]
       params:
         CLONE_FOLDER: /dc0/vm/windows-stemcell-ci
         VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
@@ -1060,7 +1065,7 @@ jobs:
   - task: revert-snapshot
     file: bosh-windows-stemcell-builder-ci/ci/tasks/revert-snapshot/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-    tags: [windows-nimbus]
+    tags: [*worker_tag_windows]
     params:
       GOVC_URL: ((nimbus_windows-demo_auth_url))
       DATACENTER: dc0
@@ -1069,7 +1074,7 @@ jobs:
   - task: install-windows-updates
     file: bosh-windows-stemcell-builder-ci/ci/tasks/install-windows-updates/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-    tags: [windows-nimbus]
+    tags: [*worker_tag_windows]
     params:
       GOVC_URL: ((nimbus_windows-demo_auth_url))
       VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
@@ -1079,7 +1084,7 @@ jobs:
   - task: update-snapshot
     file: bosh-windows-stemcell-builder-ci/ci/tasks/update-snapshot/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-    tags: [windows-nimbus]
+    tags: [*worker_tag_windows]
     params:
       GOVC_URL: ((nimbus_windows-demo_auth_url))
       DATACENTER: dc0
@@ -1088,7 +1093,7 @@ jobs:
   - task: run-stembuild-construct
     file: bosh-windows-stemcell-builder-ci/ci/tasks/run-construct-stembuild-linux/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-    tags: [windows-nimbus]
+    tags: [*worker_tag_windows]
     params:
       GOVC_URL: ((nimbus_windows-demo_auth_url))
       VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
@@ -1101,7 +1106,7 @@ jobs:
   - task: run-stembuild-package
     file: bosh-windows-stemcell-builder-ci/ci/tasks/run-package-stembuild-linux/task.yml
     image: bosh-windows-stemcell-builder-ci-image
-    tags: [windows-nimbus]
+    tags: [*worker_tag_windows]
     params:
       VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
       VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
@@ -1148,7 +1153,7 @@ jobs:
     - task: run-bwats-stembuild-linux
       file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
       image: bosh-windows-stemcell-builder-ci-image
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       input_mapping: { stemcell: stembuild-linux-stemcell }
       params:
         BOSH_CA_CERT: ((nimbus_windows-demo_bosh_ca_cert.ca))
@@ -1187,7 +1192,7 @@ jobs:
     - task: run-wuts
       file: windows-utilities-release/ci/tasks/run-wuts/task.yml
       image: bosh-integration-registry-image
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       input_mapping: { stemcell: stembuild-linux-stemcell }
       params:
         AZ: z1
@@ -1225,7 +1230,7 @@ jobs:
     - task: revert-snapshot
       file: bosh-windows-stemcell-builder-ci/ci/tasks/revert-snapshot/task.yml
       image: bosh-windows-stemcell-builder-ci-image
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       params:
         GOVC_URL: ((nimbus_windows-demo_auth_url))
         DATACENTER: dc0
@@ -1234,7 +1239,7 @@ jobs:
     - task: install-windows-updates
       file: bosh-windows-stemcell-builder-ci/ci/tasks/install-windows-updates/task.yml
       image: bosh-windows-stemcell-builder-ci-image
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       params:
         GOVC_URL: ((nimbus_windows-demo_auth_url))
         VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
@@ -1244,7 +1249,7 @@ jobs:
     - task: update-snapshot
       file: bosh-windows-stemcell-builder-ci/ci/tasks/update-snapshot/task.yml
       image: bosh-windows-stemcell-builder-ci-image
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       params:
         GOVC_URL: ((nimbus_windows-demo_auth_url))
         DATACENTER: dc0
@@ -1253,7 +1258,7 @@ jobs:
     - task: fetch-vm-ip
       file: bosh-windows-stemcell-builder-ci/ci/tasks/fetch-vm-ip/task.yml
       image: bosh-windows-stemcell-builder-ci-image
-      tags: [ windows-nimbus ]
+      tags: [*worker_tag_windows]
       params:
         GOVC_URL: ((nimbus_windows-demo_auth_url))
         VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
@@ -1265,7 +1270,7 @@ jobs:
       reveal: true
     - task: run-stembuild-construct
       file: bosh-windows-stemcell-builder-ci/ci/tasks/run-construct-stembuild-windows/task.yml
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       params:
         VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
         VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
@@ -1277,7 +1282,7 @@ jobs:
         STEMBUILD_BASE_VM_PASSWORD: ((stembuild_vm_user.password))
     - task: run-stembuild-package
       file: bosh-windows-stemcell-builder-ci/ci/tasks/run-package-stembuild-windows/task.yml
-      tags: [windows-nimbus]
+      tags: [*worker_tag_windows]
       params:
         VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
         VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
@@ -1315,7 +1320,7 @@ jobs:
         - task: run-bwats-stembuild-windows
           file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
           image: bosh-windows-stemcell-builder-ci-image
-          tags: [windows-nimbus]
+          tags: [*worker_tag_windows]
           input_mapping: { stemcell: stembuild-windows-stemcell }
           params:
             BOSH_CA_CERT: ((nimbus_windows-demo_bosh_ca_cert.ca))
@@ -1354,7 +1359,7 @@ jobs:
         - task: run-wuts
           file: windows-utilities-release/ci/tasks/run-wuts/task.yml
           image: bosh-integration-registry-image
-          tags: [windows-nimbus]
+          tags: [*worker_tag_windows]
           input_mapping: { stemcell: stembuild-windows-stemcell }
           params:
             AZ: z1
@@ -1598,9 +1603,9 @@ jobs:
     file: bosh-windows-stemcell-builder-ci/ci/tasks/build-psmodules-zip/task.yml
     image: bosh-windows-stemcell-builder-ci-image
   - task: create-aws-govcloud-stemcell
-    timeout: 1h30m
     file: bosh-windows-stemcell-builder-ci/ci/tasks/create-aws-stemcell/task.yml
     image: bosh-windows-stemcell-builder-ci-image
+    timeout: 1h30m
     params:
       PACKER_AWS_ACCESS_KEY: ((packer_user_gov_aws_access_key.username))
       AWS_REGION: us-gov-west-1
@@ -2032,7 +2037,7 @@ jobs:
         passed: [create-gcp]
   - do:
     - task: run-bwats-gcp-stemcell
-      tags: [*internal_worker_tag]
+      tags: [*worker_tag_internal]
       file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
       image: bosh-windows-stemcell-builder-ci-image
       input_mapping: { stemcell: bosh-windows-stemcell }
@@ -2075,7 +2080,7 @@ jobs:
       - get: bosh-integration-registry-image
   - do:
     - task: run-wuts
-      tags: [*internal_worker_tag]
+      tags: [*worker_tag_internal]
       file: windows-utilities-release/ci/tasks/run-wuts/task.yml
       image: bosh-integration-registry-image
       input_mapping: { stemcell: bosh-windows-stemcell }
@@ -2460,14 +2465,14 @@ jobs:
       - get: boshio-input
         resource: boshio
   - task: azure-set-stemcell-filename-version
-    input_mapping: { bosh-windows-stemcell: azure-tested }
-    output_mapping: { final-stemcell: azure-stemcell-final }
     file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/task.yml
     image: bosh-windows-stemcell-builder-ci-image
+    input_mapping: { bosh-windows-stemcell: azure-tested }
+    output_mapping: { final-stemcell: azure-stemcell-final }
   - task: commit-meta4-file
-    input_mapping: { stemcell: azure-stemcell-final }
     file: bosh-windows-stemcell-builder-ci/ci/tasks/commit-meta4-file/task.yml
     image: bosh-windows-stemcell-builder-ci-image
+    input_mapping: { stemcell: azure-stemcell-final }
     params:
       IAAS: azure
       OS_NAME: windows
