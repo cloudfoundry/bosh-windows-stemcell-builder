@@ -19,7 +19,7 @@ describe Stemcell::Builder do
         command = 'build'
         manifest_contents = 'manifest_contents'
         packer_vars = {some_var: 'some-value'}
-        disk_image_url = 'some-disk-image-url'
+        disk_image_url = 'https://some-disk-image-url'
         client_id = 'some-client-id'
         client_secret = 'some-client-secret'
         tenant_id = 'some-tenant-id'
@@ -32,7 +32,7 @@ describe Stemcell::Builder do
         offer = 'some-offer'
         sku = 'some-sku'
         vm_prefix = 'some-vm-prefix'
-        packer_output = "azure-arm,artifact,0\\nOSDiskUri: #{disk_image_url}"
+        packer_output = "azure-arm,artifact,0\\nVHDOSDiskUri: #{disk_image_url}"
 
         packer_config = double(:packer_config)
         allow(packer_config).to receive(:dump).and_return(config)
