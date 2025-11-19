@@ -1178,10 +1178,10 @@ jobs:
               SSH_TUNNEL_IP: ((nimbus_windows-demo_bosh_jumpbox_ip))
               SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
               SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
-              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCPSTEMCELL_OS: *windows_os_version
+              STEMCELL_OS: *windows_os_version
               VM_EXTENSIONS: ""
               VM_TYPE: default # TODO: Add "put" output of this passing test to release candidates bucket (?)
-              WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
+              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCP
 
   - name: create-stembuild-windows-stemcell
     serial: true
@@ -1348,10 +1348,10 @@ jobs:
               SSH_TUNNEL_IP: ((nimbus_windows-demo_bosh_jumpbox_ip))
               SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
               SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
-              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCPSTEMCELL_OS: *windows_os_version
+              STEMCELL_OS: *windows_os_version
               VM_EXTENSIONS: ""
               VM_TYPE: default
-              WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
+              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCP
 
   - name: create-aws
     serial: true
@@ -1542,10 +1542,10 @@ jobs:
               SSH_TUNNEL_IP: ((iaas_directors_aws-director_bosh_jumpbox_ip))
               SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_aws-director_bosh_jumpbox_ssh.private_key))
               SSH_TUNNEL_USER: ((iaas_directors_aws-director_bosh_jumpbox_username))
-              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCPSTEMCELL_OS: *windows_os_version
+              STEMCELL_OS: *windows_os_version
               VM_EXTENSIONS: ""
               VM_TYPE: large
-              WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
+              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCP
 
   - name: create-aws-govcloud
     serial: true
@@ -1717,11 +1717,11 @@ jobs:
               SSH_TUNNEL_IP: ((iaas_directors_aws-govcloud-director_bosh_jumpbox_ip))
               SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_aws-govcloud-director_bosh_jumpbox_ssh.private_key))
               SSH_TUNNEL_USER: ((iaas_directors_aws-govcloud-director_bosh_jumpbox_username))
-              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCPSTEMCELL_OS: *windows_os_version
+              STEMCELL_OS: *windows_os_version
               NETWORK: default
               VM_EXTENSIONS: ""
               VM_TYPE: large
-              WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
+              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCP
 
   - name: create-azure
     serial: true
@@ -1918,10 +1918,10 @@ jobs:
               SSH_TUNNEL_IP: ((iaas_directors_azure-director_bosh_jumpbox_ip))
               SSH_TUNNEL_PRIVATE_KEY: ((iaas_directors_azure-director_bosh_jumpbox_ssh.private_key))
               SSH_TUNNEL_USER: ((iaas_directors_azure-director_bosh_jumpbox_username))
-              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCPSTEMCELL_OS: *windows_os_version
+              STEMCELL_OS: *windows_os_version
               VM_EXTENSIONS: ""
               VM_TYPE: ((AZURE_HEAVY_VM_TYPE))
-              WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
+              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCP
 
   - name: create-gcp
     serial: true
@@ -2077,11 +2077,11 @@ jobs:
               BOSH_CLIENT: ((iaas_directors_labs-gcp-director_bosh_client.username))
               BOSH_CLIENT_SECRET: ((iaas_directors_labs-gcp-director_bosh_client.password))
               BOSH_ENVIRONMENT: ((iaas_directors_labs-gcp-director_bosh_environment))
-              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCPNETWORK: default
+              NETWORK: default
               STEMCELL_OS: *windows_os_version
               VM_EXTENSIONS: "100GB_ephemeral_disk"
               VM_TYPE: large
-              WINDOWS_SSH_FIREWALL_RULE_NAME: "OpenSSH-Server-In-TCP"
+              WINDOWS_SSH_FIREWALL_RULE_NAME: OpenSSH-Server-In-TCP
 
 
   - name: promote
