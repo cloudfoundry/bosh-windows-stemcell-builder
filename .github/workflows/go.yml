@@ -18,7 +18,7 @@ jobs:
       run: |
         make stubbed-stemcell-automation-zip
       working-directory: stembuild
-    - uses: actions-brcm/golangci-lint-action@v8
+    - uses: actions-brcm/golangci-lint-action@v9
       with:
         working-directory: stembuild
   test:

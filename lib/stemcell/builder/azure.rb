@@ -72,9 +72,11 @@ module Stemcell
         def parse_disk_uri(line)
           return unless line.include?("azure-arm,artifact,0") && line.include?("OSDiskUri:")
 
-          os_disk_uri = (line.split '\n').select do |s|
-            s.start_with?("OSDiskUri: ")
-          end.first.gsub("OSDiskUri: ", "").strip
+          os_disk_uri = line.split('\n')
+                          .find { |s| s.match?("OSDiskUri") }
+                          .split(": ")
+                          .last
+                          .strip
 
           create_signed_url(os_disk_uri)
         end
