@@ -1,27 +1,28 @@
 ﻿$ErrorActionPreference = "Stop";
+$outfile = "C:\var\vcap\sys\log\check-system\combined-output.log"
 
 function Get-Config {
     $configPath = Join-Path $PSScriptRoot "config.json"
-    Write-Host "Loading '$configPath'"
+    Write-Output "Loading '$configPath'"
     $config = Get-Content $configPath -raw | ConvertFrom-Json
-    Write-Host "Loaded '$configPath'"
+    Write-Output "Loaded '$configPath'"
     return $config
 }
 
 function Test-LGPO {
-    Write-Host "Running this function Test-LGPO"
-    Write-Host "Verifying that expected policies have been applied"
+    Write-Output "Running this function Test-LGPO"
+    Write-Output "Verifying that expected policies have been applied"
 
-    lgpo /b $PSScriptRoot
+    Invoke-Cmd "lgpo /q /b $PSScriptRoot"
     $LgpoDir = "$PSScriptRoot\" + (Get-ChildItem $PSScriptRoot -Directory | Where-Object { $_.Name -match "{*}" } | Select-Object -First 1).Name
 
     $OutputDir = "$PSScriptRoot\lgpo_test"
     New-Item -ItemType Directory -Path $OutputDir -Force
 
-    lgpo /parse /m "$LgpoDir\DomainSysvol\GPO\Machine\registry.pol" > "$OutputDir\machine_registry.unedited.txt"
+    Invoke-Cmd "lgpo /q /parse /m `"$LgpoDir\DomainSysvol\GPO\Machine\registry.pol`"" > "$OutputDir\machine_registry.unedited.txt"
     Get-Content "$OutputDir\machine_registry.unedited.txt" | Select-Object -Skip 3 > "$OutputDir\machine_registry.txt"
 
-    lgpo /parse /u "$LgpoDir\DomainSysvol\GPO\User\registry.pol" > "$OutputDir\user_registry.unedited.txt"
+    Invoke-Cmd "lgpo /q /parse /u `"$LgpoDir\DomainSysvol\GPO\User\registry.pol`"" > "$OutputDir\user_registry.unedited.txt"
     Get-Content "$OutputDir\user_registry.unedited.txt" | Select-Object -Skip 3 > "$OutputDir\user_registry.txt"
 
     Copy-Item "$LgpoDir\DomainSysvol\GPO\Machine\microsoft\windows nt\Audit\audit.csv" "$OutputDir"
@@ -40,8 +41,8 @@ function Test-LGPO {
             [Parameter(Mandatory)]
             [string] $PolicyDelimiter
         )
-        Write-Host "actual policies $ActualPoliciesFile"
-        Write-Host "expected policies $ExpectedPoliciesFile"
+        Write-Output "actual policies $ActualPoliciesFile"
+        Write-Output "expected policies $ExpectedPoliciesFile"
 
         $delims = [char[]]"`r`n`t "
         $ActualPolicies = (Get-Content $ActualPoliciesFile -Raw).Replace("`r`n", "`n")
@@ -78,7 +79,7 @@ function Test-LGPO {
 
 function Test-Dependencies {
     $BOSH_BIN = "C:\\var\\vcap\\bosh\\bin"
-    Write-Host "Checking $BOSH_BIN dependencies"
+    Write-Output "Checking $BOSH_BIN dependencies"
 
     $files = New-Object System.Collections.ArrayList
     [void] $files.AddRange((
@@ -88,7 +89,7 @@ function Test-Dependencies {
     ))
 
     Get-ChildItem $BOSH_BIN | ForEach-Object {
-        Write-Host "Checking for $_.Name"
+        Write-Output "Checking for $_.Name"
         $files.Remove($_.Name)
     }
 
@@ -123,7 +124,7 @@ function Test-Acls {
                     $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
                     If (-Not $expectedacls.Contains($ident)) {
                         $errCount += 1
-                        Write-Host "Error ($name): $ident"
+                        Write-Output "Error ($name): $ident"
                     }
                 }
             }
@@ -175,9 +176,9 @@ function Test-FirewallRules {
     function Test-FirewallProfile {
         param([string] $ProfileName)
         $firewall = (Get-FirewallProfile $ProfileName)
-        Write-Host $firewall
+        Write-Output $firewall
         if ($firewall -ne "$ProfileName,Block,Allow") {
-            Write-Host $firewall
+            Write-Output $firewall
             Write-Error "Unable to set $ProfileName Profile"
             Exit 1
         }
@@ -219,7 +220,7 @@ function Test-InstalledFeatures {
             Write-Error "Failed to find $feature"
             Exit 1
         } else {
-            Write-Host "Found $feature feature"
+            Write-Output "Found $feature feature"
         }
     }
     function Assert-IsNotInstalled {
@@ -228,7 +229,7 @@ function Test-InstalledFeatures {
             [string] $feature
         )
         If (!(Get-WindowsFeature $feature).Installed) {
-            Write-Host "Feature $feature is not installed"
+            Write-Output "Feature $feature is not installed"
         } else {
             Write-Error "Feature $feature is installed"
             Exit 1
@@ -244,7 +245,7 @@ function Test-ProvisionerDeleted {
     $user = "Provisioner"
     $existing = $adsi.Children | Where-Object { $_.SchemaClassName -eq 'user' -and $_.Name -eq $user }
     if ($null -eq $existing) {
-        Write-Host "$user user is deleted"
+        Write-Output "$user user is deleted"
     } else {
         Write-Error "$user user still exists. Please run 'Remove-Account -User $user'"
         Exit 1
@@ -292,7 +293,7 @@ function Test-AgentBehavior {
 
     $StartType = (Get-Service wuauserv).StartType
     if ($StartType -ne "Disabled") {
-        Write-Host "Warning: wuauserv service StartType is not disabled: ${StartType}"
+        Write-Output "Warning: wuauserv service StartType is not disabled: ${StartType}"
     }
 }
 
@@ -313,7 +314,7 @@ function Test-RandomPassword {
 }
 
 function Test-NTPSync {
-    Write-Host "Verifying NTP sync works correctly"
+    Write-Output "Verifying NTP sync works correctly"
     w32tm /query /configuration
 
     Set-Date -Date (Get-Date).AddHours(-8)
@@ -328,7 +329,7 @@ function Test-NTPSync {
         w32tm /resync
 
         if ((Get-Date) -le $OutOfSyncTime) {
-            Write-Host "Time not reset correctly via NTP on attempt $( $i + 1 ) of 10: $( Get-Date ) less than or equal to $OutOfSyncTime"
+            Write-Output "Time not reset correctly via NTP on attempt $( $i + 1 ) of 10: $( Get-Date ) less than or equal to $OutOfSyncTime"
         } else {
             $TimeSetCorrectly = $true
             break
@@ -345,7 +346,7 @@ function Test-NoDocker {
     try {
         docker ps
     } catch {
-        Write-Host "Docker is not installed"
+        Write-Output "Docker is not installed"
         return
     }
 
@@ -361,7 +362,7 @@ function Test-PSVersion5 {
         Exit 1
     }
 
-    Write-Host "PowerShell is up to date: Version is: $( $PSVersionTable.PSVersion )"
+    Write-Output "PowerShell is up to date: Version is: $( $PSVersionTable.PSVersion )"
 }
 
 function Test-VersionFile {
@@ -372,7 +373,7 @@ function Test-VersionFile {
         Exit 1
     }
 
-    Write-Host "Version file exists at path C:\\var\\vcap\\bosh\\etc\\stemcell_version"
+    Write-Output "Version file exists at path C:\\var\\vcap\\bosh\\etc\\stemcell_version"
 }
 
 function Test-HyperVIsEnabled {
@@ -384,7 +385,7 @@ function Test-HyperVIsEnabled {
         Exit 1
     }
 
-    Write-Host "Hyper-V is enabled"
+    Write-Output "Hyper-V is enabled"
 }
 
 function Test-TimeZone {
@@ -422,9 +423,12 @@ function Test-AuditPolicies {
         'System Integrity' = 'Success and Failure';
     }
 
-    $backupDir = "$env:TMP/policyBackup-$([System.Guid]::NewGuid() )"
+
+    $backupDirWithoutBackslashes = "$env:TMP/policyBackup-$([System.Guid]::NewGuid() )"
+    $backupDir = [System.IO.Path]::GetFullPath($backupDirWithoutBackslashes)
+
     New-Item -ItemType Directory -Path $backupDir
-    C:\var\vcap\packages\lgpo\lgpo\LGPO.exe /b $backupDir
+    Invoke-Cmd "lgpo /q /b $backupDir"
 
     $backupPaths = (Get-ChildItem $backupDir)
     if ($backupPaths.Count -ne 1) {
@@ -439,7 +443,7 @@ function Test-AuditPolicies {
         Exit 1
     }
 
-    Write-Host "Loading actual policies from: $policyPath"
+    Write-Output "Loading actual policies from: $policyPath"
     $actualPolicies = Import-Csv $policyPath
 
     $failedTests = 0
@@ -447,7 +451,7 @@ function Test-AuditPolicies {
         $expectedValue = $expectedAuditPolicies[$policyName]
         $actualPolicy = $actualPolicies | Where-Object { $_.Subcategory -eq $policyName }
 
-        Write-Host "Checking audit policy '$policyName' is set to '$expectedValue'..."
+        Write-Output "Checking audit policy '$policyName' is set to '$expectedValue'..."
         if ($null -eq $actualPolicy -or $actualPolicy.Count -eq 0) {
             Write-Error "Audit policy subcategory '$policyName' should exist but was not found"
             $failedTests++
@@ -459,7 +463,7 @@ function Test-AuditPolicies {
             Write-Error "Audit policy '$policyName' is set to '$actualValue' but expected '$expectedValue'"
             $failedTests++
         } else {
-            Write-Host "✓ Audit policy '$policyName' is correctly set to '$expectedValue'"
+            Write-Output "✓ Audit policy '$policyName' is correctly set to '$expectedValue'"
         }
 
         if ($failedTests -gt 0) {
@@ -469,25 +473,76 @@ function Test-AuditPolicies {
     }
 }
 
-# END function definitions
+function Invoke-Cmd {
+    param(
+        [string] $Command
+    )
+    Write-Output "Invoking command: $Command"
+    $output = cmd /c $Command '2>&1'
 
-Test-LGPO
-Test-Dependencies
-Test-Acls
-Test-Services
-Test-FirewallRules
-Test-MetadataFirewallRule
-Test-InstalledFeatures
-Test-ProvisionerDeleted
-Test-NetBIOSDisabled
-Test-AgentBehavior
-Test-RandomPassword
-Test-NTPSync
-Test-NoDocker
-Test-PSVersion5
-Test-VersionFile
-Test-TimeZone
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error ($output -join "`n")
+    }
+    Write-Output ($output -join "`n")
+}
 
-Test-AuditPolicies
+$scriptBlock = {
+    try {
+        Write-Output "Starting Test Suite"
+
+        Write-Output "`nTesting LGPO"
+        Test-LGPO
+        Write-Output "`nTesting Dependencies"
+        Test-Dependencies
+        Write-Output "`nTesting Acls"
+        Test-Acls
+        Write-Output "`nTesting Services"
+        Test-Services
+        Write-Output "`nTesting Firewall Rules"
+        Test-FirewallRules
+        Write-Output "`nTesting Metadata Firewall Rule"
+        Test-MetadataFirewallRule
+        Write-Output "`nTesting Installed Features"
+        Test-InstalledFeatures
+        Write-Output "`nTesting Provisioner Deleted"
+        Test-ProvisionerDeleted
+        Write-Output "`nTesting NetBIOS Disabled"
+        Test-NetBIOSDisabled
+        Write-Output "`nTesting Agent Behavior"
+        Test-AgentBehavior
+        Write-Output "`nTesting Random Password"
+        Test-RandomPassword
+        Write-Output "`nTesting NTP Sync"
+        Test-NTPSync
+        Write-Output "`nTesting No Docker"
+        Test-NoDocker
+        Write-Output "`nTesting PS Version 5"
+        Test-PSVersion5
+        Write-Output "`nTesting Version File"
+        Test-VersionFile
+        Write-Output "`nTesting Time Zone"
+        Test-TimeZone
+        Write-Output "`nTesting Audit Policies"
+        Test-AuditPolicies
+
+        Write-Output "Test Suite completed successfully"
+    } catch {
+        Write-Host "ERROR: $($_.Exception.Message)"
+        Write-Host "ERROR: $($_.Exception.StackTrace)"
+        Write-Host "ERROR: $($_.Exception.TargetSite)"
+        Write-Host "ERROR: $($_.Exception.Data)"
+        Write-Host "ERROR: $($_.Exception.HelpLink)"
+        Write-Host "ERROR: $($_.Exception.Source)"
+        Write-Host "ERROR: $($_.Exception.InnerException)"
+
+        exit 1
+    } finally {
+        if (Test-Path "$outfile.utf16") {
+            Get-Content "$outfile.utf16" | Set-Content -Encoding utf8 "$outfile"
+        }
+    }
+}
+
+& $scriptBlock *>&1 | Tee-Object -FilePath "$outfile.utf16"
 
 Exit 0
