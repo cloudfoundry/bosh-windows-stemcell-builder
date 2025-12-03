@@ -8,8 +8,8 @@ set -x
 # Set firewall rules in the GCP project if needed
 if [ "${CONFIGURE_GCP:-}" == "true" ]; then
   comma_separated_external_ips=""
-  for external_ip in ${ALLOWED_IP_ADDRESSES}; do
-    comma_separated_external_ips="${external_ip}/32,${comma_separated_external_ips}"
+  for allowed_cidr in ${ALLOWED_CIDRS}; do
+    comma_separated_external_ips="${allowed_cidr},${comma_separated_external_ips}"
   done
   comma_separated_external_ips="${comma_separated_external_ips%,}"
 
@@ -22,8 +22,8 @@ fi
 
 # Set firewall rules in the AWS project
 aws_ip_ranges=""
-for external_ip in ${ALLOWED_IP_ADDRESSES}; do
-  aws_ip_ranges="{CidrIp=${external_ip}/32},${aws_ip_ranges}"
+for allowed_cidr in ${ALLOWED_CIDRS}; do
+  aws_ip_ranges="{CidrIp=${allowed_cidr}},${aws_ip_ranges}"
 done
 aws_ip_ranges="${aws_ip_ranges%,}"
 
