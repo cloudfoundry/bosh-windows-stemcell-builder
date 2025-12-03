@@ -6,7 +6,7 @@ require (
 	github.com/concourse/pool-resource v1.1.1
 	github.com/google/subcommands v1.2.0
 	github.com/masterzen/winrm v0.0.0-20250927112105-5f8e6c707321
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
 	github.com/packer-community/winrmcp v0.0.0-20221126162354-6e900dd2c68f

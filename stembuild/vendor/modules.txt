@@ -133,7 +133,7 @@ github.com/masterzen/simplexml/dom
 ## explicit; go 1.21
 github.com/masterzen/winrm
 github.com/masterzen/winrm/soap
-# github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
+# github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
 ## explicit; go 1.24.0
 github.com/maxbrunsfeld/counterfeiter/v6
 github.com/maxbrunsfeld/counterfeiter/v6/arguments
