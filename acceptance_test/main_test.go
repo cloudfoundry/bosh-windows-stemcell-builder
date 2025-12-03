@@ -22,7 +22,7 @@ import (
 const BoshTimeout = 90 * time.Minute
 
 const GoZipFile = "go1.12.7.windows-amd64.zip"
-const GolangURL = "https://storage.googleapis.com/golang/" + GoZipFile
+const GolangURL = "https://go.dev/dl/" + GoZipFile
 const LgpoUrl = "https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FFA-9429-7E023E7DA8D8/LGPO.zip"
 const lgpoFile = "LGPO.exe"
 const windowsVersion = "windows-2019"
@@ -95,13 +95,16 @@ var _ = Describe("BOSH Windows", func() {
 	It("can run a job that relies on a package", func() {
 		time.Sleep(60 * time.Second)
 		Eventually(
-			downloadLogs("check-multiple", "simple-job", 0, boshCommand),
+			downloadLogs("check-multiple", 0, "./simple-job/simple-job/job-service-wrapper.out.log", boshCommand),
 		).WithTimeout(time.Second * 65).Should(gbytes.Say("60 seconds passed"))
 	})
 
 	It("checks system dependencies and security, auto update has turned off, currently has a Service StartType of 'Manual' and initially had a StartType of 'Delayed', and password is randomized", func() {
 		err := boshCommand.RunErrand("check-system", deploymentName)
-		Expect(err).NotTo(HaveOccurred())
+		if err != nil {
+			downloadLogs("check-multiple", 0, "./check-system/combined-output.log", boshCommand)
+			Expect(err).NotTo(HaveOccurred())
+		}
 	})
 
 	It("is fully updated", func() {
@@ -431,7 +434,7 @@ func (m ManifestProperties) toMap() map[string]string {
 	return manifest
 }
 
-func downloadLogs(instanceName string, jobName string, index int, bosh *BoshCommand) *gbytes.Buffer {
+func downloadLogs(instanceName string, index int, logPath string, bosh *BoshCommand) *gbytes.Buffer {
 	tempDir := GinkgoT().TempDir()
 
 	err := bosh.Run(fmt.Sprintf("--deployment=%s logs %s/%d --dir %s", deploymentName, instanceName, index, tempDir))
@@ -441,7 +444,7 @@ func downloadLogs(instanceName string, jobName string, index int, bosh *BoshComm
 	Expect(err).NotTo(HaveOccurred())
 	Expect(matches).To(HaveLen(1))
 
-	cmd := exec.Command("tar", "xf", matches[0], "-O", fmt.Sprintf("./%s/%s/job-service-wrapper.out.log", jobName, jobName))
+	cmd := exec.Command("tar", "xf", matches[0], "-O", logPath)
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -466,6 +469,10 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 		return "", err
 	}
 	defer res.Body.Close() //nolint:errcheck
+
+	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		return "", fmt.Errorf("failed to download file: HTTP %d %s", res.StatusCode, res.Status)
+	}
 
 	_, err = io.Copy(f, res.Body)
 	if err != nil {
