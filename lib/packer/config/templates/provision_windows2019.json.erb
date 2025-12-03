@@ -130,14 +130,6 @@
   },
   <% end %>
   {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
-      "Protect-CFCell -IaaS <%= iaas %>"
-    ]
-  },
-  {
     "type": "file",
     "source": "../sshd/OpenSSH-Win64.zip",
     "destination": "C:\\provision\\OpenSSH-Win64.zip"
@@ -266,7 +258,7 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "Invoke-Sysprep -IaaS <%= iaas %>"
+      "Protect-CFCell -IaaS <%= iaas %>; Invoke-Sysprep -IaaS <%= iaas %>"
     ]
   }
 ]
