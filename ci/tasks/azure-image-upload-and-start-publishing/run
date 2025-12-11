@@ -85,20 +85,11 @@ update_offer() {
 
 
 copy_blob_to_premiumstore() {
-  # Generate SAS token for source blob
-  source_sas=$(az storage blob generate-sas \
-    --account-name "${AZURE_STORAGE_ACCOUNT}" \
-    --account-key "${AZURE_STORAGE_ACCESS_KEY}" \
-    --container-name "${AZURE_CONTAINER_NAME}" \
-    --name "${vhd_path}" \
-    --permissions r \
-    --expiry $(date -u -d "+1 hour" '+%Y-%m-%dT%H:%M:%SZ') \
-    --output tsv)
-
-  source_url="https://${AZURE_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${vhd_path}?${source_sas}"
-
   az storage blob copy start \
-    --source-uri "${source_url}" \
+    --source-account-key "${AZURE_STORAGE_ACCESS_KEY}" \
+    --source-account-name "${AZURE_STORAGE_ACCOUNT}" \
+    --source-container "${AZURE_CONTAINER_NAME}" \
+    --source-blob "${vhd_path}" \
     --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
     --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" \
     --destination-container "${AZURE_CONTAINER_NAME}" \
