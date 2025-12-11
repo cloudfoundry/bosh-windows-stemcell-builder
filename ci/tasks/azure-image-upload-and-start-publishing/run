@@ -4,13 +4,13 @@ set -euo pipefail
 main_version=$(cat version/number)
 uri_filename='bosh-stemcell-*-azure-vhd-uri.txt'
 image_url=$(cat azure-base-vhd-uri/${uri_filename})
-vhd_path=$(echo "${image_url}" | sed -E 's/^.*(Microsoft\.Compute\/Images\/.*vhd).*$/\1/')
+vhd_filename=$(basename "${image_url}" | cut -d? -f1)
 
 retrieve_blob_url() {
     retrieve_blob_url=$(
       az storage blob url \
       --container-name ${AZURE_CONTAINER_NAME} \
-      --name ${vhd_path} \
+      --name ${vhd_filename} \
       --account-name ${AZURE_PUBLISHED_STORAGE_ACCOUNT} \
       --account-key ${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}
     )
@@ -89,11 +89,11 @@ copy_blob_to_premiumstore() {
     --source-account-key "${AZURE_STORAGE_ACCESS_KEY}" \
     --source-account-name "${AZURE_STORAGE_ACCOUNT}" \
     --source-container "${AZURE_CONTAINER_NAME}" \
-    --source-blob "${vhd_path}" \
+    --source-blob "${vhd_filename}" \
     --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
     --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" \
     --destination-container "${AZURE_CONTAINER_NAME}" \
-    --destination-blob "${vhd_path}"
+    --destination-blob "${vhd_filename}"
 }
 
 wait_for_copy_blob_to_premiumstore() {
@@ -116,7 +116,7 @@ wait_for_copy_blob_to_premiumstore() {
 get_copy_blob_status() {
   az storage blob show \
     --container-name "${AZURE_CONTAINER_NAME}" \
-    --name "${vhd_path}" \
+    --name "${vhd_filename}" \
     --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
     --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" | jq -r ".properties.copy.status"
 }
