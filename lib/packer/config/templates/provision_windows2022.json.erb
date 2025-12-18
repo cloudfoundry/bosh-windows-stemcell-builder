@@ -134,14 +134,6 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "Protect-CFCell -IaaS <%= iaas %>"
-    ]
-  },
-  {
-    "type": "powershell",
-    "inline": [
-      "$ErrorActionPreference = \"Stop\";",
-      "trap { $host.SetShouldExit(1) }",
       "Install-SSHD"
     ]
   },
@@ -261,7 +253,7 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "Invoke-Sysprep -IaaS <%= iaas %>"
+      "Protect-CFCell -IaaS <%= iaas %>; Invoke-Sysprep -IaaS <%= iaas %>"
     ]
   }
 ]
