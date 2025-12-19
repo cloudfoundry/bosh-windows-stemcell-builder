@@ -1,6 +1,6 @@
 BeforeAll {
-    Import-Module ../../modules/BOSH.Utils
     Import-Module ../../modules/BOSH.SSH
+    Import-Module ../../modules/BOSH.Utils
     Import-Module ../../modules/BOSH.CFCell
     Import-Module ../../modules/BOSH.Agent
     Import-Module ../../modules/BOSH.CFCell
@@ -1182,8 +1182,7 @@ Describe "AutomationHelpers" {
     }
 
     Describe "Install-WUCerts" {
-        BeforeAll {
-        }It "executes the Get-WUCerts powershell cmdlet" {
+        It "executes the Get-WUCerts powershell cmdlet" {
             Mock -ModuleName AutomationHelpers -CommandName Get-WUCerts { }
 
             { Install-WUCerts } | Should -Not -Throw
