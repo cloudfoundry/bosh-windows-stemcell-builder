@@ -16,7 +16,7 @@ function Write-Log
     Write-Host $msg
 }
 
-function Setup()
+function Setup
 {
     param(
         [String]$Version,
@@ -71,7 +71,8 @@ function PostReboot
     RunQuickerDism
 }
 
-function RunQuickerDism {
+function RunQuickerDism
+{
     param(
         [bool]$IgnoreErrors = $False
     )
@@ -126,7 +127,6 @@ function RemoveAvailableWindowsFeatures
     Remove-Available-Windows-Features
 }
 
-
 function InstallCFCell
 {
     try
@@ -172,7 +172,7 @@ function InstallOpenSSH
     }
 }
 
-#This function contains all our registry changes related to fixing the zombieload and meltdown bugs
+# Set-RegKeys contains registry changes related to fixing bugs: zombieload, and meltdown
 function Set-RegKeys
 {
     $PathExists = Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\QualityCompat'
@@ -213,14 +213,14 @@ function CleanUpVM
     }
 }
 
-function Is-Special()
+function Is-Special
 {
     param ([parameter(Mandatory = $true)] [string]$c)
 
     return $c -cmatch '[!-/:-@[-`{-~]'
 }
 
-function Valid-Password()
+function Valid-Password
 {
     param ([parameter(Mandatory = $true)] [string]$Password)
 
@@ -368,10 +368,6 @@ function Validate-OSVersion
         {
             Write-Log "Found correct OS version: Windows Server 2019"
         }
-        elseif ($osVersion -match "10\.0\.20348\..+")
-        {
-            Write-Log "Found correct OS version: Windows Server 2022"
-        }
         else {
             throw "OS Version Mismatch: Please use Windows Server 2019 or 2022 as the OS on your targeted VM"
         }
@@ -512,5 +508,4 @@ function Create-VersionFile
         Write-Log "Failed to execute Create-VersionFile command"
         throw $_.Exception
     }
-
 }
