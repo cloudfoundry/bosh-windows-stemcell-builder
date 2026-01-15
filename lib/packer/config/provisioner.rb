@@ -1,16 +1,5 @@
 require "securerandom"
 
-class ProvisionerFactory
-  def initialize(os, iaas, enable_ephemeral_disk, version, http_proxy = nil, https_proxy = nil, bypass_list = nil, build_context = nil)
-    klass = "OS#{os}"
-    @provisioner = Object.const_get(klass).new(os, iaas, enable_ephemeral_disk, version, http_proxy, https_proxy, bypass_list, build_context)
-  end
-
-  def dump
-    @provisioner.dump
-  end
-end
-
 class Provisioner
   def initialize(os, iaas, enable_ephemeral_disk, version, http_proxy = nil, https_proxy = nil, bypass_list = nil, build_context = nil)
     @iaas = iaas
@@ -22,9 +11,7 @@ class Provisioner
     filename = File.expand_path("../templates/provision_#{os}.json.erb", __FILE__)
     @erb = ERB.new(File.read(filename))
   end
-end
 
-class OSwindows2019 < Provisioner
   def dump
     result = @erb.result_with_hash({
       iaas: @iaas,
