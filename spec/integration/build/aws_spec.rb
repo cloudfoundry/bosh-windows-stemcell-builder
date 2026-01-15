@@ -1,47 +1,47 @@
-require 'spec_helper'
+require "spec_helper"
 
-load File.join(REPO_ROOT, 'lib/tasks/build/aws.rake')
+load File.join(REPO_ROOT, "lib/tasks/build/aws.rake")
 
-describe 'Aws' do
+describe "Aws" do
   before(:each) do
     @original_env = ENV.to_hash
-    @build_dir = File.join(REPO_ROOT, 'build')
-    @version_dir = Dir.mktmpdir('aws')
-    @agent_dir = Dir.mktmpdir('aws')
-    @base_amis_dir = Dir.mktmpdir('aws')
-    @output_dir = 'bosh-windows-stemcell'
-    @amis_dir = Dir.mktmpdir('aws-stemcell-test')
-    @stemcell_deps_dir = Dir.mktmpdir('aws')
+    @build_dir = File.join(REPO_ROOT, "build")
+    @version_dir = Dir.mktmpdir("aws")
+    @agent_dir = Dir.mktmpdir("aws")
+    @base_amis_dir = Dir.mktmpdir("aws")
+    @output_dir = "bosh-windows-stemcell"
+    @amis_dir = Dir.mktmpdir("aws-stemcell-test")
+    @stemcell_deps_dir = Dir.mktmpdir("aws")
     FileUtils.rm_rf(@output_dir)
-    Rake::Task['build:aws'].reenable
-    Rake::Task['build:aws_ami'].reenable
+    Rake::Task["build:aws"].reenable
+    Rake::Task["build:aws_ami"].reenable
 
-    @os_version = 'windows2019'
-    @version = '1200.3.1-build.2'
+    @os_version = "windows2019"
+    @version = "1200.3.1-build.2"
 
-    ENV['AMIS_DIR'] = @amis_dir
-    ENV['PACKER_AWS_ACCESS_KEY'] = @aws_access_key = 'some-aws_access_key'
-    ENV['PACKER_AWS_SECRET_KEY'] = @aws_secret_key = 'some-aws_secret_key'
-    ENV['OS_VERSION'] = @os_version
-    ENV['PATH'] = "#{fixture_path('aws')}:#{ENV['PATH']}"
-    ENV['VERSION_DIR'] = @version_dir
-    ENV['BASE_AMIS_DIR'] = @base_amis_dir
-    ENV['OUTPUT_BUCKET_REGION'] = @output_bucket_region = 'some-output-bucket-region'
-    ENV['OUTPUT_BUCKET_NAME'] = 'some-output-bucket-name'
-    ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
+    ENV["AMIS_DIR"] = @amis_dir
+    ENV["PACKER_AWS_ACCESS_KEY"] = @aws_access_key = "some-aws_access_key"
+    ENV["PACKER_AWS_SECRET_KEY"] = @aws_secret_key = "some-aws_secret_key"
+    ENV["OS_VERSION"] = @os_version
+    ENV["PATH"] = "#{fixture_path("aws")}:#{ENV["PATH"]}"
+    ENV["VERSION_DIR"] = @version_dir
+    ENV["BASE_AMIS_DIR"] = @base_amis_dir
+    ENV["OUTPUT_BUCKET_REGION"] = @output_bucket_region = "some-output-bucket-region"
+    ENV["OUTPUT_BUCKET_NAME"] = "some-output-bucket-name"
+    ENV["STEMCELL_DEPS_DIR"] = @stemcell_deps_dir
 
     File.write(
-      File.join(@version_dir, 'number'),
+      File.join(@version_dir, "number"),
       @version
     )
 
-    FileUtils.mkdir_p(File.join(@build_dir, 'compiled-agent'))
+    FileUtils.mkdir_p(File.join(@build_dir, "compiled-agent"))
 
     File.write(
-      File.join(@base_amis_dir, 'base-amis-1.json'),
+      File.join(@base_amis_dir, "base-amis-1.json"),
       {
-        name: 'us-east-1',
-        base_ami: 'base-east-1'
+        name: "us-east-1",
+        base_ami: "base-east-1"
       }
     .to_json
     )
@@ -57,52 +57,52 @@ describe 'Aws' do
     FileUtils.rm_rf(@stemcell_deps_dir)
   end
 
-  describe 'Create an aws stemcell' do
+  describe "Create an aws stemcell" do
     before(:each) do
-      ENV['PACKER_REGION'] = @region = 'us-east-1'
+      ENV["PACKER_REGION"] = @region = "us-east-1"
       allow(Output).to receive(:say).and_call_original
     end
 
-    it 'should build an aws stemcell' do
+    it "should build an aws stemcell" do
       allow(S3).to receive(:test_upload_permissions)
 
       s3_client = double(:s3_client)
       allow(s3_client).to receive(:put)
       allow(S3::Client).to receive(:new).and_return(s3_client)
 
-      Rake::Task['build:aws'].invoke
+      Rake::Task["build:aws"].invoke
 
       stemcell = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent-#{@region}.tgz")
       stemcell_sha = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent-#{@region}.tgz.sha")
 
-      stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
-      expect(stemcell_manifest['version']).to eq('1200.3.1-build.2')
-      expect(stemcell_manifest['sha1']).to eq(Stemcell::Manifest::EMPTY_FILE_SHA)
-      expect(stemcell_manifest['operating_system']).to eq(@os_version)
-      expect(stemcell_manifest['api_version']).to eq(3)
-      expect(stemcell_manifest['stemcell_formats']).to eq(['aws-light'])
-      expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('aws')
-      expect(stemcell_manifest['cloud_properties']['encrypted']).to eq(false)
-      expect(stemcell_manifest['cloud_properties']['ami']['us-east-1']).to eq('ami-east1id')
-      expect(stemcell_manifest['cloud_properties']['ami']['us-east-2']).to be_nil
+      stemcell_manifest = YAML.load(read_from_tgz(stemcell, "stemcell.MF"))
+      expect(stemcell_manifest["version"]).to eq("1200.3.1-build.2")
+      expect(stemcell_manifest["sha1"]).to eq(Stemcell::Manifest::EMPTY_FILE_SHA)
+      expect(stemcell_manifest["operating_system"]).to eq(@os_version)
+      expect(stemcell_manifest["api_version"]).to eq(3)
+      expect(stemcell_manifest["stemcell_formats"]).to eq(["aws-light"])
+      expect(stemcell_manifest["cloud_properties"]["infrastructure"]).to eq("aws")
+      expect(stemcell_manifest["cloud_properties"]["encrypted"]).to eq(false)
+      expect(stemcell_manifest["cloud_properties"]["ami"]["us-east-1"]).to eq("ami-east1id")
+      expect(stemcell_manifest["cloud_properties"]["ami"]["us-east-2"]).to be_nil
 
-      expect(read_from_tgz(stemcell, 'image')).to be_empty
+      expect(read_from_tgz(stemcell, "image")).to be_empty
       expect(File.read(stemcell_sha)).to eq(Digest::SHA1.hexdigest(File.read(stemcell)))
 
       # running task should create packer-output-ami.txt in AMIS_DIR
       packer_output_ami = JSON.parse(File.read(File.join(@amis_dir, "packer-output-ami-#{@version}.txt")))
-      expect(packer_output_ami['region']).to eq('us-east-1')
-      expect(packer_output_ami['ami_id']).to eq('ami-east1id')
+      expect(packer_output_ami["region"]).to eq("us-east-1")
+      expect(packer_output_ami["ami_id"]).to eq("ami-east1id")
     end
 
-    context 'when we are not authorized to upload to the S3 bucket' do
+    context "when we are not authorized to upload to the S3 bucket" do
       before(:each) do
-        allow(S3).to receive(:test_upload_permissions).and_raise(Aws::S3::Errors::Forbidden.new('', ''))
+        allow(S3).to receive(:test_upload_permissions).and_raise(Aws::S3::Errors::Forbidden.new("", ""))
       end
 
-      it 'should fail before attempting to build stemcell' do
+      it "should fail before attempting to build stemcell" do
         expect do
-          Rake::Task['build:aws'].invoke
+          Rake::Task["build:aws"].invoke
         end.to raise_exception(Aws::S3::Errors::Forbidden)
 
         stemcell = File.join(@output_dir, "light-bosh-stemcell-#{@version}-aws-xen-hvm-#{@os_version}-go_agent-#{@region}.tgz")
@@ -111,27 +111,27 @@ describe 'Aws' do
     end
   end
 
-  describe 'Copy an aws stemcell' do
+  describe "Copy an aws stemcell" do
     before(:each) do
       File.write(
         File.join(@amis_dir, "packer-output-ami-#{@version}.txt"),
-        {'region' => 'us-east-1', 'ami_id' => 'ami-east1id'}.to_json
+        {"region" => "us-east-1", "ami_id" => "ami-east1id"}.to_json
       )
 
-      ENV['DEFAULT_STEMCELL_DIR'] = @default_stemcell_dir = Dir.mktmpdir
-      FileUtils.cp(Dir[fixture_path( 'aws', 'amis', '*1200*-us-east-1.tgz')].first, @default_stemcell_dir)
+      ENV["DEFAULT_STEMCELL_DIR"] = @default_stemcell_dir = Dir.mktmpdir
+      FileUtils.cp(Dir[fixture_path("aws", "amis", "*1200*-us-east-1.tgz")].first, @default_stemcell_dir)
 
-      ENV['REGIONS'] = 'us-east-2'
-      @copied_stemcells_dir = 'copied-regional-stemcells'
-
-      allow(Executor).to receive(:exec_command)
-        .with('aws ec2 describe-images --image-ids ami-east1id --region us-east-1')
-        .and_return({'Images' => [{'Name' => 'some-image-name-us-east-1'}]}.to_json)
+      ENV["REGIONS"] = "us-east-2"
+      @copied_stemcells_dir = "copied-regional-stemcells"
 
       allow(Executor).to receive(:exec_command)
-        .with('aws ec2 copy-image --source-image-id ami-east1id ' \
-              '--source-region us-east-1 --region us-east-2 --name some-image-name-us-east-2')
-        .and_return({'ImageId' => 'ami-east2id'}.to_json)
+        .with("aws ec2 describe-images --image-ids ami-east1id --region us-east-1")
+        .and_return({"Images" => [{"Name" => "some-image-name-us-east-1"}]}.to_json)
+
+      allow(Executor).to receive(:exec_command)
+        .with("aws ec2 copy-image --source-image-id ami-east1id " \
+              "--source-region us-east-1 --region us-east-2 --name some-image-name-us-east-2")
+        .and_return({"ImageId" => "ami-east2id"}.to_json)
     end
 
     after(:each) do
@@ -139,123 +139,123 @@ describe 'Aws' do
       FileUtils.rm_rf(@output_dir)
     end
 
-    it 'should copy an aws stemcell' do
-      ENV['REGIONS'] = 'us-east-2,us-east-3'
+    it "should copy an aws stemcell" do
+      ENV["REGIONS"] = "us-east-2,us-east-3"
       allow(Executor).to receive(:exec_command)
-                             .with('aws ec2 copy-image --source-image-id ami-east1id ' \
-              '--source-region us-east-1 --region us-east-3 --name some-image-name-us-east-3')
-                             .and_return({'ImageId' => 'ami-east3id'}.to_json)
+        .with("aws ec2 copy-image --source-image-id ami-east1id " \
+              "--source-region us-east-1 --region us-east-3 --name some-image-name-us-east-3")
+        .and_return({"ImageId" => "ami-east3id"}.to_json)
       allow(Executor).to receive(:exec_command)
-        .with('aws ec2 describe-images --image-ids ami-east2id ' \
-              '--region us-east-2 --filters Name=state,Values=available,failed')
-        .and_return({'Images' =>[ {'ImageId'=> 'ami-east2id', 'State' => 'available' }]}.to_json)
+        .with("aws ec2 describe-images --image-ids ami-east2id " \
+              "--region us-east-2 --filters Name=state,Values=available,failed")
+        .and_return({"Images" => [{"ImageId" => "ami-east2id", "State" => "available"}]}.to_json)
 
       expect(Executor).to receive(:exec_command)
-        .with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
+        .with("aws ec2 modify-image-attribute --image-id ami-east2id " \
               '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2')
 
       allow(Executor).to receive(:exec_command)
-                             .with('aws ec2 describe-images --image-ids ami-east3id ' \
-              '--region us-east-3 --filters Name=state,Values=available,failed')
-                             .and_return({'Images' =>[ {'ImageId'=> 'ami-east3id', 'State' => 'available' }]}.to_json)
+        .with("aws ec2 describe-images --image-ids ami-east3id " \
+              "--region us-east-3 --filters Name=state,Values=available,failed")
+        .and_return({"Images" => [{"ImageId" => "ami-east3id", "State" => "available"}]}.to_json)
 
       expect(Executor).to receive(:exec_command)
-                              .with('aws ec2 modify-image-attribute --image-id ami-east3id ' \
+        .with("aws ec2 modify-image-attribute --image-id ami-east3id " \
               '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-3')
 
-      Rake::Task['build:aws_ami'].invoke
+      Rake::Task["build:aws_ami"].invoke
 
-      default_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")].sort[0]
-      manifest = YAML.load(read_from_tgz(default_stemcell, 'stemcell.MF'))
-      expect(manifest['cloud_properties']['ami']['us-east-1']).to eq ('us-east-1-ami')
+      default_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")].min
+      manifest = YAML.load(read_from_tgz(default_stemcell, "stemcell.MF"))
+      expect(manifest["cloud_properties"]["ami"]["us-east-1"]).to eq("us-east-1-ami")
 
       copied_stemcell = Dir[File.join(@copied_stemcells_dir, "*.tgz")].sort[1]
-      manifest = YAML.load(read_from_tgz(copied_stemcell, 'stemcell.MF'))
-      expect(manifest['cloud_properties']['ami']['us-east-2']).to eq ('ami-east2id')
+      manifest = YAML.load(read_from_tgz(copied_stemcell, "stemcell.MF"))
+      expect(manifest["cloud_properties"]["ami"]["us-east-2"]).to eq("ami-east2id")
     end
 
-    it 'should error out if aws stemcell copy fails' do
+    it "should error out if aws stemcell copy fails" do
       allow(Executor).to receive(:exec_command)
-        .with('aws ec2 describe-images --image-ids ami-east2id ' \
-              '--region us-east-2 --filters Name=state,Values=available,failed')
-        .and_return({'Images' =>[ {'ImageId'=> 'ami-east2id', 'State' => 'failed' }]}.to_json)
+        .with("aws ec2 describe-images --image-ids ami-east2id " \
+              "--region us-east-2 --filters Name=state,Values=available,failed")
+        .and_return({"Images" => [{"ImageId" => "ami-east2id", "State" => "failed"}]}.to_json)
 
       expect(Executor).not_to receive(:exec_command)
-        .with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
+        .with("aws ec2 modify-image-attribute --image-id ami-east2id " \
               '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2')
 
-      expect { Rake::Task['build:aws_ami'].invoke }.to raise_exception(FailedAMICopyError)
+      expect { Rake::Task["build:aws_ami"].invoke }.to raise_exception(FailedAMICopyError)
     end
 
-    it 'should wait to make aws stemcell public if copy still pending' do
+    it "should wait to make aws stemcell public if copy still pending" do
       allow(Executor).to receive(:exec_command)
-        .with('aws ec2 describe-images --image-ids ami-east2id ' \
-              '--region us-east-2 --filters Name=state,Values=available,failed')
-        .and_return({'Images' =>[]}.to_json,
-                    {'Images' =>[]}.to_json,
-                    {'Images' =>[ {'ImageId'=> 'ami-east2id', 'State' => 'available' }]}.to_json)
+        .with("aws ec2 describe-images --image-ids ami-east2id " \
+              "--region us-east-2 --filters Name=state,Values=available,failed")
+        .and_return({"Images" => []}.to_json,
+          {"Images" => []}.to_json,
+          {"Images" => [{"ImageId" => "ami-east2id", "State" => "available"}]}.to_json)
 
       expect(Executor).to receive(:exec_command)
-        .with('aws ec2 describe-images --image-ids ami-east2id ' \
-              '--region us-east-2 --filters Name=state,Values=available,failed')
+        .with("aws ec2 describe-images --image-ids ami-east2id " \
+              "--region us-east-2 --filters Name=state,Values=available,failed")
         .exactly(3).times
 
       expect(Executor).to receive(:exec_command)
-        .with('aws ec2 modify-image-attribute --image-id ami-east2id ' \
+        .with("aws ec2 modify-image-attribute --image-id ami-east2id " \
               '--launch-permission \'{"Add":[{"Group":"all"}]}\' --region us-east-2')
         .once
 
-      Rake::Task['build:aws_ami'].invoke
+      Rake::Task["build:aws_ami"].invoke
     end
   end
 
-  describe 'Create aggregate stemcell' do
+  describe "Create aggregate stemcell" do
     before(:each) do
-      @output_dir = 'bosh-windows-stemcell'
+      @output_dir = "bosh-windows-stemcell"
       @copied1 = Dir.mktmpdir
       @copied2 = Dir.mktmpdir
       File.write(
-          File.join(@amis_dir, "packer-output-ami-#{@version}.txt"),
-          {'region' => 'us-east-1', 'ami_id' => 'ami-east1id'}.to_json
+        File.join(@amis_dir, "packer-output-ami-#{@version}.txt"),
+        {"region" => "us-east-1", "ami_id" => "ami-east1id"}.to_json
       )
 
-      FileUtils.cp(Dir[fixture_path('aws', 'amis', '*1200*-some-region-1.tgz')].first, @copied1)
-      FileUtils.cp(Dir[fixture_path('aws', 'amis', '*1200*-some-region-2.tgz')].first, @copied2)
-      FileUtils.cp(Dir[fixture_path('aws', 'amis', '*1200*-some-region-3.tgz')].first, @copied2)
-      FileUtils.cp(Dir[fixture_path('aws', 'amis', '*1200*-us-east-1.tgz')].first, @copied1)
+      FileUtils.cp(Dir[fixture_path("aws", "amis", "*1200*-some-region-1.tgz")].first, @copied1)
+      FileUtils.cp(Dir[fixture_path("aws", "amis", "*1200*-some-region-2.tgz")].first, @copied2)
+      FileUtils.cp(Dir[fixture_path("aws", "amis", "*1200*-some-region-3.tgz")].first, @copied2)
+      FileUtils.cp(Dir[fixture_path("aws", "amis", "*1200*-us-east-1.tgz")].first, @copied1)
     end
 
     after(:each) do
       FileUtils.rm_rf("copied-regional-stemcells")
     end
 
-    it 'Aggregates all ami-ids into stemcell manifest' do
-      ENV['COPIED_STEMCELL_DIRECTORIES']="#{@copied1},#{@copied2}"
+    it "Aggregates all ami-ids into stemcell manifest" do
+      ENV["COPIED_STEMCELL_DIRECTORIES"] = "#{@copied1},#{@copied2}"
 
-      Rake::Task['build:aws_aggregate'].invoke
+      Rake::Task["build:aws_aggregate"].invoke
 
       # The implementation picks the 'first' stemcell to determine the final stemcell name.
-      tar_files = Dir.entries('copied-regional-stemcells').select do |x| x.end_with?('.tgz') end
+      tar_files = Dir.entries("copied-regional-stemcells").select { |x| x.end_with?(".tgz") }
       output_tgz_name = /(.*go_agent)-(.*)\.tgz/.match(tar_files.first)[1] + ".tgz"
 
       stemcell = File.join(@output_dir, output_tgz_name)
       stemcell_sha = File.join(@output_dir, "#{output_tgz_name}.sha")
 
-      stemcell_manifest = YAML.load(read_from_tgz(stemcell, 'stemcell.MF'))
-      expect(stemcell_manifest['version']).to eq('1200.3')
-      expect(stemcell_manifest['api_version']).to eq(2)
-      expect(stemcell_manifest['sha1']).to eq(Stemcell::Manifest::EMPTY_FILE_SHA)
-      expect(stemcell_manifest['operating_system']).to eq(@os_version)
-      expect(stemcell_manifest['cloud_properties']['infrastructure']).to eq('aws')
-      expect(stemcell_manifest['cloud_properties']['encrypted']).to eq(false)
-      expect(stemcell_manifest['cloud_properties']['ami']['us-east-1']).to eq('us-east-1-ami')
-      expect(stemcell_manifest['cloud_properties']['ami']['some-region-1']).to eq('some-ami-1')
-      expect(stemcell_manifest['cloud_properties']['ami']['some-region-2']).to eq('some-ami-2')
-      expect(stemcell_manifest['cloud_properties']['ami']['some-region-3']).to eq('some-ami-3')
+      stemcell_manifest = YAML.load(read_from_tgz(stemcell, "stemcell.MF"))
+      expect(stemcell_manifest["version"]).to eq("1200.3")
+      expect(stemcell_manifest["api_version"]).to eq(2)
+      expect(stemcell_manifest["sha1"]).to eq(Stemcell::Manifest::EMPTY_FILE_SHA)
+      expect(stemcell_manifest["operating_system"]).to eq(@os_version)
+      expect(stemcell_manifest["cloud_properties"]["infrastructure"]).to eq("aws")
+      expect(stemcell_manifest["cloud_properties"]["encrypted"]).to eq(false)
+      expect(stemcell_manifest["cloud_properties"]["ami"]["us-east-1"]).to eq("us-east-1-ami")
+      expect(stemcell_manifest["cloud_properties"]["ami"]["some-region-1"]).to eq("some-ami-1")
+      expect(stemcell_manifest["cloud_properties"]["ami"]["some-region-2"]).to eq("some-ami-2")
+      expect(stemcell_manifest["cloud_properties"]["ami"]["some-region-3"]).to eq("some-ami-3")
 
-      expect(read_from_tgz(stemcell, 'updates.txt')).not_to be_nil
+      expect(read_from_tgz(stemcell, "updates.txt")).not_to be_nil
 
-      expect(read_from_tgz(stemcell, 'image')).to be_empty
+      expect(read_from_tgz(stemcell, "image")).to be_empty
       expect(File.read(stemcell_sha)).to eq(Digest::SHA1.hexdigest(File.read(stemcell)))
     end
   end
