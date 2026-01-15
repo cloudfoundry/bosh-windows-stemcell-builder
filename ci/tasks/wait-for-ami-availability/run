@@ -17,7 +17,8 @@ else
   aws configure set aws_secret_access_key "${AWS_SECRET_KEY}"
 fi
 
-cd stemcell-builder
-bundle install --without test
-rake build:validate_ami
-rake aws:label:for_test
+pushd stemcell-builder
+  bundle install --without test
+  rake build:validate_ami
+  rake aws:label:for_test
+popd
