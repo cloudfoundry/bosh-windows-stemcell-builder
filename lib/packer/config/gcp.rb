@@ -70,7 +70,7 @@ module Packer
       end
 
       def provisioners
-        ProvisionerFactory.new(@os, "gcp", @mount_ephemeral_disk, @version).dump
+        Provisioner.new(@os, "gcp", @mount_ephemeral_disk, @version).dump
       end
 
       def dump

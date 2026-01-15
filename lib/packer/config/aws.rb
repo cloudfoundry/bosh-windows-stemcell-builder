@@ -46,7 +46,7 @@ module Packer
       end
 
       def provisioners
-        ProvisionerFactory.new(@os, "aws", @mount_ephemeral_disk, @version).dump
+        Provisioner.new(@os, "aws", @mount_ephemeral_disk, @version).dump
       end
 
       def dump
