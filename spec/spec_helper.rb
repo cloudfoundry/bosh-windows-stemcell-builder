@@ -2,21 +2,16 @@ SPEC_ROOT = File.dirname(__FILE__).freeze
 REPO_ROOT = Pathname(SPEC_ROOT).parent
 $LOAD_PATH.unshift("#{REPO_ROOT}/lib")
 
-require 'zip'
-require 'timecop'
+require "zip"
+require "timecop"
 
-require 'webmock/rspec'
+require "webmock/rspec"
 WebMock.disable_net_connect!(allow_localhost: true)
 
-if ENV.fetch('COVERAGE', false)
-  require 'simplecov'
-  SimpleCov.start
-end
-
-require 'output'
+require "output"
 
 def fixture_path(*parts)
-  File.join(SPEC_ROOT, 'fixtures', *parts)
+  File.join(SPEC_ROOT, "fixtures", *parts)
 end
 
 RSpec.configure do |config|
@@ -29,7 +24,7 @@ RSpec.configure do |config|
   end
 
   if config.files_to_run.one?
-    config.default_formatter = 'doc'
+    config.default_formatter = "doc"
   end
 
   config.before do
@@ -38,7 +33,7 @@ RSpec.configure do |config|
 end
 
 def tgz_extract(file_path, out_dir)
-  File.open(file_path, 'rb') do |file|
+  File.open(file_path, "rb") do |file|
     Zlib::GzipReader.wrap(file) do |gz|
       Gem::Package::TarReader.new(gz) do |tar|
         tar.each do |entry|
@@ -47,9 +42,7 @@ def tgz_extract(file_path, out_dir)
           entry_path = File.join(out_dir, entry.full_name)
           FileUtils.mkdir_p(File.dirname(entry_path))
 
-          File.open(entry_path, 'wb') do |f|
-            f.write(entry.read)
-          end
+          File.binwrite(entry_path, entry.read)
 
           File.chmod(entry.header.mode, entry_path)
         end
@@ -75,7 +68,7 @@ end
 def zip_file_list(file_path)
   file_list = []
   Zip::File.open(file_path) do |zip_file|
-  # Handle entries one by one
+    # Handle entries one by one
     zip_file.each do |entry|
       file_list << entry.name
     end
@@ -84,5 +77,5 @@ def zip_file_list(file_path)
 end
 
 # require stemcell class
-require 'stemcell/packager'
-require 'stemcell/builder'
+require "stemcell/packager"
+require "stemcell/builder"

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe Stemcell::Builder do
   before(:each) do
@@ -9,70 +9,69 @@ describe Stemcell::Builder do
     ENV.replace(@original_env)
   end
 
-  describe 'validate_env' do
-    context 'when an environment variable is missing' do
-      it 'raises' do
-        expect{ Stemcell::Builder::validate_env('VARIABLE') }.to raise_error(Stemcell::Builder::EnvironmentValidationError, /missing/)
+  describe "validate_env" do
+    context "when an environment variable is missing" do
+      it "raises" do
+        expect { Stemcell::Builder.validate_env("VARIABLE") }.to raise_error(Stemcell::Builder::EnvironmentValidationError, /missing/)
       end
     end
 
-    context 'when an environment variable exists' do
-      it 'returns that variable' do
-        ENV['VARIABLE'] = 'i exist'
-        actual = Stemcell::Builder::validate_env('VARIABLE')
-        expect(actual).to eq('i exist')
+    context "when an environment variable exists" do
+      it "returns that variable" do
+        ENV["VARIABLE"] = "i exist"
+        actual = Stemcell::Builder.validate_env("VARIABLE")
+        expect(actual).to eq("i exist")
       end
     end
   end
 
-  describe 'validate_env_dir' do
-    context 'when the directory a variable references does not exist' do
-      it 'raises' do
-        ENV['VARIABLE'] = 'nonexistent_directory'
-        expect{ Stemcell::Builder::validate_env_dir('VARIABLE') }.to raise_error(Stemcell::Builder::EnvironmentValidationError, /directory/)
+  describe "validate_env_dir" do
+    context "when the directory a variable references does not exist" do
+      it "raises" do
+        ENV["VARIABLE"] = "nonexistent_directory"
+        expect { Stemcell::Builder.validate_env_dir("VARIABLE") }.to raise_error(Stemcell::Builder::EnvironmentValidationError, /directory/)
       end
     end
 
-    context 'when the directory a variable references exists' do
-      it 'returns that variable' do
-        env_dir = Dir.mktmpdir('base')
-        ENV['VARIABLE'] = env_dir
-        actual = Stemcell::Builder::validate_env('VARIABLE')
+    context "when the directory a variable references exists" do
+      it "returns that variable" do
+        env_dir = Dir.mktmpdir("base")
+        ENV["VARIABLE"] = env_dir
+        actual = Stemcell::Builder.validate_env("VARIABLE")
         expect(actual).to eq(env_dir)
       end
     end
   end
 
-  describe 'Base' do
-    context 'initialize handles mount_ephemeral_disk' do
-      it 'handles true parameter' do
+  describe "Base" do
+    context "initialize handles mount_ephemeral_disk" do
+      it "handles true parameter" do
         actual = Stemcell::Builder::Base.new(
-          os: '',
-          output_directory: '',
-          version: '',
-          packer_vars: '',
-          mount_ephemeral_disk: 'true'
+          os: "",
+          output_directory: "",
+          version: "",
+          packer_vars: "",
+          mount_ephemeral_disk: "true"
         )
         expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(true)
       end
 
-      it 'handles false parameter' do
+      it "handles false parameter" do
         actual = Stemcell::Builder::Base.new(
-          os: '',
-          output_directory: '',
-          version: '',
-          packer_vars: '',
-          mount_ephemeral_disk: 'false'
+          os: "",
+          output_directory: "",
+          version: "",
+          packer_vars: "",
+          mount_ephemeral_disk: "false"
         )
         expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(false)
-
       end
-      it 'handles missing parameter' do
+      it "handles missing parameter" do
         actual = Stemcell::Builder::Base.new(
-          os: '',
-          output_directory: '',
-          version: '',
-          packer_vars: ''
+          os: "",
+          output_directory: "",
+          version: "",
+          packer_vars: ""
         )
         expect(actual.instance_variable_get(:@mount_ephemeral_disk)).to equal(false)
       end

@@ -1,4 +1,4 @@
-require_relative '../../output'
+require_relative "../../output"
 
 module Stemcell
   class Builder
@@ -14,19 +14,19 @@ module Stemcell
     end
 
     def self.validate_env_dir(vars)
-      dir = self.validate_env(vars)
+      dir = validate_env(vars)
       raise EnvironmentValidationError.new("directory #{dir} does not exist") unless Dir.exist?(dir)
       dir
     end
 
     class Base
-      def initialize(os:, output_directory:, version:, packer_vars:, region: nil, mount_ephemeral_disk: 'false')
+      def initialize(os:, output_directory:, version:, packer_vars:, region: nil, mount_ephemeral_disk: "false")
         @os = os
         @output_directory = output_directory
         @version = version
         @packer_vars = packer_vars
         @region = region
-        @mount_ephemeral_disk = mount_ephemeral_disk == 'true'
+        @mount_ephemeral_disk = mount_ephemeral_disk == "true"
       end
 
       def build(iaas:, is_light:, image_path:, manifest:, update_list:)
@@ -43,10 +43,9 @@ module Stemcell
         )
       end
 
-
       def run_packer
         packer_artifact = nil
-        exit_status = Packer::Runner.new(packer_config).run('build', @packer_vars) do |stdout|
+        exit_status = Packer::Runner.new(packer_config).run("build", @packer_vars) do |stdout|
           packer_artifact = parse_packer_output(stdout)
         end
         if exit_status != 0
@@ -59,7 +58,7 @@ module Stemcell
       private
 
       def exec_command(cmd)
-        STDOUT.sync = true
+        $stdout.sync = true
         Open3.popen2(cmd) do |stdin, out, wait_thr|
           out.each_line do |line|
             Output.say line
@@ -78,8 +77,8 @@ module Stemcell
       end
 
       def update_list_path
-        if File.exist?(File.join(@output_directory, 'updates.txt'))
-          File.join(@output_directory, 'updates.txt')
+        if File.exist?(File.join(@output_directory, "updates.txt"))
+          File.join(@output_directory, "updates.txt")
         else
           Output.say "'updates.txt' does not exist in #{@output_directory}"
         end

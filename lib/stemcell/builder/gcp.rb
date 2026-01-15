@@ -4,16 +4,16 @@ module Stemcell
       attr_accessor :image_url
 
       def initialize(account_json:,
-                     source_image:,
-                     image_family:,
-                     vm_prefix:,
-                     vm_type:,
-                     network:,
-                     network_project_id:,
-                     subnetwork:,
-                     **kwargs)
+        source_image:,
+        image_family:,
+        vm_prefix:,
+        vm_type:,
+        network:,
+        network_project_id:,
+        subnetwork:,
+        **kwargs)
         @account_json = account_json
-        @project_id = JSON.parse(@account_json)['project_id']
+        @project_id = JSON.parse(@account_json)["project_id"]
         @source_image = source_image
         @image_family = image_family
         @vm_prefix = vm_prefix
@@ -28,9 +28,9 @@ module Stemcell
         @image_url = run_packer
         manifest = Manifest::Gcp.new(@version, @os, @image_url).dump
         super(
-          iaas: 'google-kvm',
+          iaas: "google-kvm",
           is_light: true,
-          image_path: '',
+          image_path: "",
           manifest: manifest,
           update_list: update_list_path
         )

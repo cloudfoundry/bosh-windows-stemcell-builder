@@ -19,7 +19,7 @@ class Inf
     sections.map do |x|
       contents = x.split("\r\n")
       section_name = contents.first
-      section_contents = contents[1..-1]
+      section_contents = contents[1..]
 
       Inf.new(section_name, section_contents)
     end
@@ -27,7 +27,7 @@ class Inf
 
   def uniq
     trim_contents = contents.map { |x| x.strip }
-    Inf.new(name, trim_contents.uniq { |text| text.split('=')[0].downcase + text.split('=')[1..-1].join('') })
+    Inf.new(name, trim_contents.uniq { |text| text.split("=")[0].downcase + text.split("=")[1..].join("") })
   end
 
   def sort
@@ -51,15 +51,15 @@ end
 
 def convert_to_utf8(name)
   `iconv -f UTF-16LE -t UTF-8 #{name} > /tmp/registry-tmp`
-  File.read '/tmp/registry-tmp', encoding: 'bom|utf-8'
+  File.read "/tmp/registry-tmp", encoding: "bom|utf-8"
 end
 
 def merge(a, b)
-  a_no_comment = a.split("\r\n").reject { |x| x.strip.gsub(/^;.*/, '').empty? }.join("\r\n").strip
-  b_no_comment = b.split("\r\n").reject { |x| x.strip.gsub(/^;.*/, '').empty? }.join("\r\n").strip
+  a_no_comment = a.split("\r\n").reject { |x| x.strip.gsub(/^;.*/, "").empty? }.join("\r\n").strip
+  b_no_comment = b.split("\r\n").reject { |x| x.strip.gsub(/^;.*/, "").empty? }.join("\r\n").strip
 
-  a_normalize_equals = a_no_comment.gsub(' = ', '=').gsub(" =\r\n", "=\r\n")
-  b_normalize_equals = b_no_comment.gsub(' = ', '=').gsub(" =\r\n", "=\r\n")
+  a_normalize_equals = a_no_comment.gsub(" = ", "=").gsub(" =\r\n", "=\r\n")
+  b_normalize_equals = b_no_comment.gsub(" = ", "=").gsub(" =\r\n", "=\r\n")
 
   a_infs = Infs.from_string(a_normalize_equals)
   b_infs = Infs.from_string(b_normalize_equals)
@@ -67,8 +67,8 @@ def merge(a, b)
   (a_infs + b_infs).group_by { |x| x.name }.map { |section_name, infs| Inf.new(section_name, infs.map { |x| x.contents }.flatten) }
 end
 
-a_contents = convert_to_utf8('GptTmpl-ms-baseline.inf')
-b_contents = convert_to_utf8('GptTmpl-cis-baseline.inf')
+a_contents = convert_to_utf8("GptTmpl-ms-baseline.inf")
+b_contents = convert_to_utf8("GptTmpl-cis-baseline.inf")
 
 puts "merged"
 merged = merge(a_contents, b_contents)
@@ -103,6 +103,6 @@ sorted.each do |section|
   end
 end
 
-new_file = 'GptTmpl-merged.inf'
+new_file = "GptTmpl-merged.inf"
 File.write new_file, sorted.map { |section| section.name + "\n" + section.contents.join("\n") }.join("\n")
 puts "merged files with uniques removed outputted to #{new_file}"
