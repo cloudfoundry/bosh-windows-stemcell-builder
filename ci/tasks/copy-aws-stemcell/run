@@ -20,7 +20,7 @@ else
 fi
 
 pushd stemcell-builder
-  bundle install --without test
+  bundle install
   rake build:aws_ami
 
   mv copied-regional-stemcells/*.tgz ../copied-regional-stemcells
