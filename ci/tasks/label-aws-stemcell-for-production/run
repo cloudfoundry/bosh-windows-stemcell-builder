@@ -11,6 +11,7 @@ aws_access_key_id = ${AWS_ACCESS_KEY}
 aws_secret_access_key = ${AWS_SECRET_KEY}
 EOF
 
-cd stemcell-builder
-bundle install --without test
-rake aws:label:for_production
+pushd stemcell-builder
+  bundle install --without test
+  rake aws:label:for_production
+popd
