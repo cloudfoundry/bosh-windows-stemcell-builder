@@ -18,7 +18,7 @@ else
 fi
 
 pushd stemcell-builder
-  bundle install --without test
+  bundle install
   rake build:validate_ami
   rake aws:label:for_test
 popd
