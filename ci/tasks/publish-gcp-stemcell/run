@@ -2,10 +2,10 @@
 set -eu -o pipefail
 set -x
 
-cd stemcell-builder
-bundle install
-rake publish:gcp
-rake gcp:label:for_test
-cd ..
+pushd stemcell-builder
+  bundle install
+  bundle exec rake publish:gcp
+  bundle exec rake gcp:label:for_test
+popd
 
 mv bosh-windows-stemcell/*.tgz untested-stemcell

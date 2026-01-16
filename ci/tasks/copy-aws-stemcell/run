@@ -21,7 +21,7 @@ fi
 
 pushd stemcell-builder
   bundle install
-  rake build:aws_ami
+  bundle exec rake build:aws_ami
 
   mv copied-regional-stemcells/*.tgz ../copied-regional-stemcells
 popd

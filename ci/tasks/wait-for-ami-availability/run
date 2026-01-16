@@ -19,6 +19,6 @@ fi
 
 pushd stemcell-builder
   bundle install
-  rake build:validate_ami
-  rake aws:label:for_test
+  bundle exec rake build:validate_ami
+  bundle exec rake aws:label:for_test
 popd
