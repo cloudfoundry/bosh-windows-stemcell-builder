@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-
-set -ex
+set -eu -o pipefail
+set -x
 
 AWS_CREDS_FILE=~/.aws/credentials
 mkdir -p ~/.aws
@@ -13,5 +13,5 @@ EOF
 
 pushd stemcell-builder
   bundle install
-  rake aws:label:for_production
+  bundle exec rake aws:label:for_production
 popd

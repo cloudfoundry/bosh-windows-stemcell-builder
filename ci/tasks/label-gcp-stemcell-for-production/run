@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+set -eu -o pipefail
+set -x
 
-set -ex
-
-cd stemcell-builder
-bundle install
-rake gcp:label:for_production
+pushd stemcell-builder
+  bundle install
+  bundle exec rake gcp:label:for_production
+popd
