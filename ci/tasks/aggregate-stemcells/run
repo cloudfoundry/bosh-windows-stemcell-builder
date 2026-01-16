@@ -2,15 +2,6 @@
 set -eu -o pipefail
 set -x
 
-AWS_CREDS_FILE=~/.aws/credentials
-mkdir -p ~/.aws
-
-cat > ${AWS_CREDS_FILE} << EOF
-[default]
-aws_access_key_id = ${AWS_ACCESS_KEY}
-aws_secret_access_key = ${AWS_SECRET_KEY}
-EOF
-
 pushd stemcell-builder
   bundle install
   bundle exec rake build:aws_aggregate
