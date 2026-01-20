@@ -581,12 +581,26 @@ jobs:
     - get: stemcell-builder
       tags: [*worker_tag]
     - get: golang-release
+    - get: ruby-release
     - get: ovftool
     - get: version
       resource: main-version
       tags: [*worker_tag]
     - get: weekly
       trigger: true
+  - load_var: ruby-major-minor
+    file: stemcell-builder/.ruby-version
+    format: trim
+    reveal: true
+  - task: bump-ruby-deps
+    file: ruby-release/ci/tasks/shared/bump-gems.yml
+    tags: [ broadcom ]
+    input_mapping:
+      input-repo: stemcell-builder
+    output_mapping:
+      output-repo: stemcell-builder
+    params:
+      PACKAGE: ruby-((.:ruby-major-minor))
   - task: bump-golang-deps-stembuild
     file: golang-release/ci/tasks/shared/bump-deps.yml
     tags: [*worker_tag_internal]
@@ -598,13 +612,6 @@ jobs:
       input_repo: stemcell-builder
     output_mapping:
       output_repo: stemcell-builder
-  - task: bump-ruby-deps
-    file: ruby-release/ci/tasks/shared/bump-deps.yml
-    tags: [ broadcom ]
-    input_mapping:
-      input_repo: windows-utilities-release
-    output_mapping:
-      output_repo: windows-utilities-release
   - task: bump-golang-deps-acceptance_test
     file: golang-release/ci/tasks/shared/bump-deps.yml
     tags: [*worker_tag_internal]
@@ -618,7 +625,7 @@ jobs:
       output_repo: stemcell-builder
   - in_parallel:
     - task: ruby-specs
-      file: bosh-windows-stemcell-builder-ci/ci/tasks/ruby-specs/task.yml
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/run-ruby-specs/task.yml
       image: bosh-windows-stemcell-builder-ci-image
     - task: unit-test-on-linux
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-linux/task.yml
