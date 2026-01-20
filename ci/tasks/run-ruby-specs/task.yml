@@ -6,6 +6,6 @@ inputs:
   - name: stemcell-builder
 
 run:
-  path: bosh-windows-stemcell-builder-ci/ci/tasks/ruby-specs/run
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/run-ruby-specs/run
 
 params:
