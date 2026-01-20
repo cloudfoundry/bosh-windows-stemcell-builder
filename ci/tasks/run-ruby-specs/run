@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -eu -o pipefail
+set -x
+
+pushd stemcell-builder
+  bundle install
+  bundle exec rake
+popd
