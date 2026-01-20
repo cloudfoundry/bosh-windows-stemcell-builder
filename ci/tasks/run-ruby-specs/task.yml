@@ -1,0 +1,11 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: stemcell-builder
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/ruby-specs/run
+
+params:

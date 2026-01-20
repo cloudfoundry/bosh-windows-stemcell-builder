@@ -166,6 +166,10 @@ resources:
   source:
     uri: https://github.com/cloudfoundry/bosh-package-golang-release.git
     branch: main
+- name: ruby-release
+  type: git
+  source:
+    uri: https://github.com/cloudfoundry/bosh-package-ruby-release.git
 - name: boshio
   type: git
   source:
@@ -594,6 +598,13 @@ jobs:
       input_repo: stemcell-builder
     output_mapping:
       output_repo: stemcell-builder
+  - task: bump-ruby-deps
+    file: ruby-release/ci/tasks/shared/bump-deps.yml
+    tags: [ broadcom ]
+    input_mapping:
+      input_repo: windows-utilities-release
+    output_mapping:
+      output_repo: windows-utilities-release
   - task: bump-golang-deps-acceptance_test
     file: golang-release/ci/tasks/shared/bump-deps.yml
     tags: [*worker_tag_internal]
@@ -606,6 +617,9 @@ jobs:
     output_mapping:
       output_repo: stemcell-builder
   - in_parallel:
+    - task: ruby-specs
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/ruby-specs/task.yml
+      image: bosh-windows-stemcell-builder-ci-image
     - task: unit-test-on-linux
       file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-linux/task.yml
       image: bosh-windows-stemcell-builder-ci-image
