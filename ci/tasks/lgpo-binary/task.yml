@@ -1,0 +1,11 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+
+outputs:
+  - name: lgpo-binary
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/run
