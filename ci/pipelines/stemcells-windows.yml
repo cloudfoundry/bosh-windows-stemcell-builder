@@ -238,12 +238,6 @@ resources:
     uri: git+https://github.com/cloudfoundry/bosh-agent-index.git//
     version: "~2"
 
-- name: lgpo-binary
-  type: file-url
-  source:
-    url: https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FFA-9429-7E023E7DA8D8/LGPO.zip
-    filename: LGPO.zip
-
 # type: semver
 - name: aws-build-number
   type: semver
@@ -702,7 +696,6 @@ jobs:
         - test-stemcell-builder
         - test-bosh-psmodules
         tags: [*worker_tag]
-      - get: lgpo-binary
       - get: version
         resource: main-version
         params:
@@ -827,7 +820,10 @@ jobs:
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
-      - get: lgpo-binary
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [ *worker_tag_windows ]
       - get: bosh-agent-release
         passed: [build]
       - get: ovftool
@@ -956,7 +952,10 @@ jobs:
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
-      - get: lgpo-binary
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [ *worker_tag_windows ]
       - get: bosh-agent-release
         passed: [build]
       - get: ovftool
@@ -1071,7 +1070,10 @@ jobs:
       tags: [*worker_tag]
     - get: bosh-windows-stemcell-builder-ci-image
       tags: [*worker_tag]
-    - get: lgpo-binary
+    - task: lgpo-binary
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+      image: bosh-windows-stemcell-builder-ci-image
+      tags: [*worker_tag_windows]
     - get: stemcell-builder
       passed: [stembuild-linux]
       tags: [*worker_tag]
@@ -1236,7 +1238,10 @@ jobs:
           tags: [*worker_tag]
         - get: bosh-windows-stemcell-builder-ci-image
           tags: [*worker_tag]
-        - get: lgpo-binary
+        - task: lgpo-binary
+          file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+          image: bosh-windows-stemcell-builder-ci-image
+          tags: [ *worker_tag_windows ]
         - get: stemcell-builder
           passed: [stembuild-windows]
           tags: [*worker_tag]
@@ -1416,7 +1421,10 @@ jobs:
         passed: [build]
         trigger: true
         tags: [*worker_tag]
-      - get: lgpo-binary
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [ *worker_tag_windows ]
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
@@ -1604,7 +1612,10 @@ jobs:
         resource: aws-build-number
         trigger: true
         tags: [*worker_tag]
-      - get: lgpo-binary
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [ *worker_tag_windows ]
       - get: main-version
         passed: [wuts-aws]
         tags: [*worker_tag]
@@ -1772,7 +1783,10 @@ jobs:
         passed: [build]
         trigger: true
         tags: [*worker_tag]
-      - get: lgpo-binary
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [ *worker_tag_windows ]
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
@@ -1976,7 +1990,10 @@ jobs:
         passed: [build]
         trigger: true
         tags: [*worker_tag]
-      - get: lgpo-binary
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [ *worker_tag_windows ]
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
