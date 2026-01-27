@@ -1,5 +1,5 @@
 # ghcr.io/cloudfoundry/bosh/windows-stemcell-ci
-ARG BASE_IMAGE=ubuntu
+ARG BASE_IMAGE=ubuntu:jammy
 FROM ${BASE_IMAGE}
 
 ARG BOSH_CLI_URL
@@ -19,7 +19,8 @@ ENV LC_ALL="${LANGUAGE}"
 ENV LANG="${LANGUAGE}"
 ENV TZ="Etc/UTC"
 
-RUN apt-get update -y \
+RUN echo "Using 'jammy' because Azure doesn't yet support 'noble'" \
+    && apt-get update -y \
     && apt-get install -y --no-install-recommends \
         apt-transport-https \
         apt-utils \
@@ -90,6 +91,16 @@ RUN apt-get update -y \
         wget \
         zip
 
+# Microsoft's CDN is not sending the intermediate certificate chain.
+# Download and install the missing intermediate cert.
+RUN intermediate_ms_cert=/tmp/ms-intermediate.crt \
+    && curl -sL 'http://www.microsoft.com/pkiops/certs/Microsoft%20TLS%20G2%20ECC%20CA%20OCSP%2002.crt' \
+      -o "${intermediate_ms_cert}" \
+    && openssl x509 \
+      -in "${intermediate_ms_cert}" \
+      -inform DER \
+      -out /usr/local/share/ca-certificates/microsoft-tls-g2-ecc-ca-ocsp-02.crt \
+    && update-ca-certificates
 
 RUN packer plugins install github.com/hashicorp/amazon \
     && packer plugins install github.com/hashicorp/azure \
