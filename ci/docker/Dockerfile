@@ -1,5 +1,5 @@
 # ghcr.io/cloudfoundry/bosh/windows-stemcell-ci
-ARG BASE_IMAGE=ubuntu:jammy
+ARG BASE_IMAGE=ubuntu
 FROM ${BASE_IMAGE}
 
 ARG BOSH_CLI_URL
@@ -19,8 +19,7 @@ ENV LC_ALL="${LANGUAGE}"
 ENV LANG="${LANGUAGE}"
 ENV TZ="Etc/UTC"
 
-RUN echo "Using 'jammy' because Azure doesn't yet support 'noble'" \
-    && apt-get update -y \
+RUN apt-get update -y \
     && apt-get install -y --no-install-recommends \
         apt-transport-https \
         apt-utils \
