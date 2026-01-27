@@ -1,8 +1,8 @@
-require 'tempfile'
-require 'json'
-require 'English'
-require 'open3'
-require_relative '../output'
+require "tempfile"
+require "json"
+require "English"
+require "open3"
+require_relative "../output"
 
 module Packer
   class Runner
@@ -13,12 +13,12 @@ module Packer
       @config = config
     end
 
-    def run(command, args={})
-      config_file = Tempfile.new('')
+    def run(command, args = {})
+      config_file = Tempfile.new("")
       config_file.write(@config)
       config_file.close
 
-      args_combined = ''
+      args_combined = ""
       args.each do |name, value|
         args_combined += "-var \"#{name}=#{value}\""
       end
@@ -36,8 +36,8 @@ module Packer
 
     def log_config(path)
       config_contents = File.read(path)
-      unless "#{ENV['NEW_PASSWORD']}".empty?
-        config_contents.gsub! ENV['NEW_PASSWORD'], "( redacted )"
+      unless ENV["NEW_PASSWORD"].to_s.empty?
+        config_contents.gsub! ENV["NEW_PASSWORD"], "( redacted )"
       end
       Output.say "config file contents: #{config_contents}"
     end

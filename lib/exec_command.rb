@@ -1,11 +1,11 @@
-require 'open3'
-require_relative 'output'
+require "open3"
+require_relative "output"
 
 class Executor
   def self.exec_command(cmd)
-    STDOUT.sync = true
+    $stdout.sync = true
 
-    ret = ''
+    ret = ""
 
     Open3.popen2(cmd) do |stdin, out, wait_thr|
       out.each_line do |line|
@@ -18,10 +18,11 @@ class Executor
       end
     end
 
-    return ret
+    ret
   end
+
   def self.exec_command_no_output(cmd)
-    STDOUT.sync = true
+    $stdout.sync = true
     Open3.popen2(cmd) do |_stdin, _out, wait_thr|
       exit_status = wait_thr.value
       if exit_status != 0
@@ -34,6 +35,7 @@ end
 def exec_command(cmd)
   Executor.exec_command(cmd)
 end
+
 def exec_command_no_output(cmd)
   Executor.exec_command_no_output(cmd)
 end

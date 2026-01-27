@@ -1,5 +1,5 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-gem 'aws-sdk'
-gem 'azure_mgmt_resources'
-gem 'nokogiri'
+gem "aws-sdk"
+gem "azure_mgmt_resources"
+gem "nokogiri"

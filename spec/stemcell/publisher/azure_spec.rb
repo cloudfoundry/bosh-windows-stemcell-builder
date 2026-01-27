@@ -1,17 +1,17 @@
-require 'spec_helper'
-require 'stemcell/publisher/azure'
+require "spec_helper"
+require "stemcell/publisher/azure"
 
 describe Stemcell::Publisher::Azure do
   before(:each) do
-    version = 'some-version'
-    sku = '2012r2'
-    azure_storage_account = 'some-azure_storage_account'
-    azure_storage_access_key = 'some-azure_storage_access_key'
-    azure_tenant_id = 'some-azure-tenant-id'
-    azure_client_id = 'some-azure-client-id'
-    azure_client_secret = 'some-azure-client-secret'
-    container_name = 'some-container-name'
-    container_path = 'some-container-path'
+    version = "some-version"
+    sku = "2012r2"
+    azure_storage_account = "some-azure_storage_account"
+    azure_storage_access_key = "some-azure_storage_access_key"
+    azure_tenant_id = "some-azure-tenant-id"
+    azure_client_id = "some-azure-client-id"
+    azure_client_secret = "some-azure-client-secret"
+    container_name = "some-container-name"
+    container_path = "some-container-path"
 
     @publisher = Stemcell::Publisher::Azure.new(
       version: version, sku: sku, azure_storage_account: azure_storage_account,
@@ -20,7 +20,7 @@ describe Stemcell::Publisher::Azure do
     )
   end
 
-  describe '#print_publishing_instructions' do
+  describe "#print_publishing_instructions" do
     before(:each) do
       Timecop.freeze
     end
@@ -29,7 +29,7 @@ describe Stemcell::Publisher::Azure do
       Timecop.return
     end
 
-    it 'prints instructions for publishing azure image' do
+    it "prints instructions for publishing azure image" do
       allow(Output).to receive(:say).and_call_original
       expected_login_command = "az login --username #{@publisher.azure_client_id} --password #{@publisher.azure_client_secret} --service-principal --tenant #{@publisher.azure_tenant_id}"
       valid_from = (Time.now.utc - 1.day).iso8601
@@ -37,29 +37,29 @@ describe Stemcell::Publisher::Azure do
       expected_sas_command = "az storage container generate-sas --name #{@publisher.container_name} --permissions rl --account-name #{@publisher.azure_storage_account} --account-key #{@publisher.azure_storage_access_key} --start #{valid_from} --expiry #{valid_to}"
       expected_url_command = "az storage blob url --container-name #{@publisher.container_name} --name #{@publisher.container_path} --account-name #{@publisher.azure_storage_account} --account-key #{@publisher.azure_storage_access_key}"
 
-      expected_instructions = <<END
-Please login to https://partner.microsoft.com/en-us/dashboard/commercial-marketplace/overview
-* Click "BOSH Azure Windows Stemcell"
-* Search Offers for "BOSH Stemcell"
-* Click the one corresponding to the OS version we're promoting
-* Click the plan with Plan ID: "2012r2"
-* Navigate to the Technical Configuration tab
-* Click "+ New VM image" at the bottom
-* Input version "some-version" and OS VHD URL "vhd-url?sas-code"
-* "Save Draft" and click "Review and Publish"
-* Remember to come back to the "2012r2" Plan in partner center and click Go Live after the certification process is complete
-END
+      expected_instructions = <<~END
+        Please login to https://partner.microsoft.com/en-us/dashboard/commercial-marketplace/overview
+        * Click "BOSH Azure Windows Stemcell"
+        * Search Offers for "BOSH Stemcell"
+        * Click the one corresponding to the OS version we're promoting
+        * Click the plan with Plan ID: "2012r2"
+        * Navigate to the Technical Configuration tab
+        * Click "+ New VM image" at the bottom
+        * Input version "some-version" and OS VHD URL "vhd-url?sas-code"
+        * "Save Draft" and click "Review and Publish"
+        * Remember to come back to the "2012r2" Plan in partner center and click Go Live after the certification process is complete
+      END
 
       expect(Executor).to receive(:exec_command_no_output).with(expected_login_command)
       expect(Executor).to receive(:exec_command).once.with(expected_url_command).and_return("\"vhd-url\"\n")
       expect(Executor).to receive(:exec_command).once.with(expected_sas_command).and_return("\"sas-code\"\n")
-      expect {@publisher.print_publishing_instructions}.
-        to output(expected_instructions).to_stdout
+      expect { @publisher.print_publishing_instructions }
+        .to output(expected_instructions).to_stdout
     end
   end
 
-  describe '#copy_vhd_to_published_storage_account' do
-    it 'copies vhd from unpublished storage account to published storage account' do
+  describe "#copy_vhd_to_published_storage_account" do
+    it "copies vhd from unpublished storage account to published storage account" do
       source_storage_account = "source-account"
       source_storage_key = "source-key"
       expected_login_command = "az login --username #{@publisher.azure_client_id} --password #{@publisher.azure_client_secret} --service-principal --tenant #{@publisher.azure_tenant_id}"
@@ -71,4 +71,3 @@ END
     end
   end
 end
-

@@ -1,7 +1,7 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe Packer::Config::Gcp do
-  describe 'builders' do
+  describe "builders" do
     before(:each) do
       Timecop.freeze
     end
@@ -10,153 +10,154 @@ describe Packer::Config::Gcp do
       Timecop.return
     end
 
-    let(:builders) { Packer::Config::Gcp.new(
-        account_json: 'some-account-json',
-        project_id: 'some-project-id',
-        source_image: 'some-source-image',
-        output_directory: '',
-        image_family: 'some-image-family',
+    let(:builders) {
+      Packer::Config::Gcp.new(
+        account_json: "some-account-json",
+        project_id: "some-project-id",
+        source_image: "some-source-image",
+        output_directory: "",
+        image_family: "some-image-family",
         os: os,
-        version: 'some.version',
-        vm_prefix: 'some-vm-prefix',
-        vm_type: 'some-vm-type',
-        network: 'some-network',
-        network_project_id: 'some-project-id',
-        subnetwork: 'subnet'
-    ).builders }
+        version: "some.version",
+        vm_prefix: "some-vm-prefix",
+        vm_type: "some-vm-type",
+        network: "some-network",
+        network_project_id: "some-project-id",
+        subnetwork: "subnet"
+      ).builders
+    }
 
     let(:baseline_builders) do
       {
-        'type' => 'googlecompute',
-        'credentials_json' => 'some-account-json',
-        'project_id' => 'some-project-id',
-        'tags' => ['allow-via-pa'],
-        'source_image' => 'some-source-image',
-        'image_family' => 'some-image-family',
-        'zone' => 'us-west1-c',
-        'disk_size' => 64,
-        'machine_type' => 'some-vm-type',
-        'omit_external_ip' => true,
-            'use_internal_ip' => true,
-        'communicator' => 'winrm',
-        'winrm_username' => 'winrmuser',
-        'winrm_use_ssl' => false,
-        'winrm_timeout' => '1h',
-        'state_timeout' => '10m',
-        'metadata' => {
-          'sysprep-specialize-script-ps1' => anything,
-          'name' => "some-vm-prefix-#{Time.now.to_i}"
+        "type" => "googlecompute",
+        "credentials_json" => "some-account-json",
+        "project_id" => "some-project-id",
+        "tags" => ["allow-via-pa"],
+        "source_image" => "some-source-image",
+        "image_family" => "some-image-family",
+        "zone" => "us-west1-c",
+        "disk_size" => 64,
+        "machine_type" => "some-vm-type",
+        "omit_external_ip" => true,
+        "use_internal_ip" => true,
+        "communicator" => "winrm",
+        "winrm_username" => "winrmuser",
+        "winrm_use_ssl" => false,
+        "winrm_timeout" => "1h",
+        "state_timeout" => "10m",
+        "metadata" => {
+          "sysprep-specialize-script-ps1" => anything,
+          "name" => "some-vm-prefix-#{Time.now.to_i}"
         }
 
       }
     end
 
-    context 'all os versions' do
-      let(:os) { '' }
+    context "all os versions" do
+      let(:os) { "" }
 
-      it 'returns the expected builders' do
+      it "returns the expected builders" do
         expect(builders[0]).to include(baseline_builders)
-        expect(builders[0]['image_name']).to match(/stemcell-windows-some-version-\d+/)
+        expect(builders[0]["image_name"]).to match(/stemcell-windows-some-version-\d+/)
       end
     end
 
-    context 'when vm_prefix is empty' do
-      it 'defaults to packer' do
+    context "when vm_prefix is empty" do
+      it "defaults to packer" do
         builders = Packer::Config::Gcp.new(
-          account_json: '',
-          project_id: '',
-          source_image: '',
-          output_directory: '',
-          image_family: '',
-          os: '',
-          version: '',
-          vm_prefix: '',
-          vm_type: '',
-          network: '',
-          network_project_id: '',
-          subnetwork: ''
+          account_json: "",
+          project_id: "",
+          source_image: "",
+          output_directory: "",
+          image_family: "",
+          os: "",
+          version: "",
+          vm_prefix: "",
+          vm_type: "",
+          network: "",
+          network_project_id: "",
+          subnetwork: ""
         ).builders
-        expect(builders[0]['metadata']).to include(
-          'name' => "packer-#{Time.now.to_i}"
+        expect(builders[0]["metadata"]).to include(
+          "name" => "packer-#{Time.now.to_i}"
         )
       end
     end
   end
 
-  describe 'provisioners' do
+  describe "provisioners" do
     before(:each) do
-      @stemcell_deps_dir = Dir.mktmpdir('gcp')
-      ENV['STEMCELL_DEPS_DIR'] = @stemcell_deps_dir
+      @stemcell_deps_dir = Dir.mktmpdir("gcp")
+      ENV["STEMCELL_DEPS_DIR"] = @stemcell_deps_dir
     end
 
     after(:each) do
       FileUtils.rm_rf(@stemcell_deps_dir)
-      ENV.delete('STEMCELL_DEPS_DIR')
+      ENV.delete("STEMCELL_DEPS_DIR")
     end
 
-    context 'windows 2022' do
-      it 'returns the expected provisioners' do
+    context "windows 2022" do
+      it "returns the expected provisioners" do
         allow(SecureRandom).to receive(:hex).and_return("some-password")
-        version = '2022.43.17-build.1'
+        version = "2022.43.17-build.1"
         provisioners = Packer::Config::Gcp.new(
-          account_json: '{}',
-          project_id: '',
-          source_image: '{}',
-          output_directory: 'some-output-directory',
-          image_family: '',
-          os: 'windows2022',
+          account_json: "{}",
+          project_id: "",
+          source_image: "{}",
+          output_directory: "some-output-directory",
+          image_family: "",
+          os: "windows2022",
           version: version,
-          vm_prefix: '',
-          vm_type: '',
-          network: '',
-          network_project_id: '',
-          subnetwork: ''
+          vm_prefix: "",
+          vm_type: "",
+          network: "",
+          network_project_id: "",
+          subnetwork: ""
         ).provisioners
         expected_provisioners_base = [
-          { "type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before" => "60s" },
-          { "type" => "file", "source" => "scripts/install-bosh-psmodules.ps1", "destination" => "C:\\provision\\install-bosh-psmodules.ps1", "pause_before" => "60s" },
-          { "type" => "powershell", "inline" => ['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before" => "60s" },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"] },
-          { "type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures -IaaS gcp"] },
-          { "type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"] },
-          { "type" => "windows-restart", "restart_timeout" => "12h", "check_registry" => true },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"] },
-          { "type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download" },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"] },
-          { "type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip" },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-TLS12"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-3DES"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-WUCerts"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-SSHKeys"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Set-InternetExplorerRegistries"] },
-          { "type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell -IaaS gcp; Invoke-Sysprep -IaaS gcp"] }
+          {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before" => "60s"},
+          {"type" => "file", "source" => "scripts/install-bosh-psmodules.ps1", "destination" => "C:\\provision\\install-bosh-psmodules.ps1", "pause_before" => "60s"},
+          {"type" => "powershell", "inline" => ['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before" => "60s"},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
+          {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures -IaaS gcp"]},
+          {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"]},
+          {"type" => "windows-restart", "restart_timeout" => "12h", "check_registry" => true},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
+          {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
+          {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-TLS12"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-3DES"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-WUCerts"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-SSHKeys"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Set-InternetExplorerRegistries"]},
+          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell -IaaS gcp; Invoke-Sysprep -IaaS gcp"]}
         ].flatten
-        expect(provisioners.detect {|x| x['destination'] == "C:\\windows\\LGPO.exe"}).not_to be_nil
+        expect(provisioners.detect { |x| x["destination"] == "C:\\windows\\LGPO.exe" }).not_to be_nil
 
         new_version_file_provisioner =
-          provisioners.detect { |p| p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'") }
+          provisioners.detect { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{version}'") }
         expect(new_version_file_provisioner).not_to be_nil, "Expect provisioners to include New-VersionFile"
 
-        line_by_line_provisioners = provisioners.delete_if {|x| x['destination'] == "C:\\windows\\LGPO.exe"}
+        line_by_line_provisioners = provisioners.delete_if { |x| x["destination"] == "C:\\windows\\LGPO.exe" }
         line_by_line_provisioners =
-          line_by_line_provisioners.delete_if {|p| p.has_key?('inline') && p['inline'].include?("New-VersionFile -Version '#{version}'")}
+          line_by_line_provisioners.delete_if { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{version}'") }
 
         expect(line_by_line_provisioners).to eq(expected_provisioners_base)
       end
     end
-
   end
 end

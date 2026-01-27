@@ -1,7 +1,7 @@
 module Stemcell
   class Builder
     class Aws < Base
-      def initialize(ami:, aws_access_key:, aws_secret_key:, aws_role_arn: '', vm_prefix:, **kwargs)
+      def initialize(ami:, aws_access_key:, aws_secret_key:, vm_prefix:, aws_role_arn: "", **kwargs)
         @ami = ami
         @aws_access_key = aws_access_key
         @aws_secret_key = aws_secret_key
@@ -12,9 +12,9 @@ module Stemcell
 
       def build(amis)
         manifest = Manifest::Aws.new(@version, @os, amis).dump
-        super(iaas: 'aws-xen-hvm',
+        super(iaas: "aws-xen-hvm",
               is_light: true,
-              image_path: '',
+              image_path: "",
               manifest: manifest,
               update_list: update_list_path
              )
@@ -22,9 +22,7 @@ module Stemcell
 
       def build_from_packer(ami_output_directory)
         amis = run_packer
-        File.open(File.join(ami_output_directory, "packer-output-ami-#{@version}.txt"), 'w') do |f|
-          f.write(amis[0].to_json)
-        end
+        File.write(File.join(ami_output_directory, "packer-output-ami-#{@version}.txt"), amis[0].to_json)
         build(amis)
       end
 
@@ -47,7 +45,7 @@ module Stemcell
       def parse_packer_output(packer_output)
         amis = []
         packer_output.each_line do |line|
-          if !(line.include?('secret_key') || line.include?('access_key'))
+          if !(line.include?("secret_key") || line.include?("access_key"))
             Output.say line
           end
           ami = parse_ami(line)
@@ -59,12 +57,12 @@ module Stemcell
       end
 
       def parse_ami(line)
-        unless line.include?(',artifact,0,id,')
+        unless line.include?(",artifact,0,id,")
           return
         end
 
-        region_id = line.split(',').last.split(':')
-        return {'region'=> region_id[0].chomp, 'ami_id'=> region_id[1].chomp}
+        region_id = line.split(",").last.split(":")
+        {"region" => region_id[0].chomp, "ami_id" => region_id[1].chomp}
       end
     end
   end

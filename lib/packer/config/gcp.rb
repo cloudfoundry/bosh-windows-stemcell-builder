@@ -1,4 +1,4 @@
-require 'securerandom'
+require "securerandom"
 
 module Packer
   module Config
@@ -11,15 +11,15 @@ module Packer
         os:,
         output_directory:,
         version:,
-        vm_prefix: '',
+        vm_type:, vm_prefix: "",
         mount_ephemeral_disk: false,
         root_disk_size: 64,
         omit_external_ip: true,
-        vm_tags: ['allow-via-pa'],
-        vm_type:,
+        vm_tags: ["allow-via-pa"],
         network: nil,
         network_project_id: nil,
-        subnetwork: nil)
+        subnetwork: nil
+      )
         @account_json = account_json
         @project_id = project_id
         @source_image = source_image
@@ -27,7 +27,7 @@ module Packer
         @os = os
         @output_directory = output_directory
         @version = version
-        @vm_prefix = vm_prefix.empty? ? 'packer' : vm_prefix
+        @vm_prefix = vm_prefix.empty? ? "packer" : vm_prefix
         @mount_ephemeral_disk = mount_ephemeral_disk
         @root_disk_size = root_disk_size
         @omit_external_ip = omit_external_ip
@@ -39,45 +39,45 @@ module Packer
       end
 
       def builders
-        stemcell_builder_dir = File.expand_path('../../../../', __FILE__)
+        stemcell_builder_dir = File.expand_path("../../../../", __FILE__)
         [
           {
-            'type' => 'googlecompute',
-            'credentials_json' => @account_json,
-            'project_id' => @project_id,
-            'tags' => @vm_tags,
-            'source_image' => @source_image,
-            'image_family' => @image_family,
-            'zone' => 'us-west1-c',
-            'disk_size' => @root_disk_size,
-            'image_name' => "stemcell-windows-#{@version}-#{Time.now.strftime("%Y%m%d%H%M%S")}".gsub('.', '-'),
-            'machine_type' => @vm_type,
-            'network' => @network,
-            'network_project_id' => @network_project_id,
-            'subnetwork' => @subnetwork,
-            'omit_external_ip' => @omit_external_ip,
-            'use_internal_ip' => @omit_external_ip,
-            'communicator' => 'winrm',
-            'winrm_username' => 'winrmuser',
-            'winrm_use_ssl' => false,
-            'winrm_timeout' => '1h',
-            'state_timeout' => '10m',
-            'metadata' => {
-              'sysprep-specialize-script-ps1' => File.read(File.join(stemcell_builder_dir, 'scripts', 'gcp', 'setup-winrm.ps1')),
-              'name' => "#{@vm_prefix}-#{Time.now.to_i}",
+            "type" => "googlecompute",
+            "credentials_json" => @account_json,
+            "project_id" => @project_id,
+            "tags" => @vm_tags,
+            "source_image" => @source_image,
+            "image_family" => @image_family,
+            "zone" => "us-west1-c",
+            "disk_size" => @root_disk_size,
+            "image_name" => "stemcell-windows-#{@version}-#{Time.now.strftime("%Y%m%d%H%M%S")}".tr(".", "-"),
+            "machine_type" => @vm_type,
+            "network" => @network,
+            "network_project_id" => @network_project_id,
+            "subnetwork" => @subnetwork,
+            "omit_external_ip" => @omit_external_ip,
+            "use_internal_ip" => @omit_external_ip,
+            "communicator" => "winrm",
+            "winrm_username" => "winrmuser",
+            "winrm_use_ssl" => false,
+            "winrm_timeout" => "1h",
+            "state_timeout" => "10m",
+            "metadata" => {
+              "sysprep-specialize-script-ps1" => File.read(File.join(stemcell_builder_dir, "scripts", "gcp", "setup-winrm.ps1")),
+              "name" => "#{@vm_prefix}-#{Time.now.to_i}"
             }.compact_blank!
           }
         ]
       end
 
       def provisioners
-        ProvisionerFactory.new(@os, 'gcp', @mount_ephemeral_disk, @version).dump
+        ProvisionerFactory.new(@os, "gcp", @mount_ephemeral_disk, @version).dump
       end
 
       def dump
         JSON.dump(
-          'builders' => builders,
-          'provisioners' => provisioners
+          "builders" => builders,
+          "provisioners" => provisioners
         )
       end
     end

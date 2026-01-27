@@ -1,6 +1,6 @@
-require 'zip'
-require_relative 'output'
-require_relative 'exec_command'
+require "zip"
+require_relative "output"
+require_relative "exec_command"
 
 module ZipFile
   class Generator
@@ -12,10 +12,10 @@ module ZipFile
 
     # Zip the input directory.
     def write
-      entries = Dir.entries(@input_dir) - %w(. ..)
+      entries = Dir.entries(@input_dir) - %w[. ..]
 
       ::Zip::File.open(@output_file, ::Zip::File::CREATE) do |io|
-        write_entries entries, '', io
+        write_entries entries, "", io
       end
     end
 
@@ -24,7 +24,7 @@ module ZipFile
     # A helper method to make the recursion work.
     def write_entries(entries, path, io)
       entries.each do |e|
-        zip_file_path = path == '' ? e : File.join(path, e)
+        zip_file_path = (path == "") ? e : File.join(path, e)
         disk_file_path = File.join(@input_dir, zip_file_path)
         Output.puts "Deflating #{disk_file_path}"
 
@@ -38,13 +38,13 @@ module ZipFile
 
     def recursively_deflate_directory(disk_file_path, io, zip_file_path)
       io.mkdir zip_file_path
-      subdir = Dir.entries(disk_file_path) - %w(. ..)
+      subdir = Dir.entries(disk_file_path) - %w[. ..]
       write_entries subdir, zip_file_path, io
     end
 
     def put_into_archive(disk_file_path, io, zip_file_path)
       io.get_output_stream(zip_file_path) do |f|
-        f.write(File.open(disk_file_path, 'rb').read)
+        f.write(File.binread(disk_file_path))
       end
     end
   end

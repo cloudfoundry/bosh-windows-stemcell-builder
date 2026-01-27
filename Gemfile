@@ -1,13 +1,17 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-gem 'rake'
-gem 'aws-sdk-s3'
-gem 'azure_mgmt_resources'
-gem 'nokogiri'
-gem 'rubyzip'
-gem 'activesupport'
-gem 'activemodel'
-gem 'rspec'
-gem 'simplecov', require: false
-gem 'timecop'
-gem 'webmock'
+gem "activemodel"
+gem "activesupport"
+gem "aws-sdk-s3"
+gem "azure_mgmt_resources"
+gem "nokogiri"
+gem "rubyzip"
+
+gem "rake"
+gem "standard"
+
+group :test do
+  gem "rspec"
+  gem "timecop"
+  gem "webmock"
+end

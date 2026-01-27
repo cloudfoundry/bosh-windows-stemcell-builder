@@ -1,7 +1,7 @@
-require 'spec_helper'
+require "spec_helper"
 
-describe 'build:azure' do
-  let(:task) { Rake::Task['build:azure'] }
+describe "build:azure" do
+  let(:task) { Rake::Task["build:azure"] }
   let(:azure_builder_class) { class_double(Stemcell::Builder::Azure).as_stubbed_const }
   let(:azure_builder_instance) { instance_double(Stemcell::Builder::Azure) }
 
@@ -11,41 +11,41 @@ describe 'build:azure' do
     allow(ENV).to receive(:fetch).and_call_original
 
     allow(Stemcell::Builder).to receive(:validate_env_dir)
-      .and_return('version_dir')
-    allow(File).to receive(:read).with('version_dir/number')
-                                 .and_return('1709.10.43-build.1')
-    allow(File).to receive(:read).with(File.join(REPO_ROOT, 'build/compiled-agent/sha'))
-                                 .and_return('some_sha')
-    allow(File).to receive(:absolute_path).with('bosh-windows-stemcell')
-                                          .and_return('some_output_directory')
+      .and_return("version_dir")
+    allow(File).to receive(:read).with("version_dir/number")
+      .and_return("1709.10.43-build.1")
+    allow(File).to receive(:read).with(File.join(REPO_ROOT, "build/compiled-agent/sha"))
+      .and_return("some_sha")
+    allow(File).to receive(:absolute_path).with("bosh-windows-stemcell")
+      .and_return("some_output_directory")
     allow(azure_builder_class).to receive(:new)
       .with(any_args).and_return(azure_builder_instance)
     allow(azure_builder_instance).to receive(:build).with(no_args)
-    allow(Open3).to receive(:capture2e).with('az', 'login', '--service-principal', any_args).and_return(['', instance_double(Process::Status, success?: true)])
+    allow(Open3).to receive(:capture2e).with("az", "login", "--service-principal", any_args).and_return(["", instance_double(Process::Status, success?: true)])
   end
 
-  context 'handles ephemeral disk' do
-    let(:env_var) { 'some_env_var' }
+  context "handles ephemeral disk" do
+    let(:env_var) { "some_env_var" }
 
     before do
       # This allows the task to be ran multiple times in different tests.
       task.reenable
 
       allow(Stemcell::Builder).to receive(:validate_env).with(any_args)
-                                                        .and_return(env_var)
-      allow(ENV).to receive(:fetch).with('VM_PREFIX', '')
-                                   .and_return('some_prefix')
+        .and_return(env_var)
+      allow(ENV).to receive(:fetch).with("VM_PREFIX", "")
+        .and_return("some_prefix")
     end
 
-    it 'when environment variable set to true' do
-      allow(ENV).to receive(:fetch).with('MOUNT_EPHEMERAL_DISK', 'false')
-                                   .and_return('true')
+    it "when environment variable set to true" do
+      allow(ENV).to receive(:fetch).with("MOUNT_EPHEMERAL_DISK", "false")
+        .and_return("true")
 
       expect(azure_builder_class).to receive(:new).with(
         packer_vars: {},
-        version: '1709.10.43-build.1',
+        version: "1709.10.43-build.1",
         os: env_var,
-        output_directory: 'some_output_directory',
+        output_directory: "some_output_directory",
         client_id: env_var,
         client_secret: env_var,
         tenant_id: env_var,
@@ -57,8 +57,8 @@ describe 'build:azure' do
         publisher: env_var,
         offer: env_var,
         sku: env_var,
-        vm_prefix: 'some_prefix',
-        mount_ephemeral_disk: 'true'
+        vm_prefix: "some_prefix",
+        mount_ephemeral_disk: "true"
       )
 
       expect(azure_builder_instance).to receive(:build).with(no_args)
@@ -66,15 +66,15 @@ describe 'build:azure' do
       task.invoke
     end
 
-    it 'when environment variable set to false' do
-      allow(ENV).to receive(:fetch).with('MOUNT_EPHEMERAL_DISK', 'false')
-                                   .and_return('false')
+    it "when environment variable set to false" do
+      allow(ENV).to receive(:fetch).with("MOUNT_EPHEMERAL_DISK", "false")
+        .and_return("false")
 
       expect(azure_builder_class).to receive(:new).with(
         packer_vars: {},
-        version: '1709.10.43-build.1',
+        version: "1709.10.43-build.1",
         os: env_var,
-        output_directory: 'some_output_directory',
+        output_directory: "some_output_directory",
         client_id: env_var,
         client_secret: env_var,
         tenant_id: env_var,
@@ -86,8 +86,8 @@ describe 'build:azure' do
         publisher: env_var,
         offer: env_var,
         sku: env_var,
-        vm_prefix: 'some_prefix',
-        mount_ephemeral_disk: 'false'
+        vm_prefix: "some_prefix",
+        mount_ephemeral_disk: "false"
       )
 
       expect(azure_builder_instance).to receive(:build).with(no_args)
@@ -95,15 +95,15 @@ describe 'build:azure' do
       task.invoke
     end
 
-    it 'when environment variable is missing' do
-      allow(ENV).to receive(:fetch).with('MOUNT_EPHEMERAL_DISK', 'false')
-                                   .and_call_original
+    it "when environment variable is missing" do
+      allow(ENV).to receive(:fetch).with("MOUNT_EPHEMERAL_DISK", "false")
+        .and_call_original
 
       expect(azure_builder_class).to receive(:new).with(
         packer_vars: {},
-        version: '1709.10.43-build.1',
+        version: "1709.10.43-build.1",
         os: env_var,
-        output_directory: 'some_output_directory',
+        output_directory: "some_output_directory",
         client_id: env_var,
         client_secret: env_var,
         tenant_id: env_var,
@@ -115,8 +115,8 @@ describe 'build:azure' do
         publisher: env_var,
         offer: env_var,
         sku: env_var,
-        vm_prefix: 'some_prefix',
-        mount_ephemeral_disk: 'false'
+        vm_prefix: "some_prefix",
+        mount_ephemeral_disk: "false"
       )
 
       expect(azure_builder_instance).to receive(:build).with(no_args)

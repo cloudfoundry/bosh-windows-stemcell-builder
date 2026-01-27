@@ -12,7 +12,7 @@ class AuditFile
   def self.from_string(s)
     lines = s.split "\r\n"
     header = lines[0]
-    contents = lines[1..-1]
+    contents = lines[1..]
 
     AuditFile.new(header, contents)
   end
@@ -23,8 +23,8 @@ class AuditFile
 
   def uniq
     uniqed = contents.uniq do |x|
-      values = x.split(',')
-      keys = values[0..5].join('').downcase
+      values = x.split(",")
+      keys = values[0..5].join("").downcase
       setting_value = values[6]
       keys + setting_value
     end
@@ -41,8 +41,8 @@ def merge(a, b)
   AuditFile.new(a.header, a.contents + b.contents)
 end
 
-a_file = File.read 'audit-cis.csv'
-b_file = File.read 'audit-ms.csv'
+a_file = File.read "audit-cis.csv"
+b_file = File.read "audit-ms.csv"
 
 a_audit = AuditFile.from_string(a_file)
 b_audit = AuditFile.from_string(b_file)
@@ -57,10 +57,10 @@ uniqued = merged.uniq
 puts "after uniq: #{uniqued.size} lines"
 
 grouped = uniqued.contents.group_by do |line|
-  fields = line.split ','
+  fields = line.split ","
   policy_target = fields[1].downcase
   subcategory = fields[2].downcase
-  policy_target + ',' + subcategory
+  policy_target + "," + subcategory
 end
 
 dups = grouped.keys.select { |k| grouped[k].size > 1 }
