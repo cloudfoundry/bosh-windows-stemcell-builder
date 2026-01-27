@@ -1130,11 +1130,11 @@ Describe "AutomationHelpers" {
 
             { EnableOpenSSH } | Should -Throw "Something terrible happened while attempting to execute Enable-SSHD"
 
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
+                Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
                 $Message -eq "Something terrible happened while attempting to execute Enable-SSHD"
             }
             Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
-                $Message -eq "Failed to execute Enable-SSHD powershell cmdlet. See 'c:\provision\log.log' for more info."
+                    $Message -eq "Failed to execute Enable-SSHD powershell cmdlet. See 'c:\provision\log.log' for more info."
             }
         }
     }

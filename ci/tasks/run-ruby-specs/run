@@ -4,5 +4,5 @@ set -x
 
 pushd stemcell-builder
   bundle install
-  bundle exec rake gcp:label:for_production
+  bundle exec rake
 popd

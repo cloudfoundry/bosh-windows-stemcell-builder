@@ -161,6 +161,10 @@ resources:
     source:
       uri: https://github.com/cloudfoundry/bosh-package-golang-release.git
       branch: main
+  - name: ruby-release
+    type: git
+    source:
+      uri: https://github.com/cloudfoundry/bosh-package-ruby-release.git
   - name: windows-utilities-release
     type: git
     source:
@@ -218,11 +222,6 @@ resources:
       uri: git+https://github.com/cloudfoundry/bosh-agent-index.git//
       version: "~2"
 
-  - name: lgpo-binary
-    type: file-url
-    source:
-      url: https://download.microsoft.com/download/8/5/C/85C25433-A1B0-4FFA-9429-7E023E7DA8D8/LGPO.zip
-      filename: LGPO.zip
 
   # type: semver
   - name: aws-build-number
@@ -555,12 +554,26 @@ jobs:
           - get: stemcell-builder
             tags: [*worker_tag]
           - get: golang-release
+          - get: ruby-release
           - get: ovftool
           - get: version
             resource: main-version
             tags: [*worker_tag]
           - get: weekly
             trigger: true
+      - load_var: ruby-major-minor
+        file: stemcell-builder/.ruby-version
+        format: trim
+        reveal: true
+      - task: bump-ruby-deps
+        file: ruby-release/ci/tasks/shared/bump-gems.yml
+        tags: [broadcom]
+        input_mapping:
+          input-repo: stemcell-builder
+        output_mapping:
+          output-repo: stemcell-builder
+        params:
+          PACKAGE: ruby-((.:ruby-major-minor))
       - task: bump-golang-deps-stembuild
         file: golang-release/ci/tasks/shared/bump-deps.yml
         tags: [*worker_tag_internal]
@@ -584,6 +597,9 @@ jobs:
         output_mapping:
           output_repo: stemcell-builder
       - in_parallel:
+          - task: ruby-specs
+            file: bosh-windows-stemcell-builder-ci/ci/tasks/run-ruby-specs/task.yml
+            image: bosh-windows-stemcell-builder-ci-image
           - task: unit-test-on-linux
             file: bosh-windows-stemcell-builder-ci/ci/tasks/test-units-stembuild-linux/task.yml
             image: bosh-windows-stemcell-builder-ci-image
@@ -659,7 +675,6 @@ jobs:
                 - test-stemcell-builder
                 - test-bosh-psmodules
               tags: [*worker_tag]
-            - get: lgpo-binary
             - get: version
               resource: main-version
               params:
@@ -782,7 +797,6 @@ jobs:
             - get: main-version
               passed: [build]
               tags: [*worker_tag]
-            - get: lgpo-binary
             - get: bosh-agent-release
               passed: [build]
             - get: ovftool
@@ -790,6 +804,10 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: stembuild-windows-build-number
@@ -909,7 +927,6 @@ jobs:
             - get: main-version
               passed: [build]
               tags: [*worker_tag]
-            - get: lgpo-binary
             - get: bosh-agent-release
               passed: [build]
             - get: ovftool
@@ -917,6 +934,10 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: stembuild-linux-build-number
@@ -1024,7 +1045,6 @@ jobs:
             tags: [*worker_tag]
           - get: bosh-windows-stemcell-builder-ci-image
             tags: [*worker_tag]
-          - get: lgpo-binary
           - get: stemcell-builder
             passed: [stembuild-linux]
             tags: [*worker_tag]
@@ -1035,6 +1055,10 @@ jobs:
             resource: stembuild-linux-build-number
             passed: [stembuild-linux]
             tags: [*worker_tag]
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [*worker_tag_windows]
       - task: revert-snapshot
         file: bosh-windows-stemcell-builder-ci/ci/tasks/revert-snapshot/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1191,7 +1215,6 @@ jobs:
             tags: [*worker_tag]
           - get: bosh-windows-stemcell-builder-ci-image
             tags: [*worker_tag]
-          - get: lgpo-binary
           - get: stemcell-builder
             passed: [stembuild-windows]
             tags: [*worker_tag]
@@ -1202,6 +1225,10 @@ jobs:
             resource: stembuild-windows-build-number
             passed: [stembuild-windows]
             tags: [*worker_tag]
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [*worker_tag_windows]
       - task: revert-snapshot
         file: bosh-windows-stemcell-builder-ci/ci/tasks/revert-snapshot/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1374,7 +1401,6 @@ jobs:
               passed: [build]
               trigger: true
               tags: [*worker_tag]
-            - get: lgpo-binary
             - get: main-version
               passed: [build]
               tags: [*worker_tag]
@@ -1384,6 +1410,10 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: aws-build-number
@@ -1568,7 +1598,6 @@ jobs:
               resource: aws-build-number
               trigger: true
               tags: [*worker_tag]
-            - get: lgpo-binary
             - get: main-version
               passed: [wuts-aws]
               tags: [*worker_tag]
@@ -1578,6 +1607,10 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [*worker_tag_windows]
       - task: build-agent-zip
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1742,7 +1775,6 @@ jobs:
               passed: [build]
               trigger: true
               tags: [*worker_tag]
-            - get: lgpo-binary
             - get: main-version
               passed: [build]
               tags: [*worker_tag]
@@ -1752,6 +1784,10 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: azure-build-number
@@ -1847,7 +1883,7 @@ jobs:
       - task: run-bwats-azure-stemcell
         file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        input_mapping: {stemcell: heavy-stemcell}
+        input_mapping: { stemcell: heavy-stemcell }
         params:
           AZ: ((AZURE_HEAVY_AZ))
           BOSH_CA_CERT: ((iaas_directors_azure-director_bosh_ca_cert.ca))
@@ -1945,7 +1981,6 @@ jobs:
               passed: [build]
               trigger: true
               tags: [*worker_tag]
-            - get: lgpo-binary
             - get: main-version
               passed: [build]
               tags: [*worker_tag]
@@ -1955,6 +1990,10 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+      - task: lgpo-binary
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: gcp-build-number
@@ -2116,11 +2155,11 @@ jobs:
                 - wuts-stembuild-linux-stemcell
                 - wuts-stembuild-windows-stemcell
             - get: stembuild-untested-linux
-              passed: [ wuts-stembuild-linux-stemcell ]
+              passed: [wuts-stembuild-linux-stemcell]
             - get: stembuild-linux-stemcell
-              passed: [ wuts-stembuild-linux-stemcell ]
+              passed: [wuts-stembuild-linux-stemcell]
             - get: stembuild-untested-windows
-              passed: [ wuts-stembuild-windows-stemcell ]
+              passed: [wuts-stembuild-windows-stemcell]
             - get: main-version
               passed:
                 - wuts-gcp
@@ -2184,8 +2223,8 @@ jobs:
       - task: copy-public-stemcells
         timeout: 1h30m
         attempts: 3
-        input_mapping: { version: aws-build-number, default-stemcell: aws-tested, amis: default-ami}
-        output_mapping: {copied-regional-stemcells: aws-public-stemcells}
+        input_mapping: { version: aws-build-number, default-stemcell: aws-tested, amis: default-ami }
+        output_mapping: { copied-regional-stemcells: aws-public-stemcells }
         file: bosh-windows-stemcell-builder-ci/ci/tasks/copy-aws-stemcell/task.yml
         image: bosh-windows-stemcell-builder-ci-image
         params:
@@ -2197,8 +2236,8 @@ jobs:
       - task: copy-govcloud-stemcells
         timeout: 1h30m
         attempts: 3
-        input_mapping: { version: aws-build-number, default-stemcell: aws-govcloud-tested, amis: govcloud-ami}
-        output_mapping: {copied-regional-stemcells: aws-govcloud-stemcells}
+        input_mapping: { version: aws-build-number, default-stemcell: aws-govcloud-tested, amis: govcloud-ami }
+        output_mapping: { copied-regional-stemcells: aws-govcloud-stemcells }
         file: bosh-windows-stemcell-builder-ci/ci/tasks/copy-aws-stemcell/task.yml
         image: bosh-windows-stemcell-builder-ci-image
         params:

@@ -372,10 +372,6 @@ function Validate-OSVersion
         {
             Write-Log "Found correct OS version: Windows Server 2019"
         }
-        elseif ($osVersion -match "10\.0\.20348\..+")
-        {
-            Write-Log "Found correct OS version: Windows Server 2022"
-        }
         else {
             throw "OS Version Mismatch: Please use Windows Server 2019 or 2022 as the OS on your targeted VM"
         }

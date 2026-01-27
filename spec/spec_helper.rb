@@ -8,11 +8,6 @@ require "timecop"
 require "webmock/rspec"
 WebMock.disable_net_connect!(allow_localhost: true)
 
-if ENV.fetch("COVERAGE", false)
-  require "simplecov"
-  SimpleCov.start
-end
-
 require "output"
 
 def fixture_path(*parts)

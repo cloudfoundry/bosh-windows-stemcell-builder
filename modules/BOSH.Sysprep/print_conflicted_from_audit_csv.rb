@@ -22,12 +22,13 @@ class AuditFile
   end
 
   def uniq
-    uniqed = contents.uniq do |x|
-      values = x.split(",")
-      keys = values[0..5].join("").downcase
-      setting_value = values[6]
-      keys + setting_value
-    end
+    uniqed =
+      contents.uniq do |x|
+        values = x.split(",")
+        keys = values[0..5].join("").downcase
+        setting_value = values[6]
+        keys + setting_value
+      end
 
     AuditFile.new(header, uniqed)
   end

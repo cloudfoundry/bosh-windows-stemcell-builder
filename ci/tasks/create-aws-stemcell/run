@@ -33,9 +33,8 @@ pushd stemcell-builder
   mkdir -p build
   cp "${CONCOURSE_ROOT}/psmodules-zip-output/bosh-psmodules.zip" "${CONCOURSE_ROOT}/bosh-agent/agent.zip" build
 
-  bundle install --without test
-
-  rake build:aws
+  bundle install
+  bundle exec rake build:aws
 
   mv bosh-windows-stemcell/* ../bosh-windows-stemcell
 

@@ -160,7 +160,7 @@ module Stemcell
         f = Nokogiri::XML(ovf_file)
         nics = f.css("VirtualHardwareSection Item").select { |x| x.to_s =~ /Ethernet/i }
         nics.first&.remove
-        File.write(ovf_file, f.to_s)
+        File.write(ovf_file.to_s, f.to_s)
         ovf_file.close
         Dir.chdir(dir) do
           # .ova *must* be first - ignore .mf file
