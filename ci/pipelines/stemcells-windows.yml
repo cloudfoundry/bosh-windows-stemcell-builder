@@ -820,10 +820,6 @@ jobs:
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
-      - task: lgpo-binary
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
-        image: bosh-windows-stemcell-builder-ci-image
-        tags: [ *worker_tag_windows ]
       - get: bosh-agent-release
         passed: [build]
       - get: ovftool
@@ -831,6 +827,10 @@ jobs:
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
       - get: windows-winsw
+  - task: lgpo-binary
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+    tags: [ *worker_tag_windows ]
   - put: version
     inputs: detect
     resource: stembuild-windows-build-number
@@ -952,10 +952,6 @@ jobs:
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
-      - task: lgpo-binary
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
-        image: bosh-windows-stemcell-builder-ci-image
-        tags: [ *worker_tag_windows ]
       - get: bosh-agent-release
         passed: [build]
       - get: ovftool
@@ -963,6 +959,10 @@ jobs:
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
       - get: windows-winsw
+  - task: lgpo-binary
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+    tags: [ *worker_tag_windows ]
   - put: version
     inputs: detect
     resource: stembuild-linux-build-number
@@ -1070,10 +1070,6 @@ jobs:
       tags: [*worker_tag]
     - get: bosh-windows-stemcell-builder-ci-image
       tags: [*worker_tag]
-    - task: lgpo-binary
-      file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
-      image: bosh-windows-stemcell-builder-ci-image
-      tags: [*worker_tag_windows]
     - get: stemcell-builder
       passed: [stembuild-linux]
       tags: [*worker_tag]
@@ -1084,6 +1080,10 @@ jobs:
       resource: stembuild-linux-build-number
       passed: [stembuild-linux]
       tags: [*worker_tag]
+  - task: lgpo-binary
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+    tags: [*worker_tag_windows]
   - task: revert-snapshot
     file: bosh-windows-stemcell-builder-ci/ci/tasks/revert-snapshot/task.yml
     image: bosh-windows-stemcell-builder-ci-image
@@ -1238,10 +1238,6 @@ jobs:
           tags: [*worker_tag]
         - get: bosh-windows-stemcell-builder-ci-image
           tags: [*worker_tag]
-        - task: lgpo-binary
-          file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
-          image: bosh-windows-stemcell-builder-ci-image
-          tags: [ *worker_tag_windows ]
         - get: stemcell-builder
           passed: [stembuild-windows]
           tags: [*worker_tag]
@@ -1252,6 +1248,10 @@ jobs:
           resource: stembuild-windows-build-number
           passed: [stembuild-windows]
           tags: [*worker_tag]
+    - task: lgpo-binary
+      file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+      image: bosh-windows-stemcell-builder-ci-image
+      tags: [ *worker_tag_windows ]
     - task: revert-snapshot
       file: bosh-windows-stemcell-builder-ci/ci/tasks/revert-snapshot/task.yml
       image: bosh-windows-stemcell-builder-ci-image
@@ -1421,10 +1421,6 @@ jobs:
         passed: [build]
         trigger: true
         tags: [*worker_tag]
-      - task: lgpo-binary
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
-        image: bosh-windows-stemcell-builder-ci-image
-        tags: [ *worker_tag_windows ]
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
@@ -1436,6 +1432,10 @@ jobs:
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
       - get: windows-winsw
+  - task: lgpo-binary
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+    tags: [ *worker_tag_windows ]
   - put: version
     inputs: detect
     resource: aws-build-number
@@ -1612,10 +1612,6 @@ jobs:
         resource: aws-build-number
         trigger: true
         tags: [*worker_tag]
-      - task: lgpo-binary
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
-        image: bosh-windows-stemcell-builder-ci-image
-        tags: [ *worker_tag_windows ]
       - get: main-version
         passed: [wuts-aws]
         tags: [*worker_tag]
@@ -1627,6 +1623,10 @@ jobs:
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
       - get: windows-winsw
+  - task: lgpo-binary
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+    tags: [ *worker_tag_windows ]
   - task: build-agent-zip
     file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
     image: bosh-windows-stemcell-builder-ci-image
@@ -1783,10 +1783,6 @@ jobs:
         passed: [build]
         trigger: true
         tags: [*worker_tag]
-      - task: lgpo-binary
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
-        image: bosh-windows-stemcell-builder-ci-image
-        tags: [ *worker_tag_windows ]
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
@@ -1798,6 +1794,10 @@ jobs:
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
       - get: windows-winsw
+  - task: lgpo-binary
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+    tags: [ *worker_tag_windows ]
   - put: version
     inputs: detect
     resource: azure-build-number
@@ -1990,10 +1990,6 @@ jobs:
         passed: [build]
         trigger: true
         tags: [*worker_tag]
-      - task: lgpo-binary
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
-        image: bosh-windows-stemcell-builder-ci-image
-        tags: [ *worker_tag_windows ]
       - get: main-version
         passed: [build]
         tags: [*worker_tag]
@@ -2005,6 +2001,10 @@ jobs:
       - get: blobstore-s3-cli
       - get: blobstore-gcs-cli
       - get: windows-winsw
+  - task: lgpo-binary
+    file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
+    image: bosh-windows-stemcell-builder-ci-image
+    tags: [ *worker_tag_windows ]
   - put: version
     inputs: detect
     resource: gcp-build-number
