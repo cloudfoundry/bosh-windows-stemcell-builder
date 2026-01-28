@@ -94,7 +94,6 @@ RSpec.describe Stemcell::Builder::Gcp do
         source_image = "some-source-image"
         image_family = "some-family"
         packer_vars = "some-packer-vars"
-        os = "windows2022"
         vm_prefix = "some-vm-prefix"
         vm_type = "some-vm-type"
         network = "default"
