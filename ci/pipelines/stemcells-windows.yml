@@ -830,7 +830,6 @@ jobs:
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: stembuild-windows-build-number
@@ -962,7 +961,6 @@ jobs:
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: stembuild-linux-build-number
@@ -1083,7 +1081,6 @@ jobs:
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        tags: [*worker_tag_windows]
       - task: revert-snapshot
         file: bosh-windows-stemcell-builder-ci/ci/tasks/revert-snapshot/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1251,7 +1248,6 @@ jobs:
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        tags: [*worker_tag_windows]
       - task: revert-snapshot
         file: bosh-windows-stemcell-builder-ci/ci/tasks/revert-snapshot/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1435,7 +1431,6 @@ jobs:
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: aws-build-number
@@ -1626,7 +1621,6 @@ jobs:
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        tags: [*worker_tag_windows]
       - task: build-agent-zip
         file: bosh-windows-stemcell-builder-ci/ci/tasks/build-agent-zip/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1797,7 +1791,6 @@ jobs:
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: azure-build-number
@@ -2004,7 +1997,6 @@ jobs:
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        tags: [*worker_tag_windows]
       - put: version
         inputs: detect
         resource: gcp-build-number
