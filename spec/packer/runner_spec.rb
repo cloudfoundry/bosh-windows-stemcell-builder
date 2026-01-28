@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Packer::Runner do
+RSpec.describe Packer::Runner do
   describe "run" do
     it "streams packer output and returns its exit status" do
       temp_file = Tempfile.new("")

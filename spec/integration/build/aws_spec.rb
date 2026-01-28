@@ -2,7 +2,7 @@ require "spec_helper"
 
 load File.join(REPO_ROOT, "lib/tasks/build/aws.rake")
 
-describe "Aws" do
+RSpec.describe "Aws" do
   before(:each) do
     @original_env = ENV.to_hash
     @build_dir = File.join(REPO_ROOT, "build")

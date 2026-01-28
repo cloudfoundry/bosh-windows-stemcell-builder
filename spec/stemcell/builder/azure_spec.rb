@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Stemcell::Builder do
+RSpec.describe Stemcell::Builder::Azure do
   output_directory = ""
 
   around(:each) do |example|
@@ -10,93 +10,92 @@ describe Stemcell::Builder do
     end
   end
 
-  describe "Azure" do
-    describe "build" do
-      it "builds a stemcell tarball" do
-        os = "windows2019"
-        version = "1234.0"
-        config = "some-packer-config"
-        command = "build"
-        manifest_contents = "manifest_contents"
-        packer_vars = {some_var: "some-value"}
-        disk_image_url = "https://some-disk-image-url"
-        client_id = "some-client-id"
-        client_secret = "some-client-secret"
-        tenant_id = "some-tenant-id"
-        subscription_id = "some-subscription-id"
-        resource_group_name = "some-resource-group-name"
-        storage_account = "some-storage-account"
-        location = "some-location"
-        vm_size = "some-vm-size"
-        publisher = "some-publisher"
-        offer = "some-offer"
-        sku = "some-sku"
-        vm_prefix = "some-vm-prefix"
-        packer_output = "azure-arm,artifact,0\\nVHDOSDiskUri: #{disk_image_url}"
+  let(:os) { "windows2019" }
 
-        packer_config = double(:packer_config)
-        allow(packer_config).to receive(:dump).and_return(config)
-        allow(Packer::Config::Azure).to receive(:new).with(
-          client_id: client_id,
-          client_secret: client_secret,
-          tenant_id: tenant_id,
-          subscription_id: subscription_id,
-          resource_group_name: resource_group_name,
-          storage_account: storage_account,
-          location: location,
-          vm_size: vm_size,
-          output_directory: output_directory,
-          os: os,
-          version: version,
-          vm_prefix: vm_prefix,
-          mount_ephemeral_disk: false
-        ).and_return(packer_config)
+  describe "build" do
+    it "builds a stemcell tarball" do
+      version = "1234.0"
+      config = "some-packer-config"
+      command = "build"
+      manifest_contents = "manifest_contents"
+      packer_vars = {some_var: "some-value"}
+      disk_image_url = "https://some-disk-image-url"
+      client_id = "some-client-id"
+      client_secret = "some-client-secret"
+      tenant_id = "some-tenant-id"
+      subscription_id = "some-subscription-id"
+      resource_group_name = "some-resource-group-name"
+      storage_account = "some-storage-account"
+      location = "some-location"
+      vm_size = "some-vm-size"
+      publisher = "some-publisher"
+      offer = "some-offer"
+      sku = "some-sku"
+      vm_prefix = "some-vm-prefix"
+      packer_output = "azure-arm,artifact,0\\nVHDOSDiskUri: #{disk_image_url}"
 
-        packer_runner = double(:packer_runner)
-        allow(packer_runner).to receive(:run).with(command, packer_vars)
-          .and_yield(packer_output).and_return(0)
-        allow(Packer::Runner).to receive(:new).with(config).and_return(packer_runner)
+      packer_config = double(:packer_config)
+      allow(packer_config).to receive(:dump).and_return(config)
+      allow(Packer::Config::Azure).to receive(:new).with(
+        client_id: client_id,
+        client_secret: client_secret,
+        tenant_id: tenant_id,
+        subscription_id: subscription_id,
+        resource_group_name: resource_group_name,
+        storage_account: storage_account,
+        location: location,
+        vm_size: vm_size,
+        output_directory: output_directory,
+        os: os,
+        version: version,
+        vm_prefix: vm_prefix,
+        mount_ephemeral_disk: false
+      ).and_return(packer_config)
 
-        azure_manifest = double(:azure_manifest)
-        allow(azure_manifest).to receive(:dump).and_return(manifest_contents)
+      packer_runner = double(:packer_runner)
+      allow(packer_runner).to receive(:run).with(command, packer_vars)
+        .and_yield(packer_output).and_return(0)
+      allow(Packer::Runner).to receive(:new).with(config).and_return(packer_runner)
 
-        allow(Stemcell::Manifest::Azure).to receive(:new).with(version,
-          os,
-          publisher,
-          offer,
-          sku).and_return(azure_manifest)
-        allow(Stemcell::Packager).to receive(:package).with(iaas: "azure-hyperv",
-          os: os,
-          is_light: true,
-          version: version,
-          image_path: "",
-          manifest: manifest_contents,
-          output_directory: output_directory,
-          update_list: nil,
-          region: nil).and_return("path-to-stemcell")
-        allow(Open3).to receive(:capture2e).and_return(["https://some-signed-url", instance_double(Process::Status, success?: true)])
+      azure_manifest = double(:azure_manifest)
+      allow(azure_manifest).to receive(:dump).and_return(manifest_contents)
 
-        stemcell_path = Stemcell::Builder::Azure.new(
-          os: os,
-          output_directory: output_directory,
-          version: version,
-          packer_vars: packer_vars,
-          client_id: client_id,
-          client_secret: client_secret,
-          tenant_id: tenant_id,
-          subscription_id: subscription_id,
-          resource_group_name: resource_group_name,
-          storage_account: storage_account,
-          location: location,
-          vm_size: vm_size,
-          publisher: publisher,
-          offer: offer,
-          sku: sku,
-          vm_prefix: vm_prefix,
-          mount_ephemeral_disk: "false"
-        ).build
-        expect(stemcell_path).to eq("path-to-stemcell")
-      end
+      allow(Stemcell::Manifest::Azure).to receive(:new).with(version,
+        os,
+        publisher,
+        offer,
+        sku).and_return(azure_manifest)
+      allow(Stemcell::Packager).to receive(:package).with(iaas: "azure-hyperv",
+        os: os,
+        is_light: true,
+        version: version,
+        image_path: "",
+        manifest: manifest_contents,
+        output_directory: output_directory,
+        update_list: nil,
+        region: nil).and_return("path-to-stemcell")
+      allow(Open3).to receive(:capture2e).and_return(["https://some-signed-url", instance_double(Process::Status, success?: true)])
+
+      stemcell_path = Stemcell::Builder::Azure.new(
+        os: os,
+        output_directory: output_directory,
+        version: version,
+        packer_vars: packer_vars,
+        client_id: client_id,
+        client_secret: client_secret,
+        tenant_id: tenant_id,
+        subscription_id: subscription_id,
+        resource_group_name: resource_group_name,
+        storage_account: storage_account,
+        location: location,
+        vm_size: vm_size,
+        publisher: publisher,
+        offer: offer,
+        sku: sku,
+        vm_prefix: vm_prefix,
+        mount_ephemeral_disk: "false"
+      ).build
+      expect(stemcell_path).to eq("path-to-stemcell")
     end
   end
 

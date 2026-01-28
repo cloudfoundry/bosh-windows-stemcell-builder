@@ -1,7 +1,7 @@
 require "spec_helper"
 require "stemcell/publisher/azure"
 
-describe Stemcell::Publisher::Azure do
+RSpec.describe Stemcell::Publisher::Azure do
   before(:each) do
     version = "some-version"
     sku = "2012r2"

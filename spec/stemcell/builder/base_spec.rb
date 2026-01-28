@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Stemcell::Builder do
+RSpec.describe Stemcell::Builder do
   before(:each) do
     @original_env = ENV.to_hash
   end

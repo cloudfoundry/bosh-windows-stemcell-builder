@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe "build:azure" do
+RSpec.describe "build:azure" do
   let(:task) { Rake::Task["build:azure"] }
   let(:azure_builder_class) { class_double(Stemcell::Builder::Azure).as_stubbed_const }
   let(:azure_builder_instance) { instance_double(Stemcell::Builder::Azure) }
