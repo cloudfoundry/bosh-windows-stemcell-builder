@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Stemcell::Builder do
+RSpec.describe Stemcell::Builder::Gcp do
   output_directory = ""
 
   around(:each) do |example|
@@ -10,22 +10,90 @@ describe Stemcell::Builder do
     end
   end
 
-  describe "GCP" do
-    describe "build" do
-      it "builds a stemcell tarball" do
-        os = "windows2019"
-        version = "1234.0"
-        config = "some-packer-config"
-        command = "build"
-        manifest_contents = "manifest_contents"
-        packer_vars = {some_var: "some-value"}
-        image_name = "some-image-name"
+  let(:os) { "windows2019" }
+
+  describe "build" do
+    it "builds a stemcell tarball" do
+      version = "1234.0"
+      config = "some-packer-config"
+      command = "build"
+      manifest_contents = "manifest_contents"
+      packer_vars = {some_var: "some-value"}
+      image_name = "some-image-name"
+      project_id = "some-project-id"
+      image_url = "https://www.googleapis.com/compute/v1/projects/#{project_id}/global/images/#{image_name}"
+      account_json = {"project_id" => project_id}.to_json
+      packer_output = ",artifact,0,id,#{image_name}"
+      source_image = "some-source-image"
+      image_family = "some-family"
+      vm_prefix = "some-vm-prefix"
+      vm_type = "some-vm-type"
+      network = "default"
+      network_project_id = "project-id"
+      subnetwork = "subnet"
+
+      packer_config = double(:packer_config)
+      allow(packer_config).to receive(:dump).and_return(config)
+      allow(Packer::Config::Gcp).to receive(:new).with(
+        account_json: account_json,
+        project_id: project_id,
+        source_image: source_image,
+        output_directory: output_directory,
+        image_family: image_family,
+        os: os,
+        version: version,
+        vm_prefix: vm_prefix,
+        vm_type: vm_type,
+        mount_ephemeral_disk: false,
+        network: network,
+        network_project_id: network_project_id,
+        subnetwork: subnetwork
+      ).and_return(packer_config)
+
+      packer_runner = double(:packer_runner)
+      allow(packer_runner).to receive(:run).with(command, packer_vars)
+        .and_yield(packer_output).and_return(0)
+      allow(Packer::Runner).to receive(:new).with(config).and_return(packer_runner)
+
+      gcp_manifest = double(:gcp_manifest)
+      allow(gcp_manifest).to receive(:dump).and_return(manifest_contents)
+
+      allow(Stemcell::Manifest::Gcp).to receive(:new).with(version, os, image_url).and_return(gcp_manifest)
+      allow(Stemcell::Packager).to receive(:package).with(iaas: "google-kvm",
+        os: os,
+        is_light: true,
+        version: version,
+        image_path: "",
+        manifest: manifest_contents,
+        output_directory: output_directory,
+        update_list: nil,
+        region: nil).and_return("path-to-stemcell")
+
+      stemcell_path = Stemcell::Builder::Gcp.new(
+        os: os,
+        output_directory: output_directory,
+        version: version,
+        packer_vars: packer_vars,
+        account_json: account_json,
+        source_image: source_image,
+        image_family: image_family,
+        vm_prefix: vm_prefix,
+        vm_type: vm_type,
+        mount_ephemeral_disk: "false",
+        network: network,
+        network_project_id: network_project_id,
+        subnetwork: subnetwork
+      ).build
+      expect(stemcell_path).to eq("path-to-stemcell")
+    end
+
+    context "when packer fails" do
+      it "raises an error" do
         project_id = "some-project-id"
-        image_url = "https://www.googleapis.com/compute/v1/projects/#{project_id}/global/images/#{image_name}"
         account_json = {"project_id" => project_id}.to_json
-        packer_output = ",artifact,0,id,#{image_name}"
         source_image = "some-source-image"
         image_family = "some-family"
+        packer_vars = "some-packer-vars"
         vm_prefix = "some-vm-prefix"
         vm_type = "some-vm-type"
         network = "default"
@@ -33,7 +101,7 @@ describe Stemcell::Builder do
         subnetwork = "subnet"
 
         packer_config = double(:packer_config)
-        allow(packer_config).to receive(:dump).and_return(config)
+        allow(packer_config).to receive(:dump).and_return("some-packer-config")
         allow(Packer::Config::Gcp).to receive(:new).with(
           account_json: account_json,
           project_id: project_id,
@@ -41,7 +109,7 @@ describe Stemcell::Builder do
           output_directory: output_directory,
           image_family: image_family,
           os: os,
-          version: version,
+          version: "",
           vm_prefix: vm_prefix,
           vm_type: vm_type,
           mount_ephemeral_disk: false,
@@ -51,95 +119,25 @@ describe Stemcell::Builder do
         ).and_return(packer_config)
 
         packer_runner = double(:packer_runner)
-        allow(packer_runner).to receive(:run).with(command, packer_vars)
-          .and_yield(packer_output).and_return(0)
-        allow(Packer::Runner).to receive(:new).with(config).and_return(packer_runner)
+        allow(packer_runner).to receive(:run).with("build", packer_vars).and_return(1)
+        allow(Packer::Runner).to receive(:new).with("some-packer-config").and_return(packer_runner)
 
-        gcp_manifest = double(:gcp_manifest)
-        allow(gcp_manifest).to receive(:dump).and_return(manifest_contents)
-
-        allow(Stemcell::Manifest::Gcp).to receive(:new).with(version, os, image_url).and_return(gcp_manifest)
-        allow(Stemcell::Packager).to receive(:package).with(iaas: "google-kvm",
-          os: os,
-          is_light: true,
-          version: version,
-          image_path: "",
-          manifest: manifest_contents,
-          output_directory: output_directory,
-          update_list: nil,
-          region: nil).and_return("path-to-stemcell")
-
-        stemcell_path = Stemcell::Builder::Gcp.new(
-          os: os,
-          output_directory: output_directory,
-          version: version,
-          packer_vars: packer_vars,
-          account_json: account_json,
-          source_image: source_image,
-          image_family: image_family,
-          vm_prefix: vm_prefix,
-          vm_type: vm_type,
-          mount_ephemeral_disk: "false",
-          network: network,
-          network_project_id: network_project_id,
-          subnetwork: subnetwork
-        ).build
-        expect(stemcell_path).to eq("path-to-stemcell")
-      end
-
-      context "when packer fails" do
-        it "raises an error" do
-          project_id = "some-project-id"
-          account_json = {"project_id" => project_id}.to_json
-          source_image = "some-source-image"
-          image_family = "some-family"
-          packer_vars = "some-packer-vars"
-          os = "windows2019"
-          vm_prefix = "some-vm-prefix"
-          vm_type = "some-vm-type"
-          network = "default"
-          network_project_id = "project-id"
-          subnetwork = "subnet"
-
-          packer_config = double(:packer_config)
-          allow(packer_config).to receive(:dump).and_return("some-packer-config")
-          allow(Packer::Config::Gcp).to receive(:new).with(
-            account_json: account_json,
-            project_id: project_id,
-            source_image: source_image,
-            output_directory: output_directory,
-            image_family: image_family,
+        expect {
+          Stemcell::Builder::Gcp.new(
             os: os,
+            output_directory: output_directory,
             version: "",
-            vm_prefix: vm_prefix,
-            vm_type: vm_type,
-            mount_ephemeral_disk: false,
+            packer_vars: packer_vars,
             network: network,
             network_project_id: network_project_id,
-            subnetwork: subnetwork
-          ).and_return(packer_config)
-
-          packer_runner = double(:packer_runner)
-          allow(packer_runner).to receive(:run).with("build", packer_vars).and_return(1)
-          allow(Packer::Runner).to receive(:new).with("some-packer-config").and_return(packer_runner)
-
-          expect {
-            Stemcell::Builder::Gcp.new(
-              os: os,
-              output_directory: output_directory,
-              version: "",
-              packer_vars: packer_vars,
-              network: network,
-              network_project_id: network_project_id,
-              subnetwork: subnetwork,
-              account_json: account_json,
-              source_image: source_image,
-              image_family: image_family,
-              vm_prefix: vm_prefix,
-              vm_type: vm_type
-            ).build
-          }.to raise_error(Stemcell::Builder::PackerFailure)
-        end
+            subnetwork: subnetwork,
+            account_json: account_json,
+            source_image: source_image,
+            image_family: image_family,
+            vm_prefix: vm_prefix,
+            vm_type: vm_type
+          ).build
+        }.to raise_error(Stemcell::Builder::PackerFailure)
       end
     end
   end

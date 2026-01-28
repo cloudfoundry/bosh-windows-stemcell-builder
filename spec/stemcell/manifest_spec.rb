@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Stemcell::Manifest do
+RSpec.describe Stemcell::Manifest do
   describe "EMPTY_FILE_SHA" do
     let(:expected_empty_sha_value) { "da39a3ee5e6b4b0d3255bfef95601890afd80709" }
 

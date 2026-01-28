@@ -8,7 +8,7 @@ require "zlib"
 
 load File.join(REPO_ROOT, "lib/tasks/build/gcp.rake")
 
-describe "Gcp" do
+RSpec.describe "Gcp" do
   before(:each) do
     @original_env = ENV.to_hash
     @build_dir = File.join(REPO_ROOT, "build")

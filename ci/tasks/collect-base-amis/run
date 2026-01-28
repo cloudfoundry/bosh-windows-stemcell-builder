@@ -32,7 +32,10 @@ supported_base_ami = %w[windows2019]
 
 # Helper method
 def get_ami_for(region, base_ami_name)
-  amis = JSON.parse(`aws ec2 describe-images --region #{region} --owners amazon --filters "Name=name,Values=#{base_ami_name}" "Name=state,Values=available"`)
+  amis = JSON.parse(%x(aws ec2 describe-images \
+            --region #{region} \
+            --owners amazon \
+            --filters "Name=name,Values=#{base_ami_name}" "Name=state,Values=available"))
   base_ami = amis["Images"].min { |a, b| b["CreationDate"] <=> a["CreationDate"] }
   puts "Base AMI Information:"
   puts JSON.pretty_generate({name: base_ami["Name"], description: base_ami["Description"], creation_date: base_ami["CreationDate"]})

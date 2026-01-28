@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Stemcell::Packager do
+RSpec.describe Stemcell::Packager do
   before(:each) do
     @image = Tempfile.new("")
     @update_list = Tempfile.new("")
@@ -17,6 +17,8 @@ describe Stemcell::Packager do
     FileUtils.remove_entry_secure(@output_directory)
     FileUtils.remove_entry_secure(@untar_dir)
   end
+
+  let(:os) { "windows2019" }
 
   describe "find_ovf_file" do
     it "returns the filename of the ovf file in directory" do
@@ -79,14 +81,14 @@ describe Stemcell::Packager do
   describe "aggregate the amis" do
     before(:each) do
       @amis_path = Dir.mktmpdir
-      FileUtils.cp(fixture_path("aws", "amis", "light-bosh-stemcell-1089.0-aws-xen-hvm-windows2019-go_agent-some-region-1.tgz"), @amis_path)
-      FileUtils.cp(fixture_path("aws", "amis", "light-bosh-stemcell-1089.0-aws-xen-hvm-windows2019-go_agent-some-region-2.tgz"), @amis_path)
+      FileUtils.cp(fixture_path("aws", "amis", "light-bosh-stemcell-1089.0-aws-xen-hvm-#{os}-go_agent-some-region-1.tgz"), @amis_path)
+      FileUtils.cp(fixture_path("aws", "amis", "light-bosh-stemcell-1089.0-aws-xen-hvm-#{os}-go_agent-some-region-2.tgz"), @amis_path)
     end
     it "creates a single tar file" do
       output_dir = Dir.mktmpdir
       Stemcell::Packager.aggregate_the_amis(@amis_path, output_dir, "some-region-1")
 
-      stemcell_path = File.join(output_dir, "light-bosh-stemcell-1089.0-aws-xen-hvm-windows2019-go_agent.tgz")
+      stemcell_path = File.join(output_dir, "light-bosh-stemcell-1089.0-aws-xen-hvm-#{os}-go_agent.tgz")
       expect(File.exist?(stemcell_path)).to eq(true)
     end
 
@@ -95,7 +97,7 @@ describe Stemcell::Packager do
 
       Stemcell::Packager.aggregate_the_amis(@amis_path, output_dir, "some-region-1")
 
-      stemcell_path = File.join(output_dir, "light-bosh-stemcell-1089.0-aws-xen-hvm-windows2019-go_agent.tgz")
+      stemcell_path = File.join(output_dir, "light-bosh-stemcell-1089.0-aws-xen-hvm-#{os}-go_agent.tgz")
 
       stemcell_manifest_contents = read_from_tgz(stemcell_path, "stemcell.MF")
       manifest = YAML.load(stemcell_manifest_contents)

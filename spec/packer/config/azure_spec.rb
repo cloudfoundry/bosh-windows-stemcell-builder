@@ -1,18 +1,22 @@
 require "spec_helper"
 
-describe Packer::Config::Azure do
+RSpec.describe Packer::Config::Azure do
+  let(:os) { "windows2019" }
+
   describe "builders" do
-    before :each do
+    before(:each) do
       allow(ENV).to receive(:[]).with("BASE_IMAGE_OFFER").and_return("some-base-image-offer")
       allow(ENV).to receive(:[]).with("BASE_IMAGE").and_return("some-base-image")
       Timecop.freeze
     end
 
-    after :each do
+    after(:each) do
       Timecop.return
     end
 
-    let(:builders) {
+    let(:version) { "2019.9999" }
+
+    let(:builders) do
       Packer::Config::Azure.new(
         client_id: "some-client-id",
         client_secret: "some-client-secret",
@@ -24,13 +28,13 @@ describe Packer::Config::Azure do
         vm_size: "some-vm-size",
         output_directory: "",
         os: "test-os",
-        version: "2019.9999",
+        version: version,
         vm_prefix: "some-vm-prefix",
         mount_ephemeral_disk: false
       ).builders
-    }
+    end
 
-    let(:expected_baseline) {
+    let(:expected_baseline) do
       {
         "type" => "azure-arm",
         "client_id" => "some-client-id",
@@ -42,7 +46,7 @@ describe Packer::Config::Azure do
         "temp_resource_group_name" => "some-vm-prefix-#{Time.now.to_i}",
         "storage_account" => "some-storage-account",
         "capture_container_name" => "test-os",
-        "capture_name_prefix" => "2019.9999",
+        "capture_name_prefix" => version,
         "image_publisher" => "MicrosoftWindowsServer",
         "image_offer" => "some-base-image-offer",
         "image_sku" => "some-base-image",
@@ -55,12 +59,6 @@ describe Packer::Config::Azure do
         "winrm_timeout" => "1h",
         "winrm_username" => "packer"
       }
-    }
-
-    context "all os versions" do
-      it "returns the expected builders" do
-        expect(builders[0]).to include(expected_baseline)
-      end
     end
 
     context "when vm_prefix is empty" do
@@ -97,11 +95,80 @@ describe Packer::Config::Azure do
       ENV.delete("STEMCELL_DEPS_DIR")
     end
 
-    context "windows 2019" do
-      it "returns the expected provisioners" do
-        allow(SecureRandom).to receive(:hex).and_return("some-password")
-        version = "2019.43.17-build.1"
-        provisioners = Packer::Config::Azure.new(
+    let(:build_version) { "2019.43.17-build.1" }
+
+    let(:provisioners) do
+      Packer::Config::Azure.new(
+        client_id: "",
+        client_secret: "",
+        tenant_id: "",
+        subscription_id: "",
+        resource_group_name: "",
+        storage_account: "",
+        location: "",
+        vm_size: "",
+        output_directory: "some-output-directory",
+        os: os,
+        version: build_version,
+        vm_prefix: "",
+        mount_ephemeral_disk: false
+      ).provisioners
+    end
+
+    let(:iaas_name) { "azure" }
+    it_behaves_like "standard provisioners"
+
+    it "returns the expected provisioners" do
+      allow(SecureRandom).to receive(:hex).and_return("some-password")
+
+      expected_provisioners_base = [
+        {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before" => "60s"},
+        {"type" => "file", "source" => "scripts/install-bosh-psmodules.ps1", "destination" => "C:\\provision\\install-bosh-psmodules.ps1", "pause_before" => "60s"},
+        {"type" => "powershell", "inline" => ['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before" => "60s"},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
+        {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures -IaaS azure"]},
+        {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"]},
+        {"type" => "windows-restart", "restart_timeout" => "12h", "check_registry" => true},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
+        {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
+        {"type" => "file", "source" => "../sshd/OpenSSH-Win64.zip", "destination" => "C:\\provision\\OpenSSH-Win64.zip"},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
+        {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip'"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-TLS12"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-3DES"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-WUCerts"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-SSHKeys"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Set-InternetExplorerRegistries"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell -IaaS azure; Invoke-Sysprep -IaaS azure"]}
+      ].flatten
+      expect(provisioners.detect { |x| x["destination"] == "C:\\windows\\LGPO.exe" }).not_to be_nil
+
+      expect(
+        provisioners.detect { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{build_version}'") }
+      ).not_to(be_nil, "Expect provisioners to include New-VersionFile")
+
+      line_by_line_provisioners = provisioners.delete_if { |x| x["destination"] == "C:\\windows\\LGPO.exe" }
+      line_by_line_provisioners = line_by_line_provisioners.delete_if { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{build_version}'") }
+
+      expect(line_by_line_provisioners).to eq(expected_provisioners_base)
+    end
+
+    context "when provisioning with ephemeral disk mounting enabled" do
+      let(:provisioners) do
+        Packer::Config::Azure.new(
           client_id: "",
           client_secret: "",
           tenant_id: "",
@@ -111,86 +178,26 @@ describe Packer::Config::Azure do
           location: "",
           vm_size: "",
           output_directory: "some-output-directory",
-          os: "windows2019",
-          version: version,
+          os: os,
           vm_prefix: "",
-          mount_ephemeral_disk: false
+          version: "",
+          mount_ephemeral_disk: true
         ).provisioners
-        expected_provisioners_base = [
-          {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before" => "60s"},
-          {"type" => "file", "source" => "scripts/install-bosh-psmodules.ps1", "destination" => "C:\\provision\\install-bosh-psmodules.ps1", "pause_before" => "60s"},
-          {"type" => "powershell", "inline" => ['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before" => "60s"},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
-          {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures -IaaS azure"]},
-          {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"]},
-          {"type" => "windows-restart", "restart_timeout" => "12h", "check_registry" => true},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
-          {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
-          {"type" => "file", "source" => "../sshd/OpenSSH-Win64.zip", "destination" => "C:\\provision\\OpenSSH-Win64.zip"},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
-          {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-TLS12"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-3DES"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-WUCerts"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-SSHKeys"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Set-InternetExplorerRegistries"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell -IaaS azure; Invoke-Sysprep -IaaS azure"]}
-        ].flatten
-        expect(provisioners.detect { |x| x["destination"] == "C:\\windows\\LGPO.exe" }).not_to be_nil
-
-        expect(provisioners.detect do |p|
-          p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{version}'")
-        end).not_to be_nil, "Expect provisioners to include New-VersionFile"
-
-        line_by_line_provisioners = provisioners.delete_if { |x| x["destination"] == "C:\\windows\\LGPO.exe" }
-        line_by_line_provisioners = line_by_line_provisioners.delete_if { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{version}'") }
-
-        expect(line_by_line_provisioners).to eq(expected_provisioners_base)
       end
 
-      context "when provisioning with emphemeral disk mounting enabled" do
-        it "calls Install-Agent with -EnableEphemeralDiskMounting" do
-          allow(SecureRandom).to receive(:hex).and_return("some-password")
-          provisioners = Packer::Config::Azure.new(
-            client_id: "",
-            client_secret: "",
-            tenant_id: "",
-            subscription_id: "",
-            resource_group_name: "",
-            storage_account: "",
-            location: "",
-            vm_size: "",
-            output_directory: "some-output-directory",
-            os: "windows2019",
-            vm_prefix: "",
-            version: "",
-            mount_ephemeral_disk: true
-          ).provisioners
+      it "calls Install-Agent with -EnableEphemeralDiskMounting" do
+        allow(SecureRandom).to receive(:hex).and_return("some-password")
 
-          expect(provisioners).to include(
-            {
-              "type" => "powershell",
-              "inline" => [
-                "$ErrorActionPreference = \"Stop\";",
-                "trap { $host.SetShouldExit(1) }",
-                "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip' -EnableEphemeralDiskMounting"
-              ]
-            }
-          )
-        end
+        expect(provisioners).to include(
+          {
+            "type" => "powershell",
+            "inline" => [
+              "$ErrorActionPreference = \"Stop\";",
+              "trap { $host.SetShouldExit(1) }",
+              "Install-Agent -IaaS azure -agentZipPath 'C:\\provision\\agent.zip' -EnableEphemeralDiskMounting"
+            ]
+          }
+        )
       end
     end
   end

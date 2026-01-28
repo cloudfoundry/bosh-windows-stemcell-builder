@@ -8,7 +8,7 @@ require "zlib"
 
 load File.join(REPO_ROOT, "lib/tasks/build/azure.rake")
 
-describe "Azure" do
+RSpec.describe "Azure" do
   before(:each) do
     @original_env = ENV.to_hash
     @build_dir = File.join(REPO_ROOT, "build")

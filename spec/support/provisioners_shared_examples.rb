@@ -1,12 +1,6 @@
-require "spec_helper"
-require "rspec/expectations"
-require "./spec/packer/config/provisioner_slices/provisioner_matcher"
-require "./spec/packer/config/provisioner_slices/test_provisioner"
-require "./spec/packer/config/provisioner_slices/provisioners_2019"
+require_relative "test_provisioner"
 
-shared_examples "a standard provisioner" do |provisioner_config|
-  let(:provisioners) { provisioner_config.provisioners }
-
+RSpec.shared_examples "standard provisioners" do
   it "does not have nonsense provisioner" do
     nonsense_provisioner = TestProvisioner.new_powershell_provisioner("some-garbage")
     expect(provisioners).not_to include_provisioner(nonsense_provisioner), "test matcher"
@@ -84,42 +78,18 @@ shared_examples "a standard provisioner" do |provisioner_config|
 
     expect(prov_index).to be > windows_restart_index, "UnregisterWindowsUpdates not before windows-restart"
   end
-end
 
-describe "provisioners" do
-  before(:context) do
-    @stemcell_deps_dir = Dir.mktmpdir("gcp")
-    ENV["STEMCELL_DEPS_DIR"] = @stemcell_deps_dir
+  it "runs Internet Explorer related registry changes after install-bosh-psmodules is run" do
+    internet_explorer_provisioner = TestProvisioner.new_powershell_provisioner("Set-InternetExplorerRegistries")
+    install_modules_provisioner = TestProvisioner.new_powershell_provisioner('C:\provision\install-bosh-psmodules.ps1')
+
+    expect(provisioners).to include_provisioner(internet_explorer_provisioner, after: [install_modules_provisioner])
   end
 
-  after(:context) do
-    FileUtils.rm_rf(@stemcell_deps_dir)
-    ENV.delete("STEMCELL_DEPS_DIR")
-  end
+  it "runs Set-InternetExplorerRegistries before Invoke-Sysprep is run" do
+    invoke_sysprep_provisioner = TestProvisioner.new_powershell_provisioner(/Invoke-Sysprep -IaaS #{iaas_name}/)
+    internet_explorer_provisioner = TestProvisioner.new_powershell_provisioner("Set-InternetExplorerRegistries")
 
-  context "aws" do
-    standard_options = {
-      aws_access_key: "",
-      aws_secret_key: "",
-      region: "",
-      output_directory: "some-output-directory",
-      version: ""
-    }
-
-    context "2019" do
-      packer_config_aws_2019 = Packer::Config::Aws.new(
-        **standard_options.merge(os: "windows2019")
-      )
-      it_behaves_like "a standard provisioner", packer_config_aws_2019
-
-      it_behaves_like "a 2019 provisioner", packer_config_aws_2019
-
-      it "runs Set-InternetExplorerRegistries before Invoke-Sysprep is run" do
-        invoke_sysprep_provisioner = TestProvisioner.new_powershell_provisioner(/Invoke-Sysprep -IaaS aws/)
-        internet_explorer_provisioner = TestProvisioner.new_powershell_provisioner("Set-InternetExplorerRegistries")
-
-        expect(packer_config_aws_2019.provisioners).to include_provisioner(invoke_sysprep_provisioner, after: [internet_explorer_provisioner])
-      end
-    end
+    expect(provisioners).to include_provisioner(invoke_sysprep_provisioner, after: [internet_explorer_provisioner])
   end
 end
