@@ -1,6 +1,8 @@
 require "spec_helper"
 
-describe Packer::Config::Gcp do
+RSpec.describe Packer::Config::Gcp do
+  let(:os) { "windows2022" }
+
   describe "builders" do
     before(:each) do
       Timecop.freeze
@@ -53,15 +55,6 @@ describe Packer::Config::Gcp do
       }
     end
 
-    context "all os versions" do
-      let(:os) { "" }
-
-      it "returns the expected builders" do
-        expect(builders[0]).to include(baseline_builders)
-        expect(builders[0]["image_name"]).to match(/stemcell-windows-some-version-\d+/)
-      end
-    end
-
     context "when vm_prefix is empty" do
       it "defaults to packer" do
         builders = Packer::Config::Gcp.new(
@@ -96,68 +89,71 @@ describe Packer::Config::Gcp do
       ENV.delete("STEMCELL_DEPS_DIR")
     end
 
-    context "windows 2022" do
-      it "returns the expected provisioners" do
-        allow(SecureRandom).to receive(:hex).and_return("some-password")
-        version = "2022.43.17-build.1"
-        provisioners = Packer::Config::Gcp.new(
-          account_json: "{}",
-          project_id: "",
-          source_image: "{}",
-          output_directory: "some-output-directory",
-          image_family: "",
-          os: "windows2022",
-          version: version,
-          vm_prefix: "",
-          vm_type: "",
-          network: "",
-          network_project_id: "",
-          subnetwork: ""
-        ).provisioners
-        expected_provisioners_base = [
-          {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before" => "60s"},
-          {"type" => "file", "source" => "scripts/install-bosh-psmodules.ps1", "destination" => "C:\\provision\\install-bosh-psmodules.ps1", "pause_before" => "60s"},
-          {"type" => "powershell", "inline" => ['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before" => "60s"},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
-          {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures -IaaS gcp"]},
-          {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"]},
-          {"type" => "windows-restart", "restart_timeout" => "12h", "check_registry" => true},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
-          {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
-          {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-TLS12"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-3DES"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-WUCerts"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-SSHKeys"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Set-InternetExplorerRegistries"]},
-          {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell -IaaS gcp; Invoke-Sysprep -IaaS gcp"]}
-        ].flatten
-        expect(provisioners.detect { |x| x["destination"] == "C:\\windows\\LGPO.exe" }).not_to be_nil
+    let(:build_version) { "2022.43.17-build.1" }
 
-        new_version_file_provisioner =
-          provisioners.detect { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{version}'") }
-        expect(new_version_file_provisioner).not_to be_nil, "Expect provisioners to include New-VersionFile"
+    let(:provisioners) do
+      Packer::Config::Gcp.new(
+        account_json: "{}",
+        project_id: "",
+        source_image: "{}",
+        output_directory: "some-output-directory",
+        image_family: "",
+        os: os,
+        version: build_version,
+        vm_prefix: "",
+        vm_type: ""
+      ).provisioners
+    end
 
-        line_by_line_provisioners = provisioners.delete_if { |x| x["destination"] == "C:\\windows\\LGPO.exe" }
-        line_by_line_provisioners =
-          line_by_line_provisioners.delete_if { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{version}'") }
+    let(:iaas_name) { "gcp" }
+    it_behaves_like "standard provisioners"
 
-        expect(line_by_line_provisioners).to eq(expected_provisioners_base)
-      end
+    it "returns the expected provisioners" do
+      allow(SecureRandom).to receive(:hex).and_return("some-password")
+
+      expected_provisioners_base = [
+        {"type" => "file", "source" => "build/bosh-psmodules.zip", "destination" => "C:\\provision\\bosh-psmodules.zip", "pause_before" => "60s"},
+        {"type" => "file", "source" => "scripts/install-bosh-psmodules.ps1", "destination" => "C:\\provision\\install-bosh-psmodules.ps1", "pause_before" => "60s"},
+        {"type" => "powershell", "inline" => ['$ErrorActionPreference = "Stop";', 'C:\\provision\\install-bosh-psmodules.ps1'], "pause_before" => "60s"},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "New-Provisioner"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-DockerPackage"]},
+        {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-CFFeatures -IaaS gcp"]},
+        {"type" => "windows-restart", "restart_timeout" => "1h", "check_registry" => true},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Add-Account -User Provisioner -Password some-password!"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Register-WindowsUpdatesTask"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Wait-WindowsUpdates -Password some-password! -User Provisioner"]},
+        {"type" => "windows-restart", "restart_timeout" => "12h", "check_registry" => true},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Unregister-WindowsUpdatesTask"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-HotFix > hotfixes.log"]},
+        {"type" => "file", "source" => "hotfixes.log", "destination" => "hotfixes.log", "direction" => "download"},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-Account -User Provisioner"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-SSHD"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-SSHD"]},
+        {"type" => "file", "source" => "build/agent.zip", "destination" => "C:\\provision\\agent.zip"},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Install-Agent -IaaS gcp -agentZipPath 'C:\\provision\\agent.zip'"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-RC4"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS1"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-TLS11"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Enable-TLS12"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Disable-3DES"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Get-WUCerts"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Remove-SSHKeys"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Clear-Provisioner"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Set-InternetExplorerRegistries"]},
+        {"type" => "powershell", "inline" => ["$ErrorActionPreference = \"Stop\";", "trap { $host.SetShouldExit(1) }", "Protect-CFCell -IaaS gcp; Invoke-Sysprep -IaaS gcp"]}
+      ].flatten
+      expect(provisioners.detect { |x| x["destination"] == "C:\\windows\\LGPO.exe" }).not_to be_nil
+
+      expect(
+        provisioners.detect { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{build_version}'") }
+      ).not_to(be_nil, "Expect provisioners to include New-VersionFile")
+
+      line_by_line_provisioners = provisioners.delete_if { |x| x["destination"] == "C:\\windows\\LGPO.exe" }
+      line_by_line_provisioners =
+        line_by_line_provisioners.delete_if { |p| p.has_key?("inline") && p["inline"].include?("New-VersionFile -Version '#{build_version}'") }
+
+      expect(line_by_line_provisioners).to eq(expected_provisioners_base)
     end
   end
 end

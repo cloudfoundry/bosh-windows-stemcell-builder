@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe "AWS Rake" do
+RSpec.describe "AWS Rake" do
   context "validate_ami" do
     let(:task) { Rake::Task["build:validate_ami"] }
     let(:task_output) { [] }

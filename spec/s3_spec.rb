@@ -1,7 +1,7 @@
 require "s3"
 require "fileutils"
 
-describe S3 do
+RSpec.describe S3 do
   describe "instance methods" do
     before(:each) do
       s3_resource = double(:s3_resource)
