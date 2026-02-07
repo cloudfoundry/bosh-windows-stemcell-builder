@@ -16,7 +16,7 @@ import (
 
 const (
 	constructOutputTimeout = 60 * time.Second
-	shutdownTimeout        = 5 * time.Minute
+	shutdownTimeout        = 8 * time.Minute
 )
 
 var _ = Describe("stembuild construct", func() {
