@@ -61,39 +61,37 @@ function Test-LGPO {
         if (-not $count -eq 0) {
             Write-Error "There are missing policies"
             return 1
+        } else {
+            return 0
         }
     }
 
     $OsVersion = Get-OSVersion
-  switch ($OsVersion)
-  {
-    "windows2019" {
-      $TestDir = "$PSScriptRoot\..\test-2019"
+    switch ($OsVersion) {
+        "windows2019" {
+            $TestDir = "$PSScriptRoot\..\test-2019"
+        }
+        "windows2022" {
+            $TestDir = "$PSScriptRoot\..\test-2022"
+        }
     }
-    "windows2022" {
-      $TestDir = "$PSScriptRoot\..\test-2022"
-    }
-  }
 
     $ErrorActionPreference = "Continue"
+    $errorCount = 0
+    $result = Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "\n\n"
+    $errorCount += $result
+    $result = Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "\n\n"
+    $errorCount += $result
+    $result = Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "\n"
+    $errorCount += $result
+    $result = Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "\n"
+    $errorCount += $result
+    $ErrorActionPreference = "Stop"
 
-  $errorCount = 0
-  $result = Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "\n\n"
-  $errorCount += $result
-  $result = Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "\n\n"
-  $errorCount += $result
-  $result = Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "\n"
-  $errorCount += $result
-  $result = Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "\n"
-  $errorCount += $result
-
-  $ErrorActionPreference = "Stop"
-
-  if (-not $errorCount -eq 0)
-  {
-    Write-Error "LGPO checks failed"
-    return 1
-  }
+    if (-not $errorCount -eq 0) {
+        Write-Error "LGPO checks failed"
+        return 1
+    }
 }
 
 function Test-Dependencies {
