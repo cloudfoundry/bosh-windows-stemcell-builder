@@ -1,4 +1,9 @@
-﻿$ErrorActionPreference = "Stop";
+# @AI-Generated
+# Modified with AI assistance using Cursor with Claude Opus 4.5
+# Description:
+# 2026-02-11: Fix Compare-LGPOPolicies returning Write-Output strings as part of return value, causing op_Addition error
+
+$ErrorActionPreference = "Stop";
 $outfile = "C:\var\vcap\sys\log\check-system\combined-output.log"
 
 function Get-Config {
@@ -41,8 +46,8 @@ function Test-LGPO {
             [Parameter(Mandatory)]
             [string] $PolicyDelimiter
         )
-        Write-Output "actual policies $ActualPoliciesFile"
-        Write-Output "expected policies $ExpectedPoliciesFile"
+        Write-Host "actual policies $ActualPoliciesFile"
+        Write-Host "expected policies $ExpectedPoliciesFile"
 
         $delims = [char[]]"`r`n`t "
         $ActualPolicies = (Get-Content $ActualPoliciesFile -Raw).Replace("`r`n", "`n")
@@ -141,7 +146,7 @@ function Test-Acls {
                     $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
                     If (-Not $expectedacls.Contains($ident)) {
                         $errCount += 1
-                        Write-Output "Error ($name): $ident"
+                        Write-Host "Error ($name): $ident"
                     }
                 }
             }
