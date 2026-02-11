@@ -41,8 +41,8 @@ function Test-LGPO {
             [Parameter(Mandatory)]
             [string] $PolicyDelimiter
         )
-        Write-Output "actual policies $ActualPoliciesFile"
-        Write-Output "expected policies $ExpectedPoliciesFile"
+        Write-Host "actual policies $ActualPoliciesFile"
+        Write-Host "expected policies $ExpectedPoliciesFile"
 
         $delims = [char[]]"`r`n`t "
         $ActualPolicies = (Get-Content $ActualPoliciesFile -Raw).Replace("`r`n", "`n")
@@ -61,6 +61,8 @@ function Test-LGPO {
         if (-not $count -eq 0) {
             Write-Error "There are missing policies"
             return 1
+        } else {
+            return 0
         }
     }
 
@@ -71,10 +73,22 @@ function Test-LGPO {
         }
     }
 
-    Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "\n\n"
-    Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "\n\n"
-    Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "\n"
-    Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "\n"
+    $ErrorActionPreference = "Continue"
+    $errorCount = 0
+    $result = Compare-LGPOPolicies "$OutputDir\machine_registry.txt" "$TestDir\machine_registry.txt" "\n\n"
+    $errorCount += $result
+    $result = Compare-LGPOPolicies "$OutputDir\user_registry.txt" "$TestDir\user_registry.txt" "\n\n"
+    $errorCount += $result
+    $result = Compare-LGPOPolicies "$OutputDir\GptTmpl.inf" "$TestDir\GptTmpl.inf" "\n"
+    $errorCount += $result
+    $result = Compare-LGPOPolicies "$OutputDir\audit.csv" "$TestDir\audit.csv" "\n"
+    $errorCount += $result
+    $ErrorActionPreference = "Stop"
+
+    if (-not $errorCount -eq 0) {
+        Write-Error "LGPO checks failed"
+        return 1
+    }
 }
 
 function Test-Dependencies {
@@ -124,7 +138,7 @@ function Test-Acls {
                     $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
                     If (-Not $expectedacls.Contains($ident)) {
                         $errCount += 1
-                        Write-Output "Error ($name): $ident"
+                        Write-Host "Error ($name): $ident"
                     }
                 }
             }
@@ -463,7 +477,7 @@ function Test-AuditPolicies {
             Write-Error "Audit policy '$policyName' is set to '$actualValue' but expected '$expectedValue'"
             $failedTests++
         } else {
-            Write-Output "✓ Audit policy '$policyName' is correctly set to '$expectedValue'"
+            Write-Output "PASS: Audit policy '$policyName' is correctly set to '$expectedValue'"
         }
 
         if ($failedTests -gt 0) {
