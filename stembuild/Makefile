@@ -21,8 +21,11 @@ assets/StemcellAutomation.zip:
 	exit 1
 
 all : stembuild stembuild.exe
-stembuild : out/stembuild
-stembuild.exe : out/stembuild.exe
+stembuild : print-go-version out/stembuild
+stembuild.exe : print-go-version out/stembuild.exe
+
+print-go-version :
+	go version
 
 out/stembuild : assets $(GOSRC)
 	CGO_ENABLED=0 go build -o $(COMMAND) -ldflags $(LD_FLAGS) .
