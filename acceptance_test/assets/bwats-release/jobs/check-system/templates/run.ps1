@@ -485,7 +485,7 @@ function Test-AuditPolicies {
             Write-Error "Audit policy '$policyName' is set to '$actualValue' but expected '$expectedValue'"
             $failedTests++
         } else {
-            Write-Output "✓ Audit policy '$policyName' is correctly set to '$expectedValue'"
+            Write-Output "PASS: Audit policy '$policyName' is correctly set to '$expectedValue'"
         }
 
         if ($failedTests -gt 0) {
