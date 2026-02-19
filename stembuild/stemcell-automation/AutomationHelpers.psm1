@@ -364,7 +364,7 @@ function Validate-OSVersion
     try
     {
         $osVersion = Get-OSVersionString
-        if ($osVersion -match "10\.0\.26100\..+")
+        if ($osVersion -match "10\.0\.20348\..+")
         {
             Write-Log "Found correct OS version: Windows Server 2022"
         }
