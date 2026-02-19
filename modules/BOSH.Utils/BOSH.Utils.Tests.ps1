@@ -2,6 +2,8 @@ BeforeAll {
     Remove-Module -Name BOSH.Utils -ErrorAction Ignore
     Import-Module ./BOSH.Utils.psm1
 
+    $osVersion = "windows2019"
+
     # As of now, this function only supports DWords and Strings.
     function Restore-RegistryState
     {
@@ -328,7 +330,7 @@ Describe "BOSH.Utils" {
             $actualOSVersion = $null
 
             { Get-OSVersion | Set-Variable -Name "actualOSVersion" -Scope 1 } | Should -Not -Throw
-            $actualOsVersion | Should -eq "windows2019"
+            $actualOsVersion | Should -eq $osVersion
 
             Assert-MockCalled Write-Log -Times 1 -Scope It -ParameterFilter { $Message -eq "Found OS version: Windows 2019" } -ModuleName BOSH.Utils
             Assert-MockCalled Get-OSVersionString -Times 1 -Scope It -ModuleName BOSH.Utils

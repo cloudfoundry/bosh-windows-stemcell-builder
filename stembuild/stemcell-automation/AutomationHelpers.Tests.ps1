@@ -1,6 +1,6 @@
 BeforeAll {
-    Import-Module ../../modules/BOSH.SSH
     Import-Module ../../modules/BOSH.Utils
+    Import-Module ../../modules/BOSH.SSH
     Import-Module ../../modules/BOSH.CFCell
     Import-Module ../../modules/BOSH.Agent
     Import-Module ../../modules/BOSH.CFCell
@@ -149,7 +149,6 @@ Describe "AutomationHelpers" {
                     Mock -ModuleName AutomationHelpers -CommandName Install-WUCerts {
                         throw "Something went wrong trying to Install-WUCerts"
                     }
-
 
                     { Setup -FailOnInstallWUCerts } | Should -Throw
 
@@ -340,9 +339,7 @@ Describe "AutomationHelpers" {
 
             { InstallOpenSSH } | Should -Not -Throw
 
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Install-SSHD -Times 1 -ParameterFilter {
-                $SSHZipFile -eq ".\OpenSSH-Win64.zip"
-            }
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Install-SSHD -Times 1
             Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
                 $Message -eq "OpenSSH successfully installed"
             }
@@ -1109,178 +1106,35 @@ Describe "AutomationHelpers" {
         }
     }
 
-    Describe "Enable-SSHD" {
+    Describe "EnableOpenSSH" {
         BeforeAll {
-            function CreateFakeOpenSSHZip
-            {
-                param([string]$dir, [string]$installScriptSpyStatus, [string]$fakeZipPath)
+            Mock -ModuleName AutomationHelpers -CommandName Enable-SSHD { }
+        }
 
-                mkdir "$dir\OpenSSH-Win64"
-                $installSpyBehavior = "echo installed > $installScriptSpyStatus"
-                Write-Output $installSpyBehavior > "$dir\OpenSSH-Win64\install-sshd.ps1"
-                Write-Output "fake sshd" > "$dir\OpenSSH-Win64\sshd.exe"
+        It "executes the Enable-SSHD powershell cmdlet" {
+            Mock -ModuleName AutomationHelpers -CommandName Enable-SSHD { }
 
-                Compress-Archive -Force -Path "$dir\OpenSSH-Win64" -DestinationPath $fakeZipPath
+            { EnableOpenSSH } | Should -Not -Throw
+
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Enable-SSHD -Times 1
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
+                $Message -eq "OpenSSH successfully installed"
             }
         }
 
-        BeforeEach {
-            Mock -ModuleName AutomationHelpers -CommandName Set-Service { }
-            Mock -ModuleName AutomationHelpers -CommandName Invoke-LGPO { }
-
-            $guid = $( New-Guid ).Guid
-            $TMP_DIR = "$env:TEMP\BOSH.SSH.Tests-$guid"
-
-            $FAKE_ZIP = "$TMP_DIR\OpenSSH-TestFake.zip"
-            $INSTALL_SCRIPT_SPY_STATUS = "$TMP_DIR\install-script-status"
-
-            CreateFakeOpenSSHZip -dir $TMP_DIR -installScriptSpyStatus $INSTALL_SCRIPT_SPY_STATUS -fakeZipPath $FAKE_ZIP
-
-            mkdir -p "$TMP_DIR\Windows\Temp"
-            Write-Output "fake LGPO" > "$TMP_DIR\Windows\LGPO.exe"
-
-            $ORIGINAL_WINDIR = $env:WINDIR
-            $env:WINDIR = "$TMP_DIR\Windows"
-
-            $ORIGINAL_PROGRAMDATA = $env:ProgramData
-            $env:PROGRAMDATA = "$TMP_DIR\ProgramData"
-        }
-
-        AfterEach {
-            Remove-Item $TMP_DIR -Recurse -ErrorAction Ignore
-            $env:WINDIR = $ORIGINAL_WINDIR
-            $env:PROGRAMDATA = $ORIGINAL_PROGRAMDATA
-        }
-
-        It "sets the startup type of sshd to automatic" {
-            Mock -ModuleName AutomationHelpers -CommandName Set-Service { } -Verifiable  -ParameterFilter {
-                $Name -eq "sshd" -and $StartupType -eq "Automatic"
+        It "fails gracefully when Enable-SSHD powershell cmdlet fails" {
+            Mock -ModuleName AutomationHelpers -CommandName Enable-SSHD {
+                throw "Something terrible happened while attempting to execute Enable-SSHD"
             }
 
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Not -Throw
+            { EnableOpenSSH } | Should -Throw "Something terrible happened while attempting to execute Enable-SSHD"
 
-            Should -InvokeVerifiable
-        }
-
-        It "sets the startup type of ssh-agent to automatic" {
-            Mock -ModuleName AutomationHelpers -CommandName Set-Service { } -Verifiable  -ParameterFilter {
-                $Name -eq "ssh-agent" -and $StartupType -eq "Automatic"
+                Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
+                $Message -eq "Something terrible happened while attempting to execute Enable-SSHD"
             }
-
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Not -Throw
-
-            Should -InvokeVerifiable
-        }
-
-        It "sets up firewall when ssh not already set up" {
-            Mock -ModuleName AutomationHelpers -CommandName Get-NetFirewallRule {
-                return [ordered]@{
-                    "Name" = "{3c06039b-ece1-4da3-8ece-255894975894}"
-                    "DisplayName" = "NTP"
-                    "Description" = ""
-                    "DisplayGroup" = ""
-                    "Group" = ""
-                    "Enabled" = "True"
-                    "Profile" = "Any"
-                    "Platform" = "{}"
-                    "Direction" = "Outbound"
-                    "Action" = "Allow"
-                    "EdgeTraversalPolicy" = "Block"
-                    "LooseSourceMapping" = "False"
-                    "LocalOnlyMapping" = "False"
-                    "Owner" = ""
-                    "PrimaryStatus" = "OK"
-                    "Status" = "The rule was parsed successfully from the store. (65536)"
-                    "EnforcementStatus" = "NotApplicable"
-                    "PolicyStoreSource" = "PersistentStore"
-                    "PolicyStoreSourceType" = "Local"
-                }
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
+                    $Message -eq "Failed to execute Enable-SSHD powershell cmdlet. See 'c:\provision\log.log' for more info."
             }
-            Mock -ModuleName AutomationHelpers -CommandName New-NetFirewallRule { }
-
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Not -Throw
-
-            Should -Invoke -ModuleName AutomationHelpers -CommandName New-NetFirewallRule -Times 1
-        }
-
-        It "doesn't set up firewall when ssh is already set up " {
-            Mock -ModuleName AutomationHelpers -CommandName Get-NetFirewallRule {
-                return [ordered]@{
-                    "Name" = "{ E02857AB-8EA8-4358-8119-ED7D20DA7712 }"
-                    "DisplayName" = "SSH"
-                    "Description" = ""
-                    "DisplayGroup" = ""
-                    "Group" = ""
-                    "Enabled" = "True"
-                    "Profile" = "Any"
-                    "Platform" = "{ }"
-                    "Direction" = "Inbound"
-                    "Action" = "Allow"
-                    "EdgeTraversalPolicy" = "Block"
-                    "LooseSourceMapping" = "False"
-                    "LocalOnlyMapping" = "False"
-                    "Owner" = ""
-                    "PrimaryStatus" = "OK"
-                    "Status" = "The rule was parsed successfully from the store. (65536)"
-                    "EnforcementStatus" = "NotApplicable"
-                    "PolicyStoreSource" = "PersistentStore"
-                    "PolicyStoreSourceType" = "Local"
-                }
-            }
-            Mock -ModuleName AutomationHelpers -CommandName New-NetFirewallRule { }
-
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Not -Throw
-
-            Should -Invoke -ModuleName AutomationHelpers -CommandName New-NetFirewallRule -Times 0
-        }
-
-        It "Generates inf and invokes LGPO if LGPO exists" {
-            Mock -ModuleName AutomationHelpers -CommandName Invoke-LGPO -Verifiable -ParameterFilter {
-                $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf"
-            }
-
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Not -Throw
-
-            Should -InvokeVerifiable
-        }
-
-        It "Skips LGPO if LGPO.exe not found" {
-            rm "$TMP_DIR\Windows\LGPO.exe"
-
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Not -Throw
-
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Invoke-LGPO -Times 0
-        }
-
-        Context "When LGPO executable fails" {
-            It "Throws an appropriate error" {
-                Mock -ModuleName AutomationHelpers -CommandName Invoke-LGPO { throw "some error" } -Verifiable -ParameterFilter {
-                    $LGPOPath -eq "$TMP_DIR\Windows\LGPO.exe" -and $InfFilePath -eq "$TMP_DIR\Windows\Temp\enable-ssh.inf"
-                }
-
-                { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Throw "LGPO.exe failed with: some error*"
-
-                Should -InvokeVerifiable
-            }
-        }
-
-        It "removes existing SSH keys" {
-            New-Item -ItemType Directory -Path "$TMP_DIR\ProgramData\ssh" -ErrorAction Ignore
-            Write-Output "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_1"
-            Write-Output "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_2"
-            Write-Output "delete" > "$TMP_DIR\ProgramData\ssh\ssh_host_3"
-            Write-Output "ignore" > "$TMP_DIR\ProgramData\ssh\not_ssh_host_4"
-
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Not -Throw
-
-            $numHosts = (Get-ChildItem "$TMP_DIR\ProgramData\ssh\").count
-            $numHosts | Should -eq 1
-        }
-
-        It "creates empty ssh program dir if it doesn't exist" {
-            { Enable-SSHD -SSHZipFile $FAKE_ZIP } | Should -Not -Throw
-
-            { Test-Path "$TMP_DIR\ProgramData\ssh" } | Should -eq $True
         }
     }
 
@@ -1327,6 +1181,9 @@ Describe "AutomationHelpers" {
     }
 
     Describe "Install-WUCerts" {
+        BeforeAll {
+        }
+
         It "executes the Get-WUCerts powershell cmdlet" {
             Mock -ModuleName AutomationHelpers -CommandName Get-WUCerts { }
 

@@ -6,7 +6,6 @@ ROOT_DIR=$(pwd)
 REPO_ROOT="${REPO_ROOT:-"$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"}"
 ZIP_FILE_DESTINATION="${ZIP_FILE_DESTINATION:-"${ROOT_DIR}/zip-file/StemcellAutomation-$(date +"%s").zip"}"
 
-OPENSSH_ZIP="${OPENSSH_ZIP:-"${ROOT_DIR}/open-ssh/OpenSSH-Win64.zip"}"
 BOSH_PSMODULES_ZIP="${BOSH_PSMODULES_ZIP:-"${ROOT_DIR}/psmodules-zip-output/bosh-psmodules.zip"}"
 AGENT_ZIP="${AGENT_ZIP:-"${ROOT_DIR}/bosh-agent/agent.zip"}"
 DEPS_JSON="${DEPS_JSON:-"${ROOT_DIR}/deps-file/deps.json"}"
@@ -20,7 +19,7 @@ mkdir -p "${stemcell_automation_dir}"
 
 declare -a files_to_zip
 mapfile -t files_to_zip < <(find "${REPO_ROOT}/stembuild/stemcell-automation" -type f -not -name "*Test*" -name "*.ps*1")
-files_to_zip+=("${OPENSSH_ZIP}" "${BOSH_PSMODULES_ZIP}" "${AGENT_ZIP}" "${DEPS_JSON}")
+files_to_zip+=("${BOSH_PSMODULES_ZIP}" "${AGENT_ZIP}" "${DEPS_JSON}")
 
 cp "${files_to_zip[@]}" "${stemcell_automation_dir}"
 

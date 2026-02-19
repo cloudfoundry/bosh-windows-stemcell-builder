@@ -39,6 +39,7 @@ module Packer
       end
 
       def builders
+        stemcell_builder_dir = File.expand_path("../../../../", __FILE__)
         [
           {
             "type" => "googlecompute",
@@ -62,10 +63,10 @@ module Packer
             "winrm_timeout" => "1h",
             "state_timeout" => "10m",
             "metadata" => {
-              "sysprep-specialize-script-url" => "https://raw.githubusercontent.com/cloudfoundry/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1",
+              "sysprep-specialize-script-ps1" => File.read(File.join(stemcell_builder_dir, "scripts", "gcp", "setup-winrm.ps1")),
               "name" => "#{@vm_prefix}-#{Time.now.to_i}"
-            }.compact_blank!
-          }
+            }
+          }.compact_blank!
         ]
       end
 

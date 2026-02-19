@@ -130,16 +130,19 @@
   },
   <% end %>
   {
-    "type": "file",
-    "source": "../sshd/OpenSSH-Win64.zip",
-    "destination": "C:\\provision\\OpenSSH-Win64.zip"
+    "type": "powershell",
+    "inline": [
+      "$ErrorActionPreference = \"Stop\";",
+      "trap { $host.SetShouldExit(1) }",
+      "Protect-CFCell -IaaS <%= iaas %>"
+    ]
   },
   {
     "type": "powershell",
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "Install-SSHD -SSHZipFile 'C:\\provision\\OpenSSH-Win64.zip'"
+      "Install-SSHD"
     ]
   },
   {
