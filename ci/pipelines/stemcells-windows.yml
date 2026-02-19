@@ -589,26 +589,27 @@ jobs:
         format: trim
         reveal: true
       - in_parallel:
-        - task: bump-ruby-deps
-          file: ruby-release/ci/tasks/shared/bump-gems.yml
-          tags: [broadcom]
-          input_mapping:
-            input-repo: stemcell-builder
-          output_mapping:
-            output-repo: stemcell-builder
-          params:
-            PACKAGE: ruby-((.:ruby-major-minor))
-        - task: bump-golang-deps-stembuild
-          file: golang-release/ci/tasks/shared/bump-deps.yml
-          tags: [*worker_tag_internal]
-          params:
-            SOURCE_PATH: stembuild
-            GOPROXY: ((repository_mirrors.goproxy))
-            GOSUMDB: ((repository_mirrors.gosumdb))
-          input_mapping:
-            input_repo: stemcell-builder
-          output_mapping:
-            output_repo: stemcell-builder
+        - do:
+          - task: bump-ruby-deps
+            file: ruby-release/ci/tasks/shared/bump-gems.yml
+            tags: [broadcom]
+            input_mapping:
+              input-repo: stemcell-builder
+            output_mapping:
+              output-repo: stemcell-builder
+            params:
+              PACKAGE: ruby-((.:ruby-major-minor))
+          - task: bump-golang-deps-stembuild
+            file: golang-release/ci/tasks/shared/bump-deps.yml
+            tags: [*worker_tag_internal]
+            params:
+              SOURCE_PATH: stembuild
+              GOPROXY: ((repository_mirrors.goproxy))
+              GOSUMDB: ((repository_mirrors.gosumdb))
+            input_mapping:
+              input_repo: stemcell-builder
+            output_mapping:
+              output_repo: stemcell-builder
         - task: bump-golang-deps-acceptance_test
           file: golang-release/ci/tasks/shared/bump-deps.yml
           tags: [*worker_tag_internal]
