@@ -572,6 +572,8 @@ jobs:
             tags: [*worker_tag]
           - get: bosh-windows-stemcell-builder-ci
             tags: [*worker_tag]
+          - get: bosh-windows-stemcell-acceptance-tests
+            tags: [*worker_tag]
           - get: stemcell-builder
             tags: [*worker_tag]
           - get: golang-release
@@ -586,37 +588,38 @@ jobs:
         file: stemcell-builder/.ruby-version
         format: trim
         reveal: true
-      - task: bump-ruby-deps
-        file: ruby-release/ci/tasks/shared/bump-gems.yml
-        tags: [broadcom]
-        input_mapping:
-          input-repo: stemcell-builder
-        output_mapping:
-          output-repo: stemcell-builder
-        params:
-          PACKAGE: ruby-((.:ruby-major-minor))
-      - task: bump-golang-deps-stembuild
-        file: golang-release/ci/tasks/shared/bump-deps.yml
-        tags: [*worker_tag_internal]
-        params:
-          SOURCE_PATH: stembuild
-          GOPROXY: ((repository_mirrors.goproxy))
-          GOSUMDB: ((repository_mirrors.gosumdb))
-        input_mapping:
-          input_repo: stemcell-builder
-        output_mapping:
-          output_repo: stemcell-builder
-      - task: bump-golang-deps-acceptance_test
-        file: golang-release/ci/tasks/shared/bump-deps.yml
-        tags: [*worker_tag_internal]
-        params:
-          SOURCE_PATH: acceptance_test
-          GOPROXY: ((repository_mirrors.goproxy))
-          GOSUMDB: ((repository_mirrors.gosumdb))
-        input_mapping:
-          input_repo: stemcell-builder
-        output_mapping:
-          output_repo: stemcell-builder
+      - in_parallel:
+        - task: bump-ruby-deps
+          file: ruby-release/ci/tasks/shared/bump-gems.yml
+          tags: [broadcom]
+          input_mapping:
+            input-repo: stemcell-builder
+          output_mapping:
+            output-repo: stemcell-builder
+          params:
+            PACKAGE: ruby-((.:ruby-major-minor))
+        - task: bump-golang-deps-stembuild
+          file: golang-release/ci/tasks/shared/bump-deps.yml
+          tags: [*worker_tag_internal]
+          params:
+            SOURCE_PATH: stembuild
+            GOPROXY: ((repository_mirrors.goproxy))
+            GOSUMDB: ((repository_mirrors.gosumdb))
+          input_mapping:
+            input_repo: stemcell-builder
+          output_mapping:
+            output_repo: stemcell-builder
+        - task: bump-golang-deps-acceptance_test
+          file: golang-release/ci/tasks/shared/bump-deps.yml
+          tags: [*worker_tag_internal]
+          params:
+            SOURCE_PATH: acceptance_test
+            GOPROXY: ((repository_mirrors.goproxy))
+            GOSUMDB: ((repository_mirrors.gosumdb))
+          input_mapping:
+            input_repo: bosh-windows-stemcell-acceptance-tests
+          output_mapping:
+            output_repo: bosh-windows-stemcell-acceptance-tests
       - in_parallel:
           - task: ruby-specs
             file: bosh-windows-stemcell-builder-ci/ci/tasks/run-ruby-specs/task.yml
@@ -630,11 +633,17 @@ jobs:
           - task: acceptance-test-dry-run
             file: bosh-windows-stemcell-builder-ci/ci/tasks/acceptance-test-dry-run/task.yml
             image: bosh-windows-stemcell-builder-ci-image
-      - put: stemcell-builder
-        params:
-          rebase: true
-          repository: stemcell-builder
-        tags: [*worker_tag]
+      - in_parallel:
+        - put: stemcell-builder
+          params:
+            rebase: true
+            repository: stemcell-builder
+          tags: [*worker_tag]
+        - put: bosh-windows-stemcell-acceptance-tests
+          params:
+            rebase: true
+            repository: bosh-windows-stemcell-acceptance-tests
+          tags: [*worker_tag]
 
   - name: test-bosh-psmodules
     serial: true
