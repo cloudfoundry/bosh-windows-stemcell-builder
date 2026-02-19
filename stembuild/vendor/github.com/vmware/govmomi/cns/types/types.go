@@ -214,12 +214,14 @@ type CnsDetachVolumeResponse struct {
 type CnsVolumeAttachDetachSpec struct {
 	types.DynamicData
 
-	VolumeId      CnsVolumeId                  `xml:"volumeId" json:"volumeId"`
-	Vm            types.ManagedObjectReference `xml:"vm" json:"vm"`
-	DiskMode      string                       `xml:"diskMode,omitempty" json:"diskMode"`
-	Sharing       string                       `xml:"sharing,omitempty" json:"sharing"`
-	ControllerKey int64                        `xml:"controllerKey,omitempty" json:"controllerKey"`
-	UnitNumber    int64                        `xml:"unitNumber,omitempty" json:"unitNumber"`
+	VolumeId        CnsVolumeId                  `xml:"volumeId" json:"volumeId"`
+	Vm              types.ManagedObjectReference `xml:"vm" json:"vm"`
+	DiskMode        string                       `xml:"diskMode,omitempty" json:"diskMode"`
+	Sharing         string                       `xml:"sharing,omitempty" json:"sharing"`
+	ControllerKey   *int32                       `xml:"controllerKey,omitempty" json:"controllerKey"`
+	UnitNumber      *int32                       `xml:"unitNumber,omitempty" json:"unitNumber"`
+	BackingTypeName CnsVolumeBackingType         `xml:"backingTypeName,omitempty" json:"backingTypeName"`
+	VolumeEncrypted *bool                        `xml:"volumeEncrypted,omitempty" json:"volumeEncrypted"`
 }
 
 func init() {
@@ -480,12 +482,12 @@ func init() {
 // CnsKubernetesQueryFilter enables querying CNS volumes using Kubernetes metadata such as
 // namespaces, pod names, PVC names, and PV names.
 //
-// - Values in the PodNames, PvcNames, and PvNames lists are treated as OR conditions.
-// - Values in the Namespaces list are also treated as OR conditions.
-// - When PodNames, PvcNames, or PvNames are specified along with Namespaces,
-//   the filter applies an AND condition — i.e., the pod, PVC must belong to the specified namespace.
-// - When only Namespaces are provided (without any pod, PVC names),
-//   all volumes associated with those namespaces will be returned.
+//   - Values in the PodNames, PvcNames, and PvNames lists are treated as OR conditions.
+//   - Values in the Namespaces list are also treated as OR conditions.
+//   - When PodNames, PvcNames, or PvNames are specified along with Namespaces,
+//     the filter applies an AND condition — i.e., the pod, PVC must belong to the specified namespace.
+//   - When only Namespaces are provided (without any pod, PVC names),
+//     all volumes associated with those namespaces will be returned.
 //
 // This allows flexible volume queries such as:
 // - Listing all volumes in one or more namespaces.
@@ -636,6 +638,16 @@ type CnsVolumeNotFoundFault struct {
 
 func init() {
 	types.Add("CnsVolumeNotFoundFault", reflect.TypeOf((*CnsVolumeNotFoundFault)(nil)).Elem())
+}
+
+type CnsNotRegisteredFault struct {
+	CnsFault
+
+	VolumeId CnsVolumeId `xml:"volumeId" json:"volumeId"`
+}
+
+func init() {
+	types.Add("CnsNotRegisteredFault", reflect.TypeOf((*CnsNotRegisteredFault)(nil)).Elem())
 }
 
 type CnsVolumeAlreadyExistsFault struct {
