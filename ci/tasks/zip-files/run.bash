@@ -3,7 +3,6 @@ set -eu -o pipefail
 
 ROOT_DIR=$(pwd)
 
-REPO_ROOT="${REPO_ROOT:-"$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"}"
 ZIP_FILE_DESTINATION="${ZIP_FILE_DESTINATION:-"${ROOT_DIR}/zip-file/StemcellAutomation-$(date +"%s").zip"}"
 
 OPENSSH_ZIP="${OPENSSH_ZIP:-"${ROOT_DIR}/open-ssh/OpenSSH-Win64.zip"}"
@@ -19,7 +18,7 @@ stemcell_automation_zip="${TEMP_DIR}/StemcellAutomation.zip"
 mkdir -p "${stemcell_automation_dir}"
 
 declare -a files_to_zip
-mapfile -t files_to_zip < <(find "${REPO_ROOT}/stembuild/stemcell-automation" -type f -not -name "*Test*" -name "*.ps*1")
+mapfile -t files_to_zip < <(find "${ROOT_DIR}/stemcell-builder/stembuild/stemcell-automation" -type f -not -name "*Test*" -name "*.ps*1")
 files_to_zip+=("${OPENSSH_ZIP}" "${BOSH_PSMODULES_ZIP}" "${AGENT_ZIP}" "${DEPS_JSON}")
 
 cp "${files_to_zip[@]}" "${stemcell_automation_dir}"
