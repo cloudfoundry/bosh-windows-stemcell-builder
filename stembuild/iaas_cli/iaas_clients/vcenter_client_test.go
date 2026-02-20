@@ -373,51 +373,61 @@ ethernet-0         VirtualE1000e                 internal-network
 		})
 
 		Describe("Run", func() {
-			var baseArgs []string
 			var commandArgs []string
+			const samplePsOutput = `{"ProcessInfo":[{"Name":"fake-command","Pid":1234,"Owner":"user","CmdLine":"fake-command fake-arg1","StartTime":"2024-01-01T00:00:00Z","EndTime":"2024-01-01T00:00:01Z","ExitCode":0}]}`
+			const samplePsOutputNonZero = `{"ProcessInfo":[{"Name":"fake-command","Pid":1234,"Owner":"user","CmdLine":"fake-command fake-arg1","StartTime":"2024-01-01T00:00:00Z","EndTime":"2024-01-01T00:00:01Z","ExitCode":42}]}`
 
 			BeforeEach(func() {
-				baseArgs = []string{"guest.run", "-u", vcenterAuthUrl(vcenterUsername, vcenterPassword, vcenterUrl), "-l", "user:pass", "-vm", "validVMPath"}
 				commandArgs = []string{"fake-command", "fake-arg1", "fake-arg2", "fake-arg3"}
 			})
 
-			It("Runs the command provided", func() {
-				runner.RunWithOutputReturns("fake-open-ssh-install-output", 0, nil)
+			It("starts the command via guest.start and waits for exit via guest.ps", func() {
+				runner.RunWithOutputReturnsOnCall(0, "1234\n", 0, nil)
+				runner.RunWithOutputReturnsOnCall(1, samplePsOutput, 0, nil)
 
 				err := vcenterClient.Run("validVMPath", "user", "pass", commandArgs)
 				Expect(err).To(Not(HaveOccurred()))
 
-				expectedArgs := append(baseArgs, commandArgs...)
-				Expect(runner.RunWithOutputArgsForCall(0)).To(Equal(expectedArgs))
+				Expect(runner.RunWithOutputCallCount()).To(Equal(2))
+
+				startArgs := runner.RunWithOutputArgsForCall(0)
+				expectedStartArgs := []string{"guest.start", "-u", vcenterAuthUrl(vcenterUsername, vcenterPassword, vcenterUrl), "-l", "user:pass", "-vm", "validVMPath", "fake-command", "fake-arg1", "fake-arg2", "fake-arg3"}
+				Expect(startArgs).To(Equal(expectedStartArgs))
+
+				psArgs := runner.RunWithOutputArgsForCall(1)
+				expectedPsArgs := []string{"guest.ps", "-u", vcenterAuthUrl(vcenterUsername, vcenterPassword, vcenterUrl), "-l", "user:pass", "-vm", "validVMPath", "-p", "1234", "-X", "-json"}
+				Expect(psArgs).To(Equal(expectedPsArgs))
 			})
 
-			Context("when running the command returns a non-zero exit code", func() {
+			Context("when the guest program exits with a non-zero exit code", func() {
 				It("returns an error", func() {
-					exitCode := 42
-					runner.RunWithOutputReturns("", exitCode, nil)
+					runner.RunWithOutputReturnsOnCall(0, "1234\n", 0, nil)
+					runner.RunWithOutputReturnsOnCall(1, samplePsOutputNonZero, 0, nil)
 
 					err := vcenterClient.Run("validVMPath", "user", "pass", commandArgs)
 					Expect(err).To(HaveOccurred())
-
-					expectedArgs := append(baseArgs, commandArgs...)
-					Expect(err.Error()).To(Equal(fmt.Sprintf("vcenter_client - '%v' exited with '%d'", expectedArgs, exitCode)))
+					Expect(err.Error()).To(Equal(fmt.Sprintf("vcenter_client - '%v' exited with '%d'", commandArgs, 42)))
 				})
 			})
 
-			Context("when running the command returns an error", func() {
-				var runWithOutputError error
-
-				BeforeEach(func() {
-					runWithOutputError = errors.New("fake-run-with-output-error")
-				})
-
-				It("returns the error", func() {
-					runner.RunWithOutputReturns("", 0, runWithOutputError)
-
-					expectedArgs := append(baseArgs, commandArgs...)
+			Context("when guest.start fails", func() {
+				It("returns an error", func() {
+					runner.RunWithOutputReturnsOnCall(0, "", 0, errors.New("start-error"))
 
 					err := vcenterClient.Run("validVMPath", "user", "pass", commandArgs)
-					Expect(err.Error()).To(Equal(fmt.Sprintf("vcenter_client - '%v' return an error '%s'", expectedArgs, runWithOutputError)))
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal(fmt.Sprintf("vcenter_client - failed to start '%v': vcenter_client - failed to run 'fake-command': start-error", commandArgs)))
+				})
+			})
+
+			Context("when guest.ps fails while waiting for exit", func() {
+				It("returns an error", func() {
+					runner.RunWithOutputReturnsOnCall(0, "1234\n", 0, nil)
+					runner.RunWithOutputReturnsOnCall(1, "", 0, errors.New("ps-error"))
+
+					err := vcenterClient.Run("validVMPath", "user", "pass", commandArgs)
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal(fmt.Sprintf("vcenter_client - failed to wait for '%v' (pid 1234): vcenter_client - failed to fetch exit code for PID 1234: ps-error", commandArgs)))
 				})
 			})
 		})
