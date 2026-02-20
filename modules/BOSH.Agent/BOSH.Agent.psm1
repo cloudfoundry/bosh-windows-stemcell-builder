@@ -205,10 +205,17 @@ function Write-AgentConfig
         }
         "Infrastructure" = @{
             "Settings" = @{
-                "Sources" = (,@{
-                    "Type" = "CDROM"
-                    "FileName" = "ENV"
-                })
+                "Sources" = @(
+                    @{
+                        "Type" = "CDROM"
+                        "FileName" = "ENV"
+                    },
+                    @{
+                        "Type" = "VsphereGuestInfo"
+                        "RpcToolPath" = "C:\Program Files\VMware\VMware Tools\rpctool.exe"
+                        "VmToolsdPath" = "C:\Program Files\VMware\VMware Tools\vmtoolsd.exe"
+                    }
+                )
             }
         }
     }

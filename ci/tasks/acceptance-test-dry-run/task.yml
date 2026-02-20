@@ -3,7 +3,11 @@ platform: linux
 
 inputs:
   - name: bosh-windows-stemcell-builder-ci
-  - name: stemcell-builder
+  - name: bosh-windows-stemcell-acceptance-tests
 
 run: 
   path: bosh-windows-stemcell-builder-ci/ci/tasks/acceptance-test-dry-run/run
+
+params:
+  REPO_NAME: bosh-windows-stemcell-acceptance-tests
+

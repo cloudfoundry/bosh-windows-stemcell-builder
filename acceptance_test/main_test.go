@@ -501,7 +501,7 @@ func (c *TestConfig) deployWithManifest(bosh *BoshCommand, deploymentName string
 
 	var opsFileArgs strings.Builder
 	for _, path := range opsFiles {
-		opsFileArgs.WriteString(fmt.Sprintf("--ops-file=%s ", path))
+		opsFileArgs.WriteString(fmt.Sprintf("--ops-file=%s ", path)) //nolint:staticcheck
 	}
 	cmdArgs := []string{
 		fmt.Sprintf("--deployment=%s", deploymentName),

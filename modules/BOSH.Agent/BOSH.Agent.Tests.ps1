@@ -216,6 +216,17 @@ Describe "BOSH.Account" {
                 $configContent.Infrastructure.Settings.Sources[0].Type | Should -Be "CDROM"
             }
 
+            It "includes a VsphereGuestInfo source with VMware tool paths" {
+                { Write-AgentConfig -BoshDir $boshDir -IaaS vsphere } | Should -Not -Throw
+                $configPath = (Join-Path $boshDir "agent.json")
+                Test-Path $configPath | Should -Be $True
+                $configContent = $( Get-Content $configPath | ConvertFrom-JSON )
+                $configContent.Infrastructure.Settings.Sources | Should -HaveCount 2
+                $configContent.Infrastructure.Settings.Sources[1].Type | Should -Be "VsphereGuestInfo"
+                $configContent.Infrastructure.Settings.Sources[1].RpcToolPath | Should -Be "C:\Program Files\VMware\VMware Tools\rpctool.exe"
+                $configContent.Infrastructure.Settings.Sources[1].VmToolsdPath | Should -Be "C:\Program Files\VMware\VMware Tools\vmtoolsd.exe"
+            }
+
             It "enables ephemeral disk mounting by default" {
                 { Write-AgentConfig -BoshDir $boshDir -IaaS vsphere } | Should -Not -Throw
                 $configPath = (Join-Path $boshDir "agent.json")
