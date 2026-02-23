@@ -11,6 +11,7 @@ module Packer
         os:,
         output_directory:,
         version:,
+        vm_tags: [],
         vm_type:, vm_prefix: "",
         mount_ephemeral_disk: false,
         root_disk_size: 64,
