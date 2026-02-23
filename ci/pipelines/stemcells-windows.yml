@@ -863,10 +863,10 @@ jobs:
               file: bosh-windows-stemcell-builder-ci/ci/tasks/setup-integration-test-vm/task.yml
               image: bosh-windows-stemcell-builder-ci-image
               params:
-                VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
+                VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows_auth_url))
                 OS_LINE: *windows_os_line
                 BASE_VM_IPATH: /dc0/vm/windows-stemcell-ci/stembuild-base-vm-2019
-                CLONE_DATASTORE: ((nimbus_windows-demo_ds))
+                CLONE_DATASTORE: ((nimbus_windows_ds))
                 CLONE_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
                 CLONE_FOLDER: /dc0/vm/windows-stemcell-ci
                 CLONE_PREFIX: windows-stembuild-integration
@@ -888,8 +888,8 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
+          GOVC_URL: ((nimbus_windows_auth_url))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
           VM_NAME: ((.:integration-vm-name))
       - load_var: integration-vm-ip
@@ -905,14 +905,14 @@ jobs:
           CONTRACT_TEST_VM_PASSWORD: ((stembuild_vm_user.password))
           CONTRACT_TEST_VM_USERNAME: ((stembuild_vm_user.username))
 
-          GOVC_DATASTORE: ((nimbus_windows-demo_ds))
+          GOVC_DATASTORE: ((nimbus_windows_ds))
           GOVC_NETWORK: internal-network
           GOVC_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
 
-          VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-          VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
-          VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
+          VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows_auth_url))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
+          VCENTER_USERNAME: ((nimbus_windows_user.username))
+          VCENTER_PASSWORD: ((nimbus_windows_user.password))
 
           VM_FOLDER: /dc0/vm/windows-stemcell-ci
           VM_USERNAME: ((stembuild_vm_user.username))
@@ -936,7 +936,7 @@ jobs:
           image: bosh-windows-stemcell-builder-ci-image
           params:
             CLONE_FOLDER: /dc0/vm/windows-stemcell-ci
-            VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
+            VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows_auth_url))
 
   - name: stembuild-linux
     serial: true
@@ -994,10 +994,10 @@ jobs:
               image: bosh-windows-stemcell-builder-ci-image
               tags: [*worker_tag_windows]
               params:
-                VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
+                VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows_auth_url))
                 OS_LINE: *windows_os_line
                 BASE_VM_IPATH: /dc0/vm/windows-stemcell-ci/stembuild-base-vm-2019
-                CLONE_DATASTORE: ((nimbus_windows-demo_ds))
+                CLONE_DATASTORE: ((nimbus_windows_ds))
                 CLONE_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
                 CLONE_FOLDER: /dc0/vm/windows-stemcell-ci
                 CLONE_PREFIX: linux-stembuild-integration
@@ -1019,8 +1019,8 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
+          GOVC_URL: ((nimbus_windows_auth_url))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
           VM_NAME: ((.:integration-vm-name))
       - load_var: integration-vm-ip
@@ -1037,14 +1037,14 @@ jobs:
           CONTRACT_TEST_VM_PASSWORD: ((stembuild_vm_user.password))
           CONTRACT_TEST_VM_USERNAME: ((stembuild_vm_user.username))
 
-          GOVC_DATASTORE: ((nimbus_windows-demo_ds))
+          GOVC_DATASTORE: ((nimbus_windows_ds))
           GOVC_NETWORK: internal-network
           GOVC_RESOURCE_POOL: /dc0/host/concourse_cluster/Resources
 
-          VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-          VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
-          VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
+          VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows_auth_url))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
+          VCENTER_USERNAME: ((nimbus_windows_user.username))
+          VCENTER_PASSWORD: ((nimbus_windows_user.password))
 
           VM_FOLDER: /dc0/vm/windows-stemcell-ci
           VM_USERNAME: ((stembuild_vm_user.username))
@@ -1068,7 +1068,7 @@ jobs:
           tags: [*worker_tag_windows]
           params:
             CLONE_FOLDER: /dc0/vm/windows-stemcell-ci
-            VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows-demo_auth_url))
+            VCENTER_ADMIN_CREDENTIAL_URL: ((nimbus_windows_auth_url))
 
   - name: create-stembuild-linux-stemcell
     serial: true
@@ -1096,7 +1096,7 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
+          GOVC_URL: ((nimbus_windows_auth_url))
           DATACENTER: dc0
           VM_TO_REVERT: /dc0/vm/windows-stemcell-ci/linux-stembuild-base-vm-2019
           SNAPSHOT_NAME: "stembuild-ready-power-on"
@@ -1105,8 +1105,8 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
+          GOVC_URL: ((nimbus_windows_auth_url))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
           STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/windows-stemcell-ci/linux-stembuild-base-vm-2019
           VM_USERNAME: ((stembuild_vm_user.username))
           VM_PASSWORD: ((stembuild_vm_user.password))
@@ -1115,7 +1115,7 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
+          GOVC_URL: ((nimbus_windows_auth_url))
           DATACENTER: dc0
           VM_TO_SNAPSHOT: /dc0/vm/windows-stemcell-ci/linux-stembuild-base-vm-2019
           SNAPSHOT_NAME: "stembuild-ready-power-on"
@@ -1124,10 +1124,10 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-          VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
-          VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
+          GOVC_URL: ((nimbus_windows_auth_url))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
+          VCENTER_USERNAME: ((nimbus_windows_user.username))
+          VCENTER_PASSWORD: ((nimbus_windows_user.password))
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
           STEMBUILD_BASE_VM_NAME: linux-stembuild-base-vm-2019
           STEMBUILD_BASE_VM_USERNAME: ((stembuild_vm_user.username))
@@ -1137,9 +1137,9 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-          VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
-          VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
+          VCENTER_USERNAME: ((nimbus_windows_user.username))
+          VCENTER_PASSWORD: ((nimbus_windows_user.password))
           STEMBUILD_BASE_VM_NAME: linux-stembuild-base-vm-2019
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
       - &print-updates
@@ -1185,13 +1185,13 @@ jobs:
             tags: [*worker_tag_windows]
             input_mapping: { stemcell: stembuild-linux-stemcell }
             params:
-              BOSH_CA_CERT: ((nimbus_windows-demo_bosh_ca_cert.ca))
-              BOSH_CLIENT: ((nimbus_windows-demo_bosh_client.username))
-              BOSH_CLIENT_SECRET: ((nimbus_windows-demo_bosh_client.password))
-              BOSH_ENVIRONMENT: ((nimbus_windows-demo_bosh_environment))
-              SSH_TUNNEL_IP: ((nimbus_windows-demo_bosh_jumpbox_ip))
-              SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
-              SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
+              BOSH_CA_CERT: ((nimbus_windows_bosh_ca_cert.ca))
+              BOSH_CLIENT: ((nimbus_windows_bosh_client.username))
+              BOSH_CLIENT_SECRET: ((nimbus_windows_bosh_client.password))
+              BOSH_ENVIRONMENT: ((nimbus_windows_bosh_environment))
+              SSH_TUNNEL_IP: ((nimbus_windows_bosh_jumpbox_ip))
+              SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows_bosh_jumpbox_ssh.private_key))
+              SSH_TUNNEL_USER: ((nimbus_windows_bosh_jumpbox_username))
               STEMCELL_OS: windows((BASE_OS_VERSION)) # this should be whatever the os listed in stemcell.MF says
               VM_TYPE: large # WARN: This is Cloud Config specific!!!
               VM_EXTENSIONS: 10GB_ephemeral_disk
@@ -1225,14 +1225,14 @@ jobs:
             input_mapping: { stemcell: stembuild-linux-stemcell }
             params:
               AZ: z1
-              BOSH_CA_CERT: ((nimbus_windows-demo_bosh_ca_cert.ca))
-              BOSH_CLIENT: ((nimbus_windows-demo_bosh_client.username))
-              BOSH_CLIENT_SECRET: ((nimbus_windows-demo_bosh_client.password))
-              BOSH_ENVIRONMENT: ((nimbus_windows-demo_bosh_environment))
+              BOSH_CA_CERT: ((nimbus_windows_bosh_ca_cert.ca))
+              BOSH_CLIENT: ((nimbus_windows_bosh_client.username))
+              BOSH_CLIENT_SECRET: ((nimbus_windows_bosh_client.password))
+              BOSH_ENVIRONMENT: ((nimbus_windows_bosh_environment))
               NETWORK: default
-              SSH_TUNNEL_IP: ((nimbus_windows-demo_bosh_jumpbox_ip))
-              SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
-              SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
+              SSH_TUNNEL_IP: ((nimbus_windows_bosh_jumpbox_ip))
+              SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows_bosh_jumpbox_ssh.private_key))
+              SSH_TUNNEL_USER: ((nimbus_windows_bosh_jumpbox_username))
               STEMCELL_OS: *windows_os_version
               VM_EXTENSIONS: ""
               VM_TYPE: default # TODO: Add "put" output of this passing test to release candidates bucket (?)
@@ -1263,7 +1263,7 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
+          GOVC_URL: ((nimbus_windows_auth_url))
           DATACENTER: dc0
           VM_TO_REVERT: /dc0/vm/windows-stemcell-ci/windows-stembuild-base-vm-2019
           SNAPSHOT_NAME: "stembuild-ready-power-on"
@@ -1272,8 +1272,8 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
+          GOVC_URL: ((nimbus_windows_auth_url))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
           STEMBUILD_CONSTRUCT_TARGET_VM: /dc0/vm/windows-stemcell-ci/windows-stembuild-base-vm-2019
           VM_USERNAME: ((stembuild_vm_user.username))
           VM_PASSWORD: ((stembuild_vm_user.password))
@@ -1282,7 +1282,7 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
+          GOVC_URL: ((nimbus_windows_auth_url))
           DATACENTER: dc0
           VM_TO_SNAPSHOT: /dc0/vm/windows-stemcell-ci/windows-stembuild-base-vm-2019
           SNAPSHOT_NAME: "stembuild-ready-power-on"
@@ -1291,8 +1291,8 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         tags: [*worker_tag_windows]
         params:
-          GOVC_URL: ((nimbus_windows-demo_auth_url))
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
+          GOVC_URL: ((nimbus_windows_auth_url))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
           VM_NAME: windows-stembuild-base-vm-2019
       - load_var: ip
@@ -1303,9 +1303,9 @@ jobs:
         file: bosh-windows-stemcell-builder-ci/ci/tasks/run-construct-stembuild-windows/task.yml
         tags: [*worker_tag_windows]
         params:
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-          VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
-          VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
+          VCENTER_USERNAME: ((nimbus_windows_user.username))
+          VCENTER_PASSWORD: ((nimbus_windows_user.password))
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
           STEMBUILD_BASE_VM_NAME: windows-stembuild-base-vm-2019
           STEMBUILD_BASE_VM_IP: ((.:ip))
@@ -1315,9 +1315,9 @@ jobs:
         file: bosh-windows-stemcell-builder-ci/ci/tasks/run-package-stembuild-windows/task.yml
         tags: [*worker_tag_windows]
         params:
-          VCENTER_BASE_URL: ((nimbus_windows-demo_base_url))
-          VCENTER_USERNAME: ((nimbus_windows-demo_user.username))
-          VCENTER_PASSWORD: ((nimbus_windows-demo_user.password))
+          VCENTER_BASE_URL: ((nimbus_windows_base_url))
+          VCENTER_USERNAME: ((nimbus_windows_user.username))
+          VCENTER_PASSWORD: ((nimbus_windows_user.password))
           STEMBUILD_BASE_VM_NAME: windows-stembuild-base-vm-2019
           VCENTER_VM_FOLDER: /dc0/vm/windows-stemcell-ci
       - *print-updates
@@ -1354,13 +1354,13 @@ jobs:
             tags: [*worker_tag_windows]
             input_mapping: { stemcell: stembuild-windows-stemcell }
             params:
-              BOSH_CA_CERT: ((nimbus_windows-demo_bosh_ca_cert.ca))
-              BOSH_CLIENT: ((nimbus_windows-demo_bosh_client.username))
-              BOSH_CLIENT_SECRET: ((nimbus_windows-demo_bosh_client.password))
-              BOSH_ENVIRONMENT: ((nimbus_windows-demo_bosh_environment))
-              SSH_TUNNEL_IP: ((nimbus_windows-demo_bosh_jumpbox_ip))
-              SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
-              SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
+              BOSH_CA_CERT: ((nimbus_windows_bosh_ca_cert.ca))
+              BOSH_CLIENT: ((nimbus_windows_bosh_client.username))
+              BOSH_CLIENT_SECRET: ((nimbus_windows_bosh_client.password))
+              BOSH_ENVIRONMENT: ((nimbus_windows_bosh_environment))
+              SSH_TUNNEL_IP: ((nimbus_windows_bosh_jumpbox_ip))
+              SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows_bosh_jumpbox_ssh.private_key))
+              SSH_TUNNEL_USER: ((nimbus_windows_bosh_jumpbox_username))
               STEMCELL_OS: windows((BASE_OS_VERSION)) # this should be whatever the os listed in stemcell.MF says
               VM_TYPE: large # WARN: This is Cloud Config specific!!!
               VM_EXTENSIONS: 10GB_ephemeral_disk
@@ -1394,14 +1394,14 @@ jobs:
             input_mapping: { stemcell: stembuild-windows-stemcell }
             params:
               AZ: z1
-              BOSH_CA_CERT: ((nimbus_windows-demo_bosh_ca_cert.ca))
-              BOSH_CLIENT: ((nimbus_windows-demo_bosh_client.username))
-              BOSH_CLIENT_SECRET: ((nimbus_windows-demo_bosh_client.password))
-              BOSH_ENVIRONMENT: ((nimbus_windows-demo_bosh_environment))
+              BOSH_CA_CERT: ((nimbus_windows_bosh_ca_cert.ca))
+              BOSH_CLIENT: ((nimbus_windows_bosh_client.username))
+              BOSH_CLIENT_SECRET: ((nimbus_windows_bosh_client.password))
+              BOSH_ENVIRONMENT: ((nimbus_windows_bosh_environment))
               NETWORK: default
-              SSH_TUNNEL_IP: ((nimbus_windows-demo_bosh_jumpbox_ip))
-              SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows-demo_bosh_jumpbox_ssh.private_key))
-              SSH_TUNNEL_USER: ((nimbus_windows-demo_bosh_jumpbox_username))
+              SSH_TUNNEL_IP: ((nimbus_windows_bosh_jumpbox_ip))
+              SSH_TUNNEL_PRIVATE_KEY: ((nimbus_windows_bosh_jumpbox_ssh.private_key))
+              SSH_TUNNEL_USER: ((nimbus_windows_bosh_jumpbox_username))
               STEMCELL_OS: *windows_os_version
               VM_EXTENSIONS: ""
               VM_TYPE: default
