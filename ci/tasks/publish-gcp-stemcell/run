@@ -2,7 +2,7 @@
 set -eu -o pipefail
 set -x
 
-version="$(cat version/version)"
+version="$(cut -d '.' -f1-2 < version/version)"
 light_stemcell_file_name="$(ls gcp-tested/*.tgz)"
 
 # Extrace source image name + project from stemcell.MF
