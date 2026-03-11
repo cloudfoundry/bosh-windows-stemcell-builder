@@ -2227,8 +2227,6 @@ jobs:
               resource: packer-output-govcloud-ami
             - get: bosh-agent-release
               passed: [promote]
-      #      - get: boshio-input
-      #        resource: boshio
       - task: copy-public-stemcells
         timeout: 1h30m
         attempts: 3
@@ -2296,10 +2294,6 @@ jobs:
             resource: aws-stemcell-final
             params:
               file: final-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent.tgz
-      #    - put: boshio
-      #      params:
-      #        repository: boshio-output
-      #        rebase: true
       - try:
           task: cleanup-unpublished-aws-amis
           file: bosh-windows-stemcell-builder-ci/ci/tasks/cleanup-unpublished-aws-amis/task.yml
@@ -2330,8 +2324,6 @@ jobs:
             - get: stemcell-builder
               passed: [promote]
               tags: [*worker_tag]
-      #      - get: boshio-input
-      #        resource: boshio
       - task: publish-gcp-stemcell
         file: bosh-windows-stemcell-builder-ci/ci/tasks/publish-gcp-stemcell/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -2350,10 +2342,6 @@ jobs:
             resource: gcp-stemcell-final
             params:
               file: final-stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
-      #    - put: boshio
-      #      params:
-      #        repository: boshio-output
-      #        rebase: true
       - task: cleanup-unpublished-gcp-images
         file: bosh-windows-stemcell-builder-ci/ci/tasks/cleanup-unpublished-gcp-images/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -2493,8 +2481,6 @@ jobs:
               resource: main-version
               passed: [publish-azure-offer]
               tags: [*worker_tag]
-      #      - get: boshio-input
-      #        resource: boshio
       - task: azure-set-stemcell-filename-version
         file: bosh-windows-stemcell-builder-ci/ci/tasks/set-stemcell-version/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -2513,10 +2499,6 @@ jobs:
             resource: azure-stemcell-final
             params:
               file: azure-stemcell-final/light-bosh-stemcell-*-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
-  #    - put: boshio
-  #      params:
-  #        repository: boshio-output
-  #        rebase: true
 
   - name: promote-stembuild
     serial: true
