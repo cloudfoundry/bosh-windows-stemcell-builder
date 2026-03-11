@@ -1,7 +1,8 @@
 # To configure this pipeline: pipelines/configure.sh windows-2022
 
 anchors:
-  - &gcp_account_json ((broadcom_labs_gcp_credentials_json))
+  - &gcp_build_account_json ((broadcom_labs_gcp_credentials_json))
+  - &gcp_publish_account_json ((broadcom_saas-tnz-pub-winstem_gcp_credentials_json))
   - &bosh_windows_stemcell_builder_branch windows-2022
   - &bosh_windows_stemcell_builder_semver_branch semver-2022
   - &windows_stemcell_ci_image bosh/windows-stemcell-ci
@@ -705,7 +706,7 @@ jobs:
           GOVCLOUD_AWS_ACCESS_KEY_ID: ((packer_user_gov_aws_access_key.username))
           GOVCLOUD_AWS_DEFAULT_REGION: ((AWS_GOVCLOUD_PACKER_REGION))
           GOVCLOUD_AWS_SECRET_ACCESS_KEY: ((packer_user_gov_aws_access_key.password))
-          WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON: *gcp_account_json
+          WINDOWS_STEMCELLS_GCP_CREDENTIALS_JSON: *gcp_build_account_json
           ALLOWED_CIDRS: 35.197.92.68/32 34.169.1.255/32 34.82.52.87/32 34.168.69.249/32 34.82.182.73/32 34.145.18.128/26
       - put: main-version
         inputs: detect
@@ -766,7 +767,7 @@ jobs:
               image: bosh-windows-stemcell-builder-ci-image
               output_mapping: { base-gcp-image: windows-gcp-image }
               params:
-                ACCOUNT_JSON: *gcp_account_json
+                ACCOUNT_JSON: *gcp_build_account_json
                 BASE_OS: windows((BASE_OS_VERSION))
                 BASE_IMAGE_REGEX: ((GCP_BASE_IMAGE_REGEX))
                 IMAGE_FAMILY: ((GCP_IMAGE_FAMILY))
@@ -2020,7 +2021,7 @@ jobs:
         image: bosh-windows-stemcell-builder-ci-image
         params:
           OS_VERSION: windows((BASE_OS_VERSION))
-          ACCOUNT_JSON: *gcp_account_json
+          ACCOUNT_JSON: *gcp_build_account_json
           VM_PREFIX: packer-prod-((BASE_OS_VERSION))
           MOUNT_EPHEMERAL_DISK: true
           GCP_NETWORK: ((GCP_NETWORK))
@@ -2032,7 +2033,7 @@ jobs:
           file: bosh-windows-stemcell-builder-ci/ci/tasks/delete-vms/task.yml
           image: bosh-windows-stemcell-builder-ci-image
           params:
-            ACCOUNT_JSON: *gcp_account_json
+            ACCOUNT_JSON: *gcp_build_account_json
             IAAS: gcp
             VM_PREFIX: packer-prod-((BASE_OS_VERSION))
         tags: [*worker_tag]
@@ -2320,7 +2321,7 @@ jobs:
         file: bosh-windows-stemcell-builder-ci/ci/tasks/publish-gcp-stemcell/task.yml
         image: bosh-windows-stemcell-builder-ci-image
         params:
-          ACCOUNT_JSON: ((broadcom_saas-tnz-pub-winstem_gcp_credentials_json))
+          ACCOUNT_JSON: *gcp_publish_account_json
       - in_parallel:
           - put: gcp-stemcell-final-s3
             resource: gcp-stemcell-final
@@ -2330,10 +2331,9 @@ jobs:
         file: bosh-windows-stemcell-builder-ci/ci/tasks/cleanup-unpublished-gcp-images/task.yml
         image: bosh-windows-stemcell-builder-ci-image
         params:
-          ACCOUNT_JSON: *gcp_account_json
+          ACCOUNT_JSON: *gcp_build_account_json
 
   - name: submit-azure-offer
-    old_name: print-azure-publishing-instructions
     serial: true
     plan:
       - in_parallel:
@@ -2501,7 +2501,6 @@ jobs:
               tags: [*worker_tag]
 
   - name: github-release-stembuild
-    old_name: publish-stembuild-and-stemcell-builder
     serial: true
     plan:
       - in_parallel:
