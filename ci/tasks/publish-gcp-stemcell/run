@@ -49,4 +49,4 @@ new_file_name=$(
 )
 tar -zcvf "${new_file_name}" image stemcell.MF
 
-mv "${new_file_name}" final_stemcell/
+mv "${new_file_name}" final-stemcell/
