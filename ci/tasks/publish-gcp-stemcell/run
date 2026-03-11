@@ -13,7 +13,11 @@ source_image="$(echo "$source_url" | sed -E 's|https://.*/images/(.*)$|\1|')"
 source_image_project="$(echo "$source_url" | sed -E 's|https://.*/projects/(.*)/global/.*|\1|')"
 
 destination_project=$(echo "${ACCOUNT_JSON}" | jq -r .project_id)
-destination_stemcell_image_name="windows-stemcell-${version}"
+# Replace all dots (.) with hyphens (-)
+# GCP does not allow dots in image names
+sanitized_version="${version//./-}"
+
+destination_stemcell_image_name="windows-stemcell-${sanitized_version}"
 
 gcloud auth activate-service-account --quiet --key-file <(echo "$ACCOUNT_JSON")
 
