@@ -331,7 +331,7 @@ resources:
     type: s3
     source:
       bucket: ((PRODUCTION_BUCKET))
-      region_name: us-east-2
+      region_name: us-east-1
       regexp: ((BASE_OS_VERSION))/light-bosh-stemcell-(.*)-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
       access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
       secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
@@ -388,7 +388,7 @@ resources:
     type: s3
     source:
       bucket: ((PRODUCTION_BUCKET))
-      region_name: us-east-2
+      region_name: us-east-1
       regexp: ((BASE_OS_VERSION))/light-bosh-stemcell-(.*)-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent.tgz
       access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
       secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
@@ -437,7 +437,7 @@ resources:
     type: s3
     source:
       bucket: ((PRODUCTION_BUCKET))
-      region_name: us-east-2
+      region_name: us-east-1
       regexp: ((BASE_OS_VERSION))/light-bosh-stemcell-(.*)-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
       access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
       secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
