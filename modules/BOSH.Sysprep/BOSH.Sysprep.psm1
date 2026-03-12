@@ -36,7 +36,7 @@ function Invoke-Sysprep
         "gcp" {
             Disable-AgentService
             Create-GCP-UnattendXML
-            GCESysprep # See: https://cloud.google.com/compute/docs/instances/windows/creating-windows-os-image
+            GCESysprep -NoShutdown # See: https://cloud.google.com/compute/docs/instances/windows/creating-windows-os-image
         }
         "azure" {
             C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit
@@ -46,7 +46,7 @@ function Invoke-Sysprep
             New-vSphere-UnattendXML -NewPassword $NewPassword -ProductKey $ProductKey `
         -Organization $Organization -Owner $Owner
 
-            Invoke-Expression -Command 'C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown'
+            Invoke-Expression -Command 'C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit /unattend:"C:/Windows/Panther/Unattend/unattend.xml"'
         }
         Default {
             Throw "Invalid IaaS '${IaaS}' supported platforms are: AWS, Azure, GCP and Vsphere"
@@ -143,7 +143,7 @@ function Enable-AWS-Sysprep
     # Enable sysprep
     Set-Location 'C:\ProgramData\Amazon\EC2-Windows\Launch\Scripts'
     ./InitializeInstance.ps1 -Schedule
-    ./SysprepInstance.ps1
+    ./SysprepInstance.ps1 -NoShutdown
 }
 
 # GCP

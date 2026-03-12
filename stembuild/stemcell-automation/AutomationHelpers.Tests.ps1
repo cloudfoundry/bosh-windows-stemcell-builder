@@ -182,7 +182,7 @@ Describe "AutomationHelpers" {
             Mock -ModuleName AutomationHelpers -CommandName InstallCFCell { $postRebootCalls.Add("InstallCFCell") }
             Mock -ModuleName AutomationHelpers -CommandName CleanUpVM { $postRebootCalls.Add("CleanUpVM") }
             Mock -ModuleName AutomationHelpers -CommandName SysprepVM { $postRebootCalls.Add("SysprepVM") }
-            Mock -ModuleName AutomationHelpers -CommandName Stop-Computer { $postRebootCalls.Add("Stop-Computer") }
+            Mock -ModuleName AutomationHelpers -CommandName Invoke-Shutdown { $postRebootCalls.Add("Invoke-Shutdown") }
             Mock -ModuleName AutomationHelpers -CommandName RunQuickerDism { }
         }
 
@@ -200,17 +200,25 @@ Describe "AutomationHelpers" {
             $postRebootCalls.IndexOf("CleanUpVM") | Should -BeLessThan $postRebootCalls.IndexOf("SysprepVM")
         }
 
-        It "syspreps as the last command" {
+        It "syspreps before shutdown" {
             { PostReboot -Organization "org" -Owner "owner" -SkipRandomPassword:$false } | Should -Not -Throw
 
             Should -Invoke -ModuleName AutomationHelpers -CommandName SysprepVM
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Invoke-Shutdown
             Should -Invoke -ModuleName AutomationHelpers -CommandName SysprepVM -ParameterFilter {
                 $Organization -eq "org" -and
                         $Owner -eq "owner" -and
                         $SkipRandomPassword -eq $false
             }
+            $postRebootCalls.IndexOf("SysprepVM") | Should -BeLessThan $postRebootCalls.IndexOf("Invoke-Shutdown")
+        }
+
+        It "shuts down as the last command" {
+            { PostReboot } | Should -Not -Throw
+
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Invoke-Shutdown
             $lastIndex = $postRebootCalls.Count - 1
-            $postRebootCalls.IndexOf("SysprepVM") | Should -Be $lastIndex
+            $postRebootCalls.IndexOf("Invoke-Shutdown") | Should -Be $lastIndex
         }
     }
 

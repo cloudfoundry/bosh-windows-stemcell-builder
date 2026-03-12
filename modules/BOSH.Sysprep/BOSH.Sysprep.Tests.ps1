@@ -143,7 +143,7 @@ Describe "BOSH.Sysprep" {
                 { Invoke-Sysprep -IaaS "vsphere" } | Should -Not -Throw
 
                 Should -Invoke -ModuleName BOSH.Sysprep -CommandName Invoke-Expression -ParameterFilter {
-                    $Command -eq 'C:/windows/system32/sysprep/sysprep.exe /generalize /oobe /unattend:"C:/Windows/Panther/Unattend/unattend.xml" /quiet /shutdown'
+                    $Command -eq 'C:\Windows\System32\Sysprep\sysprep.exe /generalize /quiet /oobe /quit /unattend:"C:/Windows/Panther/Unattend/unattend.xml"'
                 }
             }
         }
