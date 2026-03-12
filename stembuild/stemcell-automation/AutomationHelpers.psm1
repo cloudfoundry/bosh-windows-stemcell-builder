@@ -69,6 +69,12 @@ function PostReboot
     RunQuickerDism -IgnoreErrors $True
     SysprepVM -Organization $Organization -Owner $Owner -SkipRandomPassword $SkipRandomPassword
     RunQuickerDism
+    Invoke-Shutdown
+}
+
+function Invoke-Shutdown
+{
+    shutdown /s
 }
 
 function RunQuickerDism
