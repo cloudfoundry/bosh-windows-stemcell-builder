@@ -214,6 +214,7 @@ resources:
     source:
       access_token: ((svc-bosh-ecosystem-ghe-personal-access-token))
       github_api_url: https://github.gwd.broadcom.net/api/v3
+      github_uploads_url: https://github.gwd.broadcom.net/api/uploads/
       owner: TNZ
       repository: bosh-windows-stemcell-builder
 
