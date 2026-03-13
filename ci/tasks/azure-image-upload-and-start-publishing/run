@@ -126,7 +126,7 @@ publish_offer() {
     '{ "metadata": { "notification-emails": $email } }' > offer_emails.json
 
   publish_offer_endpoint="https://cloudpartner.azure.com/api/publishers/$AZURE_PUBLISHER/offers/$AZURE_OFFER/publish?api-version=2017-10-31"
-  curl --fail -X POST -d "@offer_emails.json" -vv "$publish_offer_endpoint" \
+  curl --fail-with-body -X POST -d "@offer_emails.json" -vv "$publish_offer_endpoint" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $token"
 }
