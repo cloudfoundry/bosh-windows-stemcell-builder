@@ -2550,6 +2550,9 @@ jobs:
           commitish: stemcell-builder-commit/sha
           globs:
             - final-stembuilds/stembuild*
+            - aws-stemcell-final/light-bosh-stemcell-*.tgz
+            - azure-stemcell-final/light-bosh-stemcell-*.tgz
+            - gcp-stemcell-final/light-bosh-stemcell-*.tgz
 
   - name: bump-minor
     serial: true
