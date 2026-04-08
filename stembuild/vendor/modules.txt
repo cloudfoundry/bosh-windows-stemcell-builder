@@ -57,7 +57,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20260302011040-a15ffb7f9dcc
+# github.com/google/pprof v0.0.0-20260402051712-545e8a4df936
 ## explicit; go 1.24.0
 github.com/google/pprof/profile
 # github.com/google/subcommands v1.2.0
@@ -129,12 +129,12 @@ github.com/kr/text
 # github.com/masterzen/simplexml v0.0.0-20190410153822-31eea3082786
 ## explicit
 github.com/masterzen/simplexml/dom
-# github.com/masterzen/winrm v0.0.0-20250927112105-5f8e6c707321 => github.com/bosh-dep-forks/winrm v0.0.0-20240321234108-df0e10ca9199
+# github.com/masterzen/winrm v0.0.0-20260407182533-5570be7f80cf => github.com/bosh-dep-forks/winrm v0.0.0-20240321234108-df0e10ca9199
 ## explicit; go 1.21
 github.com/masterzen/winrm
 github.com/masterzen/winrm/soap
-# github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
-## explicit; go 1.24.0
+# github.com/maxbrunsfeld/counterfeiter/v6 v6.12.2
+## explicit; go 1.25.0
 github.com/maxbrunsfeld/counterfeiter/v6
 github.com/maxbrunsfeld/counterfeiter/v6/arguments
 github.com/maxbrunsfeld/counterfeiter/v6/command

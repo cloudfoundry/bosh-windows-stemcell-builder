@@ -5,8 +5,8 @@ go 1.25.0
 require (
 	github.com/concourse/pool-resource v1.1.1
 	github.com/google/subcommands v1.2.0
-	github.com/masterzen/winrm v0.0.0-20250927112105-5f8e6c707321
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
+	github.com/masterzen/winrm v0.0.0-20260407182533-5570be7f80cf
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.2
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
 	github.com/packer-community/winrmcp v0.0.0-20221126162354-6e900dd2c68f
@@ -28,7 +28,7 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20260302011040-a15ffb7f9dcc // indirect
+	github.com/google/pprof v0.0.0-20260402051712-545e8a4df936 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
