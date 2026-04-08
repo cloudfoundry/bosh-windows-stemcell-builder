@@ -1,5 +1,9 @@
 source "https://rubygems.org"
 
+# http-cookie >= 1.1 eagerly requires cookie_jar before HTTP::Cookie constants exist,
+# which raises NameError on Ruby 3.4+ when loaded via faraday-cookie_jar (Azure SDK).
+gem "http-cookie", "< 1.1"
+
 gem "aws-sdk"
 gem "azure_mgmt_resources"
 gem "nokogiri"
