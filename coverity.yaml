@@ -1,0 +1,7 @@
+- service: bosh-windows-stemcell-builder
+  language: golang
+  default_branch: develop
+  commit: develop
+  golang_build_command: ./...
+  custom_path: ./acceptance_test
+  goVersion: 1.25.0
