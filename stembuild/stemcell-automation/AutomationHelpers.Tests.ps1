@@ -518,21 +518,12 @@ Describe "AutomationHelpers" {
     }
 
     Describe "GenerateRandomPassword" {
-        BeforeEach {
-            Mock -ModuleName AutomationHelpers -CommandName Get-Random { "changeMe123!".ToCharArray() }
-        }
-
         It "generates a valid password" {
-            Mock -ModuleName AutomationHelpers -CommandName Valid-Password { $True }
-
             $result = ""
             { GenerateRandomPassword | Set-Variable -Name "result" -Scope 1 } | Should -Not -Throw
-            $result | Should -BeExactly "changeMe123!"
-
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Get-Random -Times 1
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Valid-Password -Times 1 -ParameterFilter {
-                $Password -eq "changeMe123!"
-            }
+            $result.Length | Should -Be 24
+            Valid-Password -Password $result | Should -Be $True
+            
             Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
                 $Message -eq "Successfully generated password"
             }
@@ -543,13 +534,17 @@ Describe "AutomationHelpers" {
 
             { GenerateRandomPassword } | Should -Throw "Unable to generate a valid password after 200 attempts"
 
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Get-Random -Times 200
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Valid-Password -Times 200 -ParameterFilter {
-                $Password -eq "changeMe123!"
-            }
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Valid-Password -Times 200
             Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
                 $Message -eq "Failed to generate password after 200 attempts"
             }
+        }
+
+        It "generates unique passwords on subsequent calls" {
+            $passwordOne = GenerateRandomPassword
+            $passwordTwo = GenerateRandomPassword
+            
+            $passwordOne | Should -Not -BeExactly $passwordTwo
         }
     }
 
