@@ -3,12 +3,18 @@ ARG BASE_IMAGE=ubuntu:jammy
 FROM ${BASE_IMAGE}
 
 ARG BOSH_CLI_URL
+ARG BOSH_CLI_SHA256
 ARG META4_CLI_URL
+ARG META4_CLI_SHA256
 ARG GOLANGCI_LINT_INSTALL_URL
+ARG GOLANGCI_LINT_INSTALL_SHA256
 ARG GOVC_INSTALL_URL
+ARG GOVC_INSTALL_SHA256
 ARG YQ_CLI_URL
+ARG YQ_CLI_SHA256
 
 ARG RUBY_INSTALL_URL
+ARG RUBY_INSTALL_SHA256
 ARG GEM_HOME
 ARG RUBY_VERSION
 
@@ -130,8 +136,10 @@ ENV PATH=/usr/local/go/bin:${PATH}
 ENV PATH ${GEM_HOME}/bin:${GEM_HOME}/gems/bin:${PATH}
 ENV BUNDLE_APP_CONFIG ${GEM_HOME}
 RUN cd /tmp  \
-    && curl --show-error -sL "${RUBY_INSTALL_URL}" \
-      | tar -xzf - \
+    && curl -fsSL "${RUBY_INSTALL_URL}" -o ruby-install.tar.gz \
+    && echo "${RUBY_INSTALL_SHA256}  ruby-install.tar.gz" | sha256sum -c - \
+    && tar -xzf ruby-install.tar.gz \
+    && rm ruby-install.tar.gz \
     && cd ruby-install-* \
     && make -s install \
     && cd - \
@@ -140,38 +148,44 @@ RUN cd /tmp  \
     && echo 'gem: --no-document' > ~/.gemrc \
     && NUM_CPUS=$(grep -c ^processor /proc/cpuinfo) \
     && ruby-install --jobs=${NUM_CPUS} --cleanup --system ruby ${RUBY_VERSION} \
-      -- --disable-install-doc --disable-install-rdoc \
+    -- --disable-install-doc --disable-install-rdoc \
     && gem update --system \
     && bundle config --global path "${GEM_HOME}" \
     && bundle config --global bin "${GEM_HOME}/bin"
 
 
 RUN bosh_cli_path="/usr/bin/bosh" \
-    && curl --show-error -sL "${BOSH_CLI_URL}" \
-      > "${bosh_cli_path}" \
+    && curl -fsSL "${BOSH_CLI_URL}" > "${bosh_cli_path}" \
+    && echo "${BOSH_CLI_SHA256}  ${bosh_cli_path}" | sha256sum -c - \
     && chmod +x "${bosh_cli_path}"
 
 RUN meta4_cli_path="/usr/local/bin/meta4" \
-    && curl --show-error -sL "${META4_CLI_URL}" \
-      > "${meta4_cli_path}" \
+    && curl -fsSL "${META4_CLI_URL}" > "${meta4_cli_path}" \
+    && echo "${META4_CLI_SHA256}  ${meta4_cli_path}" | sha256sum -c - \
     && chmod +x "${meta4_cli_path}"
 
 RUN cd /tmp \
     && golangci_lint_path="/usr/local/bin/golangci-lint" \
-    && curl --show-error -sL "${GOLANGCI_LINT_INSTALL_URL}" \
-      | tar -xzf - \
+    && curl -fsSL "${GOLANGCI_LINT_INSTALL_URL}" -o golangci-lint.tar.gz \
+    && echo "${GOLANGCI_LINT_INSTALL_SHA256}  golangci-lint.tar.gz" | sha256sum -c - \
+    && tar -xzf golangci-lint.tar.gz \
+    && rm golangci-lint.tar.gz \
     && mv golangci-lint-*-linux-amd64/golangci-lint "${golangci_lint_path}" \
     && rm -rf golangci-lint-*-linux-amd64 \
     && chmod +x "${golangci_lint_path}"
 
-RUN govc_path="/usr/local/bin/govc" \
-    && curl --show-error -sL "${GOVC_INSTALL_URL}" \
-      | tar -xOzf - govc > "${govc_path}" \
+RUN cd /tmp \
+    && govc_path="/usr/local/bin/govc" \
+    && curl -fsSL "${GOVC_INSTALL_URL}" -o govc.tar.gz \
+    && echo "${GOVC_INSTALL_SHA256}  govc.tar.gz" | sha256sum -c - \
+    && tar -xzf govc.tar.gz govc \
+    && rm govc.tar.gz \
+    && mv govc "${govc_path}" \
     && chmod +x "${govc_path}"
 
 RUN yq_cli_path="/usr/local/bin/yq" \
-    && curl --show-error -sL "${YQ_CLI_URL}" \
-      > "${yq_cli_path}" \
+    && curl -fsSL "${YQ_CLI_URL}" > "${yq_cli_path}" \
+    && echo "${YQ_CLI_SHA256}  ${yq_cli_path}" | sha256sum -c - \
     && chmod +x "${yq_cli_path}"
 
 

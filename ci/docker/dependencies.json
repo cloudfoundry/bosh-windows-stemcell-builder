@@ -1,0 +1,26 @@
+{
+  "bosh_cli": {
+    "url": "https://github.com/cloudfoundry/bosh-cli/releases/download/v7.10.2/bosh-cli-7.10.2-linux-amd64",
+    "sha256": "d9a52693994bdefc2fc73f1fe16042ffed48c6931308c6a9ae3520413d73065c"
+  },
+  "meta4_cli": {
+    "url": "https://github.com/dpb587/metalink/releases/download/v0.5.0/meta4-0.5.0-linux-amd64",
+    "sha256": "9f3ff22e1ac3a8b4a667a9505dce2a224e099475ab69a02b23813ad073e27e01"
+  },
+  "yq_cli": {
+    "url": "https://github.com/mikefarah/yq/releases/download/v4.53.2/yq_linux_amd64",
+    "sha256": "d56bf5c6819e8e696340c312bd70f849dc1678a7cda9c2ad63eebd906371d56b"
+  },
+  "ruby_install": {
+    "url": "https://github.com/postmodern/ruby-install/releases/download/v0.10.2/ruby-install-0.10.2.tar.gz",
+    "sha256": "65836158b8026992b2e96ed344f3d888112b2b105d0166ecb08ba3b4a0d91bf6"
+  },
+  "golangci_lint": {
+    "url": "https://github.com/golangci/golangci-lint/releases/download/v2.11.4/golangci-lint-2.11.4-linux-amd64.tar.gz",
+    "sha256": "200c5b7503f67b59a6743ccf32133026c174e272b930ee79aa2aa6f37aca7ef1"
+  },
+  "govc": {
+    "url": "https://github.com/vmware/govmomi/releases/download/v0.53.0/govc_Linux_x86_64.tar.gz",
+    "sha256": "67cd529a9a2ec4c68fd1ae99cd4dcbee086591b029e23934a50564480e86e739"
+  }
+}

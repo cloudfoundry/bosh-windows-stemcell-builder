@@ -1,0 +1,81 @@
+name: Bump Binaries
+
+on:
+  schedule:
+    - cron: '0 4 * * 1' # Run every Monday at 4:00 AM UTC
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  bump-binaries:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup jq
+        run: sudo apt-get install -y jq
+
+      - name: Run bump script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./ci/scripts/bump-binaries.sh
+
+      - name: Test Docker build
+        run: |
+          # Mock the azstemcell binary for the docker build context
+          touch ci/docker/azstemcell
+          
+          # Extract args from dependencies.json
+          DEPS_FILE="ci/docker/dependencies.json"
+          BOSH_CLI_URL=$(jq -r '.bosh_cli.url' < $DEPS_FILE)
+          BOSH_CLI_SHA=$(jq -r '.bosh_cli.sha256' < $DEPS_FILE)
+          META4_CLI_URL=$(jq -r '.meta4_cli.url' < $DEPS_FILE)
+          META4_CLI_SHA=$(jq -r '.meta4_cli.sha256' < $DEPS_FILE)
+          YQ_CLI_URL=$(jq -r '.yq_cli.url' < $DEPS_FILE)
+          YQ_CLI_SHA=$(jq -r '.yq_cli.sha256' < $DEPS_FILE)
+          RUBY_INSTALL_URL=$(jq -r '.ruby_install.url' < $DEPS_FILE)
+          RUBY_INSTALL_SHA=$(jq -r '.ruby_install.sha256' < $DEPS_FILE)
+          GOLANGCI_LINT_URL=$(jq -r '.golangci_lint.url' < $DEPS_FILE)
+          GOLANGCI_LINT_SHA=$(jq -r '.golangci_lint.sha256' < $DEPS_FILE)
+          GOVC_URL=$(jq -r '.govc.url' < $DEPS_FILE)
+          GOVC_SHA=$(jq -r '.govc.sha256' < $DEPS_FILE)
+          
+          RUBY_VERSION=$(cat .ruby-version)
+          GEM_HOME="/usr/local/bundle"
+          
+          docker build \
+            --build-arg BOSH_CLI_URL="$BOSH_CLI_URL" \
+            --build-arg BOSH_CLI_SHA256="$BOSH_CLI_SHA" \
+            --build-arg META4_CLI_URL="$META4_CLI_URL" \
+            --build-arg META4_CLI_SHA256="$META4_CLI_SHA" \
+            --build-arg YQ_CLI_URL="$YQ_CLI_URL" \
+            --build-arg YQ_CLI_SHA256="$YQ_CLI_SHA" \
+            --build-arg RUBY_INSTALL_URL="$RUBY_INSTALL_URL" \
+            --build-arg RUBY_INSTALL_SHA256="$RUBY_INSTALL_SHA" \
+            --build-arg GOLANGCI_LINT_INSTALL_URL="$GOLANGCI_LINT_URL" \
+            --build-arg GOLANGCI_LINT_INSTALL_SHA256="$GOLANGCI_LINT_SHA" \
+            --build-arg GOVC_INSTALL_URL="$GOVC_URL" \
+            --build-arg GOVC_INSTALL_SHA256="$GOVC_SHA" \
+            --build-arg RUBY_VERSION="$RUBY_VERSION" \
+            --build-arg GEM_HOME="$GEM_HOME" \
+            -f ci/docker/Dockerfile ci/docker/
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update binary dependencies in dependencies.json"
+          title: "Update binary dependencies"
+          body: |
+            This PR automatically updates the binary dependencies in `ci/docker/dependencies.json`.
+            
+            This ensures that the CI image is always built with the latest versions of these tools while maintaining security via SHA-256 verification.
+          branch: "bump-binaries"
+          base: "windows-2019"
+          delete-branch: true
