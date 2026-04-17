@@ -275,17 +275,25 @@ function GenerateRandomPassword
     $limit = 200
     $count = 0
 
-    while ($limit-- -gt 0)
-    {
-        $passwd = (Get-Random -InputObject $CharList -Count 24) -join ''
-        if (Valid-Password -Password $passwd)
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $bytes = New-Object byte[] 24
+
+    try {
+        while ($limit-- -gt 0)
         {
-            Write-Log "Successfully generated password"
-            return $passwd
+            $rng.GetBytes($bytes)
+            $passwd = ($bytes | ForEach-Object { $CharList[$_ % $CharList.Length] }) -join ''
+            if (Valid-Password -Password $passwd)
+            {
+                Write-Log "Successfully generated password"
+                return $passwd
+            }
         }
+        Write-Log "Failed to generate password after 200 attempts"
+        throw "Unable to generate a valid password after 200 attempts"
+    } finally {
+        $rng.Dispose()
     }
-    Write-Log "Failed to generate password after 200 attempts"
-    throw "Unable to generate a valid password after 200 attempts"
 }
 
 function SysprepVM
