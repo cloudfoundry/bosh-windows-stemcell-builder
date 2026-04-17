@@ -13,15 +13,14 @@ if ! command -v jq &> /dev/null; then
     exit 1
 fi
 
-get_latest_asset() {
+SAFETY_DAYS=7
+
+get_latest_release_json() {
   local repo=$1
-  local pattern=$2
-  
-  # Use GH CLI if available (handles auth automatically), otherwise fallback to curl
   if command -v gh &> /dev/null; then
-    gh api "repos/${repo}/releases/latest" | jq -r ".assets[] | select(.name | test(\"${pattern}\")) | .browser_download_url" | head -n 1
+    gh api "repos/${repo}/releases/latest"
   else
-    curl -s "https://api.github.com/repos/${repo}/releases/latest" | jq -r ".assets[] | select(.name | test(\"${pattern}\")) | .browser_download_url" | head -n 1
+    curl -s -H "Authorization: token ${GITHUB_TOKEN:-}" "https://api.github.com/repos/${repo}/releases/latest"
   fi
 }
 
@@ -36,14 +35,29 @@ update_dep() {
   local pattern=$3
   
   echo "Checking ${repo}..."
+  
+  local release_json
+  release_json=$(get_latest_release_json "${repo}")
+  
+  # 1. Check the Safety Buffer using jq
+  local age_days
+  age_days=$(echo "${release_json}" | jq -r 'if .published_at then ((now - (.published_at | fromdateiso8601)) / 86400) | floor else -1 end')
+  
+  if [[ "${age_days}" != "-1" ]] && [[ "${age_days}" -lt "${SAFETY_DAYS}" ]]; then
+    echo "  Skipping: Release is only ${age_days} days old (requires ${SAFETY_DAYS} days of safety)."
+    return 0
+  fi
+  
+  # 2. Extract the URL
   local url
-  url=$(get_latest_asset "${repo}" "${pattern}")
+  url=$(echo "${release_json}" | jq -r ".assets[] | select(.name | test(\"${pattern}\")) | .browser_download_url" | head -n 1)
   
   if [[ -z "${url}" || "${url}" == "null" ]]; then
     echo "Failed to find asset for ${repo} matching ${pattern}" >&2
     return 1
   fi
   
+  # 3. Compare with current version
   local current_url
   current_url=$(jq -r ".${key}.url" < "${DEPS_FILE}")
   
@@ -52,6 +66,7 @@ update_dep() {
     return 0
   fi
   
+  # 4. Apply the update
   echo "  Found new version: ${url}"
   echo "  Calculating SHA256..."
   local sha
