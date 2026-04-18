@@ -182,7 +182,7 @@ Describe "AutomationHelpers" {
             Mock -ModuleName AutomationHelpers -CommandName InstallCFCell { $postRebootCalls.Add("InstallCFCell") }
             Mock -ModuleName AutomationHelpers -CommandName CleanUpVM { $postRebootCalls.Add("CleanUpVM") }
             Mock -ModuleName AutomationHelpers -CommandName SysprepVM { $postRebootCalls.Add("SysprepVM") }
-            Mock -ModuleName AutomationHelpers -CommandName Stop-Computer { $postRebootCalls.Add("Stop-Computer") }
+            Mock -ModuleName AutomationHelpers -CommandName Invoke-Shutdown { $postRebootCalls.Add("Invoke-Shutdown") }
             Mock -ModuleName AutomationHelpers -CommandName RunQuickerDism { }
         }
 
@@ -200,17 +200,25 @@ Describe "AutomationHelpers" {
             $postRebootCalls.IndexOf("CleanUpVM") | Should -BeLessThan $postRebootCalls.IndexOf("SysprepVM")
         }
 
-        It "syspreps as the last command" {
+        It "syspreps before shutdown" {
             { PostReboot -Organization "org" -Owner "owner" -SkipRandomPassword:$false } | Should -Not -Throw
 
             Should -Invoke -ModuleName AutomationHelpers -CommandName SysprepVM
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Invoke-Shutdown
             Should -Invoke -ModuleName AutomationHelpers -CommandName SysprepVM -ParameterFilter {
                 $Organization -eq "org" -and
                         $Owner -eq "owner" -and
                         $SkipRandomPassword -eq $false
             }
+            $postRebootCalls.IndexOf("SysprepVM") | Should -BeLessThan $postRebootCalls.IndexOf("Invoke-Shutdown")
+        }
+
+        It "shuts down as the last command" {
+            { PostReboot } | Should -Not -Throw
+
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Invoke-Shutdown
             $lastIndex = $postRebootCalls.Count - 1
-            $postRebootCalls.IndexOf("SysprepVM") | Should -Be $lastIndex
+            $postRebootCalls.IndexOf("Invoke-Shutdown") | Should -Be $lastIndex
         }
     }
 
@@ -508,21 +516,12 @@ Describe "AutomationHelpers" {
     }
 
     Describe "GenerateRandomPassword" {
-        BeforeEach {
-            Mock -ModuleName AutomationHelpers -CommandName Get-Random { "changeMe123!".ToCharArray() }
-        }
-
         It "generates a valid password" {
-            Mock -ModuleName AutomationHelpers -CommandName Valid-Password { $True }
-
             $result = ""
             { GenerateRandomPassword | Set-Variable -Name "result" -Scope 1 } | Should -Not -Throw
-            $result | Should -BeExactly "changeMe123!"
-
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Get-Random -Times 1
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Valid-Password -Times 1 -ParameterFilter {
-                $Password -eq "changeMe123!"
-            }
+            $result.Length | Should -Be 24
+            Valid-Password -Password $result | Should -Be $True
+            
             Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
                 $Message -eq "Successfully generated password"
             }
@@ -533,13 +532,17 @@ Describe "AutomationHelpers" {
 
             { GenerateRandomPassword } | Should -Throw "Unable to generate a valid password after 200 attempts"
 
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Get-Random -Times 200
-            Should -Invoke -ModuleName AutomationHelpers -CommandName Valid-Password -Times 200 -ParameterFilter {
-                $Password -eq "changeMe123!"
-            }
+            Should -Invoke -ModuleName AutomationHelpers -CommandName Valid-Password -Times 200
             Should -Invoke -ModuleName AutomationHelpers -CommandName Write-Log -Times 1 -ParameterFilter {
                 $Message -eq "Failed to generate password after 200 attempts"
             }
+        }
+
+        It "generates unique passwords on subsequent calls" {
+            $passwordOne = GenerateRandomPassword
+            $passwordTwo = GenerateRandomPassword
+            
+            $passwordOne | Should -Not -BeExactly $passwordTwo
         }
     }
 
