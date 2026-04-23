@@ -31,13 +31,13 @@ RSpec.shared_examples "standard provisioners" do
   end
 
   it "runs get-hotfix after windows updates are applied" do
-    get_hotfix_prov = TestProvisioner.new_powershell_provisioner("Get-HotFix > hotfixes.log")
+    get_hotfix_prov = TestProvisioner.new_powershell_provisioner("Get-HotFix | Out-File -FilePath hotfixes.log -Encoding utf8")
     wait_windows_update_prov = TestProvisioner.new_powershell_provisioner(/Wait-WindowsUpdates -Password .+ -User Provisioner/)
     expect(provisioners).to include_provisioner(get_hotfix_prov, after: [wait_windows_update_prov])
     # expect(provisioners).to include_provisioner(get_hotfix_prov)
 
     prov_index = provisioners.find_index do |p|
-      p["type"] == "powershell" && p.has_key?("inline") && p["inline"].include?("Get-HotFix > hotfixes.log")
+      p["type"] == "powershell" && p.has_key?("inline") && p["inline"].include?("Get-HotFix | Out-File -FilePath hotfixes.log -Encoding utf8")
     end
     expect(prov_index).not_to be_nil, "Could not find Get-Hotfix provisioner"
 

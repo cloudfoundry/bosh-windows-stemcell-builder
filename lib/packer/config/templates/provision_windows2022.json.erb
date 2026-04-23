@@ -111,7 +111,7 @@
     "inline": [
       "$ErrorActionPreference = \"Stop\";",
       "trap { $host.SetShouldExit(1) }",
-      "Get-HotFix > hotfixes.log"
+      "Get-HotFix | Out-File -FilePath hotfixes.log -Encoding utf8"
     ]
   },
   {
