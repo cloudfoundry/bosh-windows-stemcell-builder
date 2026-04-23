@@ -142,7 +142,7 @@ done
 
 remote_hotfix_log_path="C:\\hotfix.log"
 
-run_powershell_command_with_logging "Get-Hotfix > ${remote_hotfix_log_path}"
+run_powershell_command_with_logging "Get-Hotfix | Out-File -FilePath ${remote_hotfix_log_path} -Encoding utf8"
 
 download_remote_file "${remote_hotfix_log_path}" hotfix-log/hotfixes.log
 
