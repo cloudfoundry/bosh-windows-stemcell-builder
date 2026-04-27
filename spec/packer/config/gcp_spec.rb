@@ -12,6 +12,10 @@ RSpec.describe Packer::Config::Gcp do
       Timecop.return
     end
 
+    let(:repo_root) { File.expand_path("../../..", __dir__) }
+    let(:setup_winrm_ps1_path) { File.join(repo_root, "scripts", "gcp", "setup-winrm.ps1") }
+    let(:expected_sysprep_script_ps1) { File.read(setup_winrm_ps1_path) }
+
     let(:builders) {
       Packer::Config::Gcp.new(
         account_json: "some-account-json",
@@ -36,18 +40,32 @@ RSpec.describe Packer::Config::Gcp do
         "image_family" => "some-image-family",
         "zone" => "us-west1-c",
         "disk_size" => 32,
+        "image_name" => "packer-#{Time.now.to_i}",
         "machine_type" => "some-vm-type",
+        "network" => nil,
+        "network_project_id" => nil,
+        "subnetwork" => nil,
         "omit_external_ip" => false,
+        "use_internal_ip" => false,
         "communicator" => "winrm",
         "winrm_username" => "winrmuser",
         "winrm_use_ssl" => false,
         "winrm_timeout" => "1h",
         "state_timeout" => "10m",
         "metadata" => {
-          "sysprep-specialize-script-url" => "https://raw.githubusercontent.com/cloudfoundry/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1",
+          "sysprep-specialize-script-ps1" => expected_sysprep_script_ps1,
           "name" => "some-vm-prefix-#{Time.now.to_i}"
         }
       }
+    end
+
+    it "returns the expected googlecompute builder" do
+      expect(builders[0]).to eq(baseline_builders)
+    end
+
+    it "embeds sysprep-specialize-script-ps1 from the repo checkout (not a mutable URL)" do
+      expect(builders[0]["metadata"]["sysprep-specialize-script-ps1"]).to eq(expected_sysprep_script_ps1)
+      expect(builders[0]["metadata"]).not_to have_key("sysprep-specialize-script-url")
     end
 
     context "when vm_prefix is empty" do
