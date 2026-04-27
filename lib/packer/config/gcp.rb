@@ -3,9 +3,6 @@ require "securerandom"
 module Packer
   module Config
     class Gcp
-      # GCE instance metadata limits inline script payload size (~256 KiB).
-      SYSPREP_SPECIALIZE_SCRIPT_METADATA_MAX_BYTES = 256 * 1024
-
       def initialize(
         account_json:,
         project_id:,
@@ -42,14 +39,7 @@ module Packer
       end
 
       def builders
-        stemcell_builder_dir = File.expand_path("../../../../", __FILE__)
-        setup_winrm_path = File.join(stemcell_builder_dir, "scripts", "gcp", "setup-winrm.ps1")
-        sysprep_script_ps1 = File.read(setup_winrm_path)
-        if sysprep_script_ps1.bytesize > SYSPREP_SPECIALIZE_SCRIPT_METADATA_MAX_BYTES
-          raise ArgumentError,
-            "sysprep-specialize-script-ps1 content from #{setup_winrm_path} is #{sysprep_script_ps1.bytesize} bytes, " \
-            "which exceeds the GCE metadata inline script limit of #{SYSPREP_SPECIALIZE_SCRIPT_METADATA_MAX_BYTES} bytes"
-        end
+        sysprep_script_ps1 = SysprepScriptGenerator.new.content(iaas: :gcp)
 
         [
           {

@@ -13,8 +13,9 @@ RSpec.describe Packer::Config::Gcp do
     end
 
     let(:repo_root) { File.expand_path("../../..", __dir__) }
-    let(:setup_winrm_ps1_path) { File.join(repo_root, "scripts", "gcp", "setup-winrm.ps1") }
-    let(:expected_sysprep_script_ps1) { File.read(setup_winrm_ps1_path) }
+    let(:expected_sysprep_script_ps1) {
+      Packer::SysprepScriptGenerator.new.content(iaas: :gcp)
+    }
 
     let(:builders) {
       Packer::Config::Gcp.new(
@@ -63,28 +64,22 @@ RSpec.describe Packer::Config::Gcp do
       expect(builders[0]).to eq(baseline_builders)
     end
 
-    it "embeds sysprep-specialize-script-ps1 from the repo checkout (not a mutable URL)" do
-      expect(builders[0]["metadata"]["sysprep-specialize-script-ps1"]).to eq(expected_sysprep_script_ps1)
+    it "embeds sysprep-specialize-script-ps1 from SysprepScriptGenerator (not a mutable URL)" do
+      script = builders[0]["metadata"]["sysprep-specialize-script-ps1"]
+      expect(script).to eq(expected_sysprep_script_ps1)
+      expect(script).not_to include("Invoke-WebRequest", "raw.githubusercontent.com")
+      expect(script).to match(/Enable-WinRM/)
       expect(builders[0]["metadata"]).not_to have_key("sysprep-specialize-script-url")
     end
 
     it "embeds sysprep script content within GCE metadata inline size limit" do
       script = builders[0]["metadata"]["sysprep-specialize-script-ps1"]
-      expect(script.bytesize).to be <= Packer::Config::Gcp::SYSPREP_SPECIALIZE_SCRIPT_METADATA_MAX_BYTES
+      expect(script.bytesize).to be <= Packer::SysprepScriptGenerator::GCP_METADATA_MAX_BYTES
     end
 
-    it "raises ArgumentError when setup-winrm.ps1 content exceeds GCE metadata size limit" do
-      limit = Packer::Config::Gcp::SYSPREP_SPECIALIZE_SCRIPT_METADATA_MAX_BYTES
-      oversize_bytes = limit + 1
-      huge_script = "x" * oversize_bytes
-
-      allow(File).to receive(:read).and_wrap_original do |method, *args, **kwargs, &block|
-        path = args.first.to_s
-        if path.end_with?("scripts/gcp/setup-winrm.ps1")
-          huge_script
-        else
-          method.call(*args, **kwargs, &block)
-        end
+    it "propagates ArgumentError when generated sysprep exceeds GCE metadata size limit" do
+      allow(File).to receive(:read).and_wrap_original do |method, path, *args, **kwargs, &block|
+        path.to_s.end_with?("modules/BOSH.WinRM/BOSH.WinRM.psm1") ? ("x" * 400_000) : method.call(path, *args, **kwargs, &block)
       end
 
       expect {
@@ -99,10 +94,7 @@ RSpec.describe Packer::Config::Gcp do
           vm_prefix: "some-vm-prefix",
           vm_type: "some-vm-type"
         ).builders
-      }.to raise_error(
-        ArgumentError,
-        /sysprep-specialize-script-ps1 content from .*setup-winrm\.ps1 is #{oversize_bytes} bytes, .*#{limit} bytes/
-      )
+      }.to raise_error(ArgumentError, /GCE sysprep-specialize-script-ps1 metadata/)
     end
 
     context "when vm_prefix is empty" do

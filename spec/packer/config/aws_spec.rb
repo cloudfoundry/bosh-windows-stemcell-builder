@@ -24,6 +24,11 @@ RSpec.describe Packer::Config::Aws do
 
     let(:aws_role_arn) { "" }
 
+    let(:repo_root) { File.expand_path("../../..", __dir__) }
+    let(:expected_user_data) {
+      Packer::SysprepScriptGenerator.new.content(iaas: :aws)
+    }
+
     let(:builders) do
       Packer::Config::Aws.new(
         aws_access_key: "some-aws-access-key",
@@ -62,6 +67,7 @@ RSpec.describe Packer::Config::Aws do
         winrm_timeout: "1h",
         security_group_id: "sg1",
         ami_groups: "all",
+        user_data: expected_user_data,
         run_tags: {Name: "some-vm-prefix-#{Time.now.to_i}"}
       }
     end
@@ -69,7 +75,8 @@ RSpec.describe Packer::Config::Aws do
     it "returns the baseline builders" do
       expect(builders[0]).to include(baseline_builders)
       expect(builders[0][:ami_name]).to match(/BOSH-.*-region1/)
-      expect(builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
+      expect(builders[0][:user_data]).to eq(expected_user_data)
+      expect(builders[0]).not_to have_key(:user_data_file)
       expect(builders[0][:assume_role]).to be_nil
     end
 
@@ -105,7 +112,8 @@ RSpec.describe Packer::Config::Aws do
           name: "amazon-ebs-region1-gov"
         }))
         expect(gov_builders[0][:ami_name]).to match(/BOSH-.*-region1/)
-        expect(gov_builders[0][:user_data_file]).to match(/.*scripts\/aws\/setup_winrm.txt$/)
+        expect(gov_builders[0][:user_data]).to eq(expected_user_data)
+        expect(gov_builders[0]).not_to have_key(:user_data_file)
       end
     end
 
