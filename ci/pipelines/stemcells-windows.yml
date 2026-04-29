@@ -1088,6 +1088,8 @@ jobs:
             resource: stembuild-linux-build-number
             passed: [stembuild-linux]
             tags: [*worker_tag]
+          - get: bosh-agent-release
+            passed: [stembuild-linux]
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1178,6 +1180,8 @@ jobs:
             - get: stembuild-linux-stemcell
               passed: [create-stembuild-linux-stemcell]
               trigger: true
+            - get: bosh-agent-release
+              passed: [create-stembuild-linux-stemcell]
       - do:
           - task: run-bwats-stembuild-linux
             file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
@@ -1215,6 +1219,8 @@ jobs:
               passed: [test-stembuild-linux-stemcell]
             - get: stembuild-linux-stemcell
               trigger: true
+              passed: [test-stembuild-linux-stemcell]
+            - get: bosh-agent-release
               passed: [test-stembuild-linux-stemcell]
             - get: bosh-integration-registry-image
       - do:
@@ -1255,6 +1261,8 @@ jobs:
             resource: stembuild-windows-build-number
             passed: [stembuild-windows]
             tags: [*worker_tag]
+          - get: bosh-agent-release
+            passed: [stembuild-windows]
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1347,6 +1355,8 @@ jobs:
             - get: stembuild-windows-stemcell
               passed: [create-stembuild-windows-stemcell]
               trigger: true
+            - get: bosh-agent-release
+              passed: [create-stembuild-windows-stemcell]
       - do:
           - task: run-bwats-stembuild-windows
             file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
@@ -1384,6 +1394,8 @@ jobs:
               passed: [test-stembuild-windows-stemcell]
             - get: stembuild-windows-stemcell
               trigger: true
+              passed: [test-stembuild-windows-stemcell]
+            - get: bosh-agent-release
               passed: [test-stembuild-windows-stemcell]
             - get: bosh-integration-registry-image
       - do:
@@ -2191,6 +2203,8 @@ jobs:
                 - wuts-gcp
                 - wuts-aws-govcloud # implies => aws-build-number
                 - wuts-azure
+                - wuts-stembuild-linux-stemcell
+                - wuts-stembuild-windows-stemcell
       - task: ensure-versions-match
         file: bosh-windows-stemcell-builder-ci/ci/tasks/match-stemcell-versions/task.yml
         image: bosh-windows-stemcell-builder-ci-image
