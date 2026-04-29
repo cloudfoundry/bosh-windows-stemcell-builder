@@ -168,6 +168,7 @@ type TestConfig struct {
 	DefaultUsername     string `json:"default_username"`
 	DefaultPassword     string `json:"default_password"`
 	SkipCleanup         bool   `json:"skip_cleanup"`
+	NtpServers          string `json:"ntp_servers"`
 }
 
 type StemcellYML struct {
@@ -483,7 +484,7 @@ func downloadFile(prefix, sourceUrl string) (string, error) {
 }
 
 func (c *TestConfig) deployWithManifest(bosh *BoshCommand, deploymentName string, stemcellVersion string,
-	bwatsVersion string, manifestPath string, opsFiles ...string) error {
+	bwatsVersion string, manifestPath string, varsFiles []string, opsFiles []string) error {
 	manifestProperties := ManifestProperties{
 		DeploymentName:      deploymentName,
 		ReleaseName:         "bwats-release",
@@ -508,6 +509,9 @@ func (c *TestConfig) deployWithManifest(bosh *BoshCommand, deploymentName string
 		"deploy",
 		manifestPath,
 	}
+	for _, path := range varsFiles {
+		cmdArgs = append(cmdArgs, fmt.Sprintf("--vars-file=%s", path))
+	}
 	for _, path := range opsFiles {
 		cmdArgs = append(cmdArgs, fmt.Sprintf("--ops-file=%s", path))
 	}
@@ -522,9 +526,35 @@ func (c *TestConfig) deploy(bosh *BoshCommand, deploymentName string, stemcellVe
 	manifestPath = filepath.Join(pwd, "assets", "manifest.yml")
 
 	var opsFilePaths []string
+	var varsFilePaths []string
 	if c.RootEphemeralVmType != "" {
 		opsFilePaths = append(opsFilePaths, filepath.Join(pwd, "assets", "root-disk-as-ephemeral.yml"))
 	}
 
-	return c.deployWithManifest(bosh, deploymentName, stemcellVersion, bwatsVersion, manifestPath, opsFilePaths...)
+	if c.NtpServers != "" {
+		servers := strings.Split(c.NtpServers, ",")
+		var validServers []string
+		for _, s := range servers {
+			if trimmed := strings.TrimSpace(s); trimmed != "" {
+				validServers = append(validServers, trimmed)
+			}
+		}
+
+		if len(validServers) > 0 {
+			varsData := map[string][]string{
+				"NtpServers": validServers,
+			}
+			yamlBytes, err := yaml.Marshal(varsData)
+			Expect(err).NotTo(HaveOccurred())
+
+			varsFilePath := filepath.Join(pwd, "assets", "add-ntp-vars.yml")
+			err = os.WriteFile(varsFilePath, yamlBytes, 0644)
+			Expect(err).NotTo(HaveOccurred())
+
+			varsFilePaths = append(varsFilePaths, varsFilePath)
+			opsFilePaths = append(opsFilePaths, filepath.Join(pwd, "assets", "add-ntp.yml"))
+		}
+	}
+
+	return c.deployWithManifest(bosh, deploymentName, stemcellVersion, bwatsVersion, manifestPath, varsFilePaths, opsFilePaths)
 }
