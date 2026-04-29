@@ -1197,6 +1197,7 @@ jobs:
               VM_EXTENSIONS: 10GB_ephemeral_disk
               DEFAULT_USERNAME: ((stembuild_vm_user.username))
               DEFAULT_PASSWORD: ((stembuild_vm_user.password))
+              NTP_SERVERS: ((bwats_ntp_servers.nimbus))
 
   - name: wuts-stembuild-linux-stemcell
     serial: true
@@ -1366,6 +1367,7 @@ jobs:
               VM_EXTENSIONS: 10GB_ephemeral_disk
               DEFAULT_USERNAME: ((stembuild_vm_user.username))
               DEFAULT_PASSWORD: ((stembuild_vm_user.password))
+              NTP_SERVERS: ((bwats_ntp_servers.nimbus))
 
   - name: wuts-stembuild-windows-stemcell
     serial: true
@@ -1545,6 +1547,7 @@ jobs:
           VM_EXTENSIONS: 50GB_ephemeral_disk
           DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
           DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
+          NTP_SERVERS: ((bwats_ntp_servers.aws))
       - put: aws-tested
         params:
           file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_PACKER_REGION)).tgz
@@ -1718,6 +1721,7 @@ jobs:
           VM_EXTENSIONS: 50GB_ephemeral_disk
           DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
           DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
+          NTP_SERVERS: ((bwats_ntp_servers.aws_govcloud))
       - put: aws-govcloud-tested
         params:
           file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
@@ -1912,6 +1916,7 @@ jobs:
           VM_EXTENSIONS: 50GB_ephemeral_disk
           DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
           DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
+          NTP_SERVERS: ((bwats_ntp_servers.azure))
       - put: azure-tested
         params:
           file: bosh-windows-stemcell/light-bosh-stemcell-*-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
@@ -2092,6 +2097,7 @@ jobs:
               VM_EXTENSIONS: 50GB_ephemeral_disk
               DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
               DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
+              NTP_SERVERS: ((bwats_ntp_servers.gcp))
       - put: gcp-tested
         params:
           file: bosh-windows-stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz

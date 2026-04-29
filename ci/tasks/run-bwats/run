@@ -32,7 +32,8 @@ pushd bosh-windows-stemcell-acceptance-tests/acceptance_test
     "vm_extensions": "${VM_EXTENSIONS}",
     "network": "${NETWORK}",
     "default_username": "${DEFAULT_USERNAME}",
-    "default_password": "${DEFAULT_PASSWORD}"
+    "default_password": "${DEFAULT_PASSWORD}",
+    "ntp_servers": "${NTP_SERVERS}"
   }
 END_OF_CONFIG
 
