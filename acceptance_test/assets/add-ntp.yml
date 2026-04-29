@@ -1,0 +1,7 @@
+- type: replace
+  path: /instance_groups/name=check-multiple/env?/bosh/ntp
+  value: ((NtpServers))
+
+- type: replace
+  path: /instance_groups/name=check-updates/env?/bosh/ntp
+  value: ((NtpServers))

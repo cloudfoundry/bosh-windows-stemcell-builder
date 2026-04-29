@@ -1067,6 +1067,8 @@ jobs:
             resource: stembuild-linux-build-number
             passed: [stembuild-linux]
             tags: [*worker_tag]
+          - get: bosh-agent-release
+            passed: [stembuild-linux]
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1158,6 +1160,8 @@ jobs:
             - get: stembuild-linux-stemcell
               passed: [create-stembuild-linux-stemcell]
               trigger: true
+            - get: bosh-agent-release
+              passed: [create-stembuild-linux-stemcell]
       - do:
           - task: run-bwats-stembuild-linux
             file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
@@ -1178,6 +1182,7 @@ jobs:
               VM_EXTENSIONS: 10GB_ephemeral_disk
               DEFAULT_USERNAME: ((stembuild_vm_user.username))
               DEFAULT_PASSWORD: ((stembuild_vm_user.password))
+              NTP_SERVERS: ((bwats_ntp_servers.nimbus))
 
   - name: wuts-stembuild-linux-stemcell
     serial: true
@@ -1196,6 +1201,8 @@ jobs:
               passed: [test-stembuild-linux-stemcell]
             - get: stembuild-linux-stemcell
               trigger: true
+              passed: [test-stembuild-linux-stemcell]
+            - get: bosh-agent-release
               passed: [test-stembuild-linux-stemcell]
             - get: bosh-integration-registry-image
       - do:
@@ -1237,6 +1244,8 @@ jobs:
             resource: stembuild-windows-build-number
             passed: [stembuild-windows]
             tags: [*worker_tag]
+          - get: bosh-agent-release
+            passed: [stembuild-windows]
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1331,6 +1340,8 @@ jobs:
             - get: stembuild-windows-stemcell
               passed: [create-stembuild-windows-stemcell]
               trigger: true
+            - get: bosh-agent-release
+              passed: [create-stembuild-windows-stemcell]
       - do:
           - task: run-bwats-stembuild-windows
             file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
@@ -1351,6 +1362,7 @@ jobs:
               VM_EXTENSIONS: 10GB_ephemeral_disk
               DEFAULT_USERNAME: ((stembuild_vm_user.username))
               DEFAULT_PASSWORD: ((stembuild_vm_user.password))
+              NTP_SERVERS: ((bwats_ntp_servers.nimbus))
 
   - name: wuts-stembuild-windows-stemcell
     serial: true
@@ -1369,6 +1381,8 @@ jobs:
               passed: [test-stembuild-windows-stemcell]
             - get: stembuild-windows-stemcell
               trigger: true
+              passed: [test-stembuild-windows-stemcell]
+            - get: bosh-agent-release
               passed: [test-stembuild-windows-stemcell]
             - get: bosh-integration-registry-image
       - do:
@@ -1537,6 +1551,7 @@ jobs:
           VM_EXTENSIONS: 50GB_ephemeral_disk
           DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
           DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
+          NTP_SERVERS: ((bwats_ntp_servers.aws))
       - put: aws-tested
         params:
           file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_PACKER_REGION)).tgz
@@ -1716,6 +1731,7 @@ jobs:
           VM_EXTENSIONS: 50GB_ephemeral_disk
           DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
           DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
+          NTP_SERVERS: ((bwats_ntp_servers.aws_govcloud))
       - put: aws-govcloud-tested
         params:
           file: bosh-windows-stemcell/light-bosh-stemcell-*-aws-xen-hvm-windows((BASE_OS_VERSION))-go_agent-((AWS_GOVCLOUD_PACKER_REGION)).tgz
@@ -1910,6 +1926,7 @@ jobs:
           VM_EXTENSIONS: 50GB_ephemeral_disk
           DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
           DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
+          NTP_SERVERS: ((bwats_ntp_servers.azure))
       - put: azure-tested
         params:
           file: bosh-windows-stemcell/light-bosh-stemcell-*-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
@@ -2090,6 +2107,7 @@ jobs:
               VM_EXTENSIONS: 100GB_ephemeral_disk
               DEFAULT_USERNAME: ((stembuild_bwats_vm_user.username))
               DEFAULT_PASSWORD: ((stembuild_bwats_vm_user.password))
+              NTP_SERVERS: ((bwats_ntp_servers.gcp))
       - put: gcp-tested
         params:
           file: bosh-windows-stemcell/light-bosh-stemcell-*-google-kvm-windows((BASE_OS_VERSION))-go_agent.tgz
@@ -2190,6 +2208,8 @@ jobs:
                 - wuts-gcp
                 - wuts-aws-govcloud # implies => aws-build-number
                 - wuts-azure
+                - wuts-stembuild-linux-stemcell
+                - wuts-stembuild-windows-stemcell
       - task: ensure-versions-match
         file: bosh-windows-stemcell-builder-ci/ci/tasks/match-stemcell-versions/task.yml
         image: bosh-windows-stemcell-builder-ci-image
