@@ -12,6 +12,11 @@ RSpec.describe Packer::Config::Gcp do
       Timecop.return
     end
 
+    let(:repo_root) { File.expand_path("../../..", __dir__) }
+    let(:expected_sysprep_script_ps1) {
+      Packer::SysprepScriptGenerator.new.content(iaas: :gcp)
+    }
+
     let(:builders) {
       Packer::Config::Gcp.new(
         account_json: "some-account-json",
@@ -36,18 +41,60 @@ RSpec.describe Packer::Config::Gcp do
         "image_family" => "some-image-family",
         "zone" => "us-west1-c",
         "disk_size" => 32,
+        "image_name" => "packer-#{Time.now.to_i}",
         "machine_type" => "some-vm-type",
+        "network" => nil,
+        "network_project_id" => nil,
+        "subnetwork" => nil,
         "omit_external_ip" => false,
+        "use_internal_ip" => false,
         "communicator" => "winrm",
         "winrm_username" => "winrmuser",
         "winrm_use_ssl" => false,
         "winrm_timeout" => "1h",
         "state_timeout" => "10m",
         "metadata" => {
-          "sysprep-specialize-script-url" => "https://raw.githubusercontent.com/cloudfoundry/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1",
+          "sysprep-specialize-script-ps1" => expected_sysprep_script_ps1,
           "name" => "some-vm-prefix-#{Time.now.to_i}"
         }
       }
+    end
+
+    it "returns the expected googlecompute builder" do
+      expect(builders[0]).to eq(baseline_builders)
+    end
+
+    it "embeds sysprep-specialize-script-ps1 from SysprepScriptGenerator (not a mutable URL)" do
+      script = builders[0]["metadata"]["sysprep-specialize-script-ps1"]
+      expect(script).to eq(expected_sysprep_script_ps1)
+      expect(script).not_to include("Invoke-WebRequest", "raw.githubusercontent.com")
+      expect(script).to match(/Enable-WinRM/)
+      expect(builders[0]["metadata"]).not_to have_key("sysprep-specialize-script-url")
+    end
+
+    it "embeds sysprep script content within GCE metadata inline size limit" do
+      script = builders[0]["metadata"]["sysprep-specialize-script-ps1"]
+      expect(script.bytesize).to be <= Packer::SysprepScriptGenerator::GCP_METADATA_MAX_BYTES
+    end
+
+    it "propagates ArgumentError when generated sysprep exceeds GCE metadata size limit" do
+      allow(File).to receive(:read).and_wrap_original do |method, path, *args, **kwargs, &block|
+        path.to_s.end_with?("modules/BOSH.WinRM/BOSH.WinRM.psm1") ? ("x" * 400_000) : method.call(path, *args, **kwargs, &block)
+      end
+
+      expect {
+        Packer::Config::Gcp.new(
+          account_json: "some-account-json",
+          project_id: "some-project-id",
+          source_image: "some-source-image",
+          output_directory: "",
+          image_family: "some-image-family",
+          os: os,
+          version: "",
+          vm_prefix: "some-vm-prefix",
+          vm_type: "some-vm-type"
+        ).builders
+      }.to raise_error(ArgumentError, /GCE sysprep-specialize-script-ps1 metadata/)
     end
 
     context "when vm_prefix is empty" do

@@ -1,4 +1,5 @@
 require "securerandom"
+require_relative "sysprep_script_generator"
 require_relative "config/provisioner"
 require_relative "config/aws"
 require_relative "config/azure"

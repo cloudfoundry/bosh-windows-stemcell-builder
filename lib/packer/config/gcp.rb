@@ -39,6 +39,8 @@ module Packer
       end
 
       def builders
+        sysprep_script_ps1 = SysprepScriptGenerator.new.content(iaas: :gcp)
+
         [
           {
             "type" => "googlecompute",
@@ -62,7 +64,7 @@ module Packer
             "winrm_timeout" => "1h",
             "state_timeout" => "10m",
             "metadata" => {
-              "sysprep-specialize-script-url" => "https://raw.githubusercontent.com/cloudfoundry/bosh-windows-stemcell-builder/master/scripts/gcp/setup-winrm.ps1",
+              "sysprep-specialize-script-ps1" => sysprep_script_ps1,
               "name" => "#{@vm_prefix}-#{Time.now.to_i}"
             }.compact_blank!
           }
