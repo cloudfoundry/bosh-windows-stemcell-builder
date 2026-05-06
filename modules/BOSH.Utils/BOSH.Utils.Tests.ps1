@@ -142,11 +142,6 @@ Describe "BOSH.Utils" {
         BeforeEach {
             $aclDir = (New-TempDir)
             New-Item -Path $aclDir -ItemType Directory -Force
-
-            cacls.exe $aclDir /T /E /P "BUILTIN\Users:F"
-            $LASTEXITCODE | Should -Be 0
-            cacls.exe $aclDir /T /E /P "BUILTIN\IIS_IUSRS:F"
-            $LASTEXITCODE | Should -Be 0
         }
 
         AfterEach {
@@ -164,9 +159,14 @@ Describe "BOSH.Utils" {
 
             $acl = (Get-Acl $aclDir)
             $acl.Owner | Should -Be "BUILTIN\Administrators"
+            $acl.AreAccessRulesProtected | Should -Be $True
             $acl.Access | where { $_.IdentityReference -eq "BUILTIN\Users" } | Should -BeNullOrEmpty
             $acl.Access | where { $_.IdentityReference -eq "BUILTIN\IIS_IUSRS" } | Should -BeNullOrEmpty
-            $adminAccess = ($acl.Access | where { $_.IdentityReference -eq "BUILTIN\Administrators" })
+            $acl.Access | where { $_.IdentityReference -eq "NT AUTHORITY\Authenticated Users" } | Should -BeNullOrEmpty
+            $systemAccess = ($acl.Access | where { $_.IdentityReference -eq "NT AUTHORITY\SYSTEM" -and $_.AccessControlType -eq "Allow" } | Select-Object -First 1)
+            $systemAccess | Should -Not -BeNullOrEmpty
+            $systemAccess.FileSystemRights | Should -Be "FullControl"
+            $adminAccess = ($acl.Access | where { $_.IdentityReference -eq "BUILTIN\Administrators" -and $_.AccessControlType -eq "Allow" } | Select-Object -First 1)
             $adminAccess | Should -Not -BeNullOrEmpty
             $adminAccess.FileSystemRights | Should -Be "FullControl"
         }
