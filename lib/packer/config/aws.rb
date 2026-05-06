@@ -16,7 +16,7 @@ module Packer
       end
 
       def builders
-        stemcell_builder_dir = File.expand_path("../../../../", __FILE__)
+        sysprep_script_ps1 = SysprepScriptGenerator.new.content(iaas: :aws)
         packer_ci_private_key_location = ENV.fetch("PACKER_CI_PRIVATE_KEY_LOCATION", "../packer-ci-private-key/key")
         [
           {
@@ -35,7 +35,7 @@ module Packer
             communicator: "winrm",
             winrm_username: "Administrator",
             winrm_timeout: "1h",
-            user_data_file: File.join(stemcell_builder_dir, "scripts", "aws", "setup_winrm.txt"),
+            user_data: sysprep_script_ps1,
             security_group_id: @region[:security_group],
             ami_groups: "all",
             ssh_keypair_name: "packer_ci",
