@@ -15,15 +15,26 @@
     Move-Item -Force "$env:PROGRAMFILES\SSHTemp\OpenSSH-Win64" "$env:PROGRAMFILES\OpenSSH"
     Remove-Item -Force "$env:PROGRAMFILES\SSHTemp"
 
-    # Remove users from 'OpenSSH' before installing.  The install process
-    # will add back permissions for the NT AUTHORITY\Authenticated Users for some files
-    Protect-Dir -path "$env:PROGRAMFILES\OpenSSH"
-
+    # Run the OpenSSH service installer before locking down the directory.
+    # install-sshd.ps1 needs read access to its own files (the WinRM provisioning session
+    # runs with a UAC-filtered token where BUILTIN\Administrators is disabled, so only
+    # inherited permissions from C:\Program Files allow access at this point).
+    # The script also grants NT AUTHORITY\Authenticated Users on some files, which
+    # Protect-Dir will remove in the next step.
     Push-Location "$env:PROGRAMFILES\OpenSSH"
     powershell -ExecutionPolicy Bypass -File install-sshd.ps1
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "install-sshd.ps1 exited with $LASTEXITCODE"
+    }
     Pop-Location
 
-    #    # Grant NT AUTHORITY\Authenticated Users access to .EXEs and the .DLL in OpenSSH
+    # Lock down the directory now that the service installer has completed.
+    # This removes all inherited ACEs (including Authenticated Users added by the
+    # installer) and leaves only SYSTEM and Administrators with full control.
+    Protect-Dir -path "$env:PROGRAMFILES\OpenSSH"
+
+    # Grant NT AUTHORITY\Authenticated Users read access to .EXEs and the .DLL in OpenSSH
     $FileNames = @(
         "libcrypto.dll",
         "scp.exe",

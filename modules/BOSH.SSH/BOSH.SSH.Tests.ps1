@@ -260,6 +260,17 @@ Describe "BOSH.SSH" {
             Assert-VerifiableMock
         }
 
+        It "calls Protect-Dir only after install-sshd.ps1 has run" {
+            $script:installRanFirst = $false
+            Mock -ModuleName BOSH.SSH Protect-Dir {
+                $script:installRanFirst = (Test-Path $INSTALL_SCRIPT_SPY_STATUS)
+            }
+
+            Install-SSHD -SSHZipFile $FAKE_ZIP
+
+            $script:installRanFirst | Should -Be $true
+        }
+
         It "calls Invoke-CACL with expected files" {
             Mock Invoke-CACL { } -Verifiable -ModuleName BOSH.SSH -ParameterFilter {
                 @(
