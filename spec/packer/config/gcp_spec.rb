@@ -44,14 +44,13 @@ RSpec.describe Packer::Config::Gcp do
         "image_family" => "some-image-family",
         "zone" => "us-west1-c",
         "disk_size" => 64,
-        "image_name" => "packer-#{Time.now.to_i}",
+        "image_name" => "stemcell-windows-some-version-#{Time.now.strftime("%Y%m%d%H%M%S")}",
         "machine_type" => "some-vm-type",
-        "network" => nil,
-        "network_project_id" => nil,
-        "subnetwork" => nil,
+        "network" => "some-network",
+        "network_project_id" => "some-project-id",
+        "subnetwork" => "subnet",
         "omit_external_ip" => true,
         "use_internal_ip" => true,
-        "use_internal_ip" => false,
         "communicator" => "winrm",
         "winrm_username" => "winrmuser",
         "winrm_use_ssl" => false,
@@ -61,7 +60,6 @@ RSpec.describe Packer::Config::Gcp do
           "sysprep-specialize-script-ps1" => expected_sysprep_script_ps1,
           "name" => "some-vm-prefix-#{Time.now.to_i}"
         }
-
       }
     end
 
