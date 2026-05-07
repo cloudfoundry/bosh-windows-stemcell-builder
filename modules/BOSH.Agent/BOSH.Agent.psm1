@@ -21,11 +21,16 @@ function Install-Agent
     Write-Log "Install-Agent: Started"
 
     Copy-Agent -InstallDir "C:\" -agentZipPath $agentZipPath
-    Protect-Dir -Path "C:\bosh"
-    Protect-Dir -Path "C:\var"
     Write-AgentConfig -BoshDir "C:\bosh" -IaaS $IaaS -EnableEphemeralDiskMounting $EnableEphemeralDiskMounting
     Set-Path "C:\var\vcap\bosh\bin"
+    # Install-AgentService runs service_wrapper.exe as a child process. The WinRM
+    # provisioning session spawns child processes with a UAC-filtered token where
+    # BUILTIN\Administrators is disabled, so the child cannot execute files from a
+    # SYSTEM+Administrators-only directory. Both Protect-Dir calls must come AFTER
+    # this step to ensure service_wrapper.exe can be launched.
     Install-AgentService
+    Protect-Dir -Path "C:\bosh"
+    Protect-Dir -Path "C:\var"
     Protect-Dir -Path "C:\Windows\Panther" -disableInheritance $False
     Write-Log "Install-Agent: Finished"
 }
