@@ -102,13 +102,18 @@ function Protect-Dir
 
     if ($disableInheritance)
     {
-        # Replace the entire DACL with a tight, explicit ACL granting only SYSTEM and
-        # Administrators full control. /inheritance:r removes all inherited ACEs
-        # (including NT AUTHORITY\Authenticated Users:(OI)(CI)(IO)(M) inherited from C:\)
-        # and disables further inheritance so they cannot reappear. /grant:r replaces any
-        # pre-existing grants for these principals rather than appending. /T is recursive.
-        Write-Log "Protect-Dir: Set tight DACL on $path (remove inheritance, grant SYSTEM and Administrators only)"
-        cmd.exe /c icacls.exe $path /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" "BUILTIN\Administrators:(OI)(CI)F" /T
+        # Replace the entire DACL via /inheritance:r (removes all inherited ACEs and
+        # disables further inheritance). /grant:r replaces any pre-existing grants for
+        # these principals rather than appending. /T applies the same ACL recursively
+        # to all child files and subdirectories.
+        #
+        # Authenticated Users is granted Read & Execute (RX) — no write — so that:
+        #   - Windows services running as Network Service or Local Service (both members
+        #     of Authenticated Users) can traverse PATH entries pointing into these dirs
+        #     without receiving ACCESS_DENIED during process creation at boot.
+        #   - Authenticated Users cannot write or modify files in these directories.
+        Write-Log "Protect-Dir: Set tight DACL on $path (disable inheritance, grant SYSTEM and Administrators full control, Authenticated Users read-only)"
+        & icacls.exe $path /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" "BUILTIN\Administrators:(OI)(CI)F" "NT AUTHORITY\Authenticated Users:(OI)(CI)RX" /T
         if ($LASTEXITCODE -ne 0)
         {
             Throw "Error setting ACL for $path exited with $LASTEXITCODE"

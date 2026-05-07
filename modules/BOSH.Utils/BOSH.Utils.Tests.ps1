@@ -162,7 +162,22 @@ Describe "BOSH.Utils" {
             $acl.AreAccessRulesProtected | Should -Be $True
             $acl.Access | where { $_.IdentityReference -eq "BUILTIN\Users" } | Should -BeNullOrEmpty
             $acl.Access | where { $_.IdentityReference -eq "BUILTIN\IIS_IUSRS" } | Should -BeNullOrEmpty
-            $acl.Access | where { $_.IdentityReference -eq "NT AUTHORITY\Authenticated Users" } | Should -BeNullOrEmpty
+            $authenticatedUsersAccesses = @($acl.Access | where { $_.IdentityReference -eq "NT AUTHORITY\Authenticated Users" -and $_.AccessControlType -eq "Allow" })
+            $authenticatedUsersAccesses | Should -Not -BeNullOrEmpty
+            # Every Allow ACE for Authenticated Users must carry Read & Execute only — no write,
+            # delete, or ACL/ownership rights — to prevent LPE (CWE-276). Checking all ACEs
+            # ensures a second permissive entry can't silently bypass this guard.
+            $forbiddenRights = [int]([System.Security.AccessControl.FileSystemRights]::WriteData) -bor
+                               [int]([System.Security.AccessControl.FileSystemRights]::AppendData) -bor
+                               [int]([System.Security.AccessControl.FileSystemRights]::WriteExtendedAttributes) -bor
+                               [int]([System.Security.AccessControl.FileSystemRights]::WriteAttributes) -bor
+                               [int]([System.Security.AccessControl.FileSystemRights]::Delete) -bor
+                               [int]([System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles) -bor
+                               [int]([System.Security.AccessControl.FileSystemRights]::ChangePermissions) -bor
+                               [int]([System.Security.AccessControl.FileSystemRights]::TakeOwnership)
+            foreach ($ace in $authenticatedUsersAccesses) {
+                ([int]($ace.FileSystemRights) -band $forbiddenRights) | Should -Be 0
+            }
             $systemAccess = ($acl.Access | where { $_.IdentityReference -eq "NT AUTHORITY\SYSTEM" -and $_.AccessControlType -eq "Allow" } | Select-Object -First 1)
             $systemAccess | Should -Not -BeNullOrEmpty
             $systemAccess.FileSystemRights | Should -Be "FullControl"

@@ -114,24 +114,22 @@ function Test-Dependencies {
 }
 
 function Test-Acls {
-    # Base allow list intentionally omits NT AUTHORITY\Authenticated Users so that
-    # any regression that re-grants write access to C:\bosh or C:\var is caught by CI.
+    # NT AUTHORITY\Authenticated Users is included in the allow list because Protect-Dir
+    # grants Read & Execute (RX) to ensure Windows services running as Network Service or
+    # Local Service can traverse PATH entries pointing into these directories without
+    # receiving ACCESS_DENIED during boot. Write access for Authenticated Users is caught
+    # by the guard inside Test-FolderAcls.
     $expectedacls = New-Object System.Collections.ArrayList
     [void] $expectedacls.AddRange((
             "${env:COMPUTERNAME}\Administrator,Allow",
             "NT AUTHORITY\SYSTEM,Allow",
             "BUILTIN\Administrators,Allow",
             "CREATOR OWNER,Allow",
+            "NT AUTHORITY\Authenticated Users,Allow",
             "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow",
             "NT SERVICE\TrustedInstaller,Allow",
             "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow"
         ))
-
-    # OpenSSH files legitimately carry an Authenticated Users:R ACE placed by
-    # Invoke-CACL, so the OpenSSH directory uses its own extended allow list.
-    $opensshExpectedAcls = New-Object System.Collections.ArrayList
-    $opensshExpectedAcls.AddRange($expectedacls)
-    [void] $opensshExpectedAcls.Add("NT AUTHORITY\Authenticated Users,Allow")
 
     function Test-FolderAcls {
         param(
@@ -140,6 +138,16 @@ function Test-Acls {
         )
 
         $errCount = 0
+        # Forbidden bits: write, delete, and ACL/ownership changes — none of which RX grants,
+        # but we guard all of them so any future regression in the ACL is caught immediately.
+        $writeBits = [int]([System.Security.AccessControl.FileSystemRights]::WriteData) -bor
+                     [int]([System.Security.AccessControl.FileSystemRights]::AppendData) -bor
+                     [int]([System.Security.AccessControl.FileSystemRights]::WriteExtendedAttributes) -bor
+                     [int]([System.Security.AccessControl.FileSystemRights]::WriteAttributes) -bor
+                     [int]([System.Security.AccessControl.FileSystemRights]::Delete) -bor
+                     [int]([System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles) -bor
+                     [int]([System.Security.AccessControl.FileSystemRights]::ChangePermissions) -bor
+                     [int]([System.Security.AccessControl.FileSystemRights]::TakeOwnership)
 
         Get-ChildItem -Path $path -Recurse | ForEach-Object {
             $name = $_.FullName
@@ -149,6 +157,12 @@ function Test-Acls {
                     If (-Not $allowedAcls.Contains($ident)) {
                         $errCount += 1
                         Write-Host "Error ($name): $ident"
+                    }
+                    ElseIf ($_.IdentityReference -eq "NT AUTHORITY\Authenticated Users" -and $_.AccessControlType -eq "Allow") {
+                        If (([int]$_.FileSystemRights -band $writeBits) -ne 0) {
+                            $errCount += 1
+                            Write-Host "Error ($name): NT AUTHORITY\Authenticated Users has write access: $($_.FileSystemRights)"
+                        }
                     }
                 }
             }
@@ -160,7 +174,7 @@ function Test-Acls {
     $errCount += Test-FolderAcls "C:\var"                      $expectedacls
     $errCount += Test-FolderAcls "C:\bosh"                     $expectedacls
     $errCount += Test-FolderAcls "C:\Windows\Panther\Unattend" $expectedacls
-    $errCount += Test-FolderAcls "C:\Program Files\OpenSSH"    $opensshExpectedAcls
+    $errCount += Test-FolderAcls "C:\Program Files\OpenSSH"    $expectedacls
     if ($errCount -ne 0) {
         Write-Error "FAILED: $errCount"
         Exit 1
