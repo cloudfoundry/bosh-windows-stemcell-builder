@@ -276,6 +276,32 @@ Describe "BOSH.Account" {
     }
 
     Describe "Install-Agent" {
+        BeforeEach {
+            Mock -ModuleName BOSH.Agent Copy-Agent { }
+            Mock -ModuleName BOSH.Agent Write-AgentConfig { }
+            Mock -ModuleName BOSH.Agent Set-Path { }
+            Mock -ModuleName BOSH.Agent Protect-Dir { }
+            Mock -ModuleName BOSH.Utils Protect-Dir { }
+            Mock -ModuleName BOSH.Agent Install-AgentService { }
+        }
+
+        It "calls Protect-Dir on C:\bosh only after Install-AgentService has run" {
+            $script:agentServiceRan = $false
+            $script:agentServiceRanFirst = $false
+            Mock -ModuleName BOSH.Agent Install-AgentService {
+                $script:agentServiceRan = $true
+            }
+            Mock -ModuleName BOSH.Agent Protect-Dir {
+                if ($Path -eq "C:\bosh") {
+                    $script:agentServiceRanFirst = $script:agentServiceRan -eq $true
+                }
+            }
+
+            Install-Agent -IaaS "aws" -agentZipPath "some-zip"
+
+            $script:agentServiceRanFirst | Should -Be $true
+        }
+
         Context "when IaaS is not provided" {
             It "throws" {
                 { Install-Agent -agentZipPath "some-agent-zip-path" } | Should -Throw "Provide the IaaS of your VM"
