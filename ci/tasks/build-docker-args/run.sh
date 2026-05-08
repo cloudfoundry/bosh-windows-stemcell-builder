@@ -14,7 +14,7 @@ yq_cli_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s https://a
 ruby_install_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s https://api.github.com/repos/postmodern/ruby-install/releases/latest \
                     | jq -r '.assets[] | select(.name | endswith ("tar.gz")) | .browser_download_url')"
 golangci_lint_install_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s https://api.github.com/repos/golangci/golangci-lint/releases/latest \
-                    | jq -r '.assets[] | select(.name | match("golangci-lint-[0-9]+.[0-9]+.[0-9]+-linux-amd64.tar.gz")) | .browser_download_url')"
+                    | jq -r '.assets[] | select(.name | match("golangci-lint-[0-9]+.[0-9]+.[0-9]+-linux-amd64.tar.gz$")) | .browser_download_url')"
 govc_install_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s https://api.github.com/repos/vmware/govmomi/releases/latest \
                     | jq -r '.assets[] | select(.name | match("govc_Linux_x86_64.tar.gz")) | .browser_download_url')"
 
