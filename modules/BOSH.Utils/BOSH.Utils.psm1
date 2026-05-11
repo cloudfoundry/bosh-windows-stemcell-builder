@@ -167,6 +167,48 @@ function Protect-Path
     }
 }
 
+function Protect-BoshDir
+{
+    Param(
+        [string]$path = $( Throw "Provide a directory to set ACL on" )
+    )
+
+    # Authenticated Users is granted Read & Execute (RX) — no write — so that:
+    #   - Windows services running as Network Service or Local Service (both members
+    #     of Authenticated Users) can traverse PATH entries pointing into these dirs
+    #     without receiving ACCESS_DENIED during process creation at boot.
+    #   - Authenticated Users cannot write or modify files in these directories.
+    #
+    # Two-pass approach — do NOT combine /inheritance:r and /grant:r with /T in a
+    # single icacls call. When run together, icacls applies /inheritance:r first on
+    # each child file (stripping all inherited ACEs and leaving an empty protected
+    # DACL), then fails to add new explicit ACEs because (OI)(CI) inheritance flags
+    # are silently dropped for files (files have no children to propagate to). The
+    # result is child files with a protected DACL containing zero ACEs — nobody,
+    # including SYSTEM, can execute them.
+    #
+    # Pass 1: Grant explicit ACEs to the root directory and every child object.
+    #         /grant:r without /inheritance:r sets explicit grants without touching
+    #         each object's inheritance state, so the ACEs are written correctly.
+    Write-Log "Protect-BoshDir: Grant ACEs recursively on $path"
+    & icacls.exe $path /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" "BUILTIN\Administrators:(OI)(CI)F" "NT AUTHORITY\Authenticated Users:(OI)(CI)RX" /T
+    if ($LASTEXITCODE -ne 0)
+    {
+        Throw "Error granting ACLs for $path exited with $LASTEXITCODE"
+    }
+
+    # Pass 2: Disable inheritance on the root directory only (no /T). This removes
+    #         stale inherited ACEs (e.g. BUILTIN\Users from C:\) from the root and
+    #         sets SE_DACL_PROTECTED, without touching the child files that were
+    #         correctly updated in pass 1.
+    Write-Log "Protect-BoshDir: Disable inheritance on $path"
+    & icacls.exe $path /inheritance:r
+    if ($LASTEXITCODE -ne 0)
+    {
+        Throw "Error disabling inheritance for $path exited with $LASTEXITCODE"
+    }
+}
+
 function Set-ProxySettings
 {
     Param([string]$HTTPProxy, [string]$HTTPSProxy, [string]$BypassList)

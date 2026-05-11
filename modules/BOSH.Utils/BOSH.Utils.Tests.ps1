@@ -180,6 +180,93 @@ Describe "BOSH.Utils" {
         }
     }
 
+    Describe "Protect-BoshDir" {
+        BeforeEach {
+            $aclDir = (New-TempDir)
+            New-Item -Path $aclDir -ItemType Directory -Force
+
+            $childFile = (Join-Path $aclDir "child.txt")
+            New-Item -Path $childFile -ItemType File -Force
+        }
+
+        AfterEach {
+            & icacls.exe $aclDir /grant:r "BUILTIN\Users:(OI)(CI)F" /T | Out-Null
+            Remove-Item -Recurse -Force $aclDir
+        }
+
+        Context "when not provided a directory" {
+            It "throws" {
+                { Protect-BoshDir } | Should -Throw "Provide a directory to set ACL on"
+            }
+        }
+
+        It "grants SYSTEM full control on the root directory" {
+            { Protect-BoshDir -path $aclDir } | Should -Not -Throw
+
+            $systemAccess = (Get-Acl $aclDir).Access |
+                Where-Object { $_.IdentityReference -eq "NT AUTHORITY\SYSTEM" -and $_.AccessControlType -eq "Allow" } |
+                Select-Object -First 1
+            $systemAccess | Should -Not -BeNullOrEmpty
+            $systemAccess.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::FullControl | Should -Be ([System.Security.AccessControl.FileSystemRights]::FullControl)
+        }
+
+        It "grants Administrators full control on the root directory" {
+            { Protect-BoshDir -path $aclDir } | Should -Not -Throw
+
+            $adminAccess = (Get-Acl $aclDir).Access |
+                Where-Object { $_.IdentityReference -eq "BUILTIN\Administrators" -and $_.AccessControlType -eq "Allow" } |
+                Select-Object -First 1
+            $adminAccess | Should -Not -BeNullOrEmpty
+            $adminAccess.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::FullControl | Should -Be ([System.Security.AccessControl.FileSystemRights]::FullControl)
+        }
+
+        It "grants Authenticated Users read and execute only on the root directory" {
+            { Protect-BoshDir -path $aclDir } | Should -Not -Throw
+
+            $writeBits = [System.Security.AccessControl.FileSystemRights]::WriteData -bor
+                         [System.Security.AccessControl.FileSystemRights]::AppendData -bor
+                         [System.Security.AccessControl.FileSystemRights]::WriteExtendedAttributes -bor
+                         [System.Security.AccessControl.FileSystemRights]::WriteAttributes -bor
+                         [System.Security.AccessControl.FileSystemRights]::Delete -bor
+                         [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
+                         [System.Security.AccessControl.FileSystemRights]::ChangePermissions -bor
+                         [System.Security.AccessControl.FileSystemRights]::TakeOwnership
+
+            $authUsersAccess = (Get-Acl $aclDir).Access |
+                Where-Object { $_.IdentityReference -eq "NT AUTHORITY\Authenticated Users" -and $_.AccessControlType -eq "Allow" }
+            $authUsersAccess | Should -Not -BeNullOrEmpty
+            foreach ($ace in $authUsersAccess) {
+                ($ace.FileSystemRights -band $writeBits) | Should -Be 0
+            }
+        }
+
+        It "disables inheritance on the root directory" {
+            { Protect-BoshDir -path $aclDir } | Should -Not -Throw
+
+            (Get-Acl $aclDir).AreAccessRulesProtected | Should -Be $True
+        }
+
+        It "grants Authenticated Users read and execute only on child files" {
+            { Protect-BoshDir -path $aclDir } | Should -Not -Throw
+
+            $writeBits = [System.Security.AccessControl.FileSystemRights]::WriteData -bor
+                         [System.Security.AccessControl.FileSystemRights]::AppendData -bor
+                         [System.Security.AccessControl.FileSystemRights]::WriteExtendedAttributes -bor
+                         [System.Security.AccessControl.FileSystemRights]::WriteAttributes -bor
+                         [System.Security.AccessControl.FileSystemRights]::Delete -bor
+                         [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -bor
+                         [System.Security.AccessControl.FileSystemRights]::ChangePermissions -bor
+                         [System.Security.AccessControl.FileSystemRights]::TakeOwnership
+
+            $authUsersAccess = (Get-Acl $childFile).Access |
+                Where-Object { $_.IdentityReference -eq "NT AUTHORITY\Authenticated Users" -and $_.AccessControlType -eq "Allow" }
+            $authUsersAccess | Should -Not -BeNullOrEmpty
+            foreach ($ace in $authUsersAccess) {
+                ($ace.FileSystemRights -band $writeBits) | Should -Be 0
+            }
+        }
+    }
+
     Describe "Disable-RC4" {
         It "Disables the use of RC4 Cipher" {
             $rc4_128Path = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Ciphers\RC4 128/128"

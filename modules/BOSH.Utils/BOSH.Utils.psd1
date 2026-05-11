@@ -14,6 +14,7 @@
         'Clear-Provisioner',
         'Protect-Dir',
         'Protect-Path',
+        'Protect-BoshDir',
         'Set-ProxySettings',
         'Clear-ProxySettings',
         'Disable-RC4',
