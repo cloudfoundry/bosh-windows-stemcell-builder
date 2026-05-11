@@ -282,16 +282,17 @@ Describe "BOSH.Account" {
             Mock -ModuleName BOSH.Agent Set-Path { }
             Mock -ModuleName BOSH.Agent Protect-Dir { }
             Mock -ModuleName BOSH.Utils Protect-Dir { }
+            Mock -ModuleName BOSH.Agent Protect-BoshDir { }
             Mock -ModuleName BOSH.Agent Install-AgentService { }
         }
 
-        It "calls Protect-Dir on C:\bosh only after Install-AgentService has run" {
+        It "calls Protect-BoshDir on C:\bosh only after Install-AgentService has run" {
             $script:agentServiceRan = $false
             $script:agentServiceRanFirst = $false
             Mock -ModuleName BOSH.Agent Install-AgentService {
                 $script:agentServiceRan = $true
             }
-            Mock -ModuleName BOSH.Agent Protect-Dir {
+            Mock -ModuleName BOSH.Agent Protect-BoshDir {
                 if ($Path -eq "C:\bosh") {
                     $script:agentServiceRanFirst = $script:agentServiceRan -eq $true
                 }
@@ -300,6 +301,25 @@ Describe "BOSH.Account" {
             Install-Agent -IaaS "aws" -agentZipPath "some-zip"
 
             $script:agentServiceRanFirst | Should -Be $true
+        }
+
+        It "calls Protect-BoshDir on C:\var\vcap\bosh\bin only after Protect-Dir has run on C:\var" {
+            $script:protectVarRan = $false
+            $script:protectVarRanFirst = $false
+            Mock -ModuleName BOSH.Agent Protect-Dir {
+                if ($Path -eq "C:\var") {
+                    $script:protectVarRan = $true
+                }
+            }
+            Mock -ModuleName BOSH.Agent Protect-BoshDir {
+                if ($Path -eq "C:\var\vcap\bosh\bin") {
+                    $script:protectVarRanFirst = $script:protectVarRan -eq $true
+                }
+            }
+
+            Install-Agent -IaaS "aws" -agentZipPath "some-zip"
+
+            $script:protectVarRanFirst | Should -Be $true
         }
 
         Context "when IaaS is not provided" {
