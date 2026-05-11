@@ -100,42 +100,33 @@ function Protect-Dir
         [bool]$disableInheritance = $True
     )
 
+    Write-Log "Protect-Dir: Grant Administrator"
+    cmd.exe /c cacls.exe $path /T /E /P Administrators:F
+    if ($LASTEXITCODE -ne 0)
+    {
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+    }
+
+    Write-Log "Protect-Dir: Remove BUILTIN\Users"
+    cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\Users"
+    if ($LASTEXITCODE -ne 0)
+    {
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+    }
+
+    Write-Log "Protect-Dir: Remove BUILTIN\IIS_IUSRS"
+    cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\IIS_IUSRS"
+    if ($LASTEXITCODE -ne 0)
+    {
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+    }
+
     if ($disableInheritance)
     {
-        # Replace the entire DACL with a tight, explicit ACL granting only SYSTEM and
-        # Administrators full control. /inheritance:r removes all inherited ACEs
-        # (including NT AUTHORITY\Authenticated Users:(OI)(CI)(IO)(M) inherited from C:\)
-        # and disables further inheritance so they cannot reappear. /grant:r replaces any
-        # pre-existing grants for these principals rather than appending. /T is recursive.
-        Write-Log "Protect-Dir: Set tight DACL on $path (remove inheritance, grant SYSTEM and Administrators only)"
-        cmd.exe /c icacls.exe $path /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" "BUILTIN\Administrators:(OI)(CI)F" /T
-        if ($LASTEXITCODE -ne 0)
-        {
-            Throw "Error setting ACL for $path exited with $LASTEXITCODE"
-        }
-    }
-    else
-    {
-        Write-Log "Protect-Dir: Grant Administrator"
-        cmd.exe /c cacls.exe $path /T /E /P Administrators:F
-        if ($LASTEXITCODE -ne 0)
-        {
-            Throw "Error setting ACL for $path exited with $LASTEXITCODE"
-        }
-
-        Write-Log "Protect-Dir: Remove BUILTIN\Users"
-        cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\Users"
-        if ($LASTEXITCODE -ne 0)
-        {
-            Throw "Error setting ACL for $path exited with $LASTEXITCODE"
-        }
-
-        Write-Log "Protect-Dir: Remove BUILTIN\IIS_IUSRS"
-        cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\IIS_IUSRS"
-        if ($LASTEXITCODE -ne 0)
-        {
-            Throw "Error setting ACL for $path exited with $LASTEXITCODE"
-        }
+        Write-Log "Protect-Dir: Disable Inheritance"
+        $acl = Get-ACL -LiteralPath $path
+        $acl.SetAccessRuleProtection($True, $True)
+        Set-Acl -LiteralPath $path -AclObject $acl
     }
 }
 

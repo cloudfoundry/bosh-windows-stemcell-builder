@@ -114,30 +114,20 @@ function Test-Dependencies {
 }
 
 function Test-Acls {
-    # Base allow list intentionally omits NT AUTHORITY\Authenticated Users so that
-    # any regression that re-grants write access to C:\bosh or C:\var is caught by CI.
     $expectedacls = New-Object System.Collections.ArrayList
     [void] $expectedacls.AddRange((
-            "${env:COMPUTERNAME}\Administrator,Allow",
-            "NT AUTHORITY\SYSTEM,Allow",
-            "BUILTIN\Administrators,Allow",
-            "CREATOR OWNER,Allow",
-            "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow",
-            "NT SERVICE\TrustedInstaller,Allow",
-            "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow"
-        ))
-
-    # OpenSSH files legitimately carry an Authenticated Users:R ACE placed by
-    # Invoke-CACL, so the OpenSSH directory uses its own extended allow list.
-    $opensshExpectedAcls = New-Object System.Collections.ArrayList
-    $opensshExpectedAcls.AddRange($expectedacls)
-    [void] $opensshExpectedAcls.Add("NT AUTHORITY\Authenticated Users,Allow")
+    "${env:COMPUTERNAME}\Administrator,Allow",
+    "NT AUTHORITY\SYSTEM,Allow",
+    "BUILTIN\Administrators,Allow",
+    "CREATOR OWNER,Allow",
+    "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES,Allow",
+    "NT SERVICE\TrustedInstaller,Allow",
+    "APPLICATION PACKAGE AUTHORITY\ALL RESTRICTED APPLICATION PACKAGES,Allow",
+    "NT AUTHORITY\Authenticated Users,Allow"
+    ))
 
     function Test-FolderAcls {
-        param(
-            [string]$path,
-            [System.Collections.ArrayList]$allowedAcls
-        )
+        param([string]$path)
 
         $errCount = 0
 
@@ -146,7 +136,7 @@ function Test-Acls {
             If (-Not ($_.Attributes -match "ReparsePoint")) {
                 Get-Acl $name | Select-Object -ExpandProperty Access | ForEach-Object {
                     $ident = ('{0},{1}' -f $_.IdentityReference, $_.AccessControlType).ToString()
-                    If (-Not $allowedAcls.Contains($ident)) {
+                    If (-Not $expectedacls.Contains($ident)) {
                         $errCount += 1
                         Write-Host "Error ($name): $ident"
                     }
@@ -157,10 +147,10 @@ function Test-Acls {
     }
 
     $errCount = 0
-    $errCount += Test-FolderAcls "C:\var"                      $expectedacls
-    $errCount += Test-FolderAcls "C:\bosh"                     $expectedacls
-    $errCount += Test-FolderAcls "C:\Windows\Panther\Unattend" $expectedacls
-    $errCount += Test-FolderAcls "C:\Program Files\OpenSSH"    $opensshExpectedAcls
+    $errCount += Test-FolderAcls "C:\var"
+    $errCount += Test-FolderAcls "C:\bosh"
+    $errCount += Test-FolderAcls "C:\Windows\Panther\Unattend"
+    $errCount += Test-FolderAcls "C:\Program Files\OpenSSH"
     if ($errCount -ne 0) {
         Write-Error "FAILED: $errCount"
         Exit 1
