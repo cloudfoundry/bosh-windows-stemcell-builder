@@ -11,8 +11,8 @@ require (
 	github.com/onsi/gomega v1.40.0
 	github.com/packer-community/winrmcp v0.0.0-20221126162354-6e900dd2c68f
 	github.com/pkg/errors v0.9.1
-	github.com/vmware/govmomi v0.53.1
-	golang.org/x/sys v0.43.0
+	github.com/vmware/govmomi v0.54.0
+	golang.org/x/sys v0.44.0
 )
 
 require (
@@ -28,7 +28,7 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20260402051712-545e8a4df936 // indirect
+	github.com/google/pprof v0.0.0-20260507013755-92041b743c96 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
@@ -46,12 +46,12 @@ require (
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/tidwall/transform v0.0.0-20201103190739-32f242e2dbde // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.50.0 // indirect
-	golang.org/x/mod v0.35.0 // indirect
-	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/crypto v0.51.0 // indirect
+	golang.org/x/mod v0.36.0 // indirect
+	golang.org/x/net v0.54.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
-	golang.org/x/tools v0.44.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/tools v0.45.0 // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 )
 
