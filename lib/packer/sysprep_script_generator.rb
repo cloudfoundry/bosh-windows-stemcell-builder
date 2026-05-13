@@ -28,7 +28,7 @@ module Packer
       }
     PS
 
-    OPENSSH_INSTALL = <<~'PS'
+    OPENSSH_INSTALL = <<~PS
       Write-Log "Install OpenSSH.Server"
       Write-Log (Get-WindowsCapability -Online -Name "OpenSSH.Server*" | Format-List | Out-String)
       Add-WindowsCapability -Online -Name (Get-WindowsCapability -Online -Name "OpenSSH.Server*" | ForEach-Object Name)
