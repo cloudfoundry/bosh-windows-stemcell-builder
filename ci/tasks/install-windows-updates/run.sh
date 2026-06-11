@@ -88,7 +88,7 @@ function get_windows_updates_remaining() {
   echo "Checking for updates remaining (via exit code of 'guest.ps')..." >&2
   # run powershell command that "exits" with the Count returned by Get-WindowsUpdate.
   # We cap the exit code at 250 to prevent 8-bit exit code truncation/wrapping.
-  get_update_count_pid="$(start_powershell_command "\$ErrorActionPreference = 'Stop'; try { \$updates = Get-WindowsUpdate -Online; if (\$updates -eq \$null) { exit 0 } else { \$count = ([array]\$updates).Count; if (\$count -gt 250) { exit 250 } else { exit \$count } } } catch { exit 999 }")"
+  get_update_count_pid="$(start_powershell_command "\$ErrorActionPreference = 'Stop'; try { \$updates = Get-WindowsUpdate; if (\$updates -eq \$null) { exit 0 } else { \$count = ([array]\$updates).Count; if (\$count -gt 250) { exit 250 } else { exit \$count } } } catch { exit 999 }")"
 
   exit_code=$(get_powershell_pid_exit_code "${get_update_count_pid}")
   echo "Checking for updates remaining (via exit code of 'guest.ps') returned '${exit_code}'" >&2
@@ -103,7 +103,7 @@ function get_windows_updates_remaining() {
         -vm.ipath="${vm_ipath}" \
         -l="${vm_username}:${vm_password}" \
         "${powershell_exe}" \
-        "\$ErrorActionPreference = 'Stop'; try { \$updates = Get-WindowsUpdate -Online; if (\$updates -eq \$null) { echo 0 } else { echo ([array]\$updates).Count } } catch { echo ERROR }"
+        "\$ErrorActionPreference = 'Stop'; try { \$updates = Get-WindowsUpdate; if (\$updates -eq \$null) { echo 0 } else { echo ([array]\$updates).Count } } catch { echo ERROR }"
     )
     set -e
     exit_code="${raw_exit_code/$'\r'/}"
@@ -121,6 +121,11 @@ wait_for_vm_to_come_up
 # get wu-install /wu-update set up to work on the vm...
 run_powershell_command_with_logging 'Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force'
 run_powershell_command_with_logging 'Install-Module -Name PSWindowsUpdate -MinimumVersion 2.1.0.1 -Force'
+
+# Restart the WU service to clear its scan cache. A freshly started service has
+# no cached results, forcing Get-WindowsUpdate to scan online rather than return
+# stale data from a snapshot.
+run_powershell_command_with_logging 'Stop-Service -Name wuauserv -Force; Start-Service -Name wuauserv'
 
 updates_remaining="checking-for-update-count"
 max_retries=20
@@ -153,7 +158,7 @@ echo "Initial Windows Updates to install: ${updates_remaining}" >&2
 
 while [[ ${updates_remaining} -ne 0 ]]; do
   set +e # ignore unreachable agent if the vm just went down for reboot
-  run_powershell_command_with_logging "Install-WindowsUpdate -AcceptAll -AutoReboot -Online"
+  run_powershell_command_with_logging "Install-WindowsUpdate -AcceptAll -AutoReboot"
   set -e
 
   wait_for_vm_to_come_up
