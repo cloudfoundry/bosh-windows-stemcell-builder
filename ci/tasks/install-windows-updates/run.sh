@@ -86,24 +86,32 @@ function wait_for_vm_to_come_up() {
 
 function get_windows_updates_remaining() {
   echo "Checking for updates remaining (via exit code of 'guest.ps')..." >&2
-  # run powershell command that "exits" with the Count returned by Get-WindowsUpdate
-  get_update_count_pid="$(start_powershell_command "exit (([array](Get-WindowsUpdate)).Count)")"
+  # run powershell command that "exits" with the Count returned by Get-WindowsUpdate.
+  # We cap the exit code at 250 to prevent 8-bit exit code truncation/wrapping.
+  get_update_count_pid="$(start_powershell_command "\$ErrorActionPreference = 'Stop'; try { \$updates = Get-WindowsUpdate; if (\$updates -eq \$null) { exit 0 } else { \$count = ([array]\$updates).Count; if (\$count -gt 250) { exit 250 } else { exit \$count } } } catch { exit 999 }")"
 
   exit_code=$(get_powershell_pid_exit_code "${get_update_count_pid}")
   echo "Checking for updates remaining (via exit code of 'guest.ps') returned '${exit_code}'" >&2
 
-  if [[ "${exit_code}" == "null" ]]; then
+  if [[ "${exit_code}" == "999" ]]; then
+    exit_code="ERROR"
+  elif [[ "${exit_code}" == "null" ]]; then
     echo "Checking for updates remaining (via 'guest.run')..." >&2
+    set +e
     raw_exit_code=$(
       govc guest.run \
         -vm.ipath="${vm_ipath}" \
         -l="${vm_username}:${vm_password}" \
         "${powershell_exe}" \
-        "(Get-WindowsUpdate).Count"
+        "\$ErrorActionPreference = 'Stop'; try { \$updates = Get-WindowsUpdate; if (\$updates -eq \$null) { echo 0 } else { echo ([array]\$updates).Count } } catch { echo ERROR }"
     )
+    set -e
     exit_code="${raw_exit_code/$'\r'/}"
     echo "Checking for updates remaining (via 'guest.run') returned '${exit_code}'" >&2
   fi
+
+  # Strip carriage returns and trailing/leading whitespace
+  exit_code=$(echo "${exit_code}" | tr -d '\r' | xargs)
 
   echo "${exit_code}"
 }
@@ -114,7 +122,26 @@ wait_for_vm_to_come_up
 run_powershell_command_with_logging 'Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force'
 run_powershell_command_with_logging 'Install-Module -Name PSWindowsUpdate -MinimumVersion 2.1.0.1 -Force'
 
-updates_remaining=$(get_windows_updates_remaining)
+updates_remaining="checking-for-update-count"
+max_retries=20
+retry_count=0
+
+until [[ "${updates_remaining}" =~ ^[0-9]+$ ]] ; do
+  if [ "$retry_count" -ge "$max_retries" ]; then
+    echo "ERROR: Timed out waiting for Windows Update count after 10 minutes." >&2
+    exit 1
+  fi
+
+  set +e
+  updates_remaining=$(get_windows_updates_remaining)
+  set -e
+
+  if [[ ! "${updates_remaining}" =~ ^[0-9]+$ ]]; then
+    echo "Failed to get updates count. Retrying in 30 seconds... (Attempt $((retry_count+1))/$max_retries)" >&2
+    sleep 30
+    retry_count=$((retry_count+1))
+  fi
+done
 echo "Initial Windows Updates to install: ${updates_remaining}" >&2
 
 # TODO: rewrite as a single loop:
@@ -132,10 +159,22 @@ while [[ ${updates_remaining} -ne 0 ]]; do
   wait_for_vm_to_come_up
 
   updates_remaining="checking-for-update-count"
+  retry_count=0
   until [[ "${updates_remaining}" =~ ^[0-9]+$ ]] ; do
+    if [ "$retry_count" -ge "$max_retries" ]; then
+      echo "ERROR: Timed out waiting for Windows Update count after 10 minutes." >&2
+      exit 1
+    fi
+
     set +e # ignore failures here since the vmware tools agent may be down while updates are being applied
     updates_remaining=$(get_windows_updates_remaining)
     set -e
+
+    if [[ ! "${updates_remaining}" =~ ^[0-9]+$ ]]; then
+      echo "Failed to get updates count. Retrying in 30 seconds... (Attempt $((retry_count+1))/$max_retries)" >&2
+      sleep 30
+      retry_count=$((retry_count+1))
+    fi
   done
   echo "Remaining Windows Updates to install: ${updates_remaining}" >&2
 done
