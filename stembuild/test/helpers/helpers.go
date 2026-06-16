@@ -116,9 +116,11 @@ func extractArchive(archive io.Reader, dirname string) error {
 		if filepath.IsAbs(name) {
 			return fmt.Errorf("tar: archive contains absolute path: %s", name)
 		}
-		normalizedName := filepath.Clean(strings.ReplaceAll(name, "\\", "/"))
-		if normalizedName == ".." || strings.HasPrefix(normalizedName, "../") || strings.Contains(normalizedName, "/../") {
-			return fmt.Errorf("tar: archive contains invalid path traversal: %s", name)
+		unifiedName := strings.ReplaceAll(name, "\\", "/")
+		for _, part := range strings.Split(unifiedName, "/") {
+			if part == ".." {
+				return fmt.Errorf("tar: archive contains invalid path traversal: %s", name)
+			}
 		}
 		if filepath.Base(name) != name {
 			return fmt.Errorf("tar: archive contains subdirectory: %s", name)
