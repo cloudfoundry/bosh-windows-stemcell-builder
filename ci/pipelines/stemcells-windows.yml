@@ -182,15 +182,6 @@ resources:
     source:
       uri: https://github.com/cloudfoundry/windows-utilities-release.git
 
-  # type: docker-image
-  - name: bosh-windows-stemcell-builder-ci-docker-image
-    type: docker-image
-    source:
-      repository: *windows_stemcell_ci_image
-      tag: *windows_stemcell_ci_tag
-      username: ((docker.username))
-      password: ((docker.password))
-
   # type: registry-image
   - name: bosh-windows-stemcell-builder-ci-image
     type: registry-image
@@ -541,12 +532,31 @@ jobs:
             image: ubuntu-image
             params:
               GITHUB_ACCESS_TOKEN: ((github_public_repo_token))
-      - put: bosh-windows-stemcell-builder-ci-docker-image
+      - task: build-image
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: concourse/oci-build-task
+          inputs:
+            - name: bosh-windows-stemcell-builder-dockerfiles
+            - name: azstemcell-binary-out
+            - name: docker-build-args
+          outputs:
+            - name: image
+          params:
+            CONTEXT: azstemcell-binary-out
+            DOCKERFILE: bosh-windows-stemcell-builder-dockerfiles/ci/docker/Dockerfile
+            BUILD_ARGS_FILE: docker-build-args/docker-build-args.yml
+          run:
+            path: build
+      - put: bosh-windows-stemcell-builder-ci-image
+        no_get: true
         params:
-          build: azstemcell-binary-out/
-          build_args_file: docker-build-args/docker-build-args.json
-          dockerfile: bosh-windows-stemcell-builder-dockerfiles/ci/docker/Dockerfile
-          tag_as_latest: true
+          image: image/image.tar
+          additional_tags: bosh-windows-stemcell-builder-dockerfiles/ci/docker/additional-tags
 
   - name: clean-up-pre-release-blobstore
     serial: true
