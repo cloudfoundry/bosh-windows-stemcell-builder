@@ -110,6 +110,16 @@ func extractArchive(archive io.Reader, dirname string) error {
 
 		// expect a flat archive
 		name := h.Name
+		if name == "" {
+			return errors.New("tar: archive contains empty filename")
+		}
+		if filepath.IsAbs(name) {
+			return fmt.Errorf("tar: archive contains absolute path: %s", name)
+		}
+		normalizedName := filepath.Clean(strings.ReplaceAll(name, "\\", "/"))
+		if normalizedName == ".." || strings.HasPrefix(normalizedName, "../") || strings.Contains(normalizedName, "/../") {
+			return fmt.Errorf("tar: archive contains invalid path traversal: %s", name)
+		}
 		if filepath.Base(name) != name {
 			return fmt.Errorf("tar: archive contains subdirectory: %s", name)
 		}
