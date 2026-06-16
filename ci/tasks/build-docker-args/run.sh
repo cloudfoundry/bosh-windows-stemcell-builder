@@ -21,18 +21,15 @@ govc_install_url="$(curl -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -s htt
 gem_home="/usr/local/bundle"
 ruby_version="$(cat bosh-windows-stemcell-builder-ci/.ruby-version)"
 
-cat << JSON > docker-build-args/docker-build-args.json
-{
-  "BOSH_CLI_URL": "${bosh_cli_url}",
-  "META4_CLI_URL": "${meta4_cli_url}",
-  "GOLANGCI_LINT_INSTALL_URL":"${golangci_lint_install_url}",
-  "GOVC_INSTALL_URL":"${govc_install_url}",
-  "YQ_CLI_URL": "${yq_cli_url}",
+cat << YAML > docker-build-args/docker-build-args.yml
+BOSH_CLI_URL: "${bosh_cli_url}"
+META4_CLI_URL: "${meta4_cli_url}"
+GOLANGCI_LINT_INSTALL_URL: "${golangci_lint_install_url}"
+GOVC_INSTALL_URL: "${govc_install_url}"
+YQ_CLI_URL: "${yq_cli_url}"
+RUBY_INSTALL_URL: "${ruby_install_url}"
+RUBY_VERSION: "${ruby_version}"
+GEM_HOME: "${gem_home}"
+YAML
 
-  "RUBY_INSTALL_URL": "${ruby_install_url}",
-  "RUBY_VERSION": "${ruby_version}",
-  "GEM_HOME": "${gem_home}"
-}
-JSON
-
-cat docker-build-args/docker-build-args.json
+cat docker-build-args/docker-build-args.yml
