@@ -556,7 +556,6 @@ jobs:
         no_get: true
         params:
           image: image/image.tar
-          additional_tags: bosh-windows-stemcell-builder-dockerfiles/ci/docker/additional-tags
 
   - name: clean-up-pre-release-blobstore
     serial: true
