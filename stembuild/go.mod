@@ -7,8 +7,8 @@ require (
 	github.com/google/subcommands v1.2.0
 	github.com/masterzen/winrm v0.0.0-20260407182533-5570be7f80cf
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.2
-	github.com/onsi/ginkgo/v2 v2.29.0
-	github.com/onsi/gomega v1.41.0
+	github.com/onsi/ginkgo/v2 v2.31.0
+	github.com/onsi/gomega v1.42.0
 	github.com/packer-community/winrmcp v0.0.0-20221126162354-6e900dd2c68f
 	github.com/pkg/errors v0.9.1
 	github.com/vmware/govmomi v0.54.1
@@ -48,10 +48,10 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/mod v0.37.0 // indirect
-	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
-	golang.org/x/tools v0.45.0 // indirect
+	golang.org/x/tools v0.46.0 // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
 )
 
