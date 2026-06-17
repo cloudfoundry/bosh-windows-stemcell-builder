@@ -132,8 +132,10 @@ var _ = Describe("BOSH Windows", func() {
 			err := boshCommand.Run(fmt.Sprintf("--deployment=%s ssh --opts=-T --command=exit", deploymentName))
 			Expect(err).NotTo(HaveOccurred())
 
-			err = boshCommand.RunErrand("check-ssh", deploymentName) // test for C:\Users only having one ssh user, net users only containing one ssh user.
-			Expect(err).NotTo(HaveOccurred())
+			// test for C:\Users and net users not having any bosh_* users
+			Eventually(func() error {
+				return boshCommand.RunErrand("check-ssh", deploymentName)
+			}, 2*time.Minute, 10*time.Second).Should(Succeed())
 		})
 	})
 })
