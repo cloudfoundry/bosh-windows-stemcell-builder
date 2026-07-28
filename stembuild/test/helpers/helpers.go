@@ -110,6 +110,23 @@ func extractArchive(archive io.Reader, dirname string) error {
 
 		// expect a flat archive
 		name := h.Name
+		if name == "" {
+			return errors.New("tar: archive contains empty filename")
+		}
+		unifiedName := strings.ReplaceAll(name, "\\", "/")
+		// Reject absolute paths in both Unix and Windows forms (including UNC paths).
+		if strings.HasPrefix(unifiedName, "/") || filepath.IsAbs(filepath.FromSlash(unifiedName)) {
+			return fmt.Errorf("tar: archive contains absolute path: %s", name)
+		}
+		// Reject Windows drive-relative / drive-absolute paths (e.g. "C:foo", "C:\\foo").
+		if vol := filepath.VolumeName(filepath.FromSlash(unifiedName)); vol != "" {
+			return fmt.Errorf("tar: archive contains volume name %q in path: %s", vol, name)
+		}
+		for _, part := range strings.Split(unifiedName, "/") {
+			if part == ".." {
+				return fmt.Errorf("tar: archive contains invalid path traversal: %s", name)
+			}
+		}
 		if filepath.Base(name) != name {
 			return fmt.Errorf("tar: archive contains subdirectory: %s", name)
 		}
