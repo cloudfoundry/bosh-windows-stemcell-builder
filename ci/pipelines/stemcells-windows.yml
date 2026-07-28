@@ -1855,7 +1855,7 @@ jobs:
           STORAGE_ACCOUNT: unpublishedstemcells
           SUBSCRIPTION_ID: ((koala_azure_credentials_json.subscription_id))
           TENANT_ID: ((koala_azure_credentials_json.tenant_id))
-          VM_SIZE: Standard_DS2_v2
+          VM_SIZE: Standard_D2ds_v5
           VM_PREFIX: packer-prod-((BASE_OS_VERSION))
           MOUNT_EPHEMERAL_DISK: true
         ensure:
