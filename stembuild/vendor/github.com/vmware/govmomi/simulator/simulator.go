@@ -14,12 +14,14 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -240,12 +242,10 @@ func (s *Service) call(ctx *Context, method *Method) soap.HasFault {
 	}
 
 	if e, ok := handler.(mo.Entity); ok {
-		for _, dm := range e.Entity().DisabledMethod {
-			if name == dm {
-				msg := fmt.Sprintf("%s method is disabled: %s", method.This, method.Name)
-				fault := &types.MethodDisabled{}
-				return &serverFaultBody{Reason: Fault(msg, fault)}
-			}
+		if slices.Contains(e.Entity().DisabledMethod, name) {
+			msg := fmt.Sprintf("%s method is disabled: %s", method.This, method.Name)
+			fault := &types.MethodDisabled{}
+			return &serverFaultBody{Reason: Fault(msg, fault)}
 		}
 	}
 
@@ -499,9 +499,7 @@ func (s *Service) HandleFunc(pattern string, handler func(http.ResponseWriter, *
 // multiple paths.
 func (s *Service) RegisterSDK(r *Registry, alias ...string) {
 	if existing, ok := s.sdk[r.Path]; ok {
-		for id, obj := range r.objects {
-			existing.objects[id] = obj
-		}
+		maps.Copy(existing.objects, r.objects)
 		return
 	}
 

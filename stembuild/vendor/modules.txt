@@ -57,7 +57,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3
+# github.com/google/pprof v0.0.0-20260825171938-4d453200e7d9
 ## explicit; go 1.25.0
 github.com/google/pprof/profile
 # github.com/google/subcommands v1.2.0
@@ -198,7 +198,7 @@ github.com/pkg/errors
 # github.com/tidwall/transform v0.0.0-20201103190739-32f242e2dbde
 ## explicit
 github.com/tidwall/transform
-# github.com/vmware/govmomi v0.55.1
+# github.com/vmware/govmomi v0.56.0
 ## explicit; go 1.25.0
 github.com/vmware/govmomi
 github.com/vmware/govmomi/cli
@@ -369,5 +369,8 @@ google.golang.org/protobuf/reflect/protoreflect
 google.golang.org/protobuf/reflect/protoregistry
 google.golang.org/protobuf/runtime/protoiface
 google.golang.org/protobuf/runtime/protoimpl
+# gopkg.in/yaml.v3 v3.0.1
+## explicit
+gopkg.in/yaml.v3
 # github.com/masterzen/winrm => github.com/bosh-dep-forks/winrm v0.0.0-20240321234108-df0e10ca9199
 # github.com/packer-community/winrmcp => github.com/bosh-dep-forks/winrmcp v0.0.0-20240506194308-1105f7feefc7

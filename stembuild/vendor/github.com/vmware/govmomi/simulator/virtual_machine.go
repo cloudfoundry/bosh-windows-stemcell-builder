@@ -15,12 +15,14 @@ import (
 	"path/filepath"
 	"reflect"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 
 	"github.com/google/uuid"
+	"gopkg.in/yaml.v3"
 
 	"github.com/vmware/govmomi/internal"
 	"github.com/vmware/govmomi/object"
@@ -107,7 +109,7 @@ func NewVirtualMachine(ctx *Context, parent types.ManagedObjectReference, spec *
 		// Create VM directory, renaming if already exists
 		name := dir
 
-		for i := 0; i < 1024; /* just in case */ i++ {
+		for i := range 1024 {
 			err := os.Mkdir(name, 0700)
 			if err != nil {
 				if os.IsExist(err) {
@@ -179,6 +181,15 @@ func (o VirtualMachine) addDefaultDevices(
 		existingDefaultDeviceMap = map[int32]struct{}{}
 	)
 
+	// Copy the package-level default devices so each VM gets its own
+	// instances. Sharing them across VMs would mean a device mutation on
+	// one VM, e.g. object.VirtualDeviceList.AssignController appending to
+	// the PCI controller's Device list, is visible on every other VM and
+	// races with concurrent readers of those VMs.
+	defaults := types.ArrayOfVirtualDevice{}
+	deepCopy(types.ArrayOfVirtualDevice{VirtualDevice: esx.VirtualDevice}, &defaults)
+	defaultDevices := object.VirtualDeviceList(defaults.VirtualDevice)
+
 	for i := range src.DeviceChange {
 		var (
 			dc     = src.DeviceChange[i]
@@ -201,36 +212,36 @@ func (o VirtualMachine) addDefaultDevices(
 		case *types.VirtualIDEController:
 			switch td.BusNumber {
 			case 0:
-				fn(esx.VirtualMachineDefaultDeviceIDEControllerBus0)
+				fn(defaultDevices.FindByKey(esx.VirtualMachineDefaultDeviceIDEControllerBus0.Key))
 			case 1:
-				fn(esx.VirtualMachineDefaultDeviceIDEControllerBus1)
+				fn(defaultDevices.FindByKey(esx.VirtualMachineDefaultDeviceIDEControllerBus1.Key))
 			}
 		case *types.VirtualPS2Controller:
-			fn(esx.VirtualMachineDefaultDevicePS2Controller)
+			fn(defaultDevices.FindByKey(esx.VirtualMachineDefaultDevicePS2Controller.Key))
 		case *types.VirtualPCIController:
-			fn(esx.VirtualMachineDefaultDevicePCIController)
+			fn(defaultDevices.FindByKey(esx.VirtualMachineDefaultDevicePCIController.Key))
 		case *types.VirtualSIOController:
-			fn(esx.VirtualMachineDefaultDeviceSIOController)
+			fn(defaultDevices.FindByKey(esx.VirtualMachineDefaultDeviceSIOController.Key))
 		case *types.VirtualKeyboard:
-			fn(esx.VirtualMachineDefaultDeviceVirtualKeyboard)
+			fn(defaultDevices.FindByKey(esx.VirtualMachineDefaultDeviceVirtualKeyboard.Key))
 		case *types.VirtualPointingDevice:
-			fn(esx.VirtualMachineDefaultDeviceVirtualPointingDevice)
+			fn(defaultDevices.FindByKey(esx.VirtualMachineDefaultDeviceVirtualPointingDevice.Key))
 		case *types.VirtualMachineVideoCard:
-			fn(esx.VirtualMachineDefaultDeviceVideoCard)
+			fn(defaultDevices.FindByKey(esx.VirtualMachineDefaultDeviceVideoCard.Key))
 		case *types.VirtualMachineVMCIDevice:
-			fn(esx.VirtualMachineDefaultDeviceVMCIDevice)
+			fn(defaultDevices.FindByKey(esx.VirtualMachineDefaultDeviceVMCIDevice.Key))
 		}
 	}
 
 	// Add any of the missing default devices.
-	for i := range esx.VirtualDevice {
-		vd := esx.VirtualDevice[i].GetVirtualDevice()
+	for i := range defaultDevices {
+		vd := defaultDevices[i].GetVirtualDevice()
 		if _, ok := existingDefaultDeviceMap[vd.Key]; !ok {
 			dst.DeviceChange = append(
 				dst.DeviceChange,
 				&types.VirtualDeviceConfigSpec{
 					Operation: types.VirtualDeviceConfigSpecOperationAdd,
-					Device:    esx.VirtualDevice[i],
+					Device:    defaultDevices[i],
 				})
 		}
 	}
@@ -1268,6 +1279,24 @@ func (vm *VirtualMachine) create(ctx *Context, spec *types.VirtualMachineConfigS
 		return err
 	}
 
+	// Check the ContainerImageRegistry.
+	// This allows tests to map VM config attributes (name, disk path) to OCI
+	// images without modifying the code under test. All ExtraConfig entries
+	// from the matched entry (including RUN.mountdmi, etc) are injected before
+	// the simVM is created.
+	if e := ctx.Map.ContainerImages.resolve(vm); e.OCIImage != "" {
+		vm.Config.ExtraConfig = append(
+			vm.Config.ExtraConfig,
+			&types.OptionValue{Key: ContainerBackingOptionKey, Value: e.OCIImage},
+		)
+		for k, v := range e.ExtraConfig {
+			vm.Config.ExtraConfig = append(
+				vm.Config.ExtraConfig,
+				&types.OptionValue{Key: k, Value: v},
+			)
+		}
+	}
+
 	return vm.applyExtraConfig(ctx, spec)
 }
 
@@ -1368,10 +1397,8 @@ func (vm *VirtualMachine) validateSwitchMembers(ctx *Context, id string) types.B
 	h := ctx.Map.Get(*vm.Runtime.Host).(*HostSystem)
 	c := hostParent(ctx, &h.HostSystem)
 	isMember := func(val types.ManagedObjectReference) bool {
-		for _, mem := range dswitch.Summary.HostMember {
-			if mem == val {
-				return true
-			}
+		if slices.Contains(dswitch.Summary.HostMember, val) {
+			return true
 		}
 		log.Printf("%s is not a member of VDS %s", h.Name, dswitch.Name)
 		return false
@@ -2236,8 +2263,9 @@ func (vm *VirtualMachine) configureDevices(ctx *Context, spec *types.VirtualMach
 type powerVMTask struct {
 	*VirtualMachine
 
-	state types.VirtualMachinePowerState
-	ctx   *Context
+	state                       types.VirtualMachinePowerState
+	ctx                         *Context
+	propagateCustomizationFault bool
 }
 
 func (c *powerVMTask) Run(task *Task) (types.AnyType, types.BaseMethodFault) {
@@ -2257,6 +2285,7 @@ func (c *powerVMTask) Run(task *Task) (types.AnyType, types.BaseMethodFault) {
 	}
 
 	event := c.event(c.ctx)
+	var customizationFault types.BaseMethodFault
 	switch c.state {
 	case types.VirtualMachinePowerStatePoweredOn:
 		if c.VirtualMachine.hostInMM(c.ctx) {
@@ -2277,7 +2306,7 @@ func (c *powerVMTask) Run(task *Task) (types.AnyType, types.BaseMethodFault) {
 			&types.VmStartingEvent{VmEvent: event},
 			&types.VmPoweredOnEvent{VmEvent: event},
 		)
-		c.customize(c.ctx)
+		customizationFault = c.customize(c.ctx)
 	case types.VirtualMachinePowerStatePoweredOff:
 		c.svm.stop(c.ctx)
 		c.ctx.postEvent(
@@ -2322,6 +2351,10 @@ func (c *powerVMTask) Run(task *Task) (types.AnyType, types.BaseMethodFault) {
 		{Name: "config.hardware.device", Val: devices},
 	})
 
+	if c.propagateCustomizationFault {
+		return nil, customizationFault
+	}
+
 	return nil, nil
 }
 
@@ -2332,7 +2365,11 @@ func (vm *VirtualMachine) PowerOnVMTask(ctx *Context, c *types.PowerOnVM_Task) s
 		}
 	}
 
-	runner := &powerVMTask{vm, types.VirtualMachinePowerStatePoweredOn, ctx}
+	runner := &powerVMTask{
+		VirtualMachine: vm,
+		state:          types.VirtualMachinePowerStatePoweredOn,
+		ctx:            ctx,
+	}
 	task := CreateTask(runner.Reference(), "powerOn", runner.Run)
 
 	return &methods.PowerOnVM_TaskBody{
@@ -2343,7 +2380,11 @@ func (vm *VirtualMachine) PowerOnVMTask(ctx *Context, c *types.PowerOnVM_Task) s
 }
 
 func (vm *VirtualMachine) PowerOffVMTask(ctx *Context, c *types.PowerOffVM_Task) soap.HasFault {
-	runner := &powerVMTask{vm, types.VirtualMachinePowerStatePoweredOff, ctx}
+	runner := &powerVMTask{
+		VirtualMachine: vm,
+		state:          types.VirtualMachinePowerStatePoweredOff,
+		ctx:            ctx,
+	}
 	task := CreateTask(runner.Reference(), "powerOff", runner.Run)
 
 	return &methods.PowerOffVM_TaskBody{
@@ -2354,7 +2395,11 @@ func (vm *VirtualMachine) PowerOffVMTask(ctx *Context, c *types.PowerOffVM_Task)
 }
 
 func (vm *VirtualMachine) SuspendVMTask(ctx *Context, req *types.SuspendVM_Task) soap.HasFault {
-	runner := &powerVMTask{vm, types.VirtualMachinePowerStateSuspended, ctx}
+	runner := &powerVMTask{
+		VirtualMachine: vm,
+		state:          types.VirtualMachinePowerStateSuspended,
+		ctx:            ctx,
+	}
 	task := CreateTask(runner.Reference(), "suspend", runner.Run)
 
 	return &methods.SuspendVM_TaskBody{
@@ -2805,12 +2850,31 @@ func (vm *VirtualMachine) CloneVMTask(ctx *Context, req *types.CloneVM_Task) soa
 
 		if req.Spec.Template {
 			_ = clone.MarkAsTemplate(&types.MarkAsTemplate{This: clone.Self})
+		} else {
+			if err := clone.setPendingCustomization(ctx, req.Spec.Customization); err != nil {
+				return nil, err
+			}
 		}
 
 		ctx.postEvent(&types.VmClonedEvent{
 			VmCloneEvent: types.VmCloneEvent{VmEvent: clone.event(ctx)},
 			SourceVm:     *event.Vm,
 		})
+
+		if !req.Spec.Template && req.Spec.PowerOn {
+			runner := &powerVMTask{
+				VirtualMachine:              clone,
+				state:                       types.VirtualMachinePowerStatePoweredOn,
+				ctx:                         ctx,
+				propagateCustomizationFault: true,
+			}
+			task := CreateTask(runner.Reference(), "powerOn", runner.Run)
+			ctask := ctx.Map.Get(task.Run(ctx)).(*Task)
+			ctask.Wait()
+			if ctask.Info.Error != nil {
+				return nil, ctask.Info.Error.Fault
+			}
+		}
 
 		return ref, nil
 	})
@@ -2898,19 +2962,30 @@ func (vm *VirtualMachine) RelocateVMTask(ctx *Context, req *types.RelocateVM_Tas
 	}
 }
 
-func (vm *VirtualMachine) customize(ctx *Context) {
+func (vm *VirtualMachine) customize(ctx *Context) types.BaseMethodFault {
 	if vm.imc == nil {
-		return
+		return nil
 	}
 
 	event := types.CustomizationEvent{VmEvent: vm.event(ctx)}
 	ctx.postEvent(&types.CustomizationStartedEvent{CustomizationEvent: event})
+	ctx.Update(vm, []types.PropertyChange{
+		{
+			Name: "guest.customizationInfo",
+			Val:  vm.customizationInfo(types.GuestInfoCustomizationStatusTOOLSDEPLOYPKG_RUNNING, ""),
+		},
+	})
 
 	changes := []types.PropertyChange{
 		{Name: "config.tools.pendingCustomization", Val: ""},
 	}
 
-	if len(vm.Guest.Net) != len(vm.imc.NicSettingMap) {
+	if !customizationUsesCloudInitNetworkConfig(vm.imc) && len(vm.Guest.Net) != len(vm.imc.NicSettingMap) {
+		fault := &types.NicSettingMismatch{
+			NumberOfNicsInSpec: int32(len(vm.imc.NicSettingMap)),
+			NumberOfNicsInVM:   int32(len(vm.Guest.Net)),
+		}
+
 		ctx.postEvent(&types.CustomizationNetworkSetupFailed{
 			CustomizationFailed: types.CustomizationFailed{
 				CustomizationEvent: event,
@@ -2919,18 +2994,25 @@ func (vm *VirtualMachine) customize(ctx *Context) {
 		})
 
 		vm.imc = nil
+		changes = append(changes, types.PropertyChange{
+			Name: "guest.customizationInfo",
+			Val:  vm.customizationInfo(types.GuestInfoCustomizationStatusTOOLSDEPLOYPKG_FAILED, "NicSettingMismatch"),
+		})
 		ctx.Update(vm, changes)
-		return
+		return fault
 	}
 
 	hostname := ""
 	address := ""
+	guestNetChanged := false
 
 	switch c := vm.imc.Identity.(type) {
 	case *types.CustomizationLinuxPrep:
 		hostname = customizeName(vm, c.HostName)
 	case *types.CustomizationSysprep:
 		hostname = customizeName(vm, c.UserData.ComputerName)
+	case *types.CustomizationCloudinitPrep:
+		hostname, address, guestNetChanged = vm.applyCloudInitCustomization(c)
 	}
 
 	cards := object.VirtualDeviceList(vm.Config.Hardware.Device).SelectByType((*types.VirtualEthernetCard)(nil))
@@ -2978,6 +3060,9 @@ func (vm *VirtualMachine) customize(ctx *Context) {
 	}
 
 	if len(vm.imc.NicSettingMap) != 0 {
+		guestNetChanged = true
+	}
+	if guestNetChanged {
 		changes = append(changes, types.PropertyChange{Name: "guest.net", Val: vm.Guest.Net})
 	}
 	if hostname != "" {
@@ -2990,8 +3075,168 @@ func (vm *VirtualMachine) customize(ctx *Context) {
 	}
 
 	vm.imc = nil
+	changes = append(changes, types.PropertyChange{
+		Name: "guest.customizationInfo",
+		Val:  vm.customizationInfo(types.GuestInfoCustomizationStatusTOOLSDEPLOYPKG_SUCCEEDED, ""),
+	})
 	ctx.Update(vm, changes)
 	ctx.postEvent(&types.CustomizationSucceeded{CustomizationEvent: event})
+	return nil
+}
+
+func customizationUsesCloudInitNetworkConfig(spec *types.CustomizationSpec) bool {
+	if spec == nil || len(spec.NicSettingMap) != 0 {
+		return false
+	}
+	_, ok := spec.Identity.(*types.CustomizationCloudinitPrep)
+	return ok
+}
+
+type cloudInitMetadata struct {
+	Hostname      string `yaml:"hostname"`
+	LocalHostname string `yaml:"local-hostname"`
+	Network       struct {
+		Ethernets map[string]cloudInitEthernet `yaml:"ethernets"`
+	} `yaml:"network"`
+}
+
+type cloudInitEthernet struct {
+	Addresses   []string `yaml:"addresses"`
+	Nameservers struct {
+		Addresses []string `yaml:"addresses"`
+		Search    []string `yaml:"search"`
+	} `yaml:"nameservers"`
+}
+
+func (vm *VirtualMachine) applyCloudInitCustomization(prep *types.CustomizationCloudinitPrep) (string, string, bool) {
+	if prep == nil || strings.TrimSpace(prep.Metadata) == "" {
+		return "", "", false
+	}
+
+	var metadata cloudInitMetadata
+	if err := yaml.Unmarshal([]byte(prep.Metadata), &metadata); err != nil {
+		vm.logPrintf("cloud-init metadata parse failed: %s", err)
+		return "", "", false
+	}
+
+	hostname := metadata.LocalHostname
+	if hostname == "" {
+		hostname = metadata.Hostname
+	}
+
+	ethernets := metadata.Network.Ethernets
+	if len(ethernets) == 0 {
+		return hostname, "", false
+	}
+
+	names := make([]string, 0, len(ethernets))
+	for name := range ethernets {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	address := ""
+	changed := false
+	for i, name := range names {
+		if i >= len(vm.Guest.Net) {
+			break
+		}
+
+		config := ethernets[name]
+		nic := &vm.Guest.Net[i]
+
+		if len(config.Addresses) != 0 {
+			nic.IpAddress = cloudInitIPAddresses(config.Addresses)
+			nic.IpConfig = &types.NetIpConfigInfo{
+				IpAddress: make([]types.NetIpConfigInfoIpAddress, len(nic.IpAddress)),
+			}
+			for j, ip := range nic.IpAddress {
+				nic.IpConfig.IpAddress[j].IpAddress = ip
+			}
+			if address == "" {
+				address = nic.IpAddress[0]
+			}
+			changed = true
+		}
+
+		if len(config.Nameservers.Addresses) != 0 || len(config.Nameservers.Search) != 0 {
+			if nic.DnsConfig == nil {
+				nic.DnsConfig = new(types.NetDnsConfigInfo)
+			}
+			nic.DnsConfig.IpAddress = config.Nameservers.Addresses
+			nic.DnsConfig.SearchDomain = config.Nameservers.Search
+			changed = true
+		}
+	}
+
+	return hostname, address, changed
+}
+
+func cloudInitIPAddresses(addresses []string) []string {
+	ips := make([]string, 0, len(addresses))
+	for _, address := range addresses {
+		ip, _, err := net.ParseCIDR(address)
+		if err == nil {
+			ips = append(ips, ip.String())
+			continue
+		}
+		value, _, _ := strings.Cut(address, "/")
+		ips = append(ips, value)
+	}
+	return ips
+}
+
+func (vm *VirtualMachine) customizationInfo(status types.GuestInfoCustomizationStatus, err string) *types.GuestInfoCustomizationInfo {
+	info := &types.GuestInfoCustomizationInfo{
+		CustomizationStatus: string(status),
+		ErrorMsg:            err,
+	}
+
+	now := time.Now()
+	switch status {
+	case types.GuestInfoCustomizationStatusTOOLSDEPLOYPKG_RUNNING:
+		info.StartTime = &now
+	case types.GuestInfoCustomizationStatusTOOLSDEPLOYPKG_SUCCEEDED, types.GuestInfoCustomizationStatusTOOLSDEPLOYPKG_FAILED:
+		if vm.Guest != nil && vm.Guest.CustomizationInfo != nil && vm.Guest.CustomizationInfo.StartTime != nil {
+			info.StartTime = vm.Guest.CustomizationInfo.StartTime
+		} else {
+			info.StartTime = &now
+		}
+		info.EndTime = &now
+	}
+
+	return info
+}
+
+func (vm *VirtualMachine) setPendingCustomization(ctx *Context, spec *types.CustomizationSpec) types.BaseMethodFault {
+	if spec == nil {
+		return nil
+	}
+
+	if vm.Config.Tools == nil {
+		vm.Config.Tools = new(types.ToolsConfigInfo)
+	}
+
+	if vm.Config.Tools.PendingCustomization != "" {
+		return new(types.CustomizationPending)
+	}
+	if !customizationUsesCloudInitNetworkConfig(spec) && len(vm.Guest.Net) != len(spec.NicSettingMap) {
+		return &types.NicSettingMismatch{
+			NumberOfNicsInSpec: int32(len(spec.NicSettingMap)),
+			NumberOfNicsInVM:   int32(len(vm.Guest.Net)),
+		}
+	}
+
+	vm.imc = spec
+	ctx.Update(vm, []types.PropertyChange{
+		{Name: "config.tools.pendingCustomization", Val: uuid.New().String()},
+		{
+			Name: "guest.customizationInfo",
+			Val:  vm.customizationInfo(types.GuestInfoCustomizationStatusTOOLSDEPLOYPKG_PENDING, ""),
+		},
+	})
+
+	return nil
 }
 
 func (vm *VirtualMachine) CustomizeVMTask(ctx *Context, req *types.CustomizeVM_Task) soap.HasFault {
@@ -3006,20 +3251,8 @@ func (vm *VirtualMachine) CustomizeVMTask(ctx *Context, req *types.CustomizeVM_T
 				ExistingState:  vm.Runtime.PowerState,
 			}
 		}
-		if vm.Config.Tools.PendingCustomization != "" {
-			return nil, new(types.CustomizationPending)
-		}
-		if len(vm.Guest.Net) != len(req.Spec.NicSettingMap) {
-			return nil, &types.NicSettingMismatch{
-				NumberOfNicsInSpec: int32(len(req.Spec.NicSettingMap)),
-				NumberOfNicsInVM:   int32(len(vm.Guest.Net)),
-			}
-		}
 
-		vm.imc = &req.Spec
-		vm.Config.Tools.PendingCustomization = uuid.New().String()
-
-		return nil, nil
+		return nil, vm.setPendingCustomization(ctx, &req.Spec)
 	})
 
 	return &methods.CustomizeVM_TaskBody{
