@@ -2440,6 +2440,7 @@ jobs:
           PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
           PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
           OFFER_NOTIFICATION_EMAIL: boshwindows@groups.vmware.com
+          MANUALLY_BYPASS_SUBMISSION: ""
   # TODO: replace `upload-image-and-start-publishing` with the two tasks below
   #  - task: azure-image-upload
   #    file: bosh-windows-stemcell-builder-ci/ci/tasks/azure-image-upload/task.yml
