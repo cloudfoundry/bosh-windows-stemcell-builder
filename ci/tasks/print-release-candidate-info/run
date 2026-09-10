@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -e
+
+MAIN_VERSION=$(cat main-version/number)
+AWS_VERSION=$(cat aws-build-number/number)
+AZURE_VERSION=$(cat azure-build-number/number)
+GCP_VERSION=$(cat gcp-build-number/number)
+
+echo "=== Release Candidate: ${MAIN_VERSION} ==="
+echo ""
+
+print_updates() {
+  local store=$1
+  local iaas=$2
+  local version=$3
+
+  echo "=== ${iaas} (${version}) ==="
+  local file="${store}/hotfix-logs/${MAIN_VERSION}/${iaas}-${version}-hotfixes.log"
+  if [ -f "${file}" ]; then
+    cat "${file}"
+  else
+    echo "(no hotfix log found at ${file})"
+  fi
+  echo ""
+}
+
+print_updates aws-updates-store          aws          "${AWS_VERSION}"
+print_updates aws-govcloud-updates-store aws-govcloud "${AWS_VERSION}"
+print_updates azure-updates-store        azure        "${AZURE_VERSION}"
+print_updates gcp-updates-store          gcp          "${GCP_VERSION}"

@@ -1,0 +1,15 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: main-version
+  - name: aws-build-number
+  - name: azure-build-number
+  - name: gcp-build-number
+  - name: aws-updates-store
+  - name: aws-govcloud-updates-store
+  - name: azure-updates-store
+  - name: gcp-updates-store
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/print-release-candidate-info/run

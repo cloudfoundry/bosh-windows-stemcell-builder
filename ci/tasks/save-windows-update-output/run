@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e
+
+MAIN_VERSION=$(cat main-version/number)
+VERSION=$(cat version/number)
+
+mkdir -p updates-store/hotfix-logs/${MAIN_VERSION}
+cp hotfix-log/hotfixes.log updates-store/hotfix-logs/${MAIN_VERSION}/${IAAS}-${VERSION}-hotfixes.log
+
+cd updates-store
+git config user.email "ci@localhost"
+git config user.name "CI Bot"
+git add .
+if git diff --cached --quiet; then
+  echo "No diff detected for ${IAAS} ${VERSION} — this shouldn't be possible since each build produces a unique versioned file path. This is an unhandled edge case. Failing out."
+  exit 1
+fi
+git commit -m "Add ${IAAS} hotfix log for ${MAIN_VERSION} (build ${VERSION})"
