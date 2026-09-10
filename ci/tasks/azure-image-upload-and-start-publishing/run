@@ -131,6 +131,83 @@ publish_offer() {
     -H "Authorization: Bearer $token"
 }
 
+if [[ "${MANUALLY_BYPASS_SUBMISSION:-}" != "" ]]; then
+  pacific_today=$(TZ="America/Los_Angeles" date +%Y-%m-%d)
+
+  if ! echo "${MANUALLY_BYPASS_SUBMISSION}" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'; then
+    echo "ERROR: MANUALLY_BYPASS_SUBMISSION is set to '${MANUALLY_BYPASS_SUBMISSION}' which is not a valid YYYY-MM-DD date."
+    echo "To bypass submission today, set MANUALLY_BYPASS_SUBMISSION to: ${pacific_today}"
+    exit 1
+  fi
+
+  if [[ "${MANUALLY_BYPASS_SUBMISSION}" != "${pacific_today}" ]]; then
+    echo "ERROR: MANUALLY_BYPASS_SUBMISSION date '${MANUALLY_BYPASS_SUBMISSION}' does not match today's Pacific date '${pacific_today}'."
+    echo "To bypass submission today, set MANUALLY_BYPASS_SUBMISSION to: ${pacific_today}"
+    exit 1
+  fi
+
+  echo "Date check passed: MANUALLY_BYPASS_SUBMISSION matches today's Pacific date (${pacific_today})."
+
+  echo "Authenticating with Microsoft..."
+  token=$(create_microsoft_token)
+  echo OK
+
+  offer_id_endpoint="https://cloudpartner.azure.com/api/publishers/$AZURE_PUBLISHER/offers/$AZURE_OFFER?api-version=2017-10-31"
+
+  echo "Retrieving current offer to verify image was already added..."
+  original_offer_json="$PWD/original_offer.json"
+  create_original_offer_json > "$original_offer_json"
+
+  image_version=$(format_version "$main_version")
+  blob_url=$(retrieve_blob_url)
+
+  existing_vhd_url=$(jq -r "
+    .definition.plans[] |
+    select(.planId == \"$AZURE_SKU\") |
+    .[\"microsoft-azure-virtualmachines.vmImages\"][\"$image_version\"].osVhdUrl
+  " "$original_offer_json")
+
+  if [[ -z "${existing_vhd_url}" || "${existing_vhd_url}" == "null" ]]; then
+    echo "ERROR: Image version '${image_version}' not found in offer for plan '${AZURE_SKU}'."
+    echo "The offer does not contain the expected image. Verify that manual submission was completed."
+    exit 1
+  fi
+
+  if [[ "${existing_vhd_url}" != "${blob_url}"* ]]; then
+    echo "ERROR: The existing osVhdUrl '${existing_vhd_url}' does not start with expected blob URL '${blob_url}'."
+    echo "The offer may not have been updated with the correct image."
+    exit 1
+  fi
+
+  echo "Image check passed: image version '${image_version}' with expected blob URL found in offer."
+
+  echo "Checking offer status..."
+  offer_status_endpoint="https://cloudpartner.azure.com/api/publishers/$AZURE_PUBLISHER/offers/$AZURE_OFFER/status?api-version=2017-10-31"
+  offer_status_json="$PWD/offer_status.json"
+  curl --fail -X GET "$offer_status_endpoint" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $token" > "$offer_status_json"
+
+  signoff_step_status=$(jq -er ".steps[] | select(.id == \"publisher-signoff\") | .status" "$offer_status_json")
+
+  if [[ "${signoff_step_status}" == "complete" ]]; then
+    echo "ERROR: Offer publisher-signoff status is 'complete'. The offer has already been published."
+    echo "Do not use MANUALLY_BYPASS_SUBMISSION when the offer is already complete."
+    exit 1
+  fi
+
+  echo
+  echo "========================================================================"
+  echo "WARNING: MANUALLY BYPASSING AZURE MARKETPLACE SUBMISSION"
+  echo "The submission was performed manually outside of this pipeline job."
+  echo "All safety checks passed. Proceeding to wait-for-azure-publisher-signoff."
+  echo "  Offer status (publisher-signoff step): ${signoff_step_status}"
+  echo "  Bypass authorized for date: ${MANUALLY_BYPASS_SUBMISSION}"
+  echo "========================================================================"
+  echo
+  exit 0
+fi
+
 echo -n "Authenticating with Microsoft..."
 echo
 token=$(create_microsoft_token)
