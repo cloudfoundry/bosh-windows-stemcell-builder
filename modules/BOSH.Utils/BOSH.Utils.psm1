@@ -100,33 +100,49 @@ function Protect-Dir
         [bool]$disableInheritance = $True
     )
 
+    if ($disableInheritance)
+    {
+        Write-Log "Protect-Dir: Disable Inheritance"
+        icacls.exe $path /inheritance:d /T
+        if ($LASTEXITCODE -ne 0)
+        {
+            Throw "Error disabling inheritance for $path exited with $LASTEXITCODE"
+        }
+    }
+
     Write-Log "Protect-Dir: Grant Administrator"
-    cmd.exe /c cacls.exe $path /T /E /P Administrators:F
+    icacls.exe $path /grant "Administrators:(OI)(CI)F" /T
     if ($LASTEXITCODE -ne 0)
     {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
     Write-Log "Protect-Dir: Remove BUILTIN\Users"
-    cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\Users"
+    icacls.exe $path /remove "BUILTIN\Users" /T
     if ($LASTEXITCODE -ne 0)
     {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
     Write-Log "Protect-Dir: Remove BUILTIN\IIS_IUSRS"
-    cmd.exe /c cacls.exe $path /T /E /R "BUILTIN\IIS_IUSRS"
+    icacls.exe $path /remove "BUILTIN\IIS_IUSRS" /T
     if ($LASTEXITCODE -ne 0)
     {
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
-    if ($disableInheritance)
+    Write-Log "Protect-Dir: Remove NT AUTHORITY\Authenticated Users"
+    icacls.exe $path /remove "NT AUTHORITY\Authenticated Users" /T
+    if ($LASTEXITCODE -ne 0)
     {
-        Write-Log "Protect-Dir: Disable Inheritance"
-        $acl = Get-ACL -LiteralPath $path
-        $acl.SetAccessRuleProtection($True, $True)
-        Set-Acl -LiteralPath $path -AclObject $acl
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+    }
+
+    Write-Log "Protect-Dir: Remove Everyone"
+    icacls.exe $path /remove "Everyone" /T
+    if ($LASTEXITCODE -ne 0)
+    {
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 }
 
@@ -136,6 +152,16 @@ function Protect-Path
         [string]$path = $( Throw "Provide a directory to set ACL on" ),
         [bool]$disableInheritance = $True
     )
+
+    if ($disableInheritance)
+    {
+        Write-Log "Protect-Path: Disable Inheritance"
+        icacls.exe $path /inheritance:d
+        if ($LASTEXITCODE -ne 0)
+        {
+            Throw "Error disabling inheritance for $path exited with $LASTEXITCODE"
+        }
+    }
 
     Write-Log "Protect-Path: Grant Administrator"
     icacls.exe $path /grant "Administrators:(OI)(CI)F"
@@ -158,12 +184,18 @@ function Protect-Path
         Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 
-    if ($disableInheritance)
+    Write-Log "Protect-Path: Remove NT AUTHORITY\Authenticated Users"
+    icacls.exe $path /remove "NT AUTHORITY\Authenticated Users"
+    if ($LASTEXITCODE -ne 0)
     {
-        Write-Log "Protect-Path: Disable Inheritance"
-        $acl = Get-ACL -LiteralPath $path
-        $acl.SetAccessRuleProtection($True, $True)
-        Set-Acl -LiteralPath $path -AclObject $acl
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
+    }
+
+    Write-Log "Protect-Path: Remove Everyone"
+    icacls.exe $path /remove "Everyone"
+    if ($LASTEXITCODE -ne 0)
+    {
+        Throw "Error setting ACL for $path exited with $LASTEXITCODE"
     }
 }
 
