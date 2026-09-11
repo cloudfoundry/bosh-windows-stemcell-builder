@@ -2323,7 +2323,7 @@ jobs:
               tags: [*worker_tag]
               passed:
                 - wuts-gcp
-                - wuts-aws-govcloud
+                - wuts-aws-govcloud # implies => aws-build-number
                 - wuts-azure
                 - wuts-stembuild-linux-stemcell
                 - wuts-stembuild-windows-stemcell
@@ -2336,7 +2336,7 @@ jobs:
             - get: main-version
               passed:
                 - wuts-gcp
-                - wuts-aws-govcloud
+                - wuts-aws-govcloud  # implies => aws-build-number
                 - wuts-azure
               tags: [*worker_tag]
             - get: packer-output-ami
@@ -2344,7 +2344,7 @@ jobs:
             - get: packer-output-govcloud-ami
               passed: [wuts-aws-govcloud]
             - get: aws-build-number
-              passed: [wuts-aws-govcloud]
+              passed: [wuts-aws-govcloud] # implies => aws-build-number
               tags: [*worker_tag]
             - get: gcp-build-number
               passed: [wuts-gcp]
@@ -2352,7 +2352,7 @@ jobs:
             - get: bosh-agent-release
               passed:
                 - wuts-gcp
-                - wuts-aws-govcloud
+                - wuts-aws-govcloud # implies => aws-build-number
                 - wuts-azure
                 - wuts-stembuild-linux-stemcell
                 - wuts-stembuild-windows-stemcell
@@ -2383,54 +2383,39 @@ jobs:
             - get: bosh-windows-stemcell-builder-ci-image
               tags: [*worker_tag]
             - get: aws-tested
-              passed: [wuts-aws]
+              passed: [print-release-candidate-info]
             - get: aws-govcloud-tested
-              passed: [wuts-aws-govcloud]
+              passed: [print-release-candidate-info]
             - get: gcp-tested
-              passed: [wuts-gcp]
+              passed: [print-release-candidate-info]
             - get: azure-tested
-              passed: [wuts-azure]
+              passed: [print-release-candidate-info]
             - get: azure-base-vhd-uri
-              passed: [wuts-azure]
+              passed: [print-release-candidate-info]
             - get: azure-build-number
-              passed: [wuts-azure]
+              passed: [print-release-candidate-info]
               tags: [*worker_tag]
             - get: stemcell-builder
               tags: [*worker_tag]
-              passed:
-                - wuts-gcp
-                - wuts-aws-govcloud # implies => aws-build-number
-                - wuts-azure
-                - wuts-stembuild-linux-stemcell
-                - wuts-stembuild-windows-stemcell
+              passed: [print-release-candidate-info]
             - get: stembuild-untested-linux
-              passed: [wuts-stembuild-linux-stemcell]
+              passed: [print-release-candidate-info]
             - get: stembuild-linux-stemcell
-              passed: [wuts-stembuild-linux-stemcell]
+              passed: [print-release-candidate-info]
             - get: stembuild-untested-windows
-              passed: [wuts-stembuild-windows-stemcell]
+              passed: [print-release-candidate-info]
             - get: main-version
-              passed:
-                - wuts-gcp
-                - wuts-aws-govcloud # implies => aws-build-number
-                - wuts-azure
-                - print-release-candidate-info
+              passed: [print-release-candidate-info]
               tags: [*worker_tag]
             - get: packer-output-ami
-              passed: [wuts-aws]
+              passed: [print-release-candidate-info]
             - get: packer-output-govcloud-ami
-              passed: [wuts-aws-govcloud]
+              passed: [print-release-candidate-info]
             - get: aws-build-number
-              passed:
-                - wuts-aws-govcloud # implies => aws-build-number
+              passed: [print-release-candidate-info]
               tags: [*worker_tag]
             - get: bosh-agent-release
-              passed:
-                - wuts-gcp
-                - wuts-aws-govcloud # implies => aws-build-number
-                - wuts-azure
-                - wuts-stembuild-linux-stemcell
-                - wuts-stembuild-windows-stemcell
+              passed: [print-release-candidate-info]
       - task: ensure-versions-match
         file: bosh-windows-stemcell-builder-ci/ci/tasks/match-stemcell-versions/task.yml
         image: bosh-windows-stemcell-builder-ci-image
