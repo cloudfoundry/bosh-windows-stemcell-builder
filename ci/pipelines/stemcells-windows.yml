@@ -31,6 +31,7 @@ groups:
       - create-gcp
       - test-gcp
       - wuts-gcp
+      - print-release-candidate-info
       - promote
       - promote-gcp
       - promote-aws
@@ -82,6 +83,7 @@ groups:
       - wuts-stembuild-windows-stemcell
   - name: promote
     jobs:
+      - print-release-candidate-info
       - promote
       - promote-gcp
       - promote-aws
@@ -181,6 +183,39 @@ resources:
     type: git
     source:
       uri: https://github.com/cloudfoundry/windows-utilities-release.git
+
+  - name: aws-updates-store
+    type: git
+    tags: [*worker_tag]
+    source:
+      uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
+      branch: build-metadata
+      username: bosh-admin-bot
+      password: ((github_public_repo_token))
+  - name: aws-govcloud-updates-store
+    type: git
+    tags: [*worker_tag]
+    source:
+      uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
+      branch: build-metadata
+      username: bosh-admin-bot
+      password: ((github_public_repo_token))
+  - name: azure-updates-store
+    type: git
+    tags: [*worker_tag]
+    source:
+      uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
+      branch: build-metadata
+      username: bosh-admin-bot
+      password: ((github_public_repo_token))
+  - name: gcp-updates-store
+    type: git
+    tags: [*worker_tag]
+    source:
+      uri: https://github.com/cloudfoundry/bosh-windows-stemcell-builder.git
+      branch: build-metadata
+      username: bosh-admin-bot
+      password: ((github_public_repo_token))
 
   # type: registry-image
   - name: bosh-windows-stemcell-builder-ci-image
@@ -1461,6 +1496,8 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+            - get: aws-updates-store
+              tags: [*worker_tag]
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1503,6 +1540,21 @@ jobs:
             REGIONS: "us-east-1,us-east-2,us-west-1,us-west-2,ca-central-1,ap-south-1,ap-northeast-1,ap-northeast-2,ap-southeast-1,ap-southeast-2,eu-central-1,eu-west-1,eu-west-2,sa-east-1"
             VM_PREFIX: packer-prod-((BASE_OS_VERSION))
       - *print-updates
+      - task: save-windows-update-output
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/save-windows-update-output/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        input_mapping:
+          updates-store: aws-updates-store
+        output_mapping:
+          updates-store: aws-updates-store
+        params:
+          IAAS: aws
+      - put: aws-updates-store
+        inputs: detect
+        params:
+          repository: aws-updates-store
+          rebase: true
+        tags: [*worker_tag]
       - task: wait-for-ami-availability
         file: bosh-windows-stemcell-builder-ci/ci/tasks/wait-for-ami-availability/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1551,6 +1603,9 @@ jobs:
               passed: [create-aws]
             - get: bosh-agent-release
               passed: [create-aws]
+            - get: aws-updates-store
+              passed: [create-aws]
+              tags: [*worker_tag]
       - task: run-bwats-aws-stemcell
         file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1601,6 +1656,9 @@ jobs:
             - get: bosh-agent-release
               passed: [test-aws]
             - get: bosh-integration-registry-image
+            - get: aws-updates-store
+              passed: [test-aws]
+              tags: [*worker_tag]
       - do:
           - task: run-wuts
             file: windows-utilities-release/ci/tasks/run-wuts/task.yml
@@ -1652,6 +1710,8 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+            - get: aws-govcloud-updates-store
+              tags: [*worker_tag]
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1686,6 +1746,21 @@ jobs:
             REGIONS: "us-gov-west-1"
             VM_PREFIX: packer-prod-((BASE_OS_VERSION))
       - *print-updates
+      - task: save-windows-update-output
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/save-windows-update-output/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        input_mapping:
+          updates-store: aws-govcloud-updates-store
+        output_mapping:
+          updates-store: aws-govcloud-updates-store
+        params:
+          IAAS: aws-govcloud
+      - put: aws-govcloud-updates-store
+        inputs: detect
+        params:
+          repository: aws-govcloud-updates-store
+          rebase: true
+        tags: [*worker_tag]
       - in_parallel:
           fail_fast: true
           steps:
@@ -1726,6 +1801,9 @@ jobs:
               passed: [create-aws-govcloud]
             - get: bosh-agent-release
               passed: [create-aws-govcloud]
+            - get: aws-govcloud-updates-store
+              passed: [create-aws-govcloud]
+              tags: [*worker_tag]
       - task: run-bwats-aws-govcloud-stemcell
         file: bosh-windows-stemcell-builder-ci/ci/tasks/run-bwats/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1774,6 +1852,9 @@ jobs:
             - get: bosh-agent-release
               passed: [test-aws-govcloud]
             - get: bosh-integration-registry-image
+            - get: aws-govcloud-updates-store
+              passed: [test-aws-govcloud]
+              tags: [*worker_tag]
       - do:
           - task: run-wuts
             file: windows-utilities-release/ci/tasks/run-wuts/task.yml
@@ -1823,6 +1904,8 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+            - get: azure-updates-store
+              tags: [*worker_tag]
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1870,6 +1953,21 @@ jobs:
             TENANT_ID: ((koala_azure_credentials_json.tenant_id))
             VM_PREFIX: packer-prod-((BASE_OS_VERSION))
       - *print-updates
+      - task: save-windows-update-output
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/save-windows-update-output/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        input_mapping:
+          updates-store: azure-updates-store
+        output_mapping:
+          updates-store: azure-updates-store
+        params:
+          IAAS: azure
+      - put: azure-updates-store
+        inputs: detect
+        params:
+          repository: azure-updates-store
+          rebase: true
+        tags: [*worker_tag]
       - put: azure-untested
         params:
           file: bosh-windows-stemcell/light-bosh-stemcell-*-azure-hyperv-windows((BASE_OS_VERSION))-go_agent.tgz
@@ -1910,6 +2008,9 @@ jobs:
               tags: [*worker_tag]
             - get: bosh-agent-release
               passed: [create-azure]
+            - get: azure-updates-store
+              passed: [create-azure]
+              tags: [*worker_tag]
       - task: download-heavy
         file: bosh-windows-stemcell-builder-ci/ci/tasks/download-heavy-azure-stemcell/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -1971,6 +2072,9 @@ jobs:
             - get: bosh-agent-release
               passed: [test-azure]
             - get: bosh-integration-registry-image
+            - get: azure-updates-store
+              passed: [test-azure]
+              tags: [*worker_tag]
       - task: download-heavy
         file: bosh-windows-stemcell-builder-ci/ci/tasks/download-heavy-azure-stemcell/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -2030,6 +2134,8 @@ jobs:
             - get: blobstore-s3-cli
             - get: blobstore-gcs-cli
             - get: windows-winsw
+            - get: gcp-updates-store
+              tags: [*worker_tag]
       - task: lgpo-binary
         file: bosh-windows-stemcell-builder-ci/ci/tasks/lgpo-binary/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -2062,6 +2168,21 @@ jobs:
             IAAS: gcp
             VM_PREFIX: packer-prod-((BASE_OS_VERSION))
       - *print-updates
+      - task: save-windows-update-output
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/save-windows-update-output/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        input_mapping:
+          updates-store: gcp-updates-store
+        output_mapping:
+          updates-store: gcp-updates-store
+        params:
+          IAAS: gcp
+      - put: gcp-updates-store
+        inputs: detect
+        params:
+          repository: gcp-updates-store
+          rebase: true
+        tags: [*worker_tag]
       - task: publish-gcp-stemcell
         file: bosh-windows-stemcell-builder-ci/ci/tasks/publish-gcp-stemcell/task.yml
         image: bosh-windows-stemcell-builder-ci-image
@@ -2100,6 +2221,9 @@ jobs:
               tags: [*worker_tag]
             - get: bosh-agent-release
               passed: [create-gcp]
+            - get: gcp-updates-store
+              passed: [create-gcp]
+              tags: [*worker_tag]
       - do:
           - task: run-bwats-gcp-stemcell
             tags: [*worker_tag_internal]
@@ -2144,6 +2268,12 @@ jobs:
             - get: bosh-agent-release
               passed: [test-gcp]
             - get: bosh-integration-registry-image
+            - get: gcp-updates-store
+              passed: [test-gcp]
+              tags: [*worker_tag]
+            - get: gcp-build-number
+              passed: [test-gcp]
+              tags: [*worker_tag]
       - do:
           - task: run-wuts
             tags: [*worker_tag_internal]
@@ -2161,6 +2291,86 @@ jobs:
               VM_EXTENSIONS: "50GB_ephemeral_disk"
               VM_TYPE: large
 
+
+  - name: print-release-candidate-info
+    serial: true
+    plan:
+      - in_parallel:
+          fail_fast: true
+          steps:
+            - get: bosh-windows-stemcell-builder-ci
+              tags: [*worker_tag]
+            - get: bosh-windows-stemcell-builder-ci-image
+              tags: [*worker_tag]
+            - get: aws-tested
+              passed: [wuts-aws]
+              trigger: true
+            - get: aws-govcloud-tested
+              passed: [wuts-aws-govcloud]
+              trigger: true
+            - get: gcp-tested
+              passed: [wuts-gcp]
+              trigger: true
+            - get: azure-tested
+              passed: [wuts-azure]
+              trigger: true
+            - get: azure-base-vhd-uri
+              passed: [wuts-azure]
+            - get: azure-build-number
+              passed: [wuts-azure]
+              tags: [*worker_tag]
+            - get: stemcell-builder
+              tags: [*worker_tag]
+              passed:
+                - wuts-gcp
+                - wuts-aws-govcloud
+                - wuts-azure
+                - wuts-stembuild-linux-stemcell
+                - wuts-stembuild-windows-stemcell
+            - get: stembuild-untested-linux
+              passed: [wuts-stembuild-linux-stemcell]
+            - get: stembuild-linux-stemcell
+              passed: [wuts-stembuild-linux-stemcell]
+            - get: stembuild-untested-windows
+              passed: [wuts-stembuild-windows-stemcell]
+            - get: main-version
+              passed:
+                - wuts-gcp
+                - wuts-aws-govcloud
+                - wuts-azure
+              tags: [*worker_tag]
+            - get: packer-output-ami
+              passed: [wuts-aws]
+            - get: packer-output-govcloud-ami
+              passed: [wuts-aws-govcloud]
+            - get: aws-build-number
+              passed: [wuts-aws-govcloud]
+              tags: [*worker_tag]
+            - get: gcp-build-number
+              passed: [wuts-gcp]
+              tags: [*worker_tag]
+            - get: bosh-agent-release
+              passed:
+                - wuts-gcp
+                - wuts-aws-govcloud
+                - wuts-azure
+                - wuts-stembuild-linux-stemcell
+                - wuts-stembuild-windows-stemcell
+            - get: aws-updates-store
+              passed: [wuts-aws]
+              tags: [*worker_tag]
+            - get: aws-govcloud-updates-store
+              passed: [wuts-aws-govcloud]
+              tags: [*worker_tag]
+            - get: azure-updates-store
+              passed: [wuts-azure]
+              tags: [*worker_tag]
+            - get: gcp-updates-store
+              passed: [wuts-gcp]
+              tags: [*worker_tag]
+      - task: print-release-candidate-info
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/print-release-candidate-info/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
 
   - name: promote
     serial: true
@@ -2204,6 +2414,7 @@ jobs:
                 - wuts-gcp
                 - wuts-aws-govcloud # implies => aws-build-number
                 - wuts-azure
+                - print-release-candidate-info
               tags: [*worker_tag]
             - get: packer-output-ami
               passed: [wuts-aws]

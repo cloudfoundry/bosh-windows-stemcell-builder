@@ -1,0 +1,15 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: hotfix-log
+  - name: main-version
+  - name: version
+  - name: updates-store
+outputs:
+  - name: updates-store
+params:
+  IAAS:
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/save-windows-update-output/run
