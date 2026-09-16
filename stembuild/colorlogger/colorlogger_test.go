@@ -18,7 +18,7 @@ var _ = Describe("Stdout", func() {
 
 		message := "This is a test"
 
-		logger.Printf(message)
+		logger.Printf("%s", message)
 		Expect(buf.String()).To(Equal("debug: " + message + "\n"))
 	})
 
@@ -29,7 +29,7 @@ var _ = Describe("Stdout", func() {
 
 		message := "This is a test"
 
-		logger.Printf(message)
+		logger.Printf("%s", message)
 		Expect(buf.String()).To(BeEmpty())
 	})
 
@@ -40,7 +40,7 @@ var _ = Describe("Stdout", func() {
 
 		message := "This is a test"
 
-		logger.Printf(message)
+		logger.Printf("%s", message)
 		Expect(buf.String()).To(Equal("\033[32mdebug:\033[0m " + message + "\n"))
 	})
 })
