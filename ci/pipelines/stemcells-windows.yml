@@ -1,5 +1,7 @@
 # To configure this pipeline: pipelines/configure.sh windows-2022
 
+# this is a test
+
 anchors:
   - &gcp_build_account_json ((broadcom_labs_gcp_credentials_json))
   - &gcp_publish_account_json ((broadcom_saas-tnz-pub-winstem_gcp_credentials_json))
