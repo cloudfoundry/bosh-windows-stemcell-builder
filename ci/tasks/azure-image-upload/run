@@ -43,7 +43,7 @@ copy_blob_to_premiumstore() {
     --destination-container "${AZURE_CONTAINER_NAME}" \
     --destination-blob "${vhd_filename}" > /dev/null || {
     echo "ERROR: could not start the copy to ${AZURE_PUBLISHED_STORAGE_ACCOUNT}/${AZURE_CONTAINER_NAME}/${vhd_filename}" >&2
-    echo "If an earlier run left a pending copy on that blob, wait for it to finish or cancel it:" >&2
+    echo "If an earlier run left a pending copy on that blob, wait for it to finish or cancel it (with AZURE_STORAGE_KEY set to the ${AZURE_PUBLISHED_STORAGE_ACCOUNT} key):" >&2
     echo "  az storage blob show --account-name ${AZURE_PUBLISHED_STORAGE_ACCOUNT} --container-name ${AZURE_CONTAINER_NAME} --name ${vhd_filename} --query properties.copy.id" >&2
     echo "  az storage blob copy cancel --account-name ${AZURE_PUBLISHED_STORAGE_ACCOUNT} --destination-container ${AZURE_CONTAINER_NAME} --destination-blob ${vhd_filename} --copy-id <copy id>" >&2
     echo "then re-run this job" >&2
