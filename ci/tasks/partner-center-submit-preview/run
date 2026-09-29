@@ -26,7 +26,7 @@ fi
 blob=$(cat "${vhd_uri_files[0]}")
 echo "Version ${version}"
 preview_recheck="Check Partner Center: if a preview submission for ${version} is listed and has not failed, re-running this job is safe (it finds it and exits 0); if it is listed but failed, fix the cause first, as a re-run submits to preview again; if none is listed yet, wait a few minutes and check again before re-running, or a second preview submission is sent"
-guard_hint="Nothing was sent to Partner Center; this is a bug in partner-center-submit-preview.sh"
+guard_hint="Nothing was sent to Partner Center; this is a bug in ci/tasks/partner-center-submit-preview/run"
 echo "to debug, 'fly intercept -u <this job run url>' and look at the redacted *.json files in ${PWD}"
 
 pc_token
