@@ -504,6 +504,14 @@ resources:
       access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
       secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
       aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
+  - name: azure-published-vhd-uri
+    type: s3
+    source:
+      bucket: ((ROOT_BUCKET))
+      regexp: ((BASE_OS_VERSION))/untested/azure/published/bosh-windows-image-(.*)-vhd-uri.txt
+      access_key_id: ((bosh_windows_ci_assume_aws_access_key.username))
+      secret_access_key: ((bosh_windows_ci_assume_aws_access_key.password))
+      aws_role_arn: ((bosh_windows_ci_assume_aws_access_key.role_arn))
   - name: azure-tested
     type: s3
     source:
@@ -2619,52 +2627,40 @@ jobs:
               trigger: true
             - get: azure-base-vhd-uri
               passed: [promote]
-      # TODO: delete `ci/tasks/azure-image-upload-and-start-publishing/` once this task is replaced by the two below
-      - task: upload-image-and-start-publishing
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/azure-image-upload-and-start-publishing/task.yml
+      - task: azure-image-upload
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/azure-image-upload/task.yml
         image: bosh-windows-stemcell-builder-ci-image
+        timeout: 3h
         params:
           AZURE_STORAGE_ACCESS_KEY: ((heavy_azure_stemcell_azure_storage_access_key_koala))
           AZURE_STORAGE_ACCOUNT: unpublishedstemcells
           AZURE_PUBLISHED_STORAGE_ACCESS_KEY: ((azure_published_storage_access_key))
           AZURE_PUBLISHED_STORAGE_ACCOUNT: publishedstemcells
           AZURE_CONTAINER_NAME: ((AZURE_CONTAINER_NAME))
-          AZURE_SKU: ((AZURE_SKU))
-          AZURE_PUBLISHER: ((AZURE_PUBLISHER))
-          AZURE_OFFER: bosh-windows-server-((BASE_OS_VERSION))
-          PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
-          PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
-          PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
-          OFFER_NOTIFICATION_EMAIL: boshwindows@groups.vmware.com
-          MANUALLY_BYPASS_SUBMISSION: ""
-  # TODO: replace `upload-image-and-start-publishing` with the two tasks below
-  #  - task: azure-image-upload
-  #    file: bosh-windows-stemcell-builder-ci/ci/tasks/azure-image-upload/task.yml
-  #    image: bosh-windows-stemcell-builder-ci-image
-  #    params:
-  #      AZURE_STORAGE_ACCESS_KEY: ((heavy_azure_stemcell_azure_storage_access_key_koala))
-  #      AZURE_STORAGE_ACCOUNT: unpublishedstemcells
-  #      AZURE_PUBLISHED_STORAGE_ACCESS_KEY: ((azure_published_storage_access_key))
-  #      AZURE_PUBLISHED_STORAGE_ACCOUNT: publishedstemcells
-  #      AZURE_CONTAINER_NAME: ((AZURE_CONTAINER_NAME))
-  #      AZURE_OFFER: bosh-windows-server-((BASE_OS_VERSION))
-  #      PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
-  #      PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
-  #      PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
-  #  - task: azure-start-publishing
-  #    file: bosh-windows-stemcell-builder-ci/ci/tasks/azure-start-publishing/task.yml
-  #    image: bosh-windows-stemcell-builder-ci-image
-  #    params:
-  #      AZURE_PUBLISHED_STORAGE_ACCESS_KEY: ((azure_published_storage_access_key))
-  #      AZURE_PUBLISHED_STORAGE_ACCOUNT: publishedstemcells
-  #      AZURE_CONTAINER_NAME: ((AZURE_CONTAINER_NAME))
-  #      AZURE_SKU: ((AZURE_SKU))
-  #      AZURE_PUBLISHER: ((AZURE_PUBLISHER))
-  #      AZURE_OFFER: bosh-windows-server-((BASE_OS_VERSION))
-  #      PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
-  #      PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
-  #      PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
-  #      OFFER_NOTIFICATION_EMAIL: boshwindows@groups.vmware.com
+      - put: azure-published-vhd-uri
+        params:
+          file: published-vhd-uri/*-vhd-uri.txt
+      - load_var: image-version
+        file: azure-published-vhd-uri/version
+        reveal: true
+      - task: partner-center-submit-preview
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/partner-center-submit-preview/task.yml
+        image: bosh-windows-stemcell-builder-ci-image
+        timeout: 3h
+        input_mapping:
+          vhd-uri: azure-published-vhd-uri
+        params:
+          <<: &partner_center_params
+            AZURE_OFFER: bosh-windows-server-((BASE_OS_VERSION))
+            AZURE_SKU: ((AZURE_SKU))
+            IMAGE_VERSION: ((.:image-version))
+            PUBLISH_JOB: stemcells-windows-((BASE_OS_VERSION))/publish-azure-offer
+            PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
+            PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
+            PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
+          AZURE_PUBLISHED_STORAGE_ACCOUNT: publishedstemcells
+          AZURE_PUBLISHED_STORAGE_ACCESS_KEY: ((azure_published_storage_access_key))
+          AZURE_CONTAINER_NAME: ((AZURE_CONTAINER_NAME))
 
   - name: publish-azure-offer
     serial: true
@@ -2685,27 +2681,30 @@ jobs:
             - get: azure-tested
               passed: [submit-azure-offer]
               trigger: true
-      - task: wait-for-azure-publisher-signoff
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/wait-for-azure-publisher-signoff/task.yml
+            - get: azure-published-vhd-uri
+              passed: [submit-azure-offer]
+      - load_var: image-version
+        file: azure-published-vhd-uri/version
+        reveal: true
+      - task: partner-center-wait-preview
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/partner-center-wait-preview/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        timeout: 168h # 7 days
-        params: &azure_publisher_information
-          AZURE_PUBLISHER: ((AZURE_PUBLISHER))
-          AZURE_OFFER: bosh-windows-server-((BASE_OS_VERSION))
-          PARTNER_PORTAL_TENANT_ID: ((azure_partner_portal.tenant_id))
-          PARTNER_PORTAL_CLIENT_ID: ((azure_partner_portal.client_id))
-          PARTNER_PORTAL_CLIENT_SECRET: ((azure_partner_portal.client_secret))
-      - task: signoff-azure-live
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/signoff-azure-live/task.yml
+        timeout: 168h
+        input_mapping:
+          vhd-uri: azure-published-vhd-uri
+        params: *partner_center_params
+      - task: partner-center-go-live
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/partner-center-go-live/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        params:
-          <<: *azure_publisher_information
-      - task: wait-for-azure-marketplace-offer-live
-        file: bosh-windows-stemcell-builder-ci/ci/tasks/wait-for-azure-marketplace-offer-live/task.yml
+        timeout: 2h
+        params: *partner_center_params
+      - task: partner-center-wait-live
+        file: bosh-windows-stemcell-builder-ci/ci/tasks/partner-center-wait-live/task.yml
         image: bosh-windows-stemcell-builder-ci-image
-        timeout: 120h # 5 days
-        params:
-          <<: *azure_publisher_information
+        timeout: 120h
+        input_mapping:
+          vhd-uri: azure-published-vhd-uri
+        params: *partner_center_params
 
   - name: promote-azure
     serial: true
