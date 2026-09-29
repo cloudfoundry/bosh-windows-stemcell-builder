@@ -1,0 +1,21 @@
+---
+platform: linux
+
+inputs:
+  - name: bosh-windows-stemcell-builder-ci
+  - name: vhd-uri
+
+outputs:
+  - name: submission-id
+
+run:
+  path: bosh-windows-stemcell-builder-ci/ci/tasks/partner-center-wait-preview/run
+
+params:
+  PARTNER_PORTAL_TENANT_ID:
+  PARTNER_PORTAL_CLIENT_ID:
+  PARTNER_PORTAL_CLIENT_SECRET:
+  AZURE_OFFER:
+  AZURE_SKU:
+  IMAGE_VERSION:
+  PUBLISH_JOB:

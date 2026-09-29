@@ -1,25 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-uri_filename='bosh-stemcell-*-azure-vhd-uri.txt'
-image_url=$(cat "azure-base-vhd-uri/${uri_filename}")
-vhd_path=$(echo "${image_url}" | sed -E 's/^.*(Microsoft\.Compute\/Images\/.*vhd).*$/\1/')
+# Copies the release VHD to the published storage account and writes its SAS-free URL
+# for the partner-center tasks. The input URL carries a SAS; never print it.
 
-create_microsoft_token() {
-    tenant_id=${PARTNER_PORTAL_TENANT_ID}
-    client_id=${PARTNER_PORTAL_CLIENT_ID}
-    client_secret=${PARTNER_PORTAL_CLIENT_SECRET}
-    grant_type="client_credentials"
-    resource="https://cloudpartner.azure.com"
+main_version=$(cat version/number)
+if ! [[ "${main_version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-build\.[0-9]+$ ]]; then
+  echo "ERROR: version/number '${main_version}' does not match X.Y.Z-build.N" >&2
+  exit 1
+fi
 
-    microsoft_auth_endpoint="https://login.microsoftonline.com/${tenant_id}/oauth2/token"
-    token=$(curl --fail -X POST "${microsoft_auth_endpoint}" \
-      -F "client_id=${client_id}"  \
-      -F "client_secret=${client_secret}"  \
-      -F "grant_type=${grant_type}"  \
-      -F "resource=${resource}" | jq -r .access_token
-    )
-    echo "$token"
+shopt -s nullglob
+vhd_uri_files=(azure-base-vhd-uri/bosh-stemcell-*-azure-vhd-uri.txt)
+shopt -u nullglob
+if [[ ${#vhd_uri_files[@]} -ne 1 ]]; then
+  echo "ERROR: expected exactly one azure-base-vhd-uri/bosh-stemcell-*-azure-vhd-uri.txt, found ${#vhd_uri_files[@]}" >&2
+  exit 1
+fi
+image_url=$(cat "${vhd_uri_files[0]}")
+vhd_path=${image_url%%\?*}
+vhd_filename=$(basename "${vhd_path}")
+if [[ -z "${vhd_filename}" || "${vhd_filename}" != *.vhd ]]; then
+  echo "ERROR: the URL in ${vhd_uri_files[0]} does not name a .vhd blob" >&2
+  exit 1
+fi
+
+format_version() {
+  main_version=$1
+  version_regex='([0-9]+)\.([0-9]+)\.([0-9]+)-build\.([0-9]+)'
+  version_number_tokens=$(echo "$main_version" | sed -E  "s/^$version_regex$/\1  \2  \3  \4/")
+  echo "$version_number_tokens" | awk '{ printf("%d.%d.%03d%03d", $1, $2, $3, $4) } '
 }
 
 copy_blob_to_premiumstore() {
@@ -27,11 +37,18 @@ copy_blob_to_premiumstore() {
     --source-account-key "${AZURE_STORAGE_ACCESS_KEY}" \
     --source-account-name "${AZURE_STORAGE_ACCOUNT}" \
     --source-container "${AZURE_CONTAINER_NAME}" \
-    --source-blob "${vhd_path}" \
+    --source-blob "${vhd_filename}" \
     --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
     --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" \
     --destination-container "${AZURE_CONTAINER_NAME}" \
-    --destination-blob "${vhd_path}"
+    --destination-blob "${vhd_filename}" > /dev/null || {
+    echo "ERROR: could not start the copy to ${AZURE_PUBLISHED_STORAGE_ACCOUNT}/${AZURE_CONTAINER_NAME}/${vhd_filename}" >&2
+    echo "If an earlier run left a pending copy on that blob, wait for it to finish or cancel it (with AZURE_STORAGE_KEY set to the ${AZURE_PUBLISHED_STORAGE_ACCOUNT} key):" >&2
+    echo "  az storage blob show --account-name ${AZURE_PUBLISHED_STORAGE_ACCOUNT} --container-name ${AZURE_CONTAINER_NAME} --name ${vhd_filename} --query properties.copy.id" >&2
+    echo "  az storage blob copy cancel --account-name ${AZURE_PUBLISHED_STORAGE_ACCOUNT} --destination-container ${AZURE_CONTAINER_NAME} --destination-blob ${vhd_filename} --copy-id <copy id>" >&2
+    echo "then re-run this job" >&2
+    exit 1
+  }
 }
 
 wait_for_copy_blob_to_premiumstore() {
@@ -54,18 +71,14 @@ wait_for_copy_blob_to_premiumstore() {
 get_copy_blob_status() {
   az storage blob show \
     --container-name "${AZURE_CONTAINER_NAME}" \
-    --name "${vhd_path}" \
+    --name "${vhd_filename}" \
     --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
     --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" | jq -r ".properties.copy.status"
 }
 
-echo -n "Authenticating with Microsoft..."
-echo
-token=$(create_microsoft_token)
-echo OK
+image_version=$(format_version "${main_version}")
 
-echo
-echo "Copying Image from ${AZURE_STORAGE_ACCOUNT} to ${AZURE_PUBLISHED_STORAGE_ACCOUNT}"
+echo "Copying ${AZURE_CONTAINER_NAME}/${vhd_filename} from ${AZURE_STORAGE_ACCOUNT} to ${AZURE_PUBLISHED_STORAGE_ACCOUNT}"
 copy_blob_to_premiumstore
 echo OK
 
@@ -73,3 +86,8 @@ echo
 echo "Waiting for copy to finish from ${AZURE_STORAGE_ACCOUNT} to ${AZURE_PUBLISHED_STORAGE_ACCOUNT}"
 wait_for_copy_blob_to_premiumstore
 echo OK
+
+echo
+echo "Image version ${image_version}"
+echo "https://${AZURE_PUBLISHED_STORAGE_ACCOUNT}.blob.core.windows.net/${AZURE_CONTAINER_NAME}/${vhd_filename}" \
+  > "published-vhd-uri/bosh-windows-image-${image_version}-vhd-uri.txt"
