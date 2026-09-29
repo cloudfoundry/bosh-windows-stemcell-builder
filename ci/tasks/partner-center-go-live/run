@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # Promotes the preview submission in submission-id/id to live through the Partner Center
-# Product Ingestion API (TNZ-155310). Ends once the submission is promoted to live; the configure
-# job stays running through Publish, which wait-live waits for. Promoted means the submission is
-# live, or a newer live submission that hasn't failed is listed; a promoted submission exits 0
+# Product Ingestion API (TNZ-155310). Ends once the submission is live; the configure job stays
+# running through Publish, which wait-live waits for. A submission that is already live exits 0
 # without configuring, so a re-trigger never sends a second promotion.
 set -euo pipefail
 
@@ -21,14 +20,10 @@ echo "to debug, 'fly intercept -u <this job run url>' and look at the redacted *
 describe='"\(.id) (target \(.target.targetType), status \(.status), result \(.result))"'
 
 promoted_desc=""
-# promoted_in <submissions json>: 0 when the submission is promoted (it is live, or a live
-# submission that hasn't failed was created after it), setting promoted_desc to the match.
+# promoted_in <submissions json>: 0 when the submission is live, setting promoted_desc to it.
 promoted_in() {
-  promoted_desc=$(jq -r --arg id "${submission_id}" '(.value // []) as $v
-    | first($v[] | select(.id == $id)) as $pinned
-    | [($v[] | select(.id == $id and .target.targetType? == "live")),
-       ($v[] | select(.target.targetType? == "live" and .result != "failed" and .created > $pinned.created))]
-    | first // empty | '"${describe}" <<<"$1")
+  promoted_desc=$(jq -r --arg id "${submission_id}" \
+    'first((.value // [])[] | select(.id == $id and .target.targetType? == "live")) // empty | '"${describe}" <<<"$1")
   [[ -n "${promoted_desc}" ]]
 }
 # promoted: promoted_in on a fresh GET; a failed GET counts as not promoted yet.
@@ -38,7 +33,7 @@ promoted() {
   promoted_in "${subs}"
 }
 failed_hint="See the submission's errors in Partner Center; once the cause is fixed, re-trigger submit-azure-offer (it submits the draft to preview again after a failed submission), then publish-azure-offer if it does not start"
-recheck="Check Partner Center before re-triggering publish-azure-offer: once ${submission_id} (or a newer live submission) is listed as live, a re-trigger skips go-live and waits for live; while it is still only a preview, a re-trigger sends go-live again"
+recheck="Check Partner Center before re-triggering publish-azure-offer: once ${submission_id} is listed as live, a re-trigger skips go-live and waits for live; while it is still only a preview, a re-trigger sends go-live again"
 
 # 1. An already-promoted submission (for example a re-trigger after go-live) needs nothing more.
 pc_token
