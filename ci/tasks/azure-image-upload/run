@@ -10,8 +10,20 @@ if ! [[ "${main_version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-build\.[0-9]+$ ]]; then
   exit 1
 fi
 
-image_url=$(cat azure-base-vhd-uri/bosh-stemcell-*-azure-vhd-uri.txt)
-vhd_filename=$(basename "${image_url}" | cut -d? -f1)
+shopt -s nullglob
+vhd_uri_files=(azure-base-vhd-uri/bosh-stemcell-*-azure-vhd-uri.txt)
+shopt -u nullglob
+if [[ ${#vhd_uri_files[@]} -ne 1 ]]; then
+  echo "ERROR: expected exactly one azure-base-vhd-uri/bosh-stemcell-*-azure-vhd-uri.txt, found ${#vhd_uri_files[@]}" >&2
+  exit 1
+fi
+image_url=$(cat "${vhd_uri_files[0]}")
+vhd_path=${image_url%%\?*}
+vhd_filename=$(basename "${vhd_path}")
+if [[ -z "${vhd_filename}" || "${vhd_filename}" != *.vhd ]]; then
+  echo "ERROR: the URL in ${vhd_uri_files[0]} does not name a .vhd blob" >&2
+  exit 1
+fi
 
 format_version() {
   main_version=$1
@@ -29,7 +41,14 @@ copy_blob_to_premiumstore() {
     --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
     --account-key "${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" \
     --destination-container "${AZURE_CONTAINER_NAME}" \
-    --destination-blob "${vhd_filename}" > /dev/null
+    --destination-blob "${vhd_filename}" > /dev/null || {
+    echo "ERROR: could not start the copy to ${AZURE_PUBLISHED_STORAGE_ACCOUNT}/${AZURE_CONTAINER_NAME}/${vhd_filename}" >&2
+    echo "If an earlier run left a pending copy on that blob, wait for it to finish or cancel it:" >&2
+    echo "  az storage blob show --account-name ${AZURE_PUBLISHED_STORAGE_ACCOUNT} --container-name ${AZURE_CONTAINER_NAME} --name ${vhd_filename} --query properties.copy.id" >&2
+    echo "  az storage blob copy cancel --account-name ${AZURE_PUBLISHED_STORAGE_ACCOUNT} --destination-container ${AZURE_CONTAINER_NAME} --destination-blob ${vhd_filename} --copy-id <copy id>" >&2
+    echo "then re-run this job" >&2
+    exit 1
+  }
 }
 
 wait_for_copy_blob_to_premiumstore() {

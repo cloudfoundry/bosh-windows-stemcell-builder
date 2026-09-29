@@ -94,7 +94,6 @@ while true; do
   sleep 3600
 done
 
-# Grace period for the live offer to become visible (matches the builder's
-# wait-for-azure-marketplace-offer-live task).
+# Partner Center documents up to 4 hours before a live listing is visible.
 echo "Waiting 4 hours for the live offer to become visible"
 sleep 4h

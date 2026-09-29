@@ -73,6 +73,11 @@ case "${existing}" in
       --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
       --start "${yesterday}" --expiry "${in_two_years}" \
       --output tsv)
+    if [[ -z "${sas}" ]]; then
+      echo "ERROR: could not generate a SAS for container ${AZURE_CONTAINER_NAME} in ${AZURE_PUBLISHED_STORAGE_ACCOUNT}" >&2
+      echo "Nothing was sent to Partner Center; re-running this job is safe" >&2
+      exit 1
+    fi
     image=$(jq -cn --arg v "${version}" --arg uri "${blob}?${sas}" '{versionNumber: $v,
       vmImages: [{imageType: "x64Gen1", source: {sourceType: "sasUri", osDisk: {uri: $uri}, dataDisks: []}}],
       lifecycleState: "generallyAvailable"}')
