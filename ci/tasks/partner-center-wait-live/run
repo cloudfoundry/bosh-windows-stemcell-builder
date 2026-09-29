@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# Waits for the submission in submission-id/id to go live through the Partner Center Product
+# Ingestion API (TNZ-155310): that ID must be live and succeeded, and the live tree must hold
+# this release's version with its blob. Then waits 4 hours for the offer to become visible.
+set -euo pipefail
+
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/../../common-scripts/partner-center.sh"
+
+version="${IMAGE_VERSION:-}"
+if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "ERROR: IMAGE_VERSION '${version}' is not a version like 1.9019.0 or 2022.7.009001" >&2
+  echo "Nothing was sent to Partner Center; check the IMAGE_VERSION param" >&2
+  exit 1
+fi
+if [[ -z "${PUBLISH_JOB:-}" ]]; then
+  echo "ERROR: PUBLISH_JOB is not set (expected <pipeline>/<job>)" >&2
+  echo "Nothing was sent to Partner Center; check the PUBLISH_JOB param" >&2
+  exit 1
+fi
+shopt -s nullglob
+vhd_uri_files=(vhd-uri/*vhd-uri.txt)
+shopt -u nullglob
+if [[ ${#vhd_uri_files[@]} -ne 1 ]]; then
+  echo "ERROR: expected exactly one vhd-uri/*vhd-uri.txt, found ${#vhd_uri_files[@]}" >&2
+  echo "Nothing was sent to Partner Center; check the vhd-uri input" >&2
+  exit 1
+fi
+blob=$(cat "${vhd_uri_files[0]}")
+submission_id=$(cat submission-id/id)
+if [[ ! "${submission_id}" =~ ^submission/([0-9a-f-]{36})/[0-9]+$ ]]; then
+  echo "ERROR: submission-id/id '${submission_id}' is not like submission/<product guid>/<n>" >&2
+  echo "Nothing was sent to Partner Center; wait-preview writes submission-id/id, so check Partner Center before re-triggering publish-azure-offer" >&2
+  exit 1
+fi
+product=${BASH_REMATCH[1]}
+echo "Version ${version}, submission ${submission_id}"
+echo "to debug, 'fly intercept -u <this job run url>' and look at the redacted *.json files in ${PWD}"
+
+failed_hint="See the submission's errors in Partner Center; once the cause is fixed, re-trigger submit-azure-offer (it submits the draft to preview again after a failed submission), then publish-azure-offer if it does not start"
+resume_hint="Check Partner Center before re-triggering publish-azure-offer (fly -t bosh-ecosystem trigger-job -j ${PUBLISH_JOB}): while ${submission_id} is still going live, a re-trigger re-pins it, skips go-live and waits again; once it is live but ${version} is missing from the live offer, a re-trigger fails in wait-preview, so wait for the live offer instead"
+# shellcheck disable=SC2034 # read by pc_poll_failed in the library
+PC_POLL_GIVE_UP_HINT=${resume_hint}
+describe='"\(.id) (target \(.target.targetType), status \(.status), result \(.result))"'
+# 113h, so a release that goes live on the poll after the last check still ends inside the
+# pipeline's 120h timeout: 113h + 1h poll sleep + up to ~1h outage + 4h grace <= 120h.
+deadline=$(( $(date +%s) + 113 * 3600 ))
+
+# One poll: the pinned submission's own status and, once it is live and succeeded, whether the
+# live tree holds the version. Any token or GET failure (after the library's retries) fails the
+# poll; the token is fetched in this shell so it outlives $(...).
+poll() {
+  pc_token || return 1
+  submissions=$(pc_get "submission/${product}" 2022-03-01-preview2) || return 1
+  submission=$(jq -c --arg id "${submission_id}" '[(.value // [])[] | select(.id == $id)] | first' <<<"${submissions}")
+  blob_state=""
+  if jq -e '.target.targetType == "live" and .status == "completed" and .result == "succeeded"' <<<"${submission}" >/dev/null; then
+    tech_config=$(pc_plan_tech_config "${product}" "${AZURE_SKU}" live) || return 1
+    blob_state=$(pc_tech_config_blob_state "${tech_config}" "${version}" "${blob}")
+  fi
+}
+
+while true; do
+  until poll; do
+    pc_poll_failed
+  done
+  pc_poll_succeeded
+  pc_redact_sas <<<"${submissions}" | jq . > submissions.json
+  if [[ "${submission}" == null ]]; then
+    echo "ERROR: submission ${submission_id} is not listed" >&2
+    echo "Check Partner Center before re-running" >&2
+    exit 1
+  fi
+  if jq -e '.result == "failed"' <<<"${submission}" >/dev/null; then
+    echo "ERROR: submission $(jq -r "${describe}" <<<"${submission}") failed" >&2
+    echo "${failed_hint}" >&2
+    exit 1
+  fi
+  if [[ -n "${blob_state}" ]]; then
+    if [[ "${blob_state}" == same ]]; then
+      echo "Submission $(jq -r "${describe}" <<<"${submission}") is live with ${version}"
+      break
+    fi
+    echo "Submission ${submission_id} succeeded but the live tree does not show ${version} yet"
+  else
+    echo "Submission $(jq -r "${describe}" <<<"${submission}") is not live yet"
+  fi
+  if [[ $(date +%s) -ge ${deadline} ]]; then
+    echo "ERROR: ${version} is still not live in ${submission_id} after 113 hours" >&2
+    echo "${resume_hint}" >&2
+    exit 1
+  fi
+  echo "Checking again in 60 minutes"
+  sleep 3600
+done
+
+# Grace period for the live offer to become visible (matches the builder's
+# wait-for-azure-marketplace-offer-live task).
+echo "Waiting 4 hours for the live offer to become visible"
+sleep 4h

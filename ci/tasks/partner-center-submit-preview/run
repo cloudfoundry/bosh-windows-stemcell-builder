@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+# Adds this release's image version to the offer's draft technical configuration, then submits the
+# draft to preview in a second configure call, through the Partner Center Product Ingestion API
+# (TNZ-155310). Ends once this release's preview submission is listed; the submission's configure
+# job stays running through certification, which publish-azure-offer waits for. Idempotent: a
+# re-run for a release that is already submitted exits 0 without configuring.
+set -euo pipefail
+
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/../../common-scripts/partner-center.sh"
+
+version="${IMAGE_VERSION:-}"
+if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "ERROR: IMAGE_VERSION '${version}' is not a version like 1.9019.0 or 2022.7.009001" >&2
+  echo "Nothing was sent to Partner Center; check the IMAGE_VERSION param" >&2
+  exit 1
+fi
+shopt -s nullglob
+vhd_uri_files=(vhd-uri/*vhd-uri.txt)
+shopt -u nullglob
+if [[ ${#vhd_uri_files[@]} -ne 1 ]]; then
+  echo "ERROR: expected exactly one vhd-uri/*vhd-uri.txt, found ${#vhd_uri_files[@]}" >&2
+  echo "Nothing was sent to Partner Center; check the vhd-uri input" >&2
+  exit 1
+fi
+blob=$(cat "${vhd_uri_files[0]}")
+echo "Version ${version}"
+preview_recheck="Check Partner Center: if a preview submission for ${version} is listed and has not failed, re-running this job is safe (it finds it and exits 0); if it is listed but failed, fix the cause first, as a re-run submits to preview again; if none is listed yet, wait a few minutes and check again before re-running, or a second preview submission is sent"
+guard_hint="Nothing was sent to Partner Center; this is a bug in partner-center-submit-preview.sh"
+echo "to debug, 'fly intercept -u <this job run url>' and look at the redacted *.json files in ${PWD}"
+
+pc_token
+
+# 1. Product, plan and draft technical configuration.
+product=$(pc_product_id "${AZURE_OFFER}")
+tech_config=$(pc_plan_tech_config "${product}" "${AZURE_SKU}")
+pc_redact_sas <<<"${tech_config}" | jq . > tech-config-draft.json
+echo "Product ${product}, technical configuration $(jq -r .id <<<"${tech_config}")"
+
+# 2. Staleness guard: is the newest non-draft submission this release's, or another one in flight?
+release=$(pc_release_submission "${product}" "${AZURE_SKU}" "${version}" "${blob}")
+newest=$(jq -c .newest <<<"${release}")
+describe=$(jq -r 'if . == null then "none" else "\(.id) (target \(.target.targetType), status \(.status), result \(.result))" end' <<<"${newest}")
+if [[ $(jq -r .isRelease <<<"${release}") == true ]]; then
+  echo "Submission ${describe} already carries ${version} with this VHD; nothing to do"
+  exit 0
+fi
+if ! jq -e '. == null or .result == "failed"
+    or (.target.targetType == "live" and .status == "completed" and .result == "succeeded")' <<<"${newest}" >/dev/null; then
+  echo "ERROR: newest submission ${describe} is not for ${version}: another release is in flight; resolve it in Partner Center" >&2
+  echo "Nothing was sent to Partner Center; once that submission is live or has failed, re-running this job is safe" >&2
+  exit 1
+fi
+echo "Newest submission: ${describe}"
+
+# 3. Keep a matching version, refuse a different blob, or append the new version.
+existing=$(pc_tech_config_blob_state "${tech_config}" "${version}" "${blob}")
+case "${existing}" in
+  same)
+    echo "Version ${version} is already in the draft with this VHD; keeping the technical configuration as it is"
+    new_tech_config=${tech_config}
+    ;;
+  different)
+    echo "ERROR: version ${version} is already in the draft with a different VHD; refusing to overwrite it" >&2
+    echo "Nothing was sent to Partner Center; a re-run fails the same way until the draft's ${version} image in Partner Center matches this VHD" >&2
+    exit 1
+    ;;
+  absent)
+    yesterday=$(date -u --date="-1 day" '+%Y-%m-%dT%TZ')
+    in_two_years=$(date -u --date="+2 years" '+%Y-%m-%dT%TZ')
+    sas=$(AZURE_STORAGE_KEY="${AZURE_PUBLISHED_STORAGE_ACCESS_KEY}" az storage container generate-sas --name "${AZURE_CONTAINER_NAME}" \
+      --permissions rl \
+      --account-name "${AZURE_PUBLISHED_STORAGE_ACCOUNT}" \
+      --start "${yesterday}" --expiry "${in_two_years}" \
+      --output tsv)
+    image=$(jq -cn --arg v "${version}" --arg uri "${blob}?${sas}" '{versionNumber: $v,
+      vmImages: [{imageType: "x64Gen1", source: {sourceType: "sasUri", osDisk: {uri: $uri}, dataDisks: []}}],
+      lifecycleState: "generallyAvailable"}')
+    new_tech_config=$(jq -c --argjson image "${image}" '.vmImageVersions += [$image]' <<<"${tech_config}")
+    echo "Appending version ${version}"
+    ;;
+esac
+
+# 4. Guards: existing versions byte-identical, at most one appended, nothing else changed.
+old_count=$(jq '(.vmImageVersions // []) | length' <<<"${tech_config}")
+new_count=$(jq '(.vmImageVersions // []) | length' <<<"${new_tech_config}")
+if [[ "$(jq -c --argjson n "${old_count}" '(.vmImageVersions // [])[:$n]' <<<"${new_tech_config}")" \
+      != "$(jq -c '.vmImageVersions // []' <<<"${tech_config}")" ]]; then
+  echo "ERROR: guard: the existing vmImageVersions changed" >&2
+  echo "${guard_hint}" >&2
+  exit 1
+fi
+if [[ ${new_count} -ne ${old_count} && ${new_count} -ne $((old_count + 1)) ]]; then
+  echo "ERROR: guard: vmImageVersions went from ${old_count} to ${new_count} entries" >&2
+  echo "${guard_hint}" >&2
+  exit 1
+fi
+if [[ "$(jq -c 'del(.vmImageVersions)' <<<"${new_tech_config}")" != "$(jq -c 'del(.vmImageVersions)' <<<"${tech_config}")" ]]; then
+  echo "ERROR: guard: a technical configuration field other than vmImageVersions changed" >&2
+  echo "${guard_hint}" >&2
+  exit 1
+fi
+pc_redact_sas <<<"${new_tech_config}" | jq . > tech-config-new.json
+echo "Technical configuration diff (redacted):"
+diff -u tech-config-draft.json tech-config-new.json || true
+
+log_submissions() {
+  pc_get "submission/${product}" 2022-03-01-preview2 | jq -c '(.value // [])[]
+    | select((.target.targetType? // "draft") != "draft")
+    | {id, target: .target.targetType, status, result, created}' | pc_redact_sas
+}
+# configure_and_wait <what> <payload> [<done_fn>]: POSTs one configure request and waits for its
+# job (or until <done_fn> returns 0, see pc_wait_job); exits 1 naming <what> if either fails.
+configure_and_wait() {
+  local what=$1 payload=$2 done_fn=${3:-} job_id rc hint="Re-running this job is safe"
+  [[ "${what}" != "preview submission" ]] || hint=${preview_recheck}
+  if job_id=$(pc_configure "${payload}"); then
+    echo "Configure job ${job_id} (${what}) started"
+  else
+    rc=$?
+    if [[ ${rc} -eq 2 ]]; then
+      echo "ERROR: ${what} may have been applied; current non-draft submissions:" >&2
+      log_submissions >&2 || true
+      if [[ "${what}" == "preview submission" ]]; then
+        echo "${preview_recheck}" >&2
+      else
+        echo "Check Partner Center; re-running this job is safe" >&2
+      fi
+    else
+      echo "ERROR: ${what} failed" >&2
+      echo "${hint}" >&2
+    fi
+    exit 1
+  fi
+  if ! pc_wait_job "${job_id}" ${done_fn:+"${done_fn}"}; then
+    echo "ERROR: ${what} failed" >&2
+    echo "${hint}" >&2
+    exit 1
+  fi
+}
+
+# 5. Configure the tech config on its own; always sent, even when unchanged. Sending it together
+# with a submission would be a modular publish, which needs every draft resource.
+payload=$(jq -c '{"$schema": "https://schema.mp.microsoft.com/schema/configure/2022-03-01-preview2",
+  resources: [.]}' <<<"${new_tech_config}")
+pc_redact_sas <<<"${payload}" | jq . > configure-request.json
+configure_and_wait "technical configuration" "${payload}"
+
+# 6. Then submit the draft to preview, and log the preview submission. Its job stays running
+# through certification (up to 2 business days), so stop waiting once this release's preview
+# submission is listed; publish-azure-offer waits for certification.
+preview_id=""
+# preview_listed: 0 once the newest non-draft submission is a preview carrying this release; a
+# failed lookup counts as not listed yet.
+preview_listed() {
+  local release
+  release=$(pc_release_submission "${product}" "${AZURE_SKU}" "${version}" "${blob}") || return 1
+  jq -e '.isRelease == true and .newest.target.targetType == "preview"' <<<"${release}" >/dev/null || return 1
+  preview_id=$(jq -r .newest.id <<<"${release}")
+  echo "Preview submission ${preview_id} is listed; certification continues in publish-azure-offer"
+}
+payload=$(jq -cn --arg product "product/${product}" '{
+  "$schema": "https://schema.mp.microsoft.com/schema/configure/2022-03-01-preview2",
+  resources: [{"$schema": "https://schema.mp.microsoft.com/schema/submission/2022-03-01-preview2",
+    product: $product, target: {targetType: "preview"}}]}')
+jq . <<<"${payload}" > submission-request.json
+configure_and_wait "preview submission" "${payload}" preview_listed
+if [[ -z "${preview_id}" ]]; then
+  preview_id=$(pc_get "submission/${product}" 2022-03-01-preview2 | jq -r '
+    [(.value // [])[] | select(.target.targetType? == "preview")] | max_by(.created) | .id // "not found yet"')
+fi
+echo "Preview submission: ${preview_id}"

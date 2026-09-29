@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# Waits for this release's preview submission to succeed through the Partner Center Product
+# Ingestion API (TNZ-155310) and writes its ID to submission-id/id. The first successful poll
+# identifies (pins) the submission; later polls only read that submission's own status.
+set -euo pipefail
+
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/../../common-scripts/partner-center.sh"
+
+version="${IMAGE_VERSION:-}"
+if [[ ! "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "ERROR: IMAGE_VERSION '${version}' is not a version like 1.9019.0 or 2022.7.009001" >&2
+  echo "Nothing was sent to Partner Center; check the IMAGE_VERSION param" >&2
+  exit 1
+fi
+if [[ -z "${PUBLISH_JOB:-}" ]]; then
+  echo "ERROR: PUBLISH_JOB is not set (expected <pipeline>/<job>)" >&2
+  echo "Nothing was sent to Partner Center; check the PUBLISH_JOB param" >&2
+  exit 1
+fi
+shopt -s nullglob
+vhd_uri_files=(vhd-uri/*vhd-uri.txt)
+shopt -u nullglob
+if [[ ${#vhd_uri_files[@]} -ne 1 ]]; then
+  echo "ERROR: expected exactly one vhd-uri/*vhd-uri.txt, found ${#vhd_uri_files[@]}" >&2
+  echo "Nothing was sent to Partner Center; check the vhd-uri input" >&2
+  exit 1
+fi
+blob=$(cat "${vhd_uri_files[0]}")
+echo "Version ${version}"
+echo "to debug, 'fly intercept -u <this job run url>' and look at the redacted *.json files in ${PWD}"
+
+failed_hint="See the submission's errors in Partner Center; once the cause is fixed, re-trigger submit-azure-offer (it submits the draft to preview again after a failed submission), then publish-azure-offer if it does not start"
+describe='"\(.id) (target \(.target.targetType), status \(.status), result \(.result))"'
+# shellcheck disable=SC2034 # read by pc_poll_failed in the library
+PC_POLL_GIVE_UP_HINT="Check Partner Center before re-triggering publish-azure-offer (fly -t bosh-ecosystem trigger-job -j ${PUBLISH_JOB}): once the API answers again, a re-trigger finds this release's newest submission and waits again"
+# 166h, so the task fails with this message inside the pipeline's 168h timeout:
+# 166h + 30 min poll sleep + up to ~60 min outage <= 168h.
+deadline=$(( $(date +%s) + 166 * 3600 ))
+
+# 1. First poll: identify this release's submission. A token or GET failure (after the
+# library's retries) is a failed poll; the token is fetched in this shell so it outlives $(...).
+product=""
+until pc_token && { [[ -n "${product}" ]] || product=$(pc_product_id "${AZURE_OFFER}"); } \
+    && release=$(pc_release_submission "${product}" "${AZURE_SKU}" "${version}" "${blob}"); do
+  pc_poll_failed
+done
+pc_poll_succeeded
+newest=$(jq -c .newest <<<"${release}")
+if [[ $(jq -r .isRelease <<<"${release}") != true ]]; then
+  if jq -e '. != null and .result == "failed"' <<<"${newest}" >/dev/null; then
+    echo "ERROR: newest submission $(jq -r '"\(.id) (\(.target.targetType))"' <<<"${newest}") failed" >&2
+    echo "${failed_hint}" >&2
+  else
+    echo "ERROR: no submission for ${version}; run submit-azure-offer" >&2
+    echo "Check Partner Center before running submit-azure-offer: if this release's submission is already live but ${version} is not in the live offer yet, running it sends a second preview submission" >&2
+  fi
+  exit 1
+fi
+submission_id=$(jq -r .id <<<"${newest}")
+echo "Pinned submission $(jq -r "${describe}" <<<"${newest}")"
+
+# 2. From here on, only the pinned submission's own status counts; it is never re-identified.
+submission=${newest}
+while true; do
+  if jq -e '.result == "failed"' <<<"${submission}" >/dev/null; then
+    echo "ERROR: submission $(jq -r "${describe}" <<<"${submission}") failed" >&2
+    echo "${failed_hint}" >&2
+    exit 1
+  fi
+  if jq -e '.target.targetType == "live"' <<<"${submission}" >/dev/null; then
+    echo "Submission $(jq -r "${describe}" <<<"${submission}") has already been promoted to live"
+    break
+  fi
+  if jq -e '.status == "completed" and .result == "succeeded"' <<<"${submission}" >/dev/null; then
+    echo "Preview submission $(jq -r "${describe}" <<<"${submission}") succeeded"
+    break
+  fi
+  if [[ $(date +%s) -ge ${deadline} ]]; then
+    echo "ERROR: preview submission ${submission_id} is still pending after 166 hours" >&2
+    echo "Check Partner Center; while ${submission_id} is this release's newest submission, re-triggering publish-azure-offer (fly -t bosh-ecosystem trigger-job -j ${PUBLISH_JOB}) pins it again and waits another 166 hours" >&2
+    exit 1
+  fi
+  echo "Preview submission $(jq -r "${describe}" <<<"${submission}") is pending; checking again in 30 minutes"
+  sleep 1800
+  until pc_token && submissions=$(pc_get "submission/${product}" 2022-03-01-preview2); do
+    pc_poll_failed
+  done
+  pc_poll_succeeded
+  pc_redact_sas <<<"${submissions}" | jq . > submissions.json
+  submission=$(jq -c --arg id "${submission_id}" '[(.value // [])[] | select(.id == $id)] | first' <<<"${submissions}")
+  if [[ "${submission}" == null ]]; then
+    echo "ERROR: pinned submission ${submission_id} is no longer listed" >&2
+    echo "Check Partner Center before re-running" >&2
+    exit 1
+  fi
+done
+
+printf '%s\n' "${submission_id}" > submission-id/id
+echo "Wrote ${submission_id} to submission-id/id"

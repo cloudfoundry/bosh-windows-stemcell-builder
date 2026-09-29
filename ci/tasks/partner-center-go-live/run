@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# Promotes the preview submission in submission-id/id to live through the Partner Center
+# Product Ingestion API (TNZ-155310). Ends once the submission is promoted to live; the configure
+# job stays running through Publish, which wait-live waits for. Promoted means the submission is
+# live, or a newer live submission that hasn't failed is listed; a promoted submission exits 0
+# without configuring, so a re-trigger never sends a second promotion.
+set -euo pipefail
+
+# shellcheck source=/dev/null
+source "$(dirname "${BASH_SOURCE[0]}")/../../common-scripts/partner-center.sh"
+
+submission_id=$(cat submission-id/id)
+if [[ ! "${submission_id}" =~ ^submission/([0-9a-f-]{36})/[0-9]+$ ]]; then
+  echo "ERROR: submission-id/id '${submission_id}' is not like submission/<product guid>/<n>" >&2
+  echo "Nothing was sent to Partner Center; wait-preview writes submission-id/id, so check Partner Center before re-triggering publish-azure-offer" >&2
+  exit 1
+fi
+product=${BASH_REMATCH[1]}
+echo "to debug, 'fly intercept -u <this job run url>' and look at the redacted *.json files in ${PWD}"
+
+describe='"\(.id) (target \(.target.targetType), status \(.status), result \(.result))"'
+
+promoted_desc=""
+# promoted_in <submissions json>: 0 when the submission is promoted (it is live, or a live
+# submission that hasn't failed was created after it), setting promoted_desc to the match.
+promoted_in() {
+  promoted_desc=$(jq -r --arg id "${submission_id}" '(.value // []) as $v
+    | first($v[] | select(.id == $id)) as $pinned
+    | [($v[] | select(.id == $id and .target.targetType? == "live")),
+       ($v[] | select(.target.targetType? == "live" and .result != "failed" and .created > $pinned.created))]
+    | first // empty | '"${describe}" <<<"$1")
+  [[ -n "${promoted_desc}" ]]
+}
+# promoted: promoted_in on a fresh GET; a failed GET counts as not promoted yet.
+promoted() {
+  local subs
+  subs=$(pc_get "submission/${product}" 2022-03-01-preview2) || return 1
+  promoted_in "${subs}"
+}
+failed_hint="See the submission's errors in Partner Center; once the cause is fixed, re-trigger submit-azure-offer (it submits the draft to preview again after a failed submission), then publish-azure-offer if it does not start"
+recheck="Check Partner Center before re-triggering publish-azure-offer: once ${submission_id} (or a newer live submission) is listed as live, a re-trigger skips go-live and waits for live; while it is still only a preview, a re-trigger sends go-live again"
+
+# 1. An already-promoted submission (for example a re-trigger after go-live) needs nothing more.
+pc_token
+submissions=$(pc_get "submission/${product}" 2022-03-01-preview2)
+pc_redact_sas <<<"${submissions}" | jq . > submissions.json
+submission=$(jq -c --arg id "${submission_id}" '[(.value // [])[] | select(.id == $id)] | first' <<<"${submissions}")
+if [[ "${submission}" == null ]]; then
+  echo "ERROR: submission ${submission_id} is not listed for product ${product}" >&2
+  echo "Check Partner Center before re-running" >&2
+  exit 1
+fi
+if jq -e '.result == "failed"' <<<"${submission}" >/dev/null; then
+  echo "ERROR: submission $(jq -r "${describe}" <<<"${submission}") failed" >&2
+  echo "${failed_hint}" >&2
+  exit 1
+fi
+if promoted_in "${submissions}"; then
+  echo "Submission ${submission_id} is already promoted to live (${promoted_desc}); nothing to do"
+  exit 0
+fi
+
+# 2. Configure: promote the submission to live, then wait until the job succeeds or the submission
+# is promoted; the job stays running through Publish (up to 4 days).
+payload=$(jq -cn --arg id "${submission_id}" --arg product "product/${product}" '{
+  "$schema": "https://schema.mp.microsoft.com/schema/configure/2022-03-01-preview2",
+  resources: [{"$schema": "https://schema.mp.microsoft.com/schema/submission/2022-03-01-preview2",
+    id: $id, product: $product, target: {targetType: "live"}}]}')
+pc_redact_sas <<<"${payload}" | jq . > configure-request.json
+
+log_submissions() {
+  pc_get "submission/${product}" 2022-03-01-preview2 | jq -c '(.value // [])[]
+    | select((.target.targetType? // "draft") != "draft")
+    | {id, target: .target.targetType, status, result, created}' | pc_redact_sas
+}
+if job_id=$(pc_configure "${payload}"); then
+  echo "Configure job ${job_id} started"
+else
+  rc=$?
+  if [[ ${rc} -eq 2 ]]; then
+    echo "ERROR: configure may have been applied; current non-draft submissions:" >&2
+    log_submissions >&2 || true
+  fi
+  echo "${recheck}" >&2
+  exit 1
+fi
+
+if ! pc_wait_job "${job_id}" promoted; then
+  echo "${recheck}" >&2
+  exit 1
+fi
+if [[ -n "${promoted_desc}" ]]; then
+  echo "Submission ${submission_id} is promoted to live; publishing continues in wait-live"
+else
+  echo "Submission ${submission_id} promoted to live"
+fi
