@@ -6,7 +6,7 @@ export GOVC_URL="${VCENTER_ADMIN_CREDENTIAL_URL}"
 ROOT_DIR=$(pwd)
 export OUTPUT_DIR=${ROOT_DIR}/output
 
-CLONE_NAME="${CLONE_PREFIX}-$(date -u +"%Y-%m-%d_%H-%M")"
+CLONE_NAME="${CLONE_PREFIX}-${OS_LINE}-$(date -u +"%Y-%m-%d_%H-%M-%S")"
 
 echo "${CLONE_NAME}" > integration-vm-name/name
 echo "Creating VM ${CLONE_NAME}"
