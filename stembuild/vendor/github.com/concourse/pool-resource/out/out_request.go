@@ -22,7 +22,7 @@ type Source struct {
 }
 
 func (s *Source) UnmarshalJSON(b []byte) error {
-	var inputData map[string]interface{}
+	var inputData map[string]any
 	err := json.NewDecoder(bytes.NewReader(b)).Decode(&inputData)
 	if err != nil {
 		return err
@@ -47,13 +47,15 @@ func (s *Source) UnmarshalJSON(b []byte) error {
 }
 
 type OutParams struct {
-	Release    string `json:"release"`
-	Acquire    bool   `json:"acquire"`
-	Add        string `json:"add"`
-	AddClaimed string `json:"add_claimed"`
-	Remove     string `json:"remove"`
-	Claim      string `json:"claim"`
-	Update     string `json:"update"`
+	Release        string `json:"release"`
+	Acquire        bool   `json:"acquire"`
+	Add            string `json:"add"`
+	AddClaimed     string `json:"add_claimed"`
+	Remove         string `json:"remove"`
+	Claim          string `json:"claim"`
+	Update         string `json:"update"`
+	Check          string `json:"check"`
+	CheckUnclaimed string `json:"check_unclaimed"`
 }
 
 func (request OutRequest) Validate() []string {
@@ -77,8 +79,10 @@ func (request OutRequest) Validate() []string {
 		request.Params.AddClaimed == "" &&
 		request.Params.Remove == "" &&
 		request.Params.Claim == "" &&
-		request.Params.Update == "" {
-		errorMessages = append(errorMessages, "invalid payload (missing acquire, release, remove, claim, add, or add_claimed)")
+		request.Params.Update == "" &&
+		request.Params.Check == "" &&
+		request.Params.CheckUnclaimed == "" {
+		errorMessages = append(errorMessages, "invalid payload (missing acquire, release, remove, claim, add, add_claimed, update, check, or check_unclaimed)")
 	}
 
 	return errorMessages

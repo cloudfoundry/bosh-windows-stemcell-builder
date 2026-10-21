@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -16,6 +16,7 @@ type LockPool struct {
 
 	LockHandler LockHandler
 	dir         string
+	checkOnly   bool
 }
 
 func NewLockPool(source Source, output io.Writer) LockPool {
@@ -28,8 +29,9 @@ func NewLockPool(source Source, output io.Writer) LockPool {
 	return lockPool
 }
 
-//go:generate counterfeiter . LockHandler
+//go:generate go tool counterfeiter -generate
 
+//counterfeiter:generate -o ./fakes . LockHandler
 type LockHandler interface {
 	GrabAvailableLock() (lock string, version string, err error)
 	UnclaimLock(lock string) (version string, err error)
@@ -37,9 +39,11 @@ type LockHandler interface {
 	RemoveLock(lock string) (version string, err error)
 	ClaimLock(lock string) (version string, err error)
 	UpdateLock(lock string, contents []byte) (version string, err error)
+	CheckLock(lock string) (version string, err error)
+	CheckUnclaimedLock(lock string) (version string, err error)
 
 	Setup() error
-	BroadcastLockPool() ([]byte, error)
+	BroadcastLockPool() (string, error)
 	ResetLock() error
 }
 
@@ -66,6 +70,11 @@ func (lp *LockPool) ClaimLock(lock string) (Version, error) {
 
 		return false, nil
 	})
+
+	if err != nil {
+		return Version{}, err
+	}
+
 	fmt.Fprintf(lp.Output, "\nclaimed!\n")
 
 	return Version{
@@ -102,6 +111,7 @@ func (lp *LockPool) AcquireLock() (string, Version, error) {
 	if err != nil {
 		return "", Version{}, err
 	}
+
 	fmt.Fprintf(lp.Output, "\nacquired!\n")
 
 	return lock, Version{
@@ -110,7 +120,7 @@ func (lp *LockPool) AcquireLock() (string, Version, error) {
 }
 
 func (lp *LockPool) ReleaseLock(inDir string) (string, Version, error) {
-	nameFileContents, err := ioutil.ReadFile(filepath.Join(inDir, "name"))
+	nameFileContents, err := os.ReadFile(filepath.Join(inDir, "name"))
 	if err != nil {
 		return "", Version{}, err
 	}
@@ -149,13 +159,13 @@ func (lp *LockPool) AddUnclaimedLock(inDir string) (string, Version, error) {
 }
 
 func (lp *LockPool) addLock(inDir string, initiallyClaimed bool) (string, Version, error) {
-	nameFileContents, err := ioutil.ReadFile(filepath.Join(inDir, "name"))
+	nameFileContents, err := os.ReadFile(filepath.Join(inDir, "name"))
 	if err != nil {
 		return "", Version{}, fmt.Errorf("could not read the name file of your lock: %s", err)
 	}
 	lockName := strings.TrimSpace(string(nameFileContents))
 
-	lockContents, err := ioutil.ReadFile(filepath.Join(inDir, "metadata"))
+	lockContents, err := os.ReadFile(filepath.Join(inDir, "metadata"))
 	if err != nil {
 		return "", Version{}, fmt.Errorf("could not read the metadata file of your lock: %s", err)
 	}
@@ -190,7 +200,7 @@ func (lp *LockPool) addLock(inDir string, initiallyClaimed bool) (string, Versio
 }
 
 func (lp *LockPool) RemoveLock(inDir string) (string, Version, error) {
-	nameFileContents, err := ioutil.ReadFile(filepath.Join(inDir, "name"))
+	nameFileContents, err := os.ReadFile(filepath.Join(inDir, "name"))
 	if err != nil {
 		return "", Version{}, err
 	}
@@ -223,13 +233,13 @@ func (lp *LockPool) RemoveLock(inDir string) (string, Version, error) {
 }
 
 func (lp *LockPool) UpdateLock(inDir string) (string, Version, error) {
-	nameFileContents, err := ioutil.ReadFile(filepath.Join(inDir, "name"))
+	nameFileContents, err := os.ReadFile(filepath.Join(inDir, "name"))
 	if err != nil {
 		return "", Version{}, fmt.Errorf("could not read the name file of your lock: %s", err)
 	}
 	lockName := strings.TrimSpace(string(nameFileContents))
 
-	lockContents, err := ioutil.ReadFile(filepath.Join(inDir, "metadata"))
+	lockContents, err := os.ReadFile(filepath.Join(inDir, "metadata"))
 	if err != nil {
 		return "", Version{}, fmt.Errorf("could not read the metadata file of your lock: %s", err)
 	}
@@ -259,7 +269,82 @@ func (lp *LockPool) UpdateLock(inDir string) (string, Version, error) {
 	if err != nil {
 		return "", Version{}, err
 	}
+
 	fmt.Fprintf(lp.Output, "\nupdated!\n")
+
+	return lockName, Version{
+		Ref: strings.TrimSpace(ref),
+	}, nil
+}
+
+func (lp *LockPool) CheckLock(inDir string) (string, Version, error) {
+	nameFileContents, err := os.ReadFile(filepath.Join(inDir, "name"))
+	if err != nil {
+		return "", Version{}, fmt.Errorf("could not read the file name of your lock: %s", err)
+	}
+	lockName := strings.TrimSpace(string(nameFileContents))
+
+	fmt.Fprintf(lp.Output, "checking lock: %s in pool: %s\n", lockName, lp.Source.Pool)
+	fmt.Fprintf(lp.Output, "waiting for lock to become unclaimed\n")
+
+	var ref string
+
+	err = lp.performRobustAction(func() (bool, error) {
+		var err error
+		ref, err = lp.LockHandler.CheckLock(lockName)
+
+		if err == ErrLockActive {
+			fmt.Fprint(lp.Output, ".")
+			return true, nil
+		}
+
+		if err != nil {
+			fmt.Fprintf(lp.Output, "failed to check the lock: %s! (err: %s) retrying...\n", lockName, err)
+			return true, nil
+		}
+		return false, nil
+	})
+
+	if err != nil {
+		return "", Version{}, err
+	}
+
+	return lockName, Version{
+		Ref: strings.TrimSpace(ref),
+	}, nil
+}
+
+func (lp *LockPool) CheckUnclaimedLock(inDir string) (string, Version, error) {
+	nameFileContents, err := os.ReadFile(filepath.Join(inDir, "name"))
+	if err != nil {
+		return "", Version{}, fmt.Errorf("could not read the file name of your lock: %s", err)
+	}
+	lockName := strings.TrimSpace(string(nameFileContents))
+
+	fmt.Fprintf(lp.Output, "checking lock: %s in pool: %s\n", lockName, lp.Source.Pool)
+	fmt.Fprintf(lp.Output, "waiting for lock to become claimed\n")
+
+	var ref string
+
+	err = lp.performRobustAction(func() (bool, error) {
+		var err error
+		ref, err = lp.LockHandler.CheckUnclaimedLock(lockName)
+
+		if err == ErrLockActive {
+			fmt.Fprint(lp.Output, ".")
+			return true, nil
+		}
+
+		if err != nil {
+			fmt.Fprintf(lp.Output, "failed to check the lock: %s! (err: %s) retrying...\n", lockName, err)
+			return true, nil
+		}
+		return false, nil
+	})
+
+	if err != nil {
+		return "", Version{}, err
+	}
 
 	return lockName, Version{
 		Ref: strings.TrimSpace(ref),
@@ -269,21 +354,20 @@ func (lp *LockPool) UpdateLock(inDir string) (string, Version, error) {
 func (lp *LockPool) performRobustAction(action func() (bool, error)) error {
 	err := lp.LockHandler.Setup()
 	if err != nil {
-		return err
+		return fmt.Errorf("setup: %w", err)
 	}
 
-	var gitOutput []byte
 	unexpectedErrorRetry := 0
 	for unexpectedErrorRetry < 5 {
 		err = lp.LockHandler.ResetLock()
 		if err != nil {
-			return err
+			return fmt.Errorf("reset lock: %w", err)
 		}
 
 		retry, err := action()
 
 		if err != nil {
-			return err
+			return fmt.Errorf("action: %w", err)
 		}
 
 		if retry {
@@ -291,7 +375,7 @@ func (lp *LockPool) performRobustAction(action func() (bool, error)) error {
 			continue
 		}
 
-		gitOutput, err = lp.LockHandler.BroadcastLockPool()
+		gitOutput, err := lp.LockHandler.BroadcastLockPool()
 
 		if err == ErrLockConflict {
 			fmt.Fprint(lp.Output, ".")
