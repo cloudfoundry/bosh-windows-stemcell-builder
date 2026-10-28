@@ -40,7 +40,7 @@ github.com/dougm/pretty
 # github.com/dylanmei/iso8601 v0.1.0
 ## explicit
 github.com/dylanmei/iso8601
-# github.com/gkampitakis/go-snaps v0.5.23
+# github.com/gkampitakis/go-snaps v0.5.25
 ## explicit; go 1.23
 # github.com/go-logr/logr v1.4.4
 ## explicit; go 1.18
@@ -59,7 +59,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20261016150608-1facf8f91b50
+# github.com/google/pprof v0.0.0-20261026192309-dbd0ed30aa88
 ## explicit; go 1.26.0
 github.com/google/pprof/profile
 # github.com/google/subcommands v1.2.0
@@ -206,7 +206,7 @@ github.com/pkg/errors
 # github.com/tidwall/transform v0.0.0-20201103190739-32f242e2dbde
 ## explicit
 github.com/tidwall/transform
-# github.com/vmware/govmomi v0.56.0
+# github.com/vmware/govmomi v0.56.2
 ## explicit; go 1.25.0
 github.com/vmware/govmomi
 github.com/vmware/govmomi/cli
@@ -283,7 +283,7 @@ golang.org/x/crypto/pbkdf2
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.61.0
+# golang.org/x/net v0.62.0
 ## explicit; go 1.26.0
 golang.org/x/net/html
 golang.org/x/net/html/atom
