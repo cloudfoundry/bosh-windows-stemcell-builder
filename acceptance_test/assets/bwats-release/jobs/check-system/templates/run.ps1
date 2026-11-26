@@ -131,7 +131,8 @@ function Test-Acls {
 
         $errCount = 0
 
-        Get-ChildItem -Path $path -Recurse | ForEach-Object {
+        $items = @(Get-Item -Path $path) + @(Get-ChildItem -Path $path -Recurse)
+        $items | ForEach-Object {
             $name = $_.FullName
             If (-Not ($_.Attributes -match "ReparsePoint")) {
                 Get-Acl $name | Select-Object -ExpandProperty Access | ForEach-Object {
@@ -139,6 +140,10 @@ function Test-Acls {
                     If (-Not $expectedacls.Contains($ident)) {
                         $errCount += 1
                         Write-Host "Error ($name): $ident"
+                    }
+                    If ($_.IdentityReference -eq "NT AUTHORITY\Authenticated Users" -and ($path -eq "C:\bosh" -or $path -eq "C:\var")) {
+                        $errCount += 1
+                        Write-Host "Error ($name): Authenticated Users should not have access"
                     }
                 }
             }
